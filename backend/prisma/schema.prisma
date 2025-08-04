@@ -1,0 +1,87 @@
+// backend/prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  email        String     @unique
+  passwordHash String
+  isPremium    Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  watchlist    Watchlist[]
+  portfolio    Portfolio[]
+  portfolioHistory PortfolioHistory[]
+}
+
+model Skin {
+  id           Int      @id @default(autoincrement())
+  name         String
+  marketHashName String @unique
+  imageUrl     String?
+  weaponType   String?
+  collection   String?
+  wear         String?
+  rarity       String?
+  quality      String?
+  isStattrak   Boolean?    // aus isstattrack (1 = true, 0 = false)
+  isStar       Boolean?    // aus isstar
+  itemType     String?     // aus itemtype
+  itemName     String?     // aus itemname
+  sold24h      Int?        // Verkaufsstatistik
+  offerVolume  Int?
+  priceMedian  Float?
+  priceMin     Float?
+  priceMax     Float?
+  priceAvg     Float?
+
+  priceHistory   PriceHistory[]
+  watchlist      Watchlist[]
+  portfolio      Portfolio[]
+}
+
+
+model Watchlist {
+  id         Int     @id @default(autoincrement())
+  user       User    @relation(fields: [userId], references: [id])
+  userId     Int
+  skin       Skin    @relation(fields: [skinId], references: [id])
+  skinId     Int
+  priceAlert Float?
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, skinId]) // doppelte Einträge verhindern
+}
+
+model Portfolio {
+  id       Int      @id @default(autoincrement())
+  user     User     @relation(fields: [userId], references: [id])
+  userId   Int
+  skin     Skin     @relation(fields: [skinId], references: [id])
+  skinId   Int
+  amount   Int
+  buyPrice Float
+  buyDate  DateTime
+}
+
+model PriceHistory {
+  id      Int      @id @default(autoincrement())
+  skin    Skin     @relation(fields: [skinId], references: [id])
+  skinId  Int
+  date    DateTime
+  price   Float
+}
+
+model PortfolioHistory {
+  id      Int      @id @default(autoincrement())
+  user    User     @relation(fields: [userId], references: [id])
+  userId  Int
+  date    DateTime
+  value   Float
+}
