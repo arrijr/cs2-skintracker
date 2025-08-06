@@ -1,4 +1,5 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL; 
+console.log("Loaded BASE_URL:", BASE_URL);
 
 function getToken() {
   if (typeof window !== 'undefined') {
@@ -9,6 +10,7 @@ function getToken() {
 
 async function apiFetch(path: string, options: RequestInit = {}, auth = false) {
   const url = `${BASE_URL}${path}`;
+  console.log("API-URL:", url);
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...options.headers,
@@ -21,16 +23,13 @@ async function apiFetch(path: string, options: RequestInit = {}, auth = false) {
 
   try {
     const res = await fetch(url, { ...options, headers });
-    // Optional: Redirect to login on 401
     if (res.status === 401) {
-      // z.B. logoutUser(); window.location.href = "/login";
       throw new Error("Not authorized. Please log in again.");
     }
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "API Error");
     return data;
   } catch (err: any) {
-    // Zentraler Error-Log
     console.error("API ERROR:", err);
     throw err;
   }
