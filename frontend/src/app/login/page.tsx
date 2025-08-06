@@ -57,12 +57,12 @@ export default function LoginPage() {
           disabled={loading}
           className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded text-white font-semibold"
         >
-          {loading ? "Lädt..." : "Login"}
+          {loading ? "Loading..." : "Login"}
         </button>
         <div className="mt-4 text-gray-400 text-sm">
-          Noch kein Account?{" "}
+          No account yet?{" "}
           <Link href="/signup" className="underline">
-            Jetzt registrieren
+            Sign up now
           </Link>
         </div>
       </form>
