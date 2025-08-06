@@ -1,4 +1,4 @@
-const BASE_URL = "https://cs2-skintracker.onrender.com/api/v1";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL; 
 console.log("Loaded BASE_URL:", BASE_URL);
 
 function getToken() {
