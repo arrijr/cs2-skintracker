@@ -1,47 +1,46 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getWatchlist, addToWatchlist, removeFromWatchlist, updatePriceAlert } from "../api/watchlist";
-import { useAuth } from "../context/AuthContext";
+import { getWatchlist, addToWatchlist, removeFromWatchlist, updatePriceAlert } from "../api/api";
 import SkinSearchBar from "../skins/SkinSearchBar";
-import Link from "next/link";
 
 export default function WatchlistPage() {
-  const { token } = useAuth();
   const [newSkinId, setNewSkinId] = useState<number | null>(null);
   const [priceAlert, setPriceAlert] = useState<number | null>(null);
+  const [watchlist, setWatchlist] = useState<WatchlistEntry[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   type WatchlistEntry = {
     id: number;
     skinId: number;
     priceAlert?: number;
-    // und ggf. weitere Felder, je nach API
   };
-
-  const [watchlist, setWatchlist] = useState<WatchlistEntry[]>([]);
-
-
+  
   useEffect(() => {
-    if (!token) return;
-    getWatchlist(token).then(setWatchlist);
-  }, [token]);
+    getWatchlist().then(setWatchlist).catch(e => setError(e.message));
+  }, []);
 
   const handleAdd = async () => {
-    if (newSkinId) {
-      await addToWatchlist(token, newSkinId, priceAlert || undefined);
-      setWatchlist(await getWatchlist(token));
-      setNewSkinId(null);
-      setPriceAlert(null);
+    setError(null);
+    try {
+      if (newSkinId) {
+        await addToWatchlist(newSkinId, priceAlert || undefined);
+        setWatchlist(await getWatchlist());
+        setNewSkinId(null);
+        setPriceAlert(null);
+      }
+    } catch (err: any) {
+      setError(err.message || "Could not add skin.");
     }
   };
 
   const handleRemove = async (skinId: number) => {
-    await removeFromWatchlist(token, skinId);
-    setWatchlist(await getWatchlist(token));
+    await removeFromWatchlist(skinId);
+    setWatchlist(await getWatchlist());
   };
 
   const handleAlertChange = async (skinId: number, alert: number) => {
-    await updatePriceAlert(token, skinId, alert);
-    setWatchlist(await getWatchlist(token));
+    await updatePriceAlert(skinId, alert);
+    setWatchlist(await getWatchlist());
   };
 
   return (
@@ -76,6 +75,7 @@ export default function WatchlistPage() {
       {/* Watchlist Empty State */}
       {watchlist.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-zinc-400">
+          {error && <div className="text-red-500 text-sm">{error}</div>}
           {/* Optional: Illustration */}
           <svg width="72" height="72" fill="none" viewBox="0 0 24 24" className="mb-4 opacity-70">
             <rect x="4" y="8" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" />
@@ -102,6 +102,37 @@ export default function WatchlistPage() {
         // Watchlist Table/Content wenn Einträge vorhanden sind:
         <div>
           {/* Hier kommt deine Watchlist-Tabelle hin! */}
+          {watchlist.length > 0 && (
+            <table>
+              <thead>
+                <tr>
+                  <th>Skin</th>
+                  <th>Price Alert</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {watchlist.map(entry => (
+                  <tr key={entry.id}>
+                    <td>{entry.skinId}</td>
+                    <td>
+                      <input
+                        type="number"
+                        value={entry.priceAlert ?? ""}
+                        onChange={e => handleAlertChange(entry.skinId, Number(e.target.value))}
+                        className="input-main w-24"
+                      />
+                    </td>
+                    <td>
+                      <button onClick={() => handleRemove(entry.skinId)} className="btn-main">
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
     </div>

@@ -11,13 +11,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/v1/users/login", {
+      const res = await fetch("${API_BASE}/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
