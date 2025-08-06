@@ -103,28 +103,39 @@ export default function WatchlistPage() {
         <div>
           {/* Hier kommt deine Watchlist-Tabelle hin! */}
           {watchlist.length > 0 && (
-            <table>
+            <table className="w-full border-separate border-spacing-y-2">
               <thead>
                 <tr>
                   <th>Skin</th>
-                  <th>Price Alert</th>
-                  <th>Actions</th>
+                  <th className="text-center">Price Alert ($)</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 {watchlist.map(entry => (
-                  <tr key={entry.id}>
-                    <td>{entry.skinId}</td>
-                    <td>
+                  <tr key={entry.id} className="bg-zinc-800 rounded-xl">
+                    <td className="flex items-center gap-3 py-2">
+                      {/* Optional: Skin-Image */}
+                      {entry.skin?.image_url && (
+                        <img src={entry.skin.image_url} alt="" className="w-10 h-10 rounded" />
+                      )}
+                      <span>{entry.skin?.name || entry.skinId}</span>
+                    </td>
+                    <td className="text-center">
                       <input
                         type="number"
                         value={entry.priceAlert ?? ""}
                         onChange={e => handleAlertChange(entry.skinId, Number(e.target.value))}
                         className="input-main w-24"
+                        min={0}
+                        step={0.01}
                       />
                     </td>
-                    <td>
-                      <button onClick={() => handleRemove(entry.skinId)} className="btn-main">
+                    <td className="text-center">
+                      <button
+                        onClick={() => handleRemove(entry.skinId)}
+                        className="btn-main"
+                      >
                         Remove
                       </button>
                     </td>
