@@ -41,6 +41,11 @@ export function getPortfolioHistory() {
   return apiFetch("/portfolio/history", {}, true);
 }
 
+// SkinSearchbar
+export function searchSkins(query: string) {
+  return apiFetch(`/skins/search?query=${encodeURIComponent(query)}`);
+}
+
 
 
 // Auth

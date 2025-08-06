@@ -1,6 +1,5 @@
-import { useRouter } from "next/navigation";
+import { searchSkins } from "../api/api";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 
 type Skin = {
   id: number;
@@ -20,25 +19,33 @@ export default function SkinSearchBar({ onSelect }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Skin[]>([]);
   const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch Skins, wenn query mindestens 2 Zeichen
+  // Fetch skins if query has at least 2 characters
   useEffect(() => {
     if (query.length < 2) {
       setResults([]);
+      setError(null);
       return;
     }
     let cancel = false;
-    axios
-      .get(`http://localhost:5000/api/v1/skins/search?query=${encodeURIComponent(query)}`)
-      .then((res) => {
-        if (!cancel) setResults(res.data || []);
-      });
+    setLoading(true);
+    setError(null);
+
+    searchSkins(query)
+      .then((data) => {
+        if (!cancel) setResults(data || []);
+      })
+      .catch(() => {
+        if (!cancel) setError("Could not load skins.");
+      })
+      .finally(() => setLoading(false));
     return () => {
       cancel = true;
     };
   }, [query]);
 
-  // Skin auswählen → Callback an Parent
   function handleSelect(skin: Skin) {
     setQuery(skin.name);
     setShow(false);
@@ -48,7 +55,7 @@ export default function SkinSearchBar({ onSelect }: Props) {
 
   return (
     <div className="relative w-full max-w-md mx-auto">
-      {/* Skin-Sucheingabe */}
+      {/* Skin search input */}
       <input
         type="text"
         className="input-main w-full"
@@ -60,11 +67,21 @@ export default function SkinSearchBar({ onSelect }: Props) {
         }}
         onFocus={() => setShow(true)}
         onBlur={() => setTimeout(() => setShow(false), 150)}
+        autoComplete="off"
       />
 
-      {/* Dropdown-Ergebnisse */}
-      {show && results.length > 0 && (
+      {/* Dropdown results */}
+      {show && query.length >= 2 && (
         <ul className="absolute z-20 left-0 right-0 bg-zinc-900 border border-zinc-800 rounded-xl mt-1 max-h-60 overflow-y-auto shadow-lg">
+          {loading && (
+            <li className="px-4 py-2 text-xs text-gray-400">Loading…</li>
+          )}
+          {error && (
+            <li className="px-4 py-2 text-xs text-red-500">{error}</li>
+          )}
+          {!loading && !error && results.length === 0 && (
+            <li className="px-4 py-2 text-xs text-gray-400">No results</li>
+          )}
           {results.map((skin) => (
             <li
               key={skin.id}
