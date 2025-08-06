@@ -1,4 +1,5 @@
 "use client";
+import { login as apiLogin } from "../api/api";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -11,21 +12,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("${API_BASE}/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.token) throw new Error(data.message || "Fehler beim Login");
-      login(data.token, data.user);
+      const data = await apiLogin(email, password); // <- Jetzt Wrapper nutzen!
+      if (!data.token) throw new Error(data.message || "Fehler beim Login");
+      login(data.token, data.user); // AuthContext speichern
       router.push("/portfolio");
     } catch (err: any) {
       setError(err.message);

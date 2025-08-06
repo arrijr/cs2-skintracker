@@ -1,4 +1,5 @@
 "use client";
+import { signup as apiSignup } from "../api/api";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -15,13 +16,7 @@ export default function SignupPage() {
     setSuccess(null);
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/v1/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Fehler bei der Registrierung");
+      const data = await apiSignup(email, password); // <- Jetzt Wrapper nutzen!
       setSuccess("Registrierung erfolgreich! Du kannst dich jetzt einloggen.");
       setEmail("");
       setPassword("");
