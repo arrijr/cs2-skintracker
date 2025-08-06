@@ -3,6 +3,7 @@ import SkinGrid from "./SkinGrid";
 import SkinSearchBar from "./SkinSearchBar";
 import { useState } from "react";
 import { getAllSkins } from "../api/skins";
+import Link from "next/link";
 type Skin = {
   id: number;
   name: string;
