@@ -1,13 +1,11 @@
 "use client";
-import { useAuth } from ".././context/AuthContext";
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { getPortfolio, getPortfolioHistory, getWatchlist, removeFromWatchlist } from "../api/api";
 import PortfolioChart from "./PortfolioChart";
 import PortfolioTable from "./PortfolioTable";
-import LogoutButton from "../components/LogoutButton";
 import WatchlistTable from "./WatchlistTable";
 import Link from "next/link";
-import SkinSearchBar from "../skins/SkinSearchBar";
-import PortfolioAdd from "./PortfolioAdd";
+import { useAuth } from "../context/AuthContext";
 
 type HistoryEntry = {
   id: number;
@@ -50,29 +48,19 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) return;
-    fetch("http://localhost:5000/api/v1/portfolio/history", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => res.json()).then(data => setHistory(data)).finally(() => setLoading(false));
-  }, [token]);
+    getPortfolioHistory().then(setHistory).finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
-    if (!token) return;
-    fetch("http://localhost:5000/api/v1/portfolio", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => res.json()).then(data => setPortfolioSkins(data));
-  }, [token]);
+    getPortfolio().then(setPortfolioSkins);
+  }, []);
 
   useEffect(() => {
-    if (!token) return;
-    fetch("http://localhost:5000/api/v1/watchlist", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => res.json()).then(data => setWatchlist(data));
-  }, [token]);
+    getWatchlist().then(setWatchlist);
+  }, []);
 
   async function handleRemoveWatchlist(skinId) {
-    if (!token) return;
-    await fetch(`http://localhost:5000/api/v1/watchlist/${skinId}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await removeFromWatchlist(skinId);
     setWatchlist(watchlist.filter((entry) => entry.skinId !== skinId));
   }
 

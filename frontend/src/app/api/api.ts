@@ -1,5 +1,4 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL; 
-console.log("Loaded BASE_URL:", BASE_URL);
 
 function getToken() {
   if (typeof window !== 'undefined') {
@@ -10,7 +9,6 @@ function getToken() {
 
 async function apiFetch(path: string, options: RequestInit = {}, auth = false) {
   const url = `${BASE_URL}${path}`;
-  console.log("API-URL:", url);
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...options.headers,
@@ -33,6 +31,14 @@ async function apiFetch(path: string, options: RequestInit = {}, auth = false) {
     console.error("API ERROR:", err);
     throw err;
   }
+}
+
+// Portfolio
+export function getPortfolio() {
+  return apiFetch("/portfolio", {}, true);
+}
+export function getPortfolioHistory() {
+  return apiFetch("/portfolio/history", {}, true);
 }
 
 
