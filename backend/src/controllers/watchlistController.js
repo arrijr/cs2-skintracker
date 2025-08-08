@@ -1,5 +1,4 @@
 import prisma from "../prisma/prismaClient.js";
-const prisma = new PrismaClient();
 
 // GET /api/v1/watchlist
 exports.getWatchlist = async (req, res) => {

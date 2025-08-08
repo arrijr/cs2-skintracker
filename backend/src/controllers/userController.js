@@ -1,7 +1,6 @@
 import prisma from "../prisma/prismaClient.js";
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const prisma = new PrismaClient();
 
 exports.register = async (req, res) => {
   const { email, password } = req.body;

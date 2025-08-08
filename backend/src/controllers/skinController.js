@@ -1,5 +1,4 @@
 import prisma from "../prisma/prismaClient.js";
-const prisma = new PrismaClient();
 const { fetchSkinPrice } = require('../services/steamService');
 
 exports.searchSkin = async (req, res) => {
