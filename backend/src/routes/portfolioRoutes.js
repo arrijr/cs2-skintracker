@@ -1,11 +1,12 @@
-const express = require('express');
+import express from "express";
+import { getPortfolio, addToPortfolio, removeFromPortfolio, updatePortfolio } from "../controllers/portfolioController.js";
+import authenticateToken from "../middleware/auth.js";
+
 const router = express.Router();
-const portfolioController = require('../controllers/portfolioController');
-const authenticateToken = require('../middleware/auth');
 
-router.get('/', authenticateToken, portfolioController.getPortfolio);
-router.post('/', authenticateToken, portfolioController.addToPortfolio);
-router.delete('/:id', authenticateToken, portfolioController.removeFromPortfolio);
-router.patch('/:id', authenticateToken, portfolioController.updatePortfolio);
+router.get('/', authenticateToken, getPortfolio);
+router.post('/', authenticateToken, addToPortfolio);
+router.delete('/:id', authenticateToken, removeFromPortfolio);
+router.patch('/:id', authenticateToken, updatePortfolio);
 
-module.exports = router;
+export default router;

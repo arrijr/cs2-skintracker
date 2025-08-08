@@ -1,12 +1,12 @@
-const express = require('express');
+import express from "express";
+import { register, login, deleteAccount, changePassword } from "../controllers/userController.js";
+import authMiddleware from "../middleware/auth.js";
+
 const router = express.Router();
-const userController = require('../controllers/userController');
-const authMiddleware = require("../middleware/auth");
 
-router.post('/register', userController.register);
-router.post('/login', userController.login);
-router.delete("/me", authMiddleware, userController.deleteAccount);
-router.patch("/me/password", authMiddleware, userController.changePassword);
+router.post('/register', register);
+router.post('/login', login);
+router.delete("/me", authMiddleware, deleteAccount);
+router.patch("/me/password", authMiddleware, changePassword);
 
-
-module.exports = router;
+export default router;

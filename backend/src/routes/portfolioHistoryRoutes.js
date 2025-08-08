@@ -1,8 +1,8 @@
-const express = require('express');
+import express from "express";
+import prisma from "../prisma/prismaClient.js";
+import authMiddleware from "../middleware/auth.js";
+
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-const authMiddleware = require('../middleware/auth');
 
 router.get('/', authMiddleware, async (req, res) => {
   const userId = req.user.id;
@@ -13,4 +13,4 @@ router.get('/', authMiddleware, async (req, res) => {
   res.json(history);
 });
 
-module.exports = router;
+export default router;

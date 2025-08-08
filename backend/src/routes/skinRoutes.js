@@ -1,8 +1,8 @@
-const express = require("express");
+import express from "express";
+import prisma from "../prisma/prismaClient.js";
+import { getPriceHistory } from "../controllers/skinController.js";
+
 const router = express.Router();
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
-const skinController = require("../controllers/skinController");
 
 router.get("/search", async (req, res) => {
   const { query } = req.query;
@@ -36,9 +36,8 @@ router.get("/search", async (req, res) => {
   }
 });
 
-// {/* Skin Detail Endpoint (z.B. für /api/v1/skins/2) */}
 router.get("/:skinId", async (req, res) => {
-  console.log("Backend: Anfrage für Skin params =", req.params); // Debug-Log
+  
   const skinId = parseInt(req.params.skinId, 10);
   if (isNaN(skinId)) {
     return res.status(400).json({ message: "Invalid skinId" });
@@ -56,7 +55,7 @@ router.get("/:skinId", async (req, res) => {
   }
 });
 
-// Preisverlauf für Skin
-router.get("/:skinId/history", skinController.getPriceHistory);
+// Price history for skin
+router.get("/:skinId/history", getPriceHistory);
 
-module.exports = router;
+export default router;

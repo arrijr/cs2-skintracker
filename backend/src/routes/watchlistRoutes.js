@@ -1,11 +1,17 @@
-const express = require('express');
+import express from "express";
+import {
+  getWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+  updatePriceAlert
+} from "../controllers/watchlistController.js";
+import authenticateToken from "../middleware/auth.js";
+
 const router = express.Router();
-const watchlistController = require('../controllers/watchlistController');
-const authenticateToken = require('../middleware/auth');
 
-router.get('/', authenticateToken, watchlistController.getWatchlist);
-router.post('/', authenticateToken, watchlistController.addToWatchlist);
-router.delete('/:skinId', authenticateToken, watchlistController.removeFromWatchlist);
-router.patch('/:skinId', authenticateToken, watchlistController.updatePriceAlert);
+router.get("/", authenticateToken, getWatchlist);
+router.post("/", authenticateToken, addToWatchlist);
+router.delete("/:skinId", authenticateToken, removeFromWatchlist);
+router.patch("/:skinId", authenticateToken, updatePriceAlert);
 
-module.exports = router;
+export default router;
