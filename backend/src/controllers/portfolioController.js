@@ -1,6 +1,6 @@
 import prisma from "../prisma/prismaClient.js";
+import axios from "axios";
 
-const axios = require('axios');
 
 async function getCurrentSteamPrice(marketHashName) {
   const url = `https://steamcommunity.com/market/priceoverview/?appid=730&market_hash_name=${encodeURIComponent(marketHashName)}&currency=3`;
