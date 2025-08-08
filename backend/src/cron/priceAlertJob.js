@@ -1,11 +1,9 @@
-// /backend/src/cron/priceAlertJob.js
-
-const prisma = require('../../prisma/client');
-const { sendPriceAlertEmail } = require('../services/emailService');
-const { fetchSteamPrice } = require('../services/steamService');
+import prisma from "../../prisma/prismaClient.js";
+import { sendPriceAlertEmail } from "../services/emailService.js";
+import { fetchSteamPrice } from "../services/steamService.js";
 
 async function checkPriceAlerts() {
-  // Alle Watchlist-Einträge mit aktivem Preisalarm laden
+  // Load all watchlist entries with an active price alert
   const alerts = await prisma.watchlist.findMany({
     where: {
       priceAlert: { not: null },
@@ -15,15 +13,20 @@ async function checkPriceAlerts() {
 
   for (const entry of alerts) {
     const currentPrice = await fetchSteamPrice(entry.skin.market_hash_name);
-    // Wenn kein Preis abrufbar, weiter
+    // If no price is available, continue
     if (!currentPrice) continue;
 
-    // Alarm auslösen, wenn der aktuelle Preis <= Zielpreis ist
+    // Trigger alert if current price <= target price
     if (currentPrice <= entry.priceAlert) {
-      // E-Mail an User senden
-      await sendPriceAlertEmail(entry.user.email, entry.skin.name, currentPrice, entry.priceAlert);
+      // Send email to user
+      await sendPriceAlertEmail(
+        entry.user.email,
+        entry.skin.name,
+        currentPrice,
+        entry.priceAlert
+      );
 
-      // Preisalarm deaktivieren (optional)
+      // Optionally, deactivate price alert
       await prisma.watchlist.update({
         where: { id: entry.id },
         data: { priceAlert: null },
@@ -34,4 +37,4 @@ async function checkPriceAlerts() {
   }
 }
 
-module.exports = checkPriceAlerts;
+export default checkPriceAlerts;

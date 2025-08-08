@@ -1,16 +1,16 @@
-const nodemailer = require('nodemailer');
+import nodemailer from "nodemailer";
 
-// Transport konfigurieren (z.B. Gmail)
+// Configure transport (e.g. Gmail)
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER, // .env
-    pass: process.env.EMAIL_PASS  // .env
+    user: process.env.EMAIL_USER, // from .env
+    pass: process.env.EMAIL_PASS
   }
 });
 
-// Funktion zum Versenden
-async function sendPriceAlertEmail(to, skinName, price, priceAlert, steamUrl = "") {
+// Function to send price alert email
+export async function sendPriceAlertEmail(to, skinName, price, priceAlert, steamUrl = "") {
   const info = await transporter.sendMail({
     from: `"CS2 Skin Tracker" <${process.env.EMAIL_USER}>`,
     to,
@@ -21,5 +21,3 @@ async function sendPriceAlertEmail(to, skinName, price, priceAlert, steamUrl = "
   });
   console.log("Mail sent: %s", info.messageId);
 }
-
-module.exports = { sendPriceAlertEmail };

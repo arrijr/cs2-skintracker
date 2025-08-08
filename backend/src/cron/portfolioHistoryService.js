@@ -1,34 +1,33 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+import prisma from "../prisma/prismaClient.js";
 
-async function calculateAndStorePortfolioValues() {
+export async function calculateAndStorePortfolioValues() {
   const users = await prisma.user.findMany();
 
   for (const user of users) {
-    console.log("Prüfe User:", user.id, user.email);
+    console.log("Checking user:", user.id, user.email);
     const portfolio = await prisma.portfolio.findMany({
       where: { userId: user.id }
     });
-    console.log("Portfolio-Einträge:", portfolio);
+    console.log("Portfolio entries:", portfolio);
 
     let totalValue = 0;
 
     for (const entry of portfolio) {
-      // Hole den neuesten Preis für diesen Skin
-      console.log("Bearbeite Portfolio-Eintrag:", entry);
+      // Get the latest price for this skin
+      console.log("Processing portfolio entry:", entry);
       const latestPrice = await prisma.priceHistory.findFirst({
         where: { skinId: entry.skinId },
         orderBy: { date: 'desc' }
       });
-      console.log("Neuster Preis für Skin", entry.skinId, ":", latestPrice);
+      console.log("Latest price for skin", entry.skinId, ":", latestPrice);
       const price = latestPrice ? latestPrice.price : 0;
       totalValue += entry.amount * price;
     }
-    console.log(`Berechneter Portfolio-Gesamtwert für ${user.email}:`, totalValue);
+    console.log(`Calculated total portfolio value for ${user.email}:`, totalValue);
 
-    // Speichere einen neuen Eintrag in PortfolioHistory (nur, wenn Portfolio nicht leer)
+    // Save new entry in PortfolioHistory (only if portfolio is not empty)
     if (portfolio.length === 0) {
-      console.log(`Kein Portfolio für User ${user.email}, überspringe...`);
+      console.log(`No portfolio for user ${user.email}, skipping...`);
       continue;
     }
 
@@ -40,20 +39,20 @@ async function calculateAndStorePortfolioValues() {
           value: totalValue
         }
       });
-      // Debug 6: Erfolgsmeldung
-      console.log(`PortfolioHistory für User ${user.email} gespeichert: ${totalValue} €`);
+      // Success message
+      console.log(`PortfolioHistory saved for user ${user.email}: ${totalValue} €`);
     } catch (err) {
-      // Debug 7: Fehler anzeigen
-      console.error("Fehler beim Speichern in PortfolioHistory:", err);
+      // Error message
+      console.error("Error saving to PortfolioHistory:", err);
     }
   }
 }
 
-// Damit du das Skript manuell testen kannst:
-if (require.main === module) {
+// Allow manual execution for testing
+if (import.meta.url === `file://${process.argv[1]}`) {
   calculateAndStorePortfolioValues()
     .then(() => {
-      console.log('Fertig!');
+      console.log('Done!');
       process.exit(0);
     })
     .catch(err => {
@@ -61,5 +60,3 @@ if (require.main === module) {
       process.exit(1);
     });
 }
-
-module.exports = { calculateAndStorePortfolioValues };

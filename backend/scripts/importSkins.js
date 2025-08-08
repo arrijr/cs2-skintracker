@@ -1,7 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+import prisma from "../prisma/prismaClient.js";
 const API_KEY = "1F737QB957GZJT4I";
+
+// node-fetch importieren (ESM)
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 async function importAllSkins() {
   const url = `https://www.steamwebapi.com/steam/api/items?key=${API_KEY}&game=cs2`;
@@ -15,7 +16,7 @@ async function importAllSkins() {
     process.exit(1);
   }
   let count = 0;
-  for (const item of data) {
+  for (const item of items) {
     try {
       await prisma.skin.upsert({
         where: { marketHashName: item.markethashname },

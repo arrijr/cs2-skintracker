@@ -1,7 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+import prisma from "../prisma/prismaClient.js";
 
-async function calculateAndStorePortfolioValues() {
+export async function calculateAndStorePortfolioValues() {
   const users = await prisma.user.findMany();
 
   for (const user of users) {
@@ -20,18 +19,18 @@ async function calculateAndStorePortfolioValues() {
       totalValue += entry.amount * price;
     }
 
-    // Portfolio evtl. leer?
+    // Skip if portfolio is empty
     if (portfolio.length === 0) {
       continue;
     }
 
-    // Heute (nur Jahr-Monat-Tag vergleichen, Zeit ignorieren)
+    // Today (compare only year-month-day, ignore time)
     const todayStart = new Date();
-    todayStart.setHours(0,0,0,0);
+    todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date();
-    todayEnd.setHours(23,59,59,999);
+    todayEnd.setHours(23, 59, 59, 999);
 
-    // Gibt es heute schon einen Eintrag?
+    // Check if there is already an entry for today
     const existing = await prisma.portfolioHistory.findFirst({
       where: {
         userId: user.id,
@@ -48,9 +47,9 @@ async function calculateAndStorePortfolioValues() {
         where: { id: existing.id },
         data: { value: totalValue }
       });
-      console.log(`PortfolioHistory für ${user.email} am ${todayStart.toISOString().slice(0,10)} überschrieben: ${totalValue} €`);
+      console.log(`PortfolioHistory for ${user.email} on ${todayStart.toISOString().slice(0, 10)} overwritten: ${totalValue} €`);
     } else {
-      // Neu anlegen!
+      // Create new entry!
       await prisma.portfolioHistory.create({
         data: {
           userId: user.id,
@@ -58,15 +57,16 @@ async function calculateAndStorePortfolioValues() {
           value: totalValue
         }
       });
-      console.log(`PortfolioHistory für ${user.email} am ${todayStart.toISOString().slice(0,10)} angelegt: ${totalValue} €`);
+      console.log(`PortfolioHistory for ${user.email} on ${todayStart.toISOString().slice(0, 10)} created: ${totalValue} €`);
     }
   }
 }
 
-if (require.main === module) {
+// Allow manual script execution for testing
+if (import.meta.url === `file://${process.argv[1]}`) {
   calculateAndStorePortfolioValues()
     .then(() => {
-      console.log('Fertig!');
+      console.log('Done!');
       process.exit(0);
     })
     .catch(err => {
@@ -74,5 +74,3 @@ if (require.main === module) {
       process.exit(1);
     });
 }
-
-module.exports = { calculateAndStorePortfolioValues };

@@ -1,7 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+import prisma from "../prisma/prismaClient.js";
 const API_KEY = "1F737QB957GZJT4I";
+
+// node-fetch als ESM
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 async function fetchSkinData(marketHashName) {
   const url = `https://www.steamwebapi.com/steam/api/item?key=${API_KEY}&market_hash_name=${encodeURIComponent(marketHashName)}&game=cs2`;
@@ -10,8 +11,8 @@ async function fetchSkinData(marketHashName) {
     const data = await res.json();
     if (!data.success || !data.price) return null;
     return {
-      price: data.price, // Aktueller Preis
-      offerVolume: data.offervolume || null, // Verfügbare Stückzahl
+      price: data.price,
+      offerVolume: data.offervolume || null,
     };
   } catch {
     return null;
@@ -24,7 +25,7 @@ async function updateAllSkinPrices() {
   for (const skin of skins) {
     const result = await fetchSkinData(skin.marketHashName);
     if (result && result.price) {
-      // Preisverlauf speichern
+      // Save price history
       await prisma.priceHistory.create({
         data: {
           skinId: skin.id,
@@ -32,7 +33,7 @@ async function updateAllSkinPrices() {
           price: result.price,
         },
       });
-      // Angebotene Stückzahl in Skin speichern
+      // Update skin with offer volume
       await prisma.skin.update({
         where: { id: skin.id },
         data: {
@@ -44,7 +45,7 @@ async function updateAllSkinPrices() {
     } else {
       console.log(`[${skin.marketHashName}] Kein Preis gefunden!`);
     }
-    // Optional: Sleep (zur Entlastung der API, falls nötig)
+    // Optionally: Sleep (for API rate limiting)
     // await new Promise(resolve => setTimeout(resolve, 80));
   }
   await prisma.$disconnect();

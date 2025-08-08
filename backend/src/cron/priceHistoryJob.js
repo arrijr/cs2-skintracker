@@ -1,16 +1,14 @@
-const cron = require('node-cron');
-const { PrismaClient } = require('@prisma/client');
-const axios = require('axios');
-const prisma = new PrismaClient();
-const { sendPriceAlertMail } = require('../services/emailService');
-
+import cron from "node-cron";
+import prisma from "../prisma/prismaClient.js";
+import axios from "axios";
+import { sendPriceAlertMail } from "../services/emailService.js";
 
 async function fetchSteamPrice(marketHashName) {
   const url = `https://steamcommunity.com/market/priceoverview/?appid=730&market_hash_name=${encodeURIComponent(marketHashName)}&currency=3`;
   try {
     console.log("Steam API Call:", url);
     const res = await axios.get(url);
-    console.log("Steam Antwort:", res.data);
+    console.log("Steam response:", res.data);
 
     let price = null;
     if (res.data && res.data.lowest_price) {
@@ -21,20 +19,18 @@ async function fetchSteamPrice(marketHashName) {
       price = parseFloat(
         res.data.median_price.replace('€', '').replace(',', '.').trim()
       );
-      console.log("Kein lowest_price – nehme median_price:", price);
+      console.log("No lowest_price – using median_price:", price);
     }
 
     return price;
   } catch (e) {
-    console.error(`Preisabfrage fehlgeschlagen für ${marketHashName}:`, e.message);
+    console.error(`Price fetch failed for ${marketHashName}:`, e.message);
   }
   return null;
 }
 
-
-
-async function saveAllSkinPrices() {
-  // Alle Skins aus Portfolio & Watchlist, distinct
+export async function saveAllSkinPrices() {
+  // All skins from portfolio & watchlist, distinct
   const skins = await prisma.skin.findMany({
     where: {
       OR: [
@@ -54,9 +50,9 @@ async function saveAllSkinPrices() {
           price
         }
       });
-      console.log(`[${skin.marketHashName}] Preis gespeichert: ${price}`);
+      console.log(`[${skin.marketHashName}] Price saved: ${price}`);
 
-      // --- Preisalarme prüfen (NEU!) ---
+      // --- Check price alerts ---
       const alerts = await prisma.watchlist.findMany({
         where: {
           skinId: skin.id,
@@ -67,32 +63,30 @@ async function saveAllSkinPrices() {
 
       for (const alert of alerts) {
         if (price <= alert.priceAlert) {
-          // Mail senden!
+          // Send mail!
           if (process.env.ENABLE_EMAILS === "true") {
             await sendPriceAlertMail(alert.user.email, skin.marketHashName, price, alert.priceAlert);
 
-            // Preis-Alarm zurücksetzen (damit User nicht täglich erneut die Mail bekommt)
+            // Reset price alert so user doesn't get duplicate emails
             await prisma.watchlist.update({
               where: { id: alert.id },
               data: { priceAlert: null }
             });
 
-            console.log(`🔔 Preisalarm ausgelöst für ${skin.marketHashName} bei User ${alert.user.email}`);
+            console.log(`🔔 Price alert triggered for ${skin.marketHashName} to user ${alert.user.email}`);
           }
         }
       }
-      // --- Ende Preisalarme ---
+      // --- End price alerts ---
 
     } else {
-      console.log(`[${skin.marketHashName}] Preis konnte nicht abgerufen werden.`);
+      console.log(`[${skin.marketHashName}] Price could not be fetched.`);
     }
   }
 }
 
-// Jeden Tag um 2:00 Uhr morgens
+// Every day at 2:00 AM
 cron.schedule('0 2 * * *', saveAllSkinPrices);
 
-// Optional: Beim Starten gleich einmal laufen lassen (nur für Entwicklung!)
+// Optionally: Run once at startup (for development)
 saveAllSkinPrices();
-
-module.exports = { saveAllSkinPrices };

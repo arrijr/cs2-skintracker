@@ -1,7 +1,7 @@
-const cron = require('node-cron');
-const checkPriceAlerts = require('./priceAlertJob');
+import cron from "node-cron";
+import checkPriceAlerts from "./priceAlertJob.js";
 
-// Alle 30 Minuten prüfen (Cron-Syntax: */30 * * * *)
+// Check price alerts every 30 minutes (Cron: */30 * * * *)
 cron.schedule('*/30 * * * *', async () => {
   console.log('Checking price alerts...');
   await checkPriceAlerts();

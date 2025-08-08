@@ -1,12 +1,12 @@
-const cron = require('node-cron');
-const { calculateAndStorePortfolioValues } = require('../services/portfolioHistoryService');
+import cron from "node-cron";
+import { calculateAndStorePortfolioValues } from "../services/portfolioHistoryService.js";
 
-// Täglich um 03:00 Uhr morgens ausführen
+// Run every day at 03:00 AM
 cron.schedule('0 3 * * *', async () => {
-  console.log('Starte täglichen PortfolioHistory-Cronjob...');
+  console.log('Starting daily portfolio history cron job...');
   await calculateAndStorePortfolioValues();
-  console.log('PortfolioHistory-Cronjob abgeschlossen!');
+  console.log('Portfolio history cron job finished!');
 });
 
-// Damit das Script dauerhaft läuft (wenn du willst):
-console.log('Cronjob läuft und wartet auf nächsten Termin...');
+// Keep the script running (if needed)
+console.log('Cron job running, waiting for next scheduled execution...');
