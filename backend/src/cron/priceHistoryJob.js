@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import prisma from "../prisma/prismaClient.js";
 import axios from "axios";
-import { sendPriceAlertMail } from "../services/emailService.js";
+import { sendPriceAlertEmail } from "../services/emailService.js"; // <- Richtiger Name!
 
 async function fetchSteamPrice(marketHashName) {
   const url = `https://steamcommunity.com/market/priceoverview/?appid=730&market_hash_name=${encodeURIComponent(marketHashName)}&currency=3`;
@@ -65,8 +65,7 @@ export async function saveAllSkinPrices() {
         if (price <= alert.priceAlert) {
           // Send mail!
           if (process.env.ENABLE_EMAILS === "true") {
-            await sendPriceAlertMail(alert.user.email, skin.marketHashName, price, alert.priceAlert);
-
+            await sendPriceAlertEmail(alert.user.email, skin.marketHashName, price, alert.priceAlert); // <- HIER!
             // Reset price alert so user doesn't get duplicate emails
             await prisma.watchlist.update({
               where: { id: alert.id },
