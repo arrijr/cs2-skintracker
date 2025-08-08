@@ -1,3 +1,4 @@
+import prisma from "../prisma/prismaClient.js";
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { fetchSkinPrice } = require('../services/steamService');
