@@ -1,12 +1,11 @@
 import prisma from "../prisma/prismaClient.js";
 import axios from "axios";
 
-
 async function getCurrentSteamPrice(marketHashName) {
   const url = `https://steamcommunity.com/market/priceoverview/?appid=730&market_hash_name=${encodeURIComponent(marketHashName)}&currency=3`;
   try {
     const res = await axios.get(url);
-    // Priorisiere lowest_price, fallback auf median_price
+    // Prioritize lowest_price, fallback to median_price
     let price = null;
     if (res.data && res.data.lowest_price) {
       price = parseFloat(res.data.lowest_price.replace('€', '').replace(',', '.').trim());
@@ -20,18 +19,18 @@ async function getCurrentSteamPrice(marketHashName) {
   }
 }
 
-exports.getPortfolio = async (req, res) => {
+export const getPortfolio = async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId;
 
-    // 1. Alle Portfolio-Käufe für diesen User holen, inkl. Skin
+    // 1. Get all portfolio entries for this user, incl. skin
     const entries = await prisma.portfolio.findMany({
       where: { userId },
       include: { skin: true },
       orderBy: { buyDate: 'asc' }
     });
 
-    // 2. Aggregiere pro Skin-ID
+    // 2. Aggregate by skin ID
     const skinMap = {};
 
     for (const entry of entries) {
@@ -54,7 +53,7 @@ exports.getPortfolio = async (req, res) => {
       skinMap[sid].totalInvested += entry.amount * entry.buyPrice;
     }
 
-    // 3. Berechne avgPrice
+    // 3. Calculate avgPrice
     const portfolio = Object.values(skinMap).map((item) => ({
       skin: item.skin,
       purchases: item.purchases,
@@ -69,12 +68,12 @@ exports.getPortfolio = async (req, res) => {
   }
 };
 
-exports.addToPortfolio = async (req, res) => {
+export const addToPortfolio = async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId;
     const { skinId, amount, buyPrice, buyDate } = req.body;
 
-    // Validierung: Felder dürfen nicht fehlen/leer/0 sein, Preis muss number > 0, Datum gültig
+    // Validation
     if (
       !skinId ||
       !amount ||
@@ -109,12 +108,12 @@ exports.addToPortfolio = async (req, res) => {
   }
 };
 
-exports.removeFromPortfolio = async (req, res) => {
+export const removeFromPortfolio = async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId;
     const id = parseInt(req.params.id);
 
-    // Explizit prüfen, ob Eintrag existiert und zu User gehört
+    // Check if entry exists and belongs to user
     const entry = await prisma.portfolio.findUnique({ where: { id } });
     if (!entry || entry.userId !== userId) {
       return res.status(404).json({ error: "Portfolio entry not found" });
@@ -128,27 +127,24 @@ exports.removeFromPortfolio = async (req, res) => {
   }
 };
 
-
-
-exports.updatePortfolio = async (req, res) => {
+export const updatePortfolio = async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId;
     const id = parseInt(req.params.id);
     const { amount, buyPrice, buyDate } = req.body;
 
-    // Portfolio-Eintrag suchen und Besitz prüfen
+    // Find entry and check ownership
     const entry = await prisma.portfolio.findUnique({ where: { id } });
     if (!entry || entry.userId !== userId) {
       return res.status(404).json({ error: "Portfolio entry not found" });
     }
 
-    // Update-Daten aufbereiten (nur was gesetzt ist wird aktualisiert)
+    // Only update provided fields
     const data = {};
     if (amount !== undefined) data.amount = amount;
     if (buyPrice !== undefined) data.buyPrice = buyPrice;
     if (buyDate !== undefined) data.buyDate = new Date(buyDate);
 
-    // Wenn nichts zu updaten, Fehler
     if (Object.keys(data).length === 0) {
       return res.status(400).json({ error: "No update data provided" });
     }

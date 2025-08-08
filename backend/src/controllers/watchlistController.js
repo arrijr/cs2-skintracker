@@ -1,8 +1,7 @@
 import prisma from "../prisma/prismaClient.js";
 
 // GET /api/v1/watchlist
-exports.getWatchlist = async (req, res) => {
-  // User-ID sauber auslesen (id oder userId)
+export const getWatchlist = async (req, res) => {
   const userId = req.user.id || req.user.userId;
   const list = await prisma.watchlist.findMany({
     where: { userId },
@@ -11,20 +10,18 @@ exports.getWatchlist = async (req, res) => {
   res.json(list);
 };
 
-// {/* Add Watchlist Entry Validation */}
-exports.addToWatchlist = async (req, res) => {
+// POST /api/v1/watchlist
+export const addToWatchlist = async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId;
     const { skinId, priceAlert } = req.body;
 
-    // skinId muss vorhanden sein!
     if (!skinId) {
       return res.status(400).json({
         error: "Missing or invalid fields. Please provide a valid skinId.",
       });
     }
 
-    // Preisalarm ist optional, aber falls angegeben: Muss Zahl > 0 sein!
     if (
       priceAlert !== undefined &&
       (typeof priceAlert !== "number" || isNaN(priceAlert) || priceAlert <= 0)
@@ -34,10 +31,9 @@ exports.addToWatchlist = async (req, res) => {
       });
     }
 
-    // Hier prüfst du noch auf Limits (max 5 Skins in Watchlist) und ob der Skin schon in der Liste ist etc.
-    // ...
+    // (Optional) Check for limits (e.g. max 5 skins)
+    // (Optional) Check if skin already in list
 
-    // Jetzt Eintrag anlegen:
     const entry = await prisma.watchlist.create({
       data: {
         userId,
@@ -57,26 +53,25 @@ exports.addToWatchlist = async (req, res) => {
 };
 
 // PATCH /api/v1/watchlist/:skinId
-exports.updatePriceAlert = async (req, res) => {
+export const updatePriceAlert = async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId;
     const skinId = parseInt(req.params.skinId);
     const { priceAlert } = req.body;
 
-    // Zuerst explizit prüfen, ob Eintrag existiert und User gehört
+    // Check if entry exists and belongs to user
     const entry = await prisma.watchlist.findFirst({ where: { userId, skinId } });
     if (!entry) {
       return res.status(404).json({ error: "Watchlist entry not found" });
     }
 
-    // Max. 1 Preisalarm pro User
+    // Max 1 price alert per user
     const hasAlert = await prisma.watchlist.findFirst({
       where: { userId, priceAlert: { not: null }, skinId: { not: skinId } }
     });
     if (priceAlert && hasAlert)
       return res.status(400).json({ error: "Only 1 price alert allowed per user." });
 
-    // Jetzt Update durchführen
     await prisma.watchlist.update({
       where: { id: entry.id },
       data: { priceAlert }
@@ -90,12 +85,11 @@ exports.updatePriceAlert = async (req, res) => {
 };
 
 // DELETE /api/v1/watchlist/:skinId
-exports.removeFromWatchlist = async (req, res) => {
+export const removeFromWatchlist = async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId;
     const skinId = parseInt(req.params.skinId);
 
-    // Explizit prüfen, ob Eintrag existiert und zu User gehört
     const entry = await prisma.watchlist.findFirst({ where: { userId, skinId } });
     if (!entry) {
       return res.status(404).json({ error: "Watchlist entry not found" });
@@ -109,8 +103,8 @@ exports.removeFromWatchlist = async (req, res) => {
   }
 };
 
-// Zusätzlicher Preisalarm-Setter (optional)
-exports.setPriceAlert = async (req, res) => {
+// (Optional) Additional price alert setter
+export const setPriceAlert = async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId;
     const { skinId, priceAlert } = req.body;

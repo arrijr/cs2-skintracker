@@ -1,32 +1,32 @@
 import prisma from "../prisma/prismaClient.js";
 import { fetchSkinPrice } from "../services/steamService.js";
 
-exports.searchSkin = async (req, res) => {
+export const searchSkin = async (req, res) => {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: 'Missing search query.' });
 
-  // Versuchen, Skin aus DB zu holen
+  // Try to get skin from DB
   let skin = await prisma.skin.findUnique({
     where: { marketHashName: q }
   });
 
-  // Wenn nicht gefunden: Preis von Steam holen und Skin anlegen
+  // If not found: fetch price from Steam and create skin in DB
   if (!skin) {
     const priceData = await fetchSkinPrice(q);
     if (!priceData || !priceData.lowest_price) {
       return res.status(404).json({ error: 'Skin not found on Steam Market.' });
     }
 
-    // Neuen Skin in DB speichern
+    // Create new skin in DB
     skin = await prisma.skin.create({
       data: {
-        name: q, // Du kannst hier auch einen sprechenden Namen extrahieren
+        name: q, // You can extract a display name here if needed
         marketHashName: q,
-        imageUrl: null // Optional: später mit Bildern erweitern
+        imageUrl: null // Optional: add images later
       }
     });
 
-    // Preis auch in PriceHistory speichern
+    // Also save price in PriceHistory
     await prisma.priceHistory.create({
       data: {
         skinId: skin.id,
@@ -38,7 +38,7 @@ exports.searchSkin = async (req, res) => {
     });
   }
 
-  // Aktuellen Preis abrufen
+  // Fetch current price
   const priceData = await fetchSkinPrice(q);
 
   res.json({
@@ -51,8 +51,7 @@ exports.searchSkin = async (req, res) => {
   });
 };
 
-
-exports.getPriceHistory = async (req, res) => {
+export const getPriceHistory = async (req, res) => {
   const { skinId } = req.params;
   try {
     const priceHistory = await prisma.priceHistory.findMany({
