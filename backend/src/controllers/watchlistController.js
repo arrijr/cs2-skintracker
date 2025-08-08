@@ -1,5 +1,4 @@
 import prisma from "../prisma/prismaClient.js";
-const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 // GET /api/v1/watchlist
