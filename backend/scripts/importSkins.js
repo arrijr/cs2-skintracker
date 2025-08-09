@@ -68,5 +68,5 @@ async function importAllSkins() {
   console.log(`✅ Import abgeschlossen! ${count} Skins importiert/aktualisiert.`);
   await prisma.$disconnect();
 }
-
+await prisma.$disconnect();
 importAllSkins();

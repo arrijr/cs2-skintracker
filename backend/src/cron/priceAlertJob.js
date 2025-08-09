@@ -36,5 +36,6 @@ async function checkPriceAlerts() {
     }
   }
 }
+await prisma.$disconnect();
 
 export default checkPriceAlerts;

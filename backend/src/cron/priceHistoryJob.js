@@ -83,6 +83,7 @@ export async function saveAllSkinPrices() {
     }
   }
 }
+await prisma.$disconnect();
 
 // Every day at 2:00 AM
 cron.schedule('0 2 * * *', saveAllSkinPrices);

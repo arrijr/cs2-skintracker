@@ -7,6 +7,7 @@ cron.schedule('0 3 * * *', async () => {
   await calculateAndStorePortfolioValues();
   console.log('Portfolio history cron job finished!');
 });
+await prisma.$disconnect();
 
 // Keep the script running (if needed)
 console.log('Cron job running, waiting for next scheduled execution...');

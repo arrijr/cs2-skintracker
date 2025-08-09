@@ -51,5 +51,6 @@ async function updateAllSkinPrices() {
   await prisma.$disconnect();
   console.log(`✅ Preisupdate abgeschlossen! ${count} Skins aktualisiert.`);
 }
+await prisma.$disconnect();
 
 updateAllSkinPrices();
