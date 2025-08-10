@@ -1,13 +1,10 @@
-import { searchSkins } from "../api/api";
-import React, { useState, useEffect } from "react";
-
+"use client";
+import React, { useEffect, useMemo, useState } from "react";
+import { http } from "@/lib/http";
 type Skin = {
   id: number;
   name: string;
-  marketHashName: string;
   imageUrl?: string;
-  weaponType?: string;
-  collection?: string;
   wear?: string;
 };
 
@@ -22,25 +19,30 @@ export default function SkinSearchBar({ onSelect }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch skins if query has at least 2 characters
+  // {/* Skins suchen, wenn min. 2 Zeichen */}
   useEffect(() => {
-    if (query.length < 2) {
+    if (query.trim().length < 2) {
       setResults([]);
       setError(null);
       return;
     }
+
     let cancel = false;
     setLoading(true);
     setError(null);
 
-    searchSkins(query)
-      .then((data) => {
-        if (!cancel) setResults(data || []);
+    http
+      .get(`/skins/search?query=${encodeURIComponent(query)}`)
+      .then((res) => {
+        if (!cancel) setResults(res.data || []);
       })
       .catch(() => {
         if (!cancel) setError("Could not load skins.");
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancel) setLoading(false);
+      });
+
     return () => {
       cancel = true;
     };
@@ -73,12 +75,8 @@ export default function SkinSearchBar({ onSelect }: Props) {
       {/* Dropdown results */}
       {show && query.length >= 2 && (
         <ul className="absolute z-20 left-0 right-0 bg-zinc-900 border border-zinc-800 rounded-xl mt-1 max-h-60 overflow-y-auto shadow-lg">
-          {loading && (
-            <li className="px-4 py-2 text-xs text-gray-400">Loading…</li>
-          )}
-          {error && (
-            <li className="px-4 py-2 text-xs text-red-500">{error}</li>
-          )}
+          {loading && <li className="px-4 py-2 text-xs text-gray-400">Loading…</li>}
+          {error && <li className="px-4 py-2 text-xs text-red-500">{error}</li>}
           {!loading && !error && results.length === 0 && (
             <li className="px-4 py-2 text-xs text-gray-400">No results</li>
           )}
