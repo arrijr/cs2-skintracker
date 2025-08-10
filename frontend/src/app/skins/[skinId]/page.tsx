@@ -1,14 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import axios from "axios";
 import { Line } from "react-chartjs-2";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import SkinPortfolioCard from "../../components/SkinPortfolioCard";
 import PurchaseAccordion from "../../components/PurchaseAccordion";
-
+import { http } from "@/lib/http";
 
 type Skin = {
   id: number;
@@ -16,7 +15,6 @@ type Skin = {
   imageUrl: string;
   marketPrice: number;
   marketHashName: string;
-  // ggf. weitere Felder
 };
 
 type PriceHistory = {
@@ -30,11 +28,11 @@ export default function SkinDetailPage() {
   const skinId = (params.skinId ?? params.id ?? "") as string;
 
   const [mounted, setMounted] = useState(false);
-  const [skin, setSkin] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [skin, setSkin] = useState<Skin | null>(null);
+  const [history, setHistory] = useState<PriceHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const router = useRouter();
 
   // Watchlist
@@ -64,25 +62,41 @@ export default function SkinDetailPage() {
 
   useEffect(() => {
     if (!skinId) return;
-    setLoading(true);
+    let cancelled = false;
 
-    axios.get(`http://localhost:5000/api/v1/skins/${skinId}`)
-      .then(res => setSkin(res.data))
-      .finally(() => setLoading(false));
+    async function load() {
+      setLoading(true);
+      try {
+        const [skinRes, histRes] = await Promise.all([
+          http.get(`/skins/${skinId}`),
+          http.get(`/skins/${skinId}/history`).catch(() => ({ data: [] })),
+        ]);
+        if (!cancelled) {
+          setSkin(skinRes.data ?? null);
+          setHistory(histRes.data ?? []);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
 
-    axios.get(`http://localhost:5000/api/v1/skins/${skinId}/history`)
-      .then(res => setHistory(res.data))
-      .catch(() => setHistory([]));
+      if (token) {
+        // Interceptor hängt Bearer-Token automatisch an
+        http
+          .get("/watchlist")
+          .then((r) => !cancelled && setWatchlist(r.data ?? []))
+          .catch(() => !cancelled && setWatchlist([]));
 
-    if (token) {
-      axios.get("http://localhost:5000/api/v1/watchlist", {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(res => setWatchlist(res.data));
-
-      axios.get("http://localhost:5000/api/v1/portfolio", {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(res => setPortfolioSkins(res.data));
+        http
+          .get("/portfolio")
+          .then((r) => !cancelled && setPortfolioSkins(r.data ?? []))
+          .catch(() => !cancelled && setPortfolioSkins([]));
+      }
     }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, [skinId, token]);
 
   // *** AB HIER KEINE HOOKS MEHR, NUR NOCH HILFSVARIABLEN & HANDLER ***
@@ -95,20 +109,19 @@ export default function SkinDetailPage() {
     (p) => p.skinId === skin?.id
   );
 
-  const totalAmount = portfolioPurchasesForSkin.reduce((sum, p) => sum + p.amount, 0);
-  const totalValue = portfolioPurchasesForSkin.reduce((sum, p) => sum + (p.amount * p.buyPrice), 0);
+  const totalAmount = portfolioPurchasesForSkin.reduce((sum: number, p: any) => sum + p.amount, 0);
+  const totalValue = portfolioPurchasesForSkin.reduce((sum: number, p: any) => sum + (p.amount * p.buyPrice), 0);
   const avgPrice = totalAmount > 0 ? totalValue / totalAmount : 0;
-  const performance = skin?.marketPrice && avgPrice
-    ? ((skin.marketPrice - avgPrice) / avgPrice) * 100
-    : null;
+  const performance =
+    skin?.marketPrice && avgPrice ? ((skin.marketPrice - avgPrice) / avgPrice) * 100 : null;
 
   // Chart Data (für Preisverlauf)
   const chartData = {
-    labels: history.map(h => h.date),
+    labels: history.map((h) => h.date),
     datasets: [
       {
         label: "Price (€)",
-        data: history.map(h => h.price),
+        data: history.map((h) => h.price),
         borderColor: "rgb(59,130,246)",
         tension: 0.2,
         fill: false,
@@ -116,10 +129,10 @@ export default function SkinDetailPage() {
     ],
   };
 
-  // Filtered Portfolio für Grid/Table (optional, für spätere Filterfunktion)
+  // Filtered Portfolio (optional)
   const filteredPortfolio = portfolioSkins
-    .filter(p => p.skin?.name?.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => {
+    .filter((p: any) => p.skin?.name?.toLowerCase().includes(search.toLowerCase()))
+    .sort((a: any, b: any) => {
       if (sort === "performance") return (b.performance || 0) - (a.performance || 0);
       if (sort === "amount") return (b.amount || 0) - (a.amount || 0);
       return new Date(b.buyDate).getTime() - new Date(a.buyDate).getTime(); // recent
@@ -134,14 +147,13 @@ export default function SkinDetailPage() {
     setAdding(true);
     setWatchlistMsg(null);
     try {
-      await axios.post(
-        "http://localhost:5000/api/v1/watchlist",
-        { skinId: skin.id, priceAlert: alert !== "" ? Number(alert) : null },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await http.post("/watchlist", {
+        skinId: skin!.id,
+        priceAlert: alert !== "" ? Number(alert) : null,
+      });
       setWatchlistMsg("Added to watchlist!");
     } catch (e: any) {
-      setWatchlistMsg(e.response?.data?.error || "Could not add skin.");
+      setWatchlistMsg(e?.response?.data?.error || "Could not add skin.");
     }
     setAdding(false);
   };
@@ -155,20 +167,14 @@ export default function SkinDetailPage() {
     setAddingPortfolio(true);
     setPortfolioMsg("");
 
-    // ... (Validation)
     try {
-      await axios.post(
-        "http://localhost:5000/api/v1/portfolio",
-        {
-          skinId: skin.id,
-          amount: Number(amount),
-          buyPrice: Number(useMarketPrice ? skin.marketPrice : buyPrice),
-          buyDate,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await http.post("/portfolio", {
+        skinId: skin!.id,
+        amount: Number(amount),
+        buyPrice: Number(useMarketPrice ? skin!.marketPrice : buyPrice),
+        buyDate,
+      });
       setPortfolioMsg("Added to portfolio!");
-      // Modal erst nach einer kleinen Verzögerung schließen:
       setTimeout(() => {
         setShowPortfolioModal(false);
         setPortfolioMsg("");
@@ -176,9 +182,9 @@ export default function SkinDetailPage() {
         setBuyPrice("");
         setBuyDate("");
         setUseMarketPrice(false);
-      }, 1200); // 1.2 Sekunden Erfolgsmeldung anzeigen
+      }, 1200);
     } catch (e: any) {
-      setPortfolioMsg(e.response?.data?.error || "Could not add skin.");
+      setPortfolioMsg(e?.response?.data?.error || "Could not add skin.");
     }
     setAddingPortfolio(false);
   };
@@ -189,9 +195,8 @@ export default function SkinDetailPage() {
       <div className="card max-w-xl mx-auto mt-10 flex flex-col items-center">
         {/* Loading/Error */}
         {loading && <div className="text-white py-8">Loading...</div>}
-        {!loading && !skin && (
-          <div className="text-red-400 py-8">Skin not found!</div>
-        )}
+        {!loading && !skin && <div className="text-red-400 py-8">Skin not found!</div>}
+
         {/* Content */}
         {skin && (
           <>
@@ -209,13 +214,13 @@ export default function SkinDetailPage() {
             <div className="mb-4 text-lg font-semibold text-emerald-400">
               Current Price: {skin.marketPrice} $
             </div>
+
             {/* Chart */}
             <div className="w-full bg-neutral-800 rounded-xl shadow-md p-4 mb-6">
               <Line data={chartData} />
             </div>
 
             {/* Add Skin to Portfolio */}
-
             <button
               className="btn-main bg-red-600 hover:bg-red-700 mt-4"
               onClick={() => setShowPortfolioModal(true)}
@@ -240,7 +245,7 @@ export default function SkinDetailPage() {
                       type="number"
                       min={1}
                       value={amount}
-                      onChange={e => setAmount(Number(e.target.value))}
+                      onChange={(e) => setAmount(Number(e.target.value))}
                       className="input-main w-full"
                     />
                     <div className="text-xs text-zinc-400">How many units did you buy?</div>
@@ -253,7 +258,7 @@ export default function SkinDetailPage() {
                       min={0}
                       step={0.01}
                       value={useMarketPrice ? skin.marketPrice ?? "" : buyPrice}
-                      onChange={e => setBuyPrice(e.target.value)}
+                      onChange={(e) => setBuyPrice(e.target.value)}
                       disabled={useMarketPrice}
                       className="input-main w-full"
                     />
@@ -278,7 +283,7 @@ export default function SkinDetailPage() {
                     <input
                       type="date"
                       value={buyDate}
-                      onChange={e => setBuyDate(e.target.value)}
+                      onChange={(e) => setBuyDate(e.target.value)}
                       className="input-main w-full"
                     />
                   </div>
@@ -301,9 +306,6 @@ export default function SkinDetailPage() {
               <div className="mt-2 text-sm text-emerald-400">{portfolioMsg}</div>
             )}
 
-            
-
-
             {/* Watchlist-Button & Alert */}
             <div className="mb-4 p-4 bg-neutral-800 rounded-xl w-full">
               <div className="mb-2 font-semibold">Add to Watchlist with Price Alert</div>
@@ -312,7 +314,7 @@ export default function SkinDetailPage() {
                   type="number"
                   placeholder="Alert price (optional)"
                   value={alert}
-                  onChange={e => setAlert(e.target.value === "" ? "" : Number(e.target.value))}
+                  onChange={(e) => setAlert(e.target.value === "" ? "" : Number(e.target.value))}
                   className="input-main w-full sm:w-32"
                   min={0}
                   step={0.01}
@@ -335,12 +337,12 @@ export default function SkinDetailPage() {
               )}
             </div>
 
-              {/* Portfolio Filter */}
+            {/* Portfolio Filter */}
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <select
                 className="input-main"
                 value={sort}
-                onChange={e => setSort(e.target.value)}
+                onChange={(e) => setSort(e.target.value)}
               >
                 <option value="recent">Recent buy</option>
                 <option value="performance">Best performance</option>
@@ -348,22 +350,20 @@ export default function SkinDetailPage() {
               </select>
             </div>
 
-
             {/* Portfolio Card */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {filteredPortfolio.map((item) => (
+              {filteredPortfolio.map((item: any) => (
                 <SkinPortfolioCard key={item.skinId} item={item} />
               ))}
             </div>
 
-              {/* Purchase Accordion */}
+            {/* Purchase Accordion */}
             <PurchaseAccordion
               purchases={portfolioPurchasesForSkin}
               total={totalAmount}
               avgPrice={avgPrice}
               performance={performance}
             />
-            
 
             {/* Steam-Link & Navigation */}
             <a

@@ -5,42 +5,27 @@ import SkinDetailModal from "./SkinDetailModal";
 import { dummySkins } from "./dummySkins";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
+import { http } from "@/lib/http";
 
-type Props = {
-  filter?: string | null;
-};
-
-export default function SkinGrid({ filter }: Props) {
-  const { user } = useAuth();
+export default function SkinGrid({ filter }: { filter?: string | null }) {
+  const { user, token } = useAuth();
   const router = useRouter();
-
   const [selected, setSelected] = useState<number | null>(null);
 
-  function handleAdd(skin: typeof dummySkins[0]) {
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-    fetch("http://localhost:5000/api/v1/portfolio", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.token}`,
-      },
-      body: JSON.stringify({
+  // {/* Add to Portfolio from grid */}
+  async function handleAdd(skin: typeof dummySkins[0]) {
+    if (!user) { router.push("/login"); return; }
+    try {
+      await http.post(`/portfolio`, {
         marketHashName: skin.marketHashName,
         amount: 1,
         buyPrice: skin.price,
-        buyDate: new Date().toISOString().split("T")[0], // yyyy-mm-dd
-      }),
-    })
-      .then(res => res.json())
-      .then(() => {
-        alert(`Skin "${skin.name}" wurde deinem Portfolio hinzugefügt!`);
-      })
-      .catch(() => {
-        alert("Fehler beim Hinzufügen zum Portfolio!");
+        buyDate: new Date().toISOString().split("T")[0],
       });
+      alert(`Skin "${skin.name}" wurde deinem Portfolio hinzugefügt!`);
+    } catch {
+      alert("Fehler beim Hinzufügen zum Portfolio!");
+    }
   }
 
   const skins = !filter
@@ -51,6 +36,7 @@ export default function SkinGrid({ filter }: Props) {
 
   return (
     <>
+      {/* Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 py-8">
         {skins.map((skin) => (
           <SkinCard
@@ -63,16 +49,18 @@ export default function SkinGrid({ filter }: Props) {
           />
         ))}
         {skins.length === 0 && (
-          <div className="col-span-full text-center text-gray-400 mt-8">Kein Skin gefunden.</div>
+          <div className="col-span-full text-center text-gray-400 mt-8">
+            Kein Skin gefunden.
+          </div>
         )}
       </div>
+
+      {/* Modal */}
       <SkinDetailModal
         open={selected !== null}
         onClose={() => setSelected(null)}
         skin={selectedSkin}
-        onAdd={() => {
-          if (selectedSkin) handleAdd(selectedSkin); // <-- hier!
-        }}
+        onAdd={() => { if (selectedSkin) handleAdd(selectedSkin); }}
       />
     </>
   );
