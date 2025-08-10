@@ -1,12 +1,8 @@
 import axios from "axios";
 
-const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE ||
-  "https://cs2-skintracker.onrender.com" ||
-  "/";
-
 export const http = axios.create({
-  baseURL,
+  // Base URL zeigt direkt auf /api/v1
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   timeout: 15000,
 });
 
