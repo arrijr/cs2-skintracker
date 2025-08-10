@@ -1,151 +1,128 @@
+// app/components/WatchlistPage.tsx
 "use client";
 import { useEffect, useState } from "react";
-import { getWatchlist, addToWatchlist, removeFromWatchlist, updatePriceAlert } from "../api/api";
-import SkinSearchBar from "../skins/SkinSearchBar";
+import { http } from "@/lib/http";
+import { useAuth } from "../context/AuthContext";
+import WatchlistAdd from "../watchlist/WatchlistAdd";
+
+type WatchlistItem = {
+  id: number;
+  skinId: number;
+  priceAlert?: number | null;
+  createdAt: string;
+  skin: {
+    id: number;
+    name: string;
+    image_url?: string;
+    imageUrl?: string;
+    market_hash_name?: string;
+    marketHashName?: string;
+  };
+};
 
 export default function WatchlistPage() {
-  const [newSkinId, setNewSkinId] = useState<number | null>(null);
-  const [priceAlert, setPriceAlert] = useState<number | null>(null);
-  const [watchlist, setWatchlist] = useState<WatchlistEntry[]>([]);
+  const { token } = useAuth();
+  const [items, setItems] = useState<WatchlistItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  type WatchlistEntry = {
-    id: number;
-    skinId: number;
-    priceAlert?: number;
-  };
-  
-  useEffect(() => {
-    getWatchlist().then(setWatchlist).catch(e => setError(e.message));
-  }, []);
-
-  const handleAdd = async () => {
+  async function load() {
+    if (!token) return;
+    setLoading(true);
     setError(null);
     try {
-      if (newSkinId) {
-        await addToWatchlist(newSkinId, priceAlert || undefined);
-        setWatchlist(await getWatchlist());
-        setNewSkinId(null);
-        setPriceAlert(null);
-      }
-    } catch (err: any) {
-      setError(err.message || "Could not add skin.");
+      const res = await http.get<WatchlistItem[]>("/watchlist", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setItems(res.data);
+    } catch (e: any) {
+      setError("Konnte Watchlist nicht laden.");
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
-  const handleRemove = async (skinId: number) => {
-    await removeFromWatchlist(skinId);
-    setWatchlist(await getWatchlist());
-  };
+  useEffect(() => {
+    load();
+  }, [token]);
 
-  const handleAlertChange = async (skinId: number, alert: number) => {
-    await updatePriceAlert(skinId, alert);
-    setWatchlist(await getWatchlist());
-  };
+  async function removeItem(skinId: number) {
+    if (!token) return;
+    try {
+      await http.delete(`/watchlist/${skinId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setItems((prev) => prev.filter((x) => x.skinId !== skinId));
+    } catch {
+      alert("Konnte Eintrag nicht entfernen.");
+    }
+  }
+
+  async function updateAlert(skinId: number, priceAlert: number | null) {
+    if (!token) return;
+    try {
+      await http.patch(
+        `/watchlist/${skinId}`,
+        { priceAlert },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setItems((prev) =>
+        prev.map((x) => (x.skinId === skinId ? { ...x, priceAlert } : x))
+      );
+    } catch {
+      alert("Konnte Preisalarm nicht aktualisieren.");
+    }
+  }
 
   return (
-    /* Main Container */
-    <div className="card w-full max-w-2xl mx-auto py-10 px-6 flex flex-col gap-8">
-      <h2 className="text-2xl font-bold text-center">Your Watchlist</h2>
-      <p className="text-gray-400 text-center mb-2">
-        All the skins you're watching and their price alerts.
-      </p>
+    <div className="min-h-screen bg-gray-950 p-4 sm:p-6 text-white">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Watchlist</h1>
 
-      {/* Add Skin to Watchlist */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-center mb-6">
-        <SkinSearchBar onSelect={setNewSkinId} />
-        <input
-          type="number"
-          placeholder="Price Alert (optional)"
-          value={priceAlert ?? ""}
-          onChange={(e) => setPriceAlert(Number(e.target.value))}
-          className="input-main w-36"
-          min={0}
-          step={0.01}
-        />
-        <button
-          onClick={handleAdd}
-          className="btn-main"
-          style={{ minWidth: 64 }}
-        >
-          Add
-        </button>
-      </div>
+      <WatchlistAdd onAdded={load} />
 
-      {/* Watchlist Empty State */}
-      {watchlist.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-zinc-400">
-          {error && <div className="text-red-500 text-sm">{error}</div>}
-          {/* Optional: Illustration */}
-          <svg width="72" height="72" fill="none" viewBox="0 0 24 24" className="mb-4 opacity-70">
-            <rect x="4" y="8" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M8 12h8M8 16h4" stroke="currentColor" strokeWidth="1.5" />
-            <circle cx="12" cy="6" r="2" stroke="currentColor" strokeWidth="1.5" />
-          </svg>
-          <h2 className="text-2xl font-semibold mb-2">No skins in your watchlist yet</h2>
-          <p className="mb-4 text-center max-w-xs">
-            Start building your watchlist to get notified about price drops and track your favorite CS2 skins.
-          </p>
-          {/* Add Skin Button (focuses the search bar) */}
-          <button
-            className="btn-main"
-            onClick={() => {
-              // Optional: Fokus auf die Searchbar setzen (z.B. per ref)
-              // Oder zu "/skins" navigieren:
-              // router.push("/skins")
-            }}
-          >
-            Add Skin
-          </button>
-        </div>
-      ) : (
-        // Watchlist Table/Content wenn Einträge vorhanden sind:
-        <div>
-          {/* Hier kommt deine Watchlist-Tabelle hin! */}
-          {watchlist.length > 0 && (
-            <table className="w-full border-separate border-spacing-y-2">
-              <thead>
-                <tr>
-                  <th>Skin</th>
-                  <th className="text-center">Price Alert ($)</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {watchlist.map(entry => (
-                  <tr key={entry.id} className="bg-zinc-800 rounded-xl">
-                    <td className="flex items-center gap-3 py-2">
-                      {/* Optional: Skin-Image */}
-                      {entry.skin?.image_url && (
-                        <img src={entry.skin.image_url} alt="" className="w-10 h-10 rounded" />
-                      )}
-                      <span>{entry.skin?.name || entry.skinId}</span>
-                    </td>
-                    <td className="text-center">
-                      <input
-                        type="number"
-                        value={entry.priceAlert ?? ""}
-                        onChange={e => handleAlertChange(entry.skinId, Number(e.target.value))}
-                        className="input-main w-24"
-                        min={0}
-                        step={0.01}
-                      />
-                    </td>
-                    <td className="text-center">
-                      <button
-                        onClick={() => handleRemove(entry.skinId)}
-                        className="btn-main"
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+      {loading && <div className="text-center py-8">Lade Watchlist…</div>}
+      {error && <div className="text-center text-red-400 py-8">{error}</div>}
+
+      {!loading && items.length === 0 && (
+        <div className="text-center text-gray-400 py-8">
+          Keine Skins auf deiner Watchlist. Füge oben einen hinzu.
         </div>
       )}
+
+      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+        {items.map((it) => {
+          const img = it.skin.imageUrl || it.skin.image_url;
+          const mhn = it.skin.marketHashName || it.skin.market_hash_name;
+          return (
+            <div key={it.id} className="bg-neutral-900 rounded-xl p-4 flex gap-3 items-center">
+              {img && <img src={img} alt={it.skin.name} className="w-16 h-16 object-contain rounded" />}
+              <div className="flex-1">
+                <div className="font-semibold">{it.skin.name}</div>
+                {mhn && <div className="text-xs text-zinc-400">{mhn}</div>}
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    type="number"
+                    className="input-main w-28"
+                    placeholder="Alert"
+                    min={0}
+                    step={0.01}
+                    value={it.priceAlert ?? ""}
+                    onChange={(e) =>
+                      updateAlert(it.skinId, e.target.value === "" ? null : Number(e.target.value))
+                    }
+                  />
+                  <button
+                    className="btn-main bg-red-600 hover:bg-red-700"
+                    onClick={() => removeItem(it.skinId)}
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
