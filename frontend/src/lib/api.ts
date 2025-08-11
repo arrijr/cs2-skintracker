@@ -1,19 +1,26 @@
-import { http } from "@/lib/http";
+import { apiFetch } from "@/lib/http";
 
 export const api = {
   // {/* Search Skins */}
-  searchSkins: (q: string) =>
-    http.get("/api/v1/skins/search", { params: { q } }).then(r => r.data),
+  async searchSkins(q: string) {
+    const query = encodeURIComponent(q || "");
+    return await apiFetch(`/api/v1/skins/search?query=${query}`);
+  },
 
   // {/* Get Skin History */}
-  getSkinHistory: (id: number | string) =>
-    http.get(`/api/v1/skins/${id}/history`).then(r => r.data),
+  async getSkinHistory(id: number | string) {
+    return await apiFetch(`/api/v1/skins/${id}/history`);
+  },
 
-  // {/* Get Watchlist */}
-  getWatchlist: () =>
-    http.get("/api/v1/watchlist").then(r => r.data),
+  // {/* Get Watchlist (raw) */}
+  async getWatchlist() {
+    // Falls du hier eine Normalisierung brauchst (itemimage → imageUrl),
+    // sag Bescheid – ich geb dir eine map()-Variante.
+    return await apiFetch(`/api/v1/watchlist`);
+  },
 
-  // {/* Get Portfolio */}
-  getPortfolio: () =>
-    http.get("/api/v1/portfolio").then(r => r.data),
+  // {/* Get Portfolio (raw from backend controller) */}
+  async getPortfolio() {
+    return await apiFetch(`/api/v1/portfolio`);
+  },
 };
