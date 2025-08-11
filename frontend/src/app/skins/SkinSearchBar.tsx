@@ -8,11 +8,12 @@ type Skin = {
   wear?: string;
 };
 
-type Props = {
-  onSelect: (skin: Skin) => void;
+type Props<T = Skin> = {
+  onSelect: (value: T) => void;
+  mapSelected?: (skin: Skin) => T;
 };
 
-export default function SkinSearchBar({ onSelect }: Props) {
+export default function SkinSearchBar<T = Skin>({ onSelect, mapSelected }: Props<T>) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Skin[]>([]);
   const [show, setShow] = useState(false);
@@ -49,10 +50,10 @@ export default function SkinSearchBar({ onSelect }: Props) {
   }, [query]);
 
   function handleSelect(skin: Skin) {
+    onSelect(mapSelected ? mapSelected(skin) : (skin as unknown as T));
     setQuery(skin.name);
     setShow(false);
     setResults([]);
-    onSelect(skin);
   }
 
   return (
