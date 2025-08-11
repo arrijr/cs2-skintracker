@@ -23,16 +23,15 @@ export const getPortfolio = async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId;
 
-    // 1. Get all portfolio entries for this user, incl. skin
+    // 1) Einträge inkl. Skin laden
     const entries = await prisma.portfolio.findMany({
       where: { userId },
-      include: { skin: true },
+      include: { skin: true },           // enthält u.a. name, market_hash_name, image_url
       orderBy: { buyDate: 'asc' }
     });
 
-    // 2. Aggregate by skin ID
+    // 2) Nach Skin aggregieren
     const skinMap = {};
-
     for (const entry of entries) {
       const sid = entry.skinId;
       if (!skinMap[sid]) {
@@ -53,13 +52,46 @@ export const getPortfolio = async (req, res) => {
       skinMap[sid].totalInvested += entry.amount * entry.buyPrice;
     }
 
-    // 3. Calculate avgPrice
-    const portfolio = Object.values(skinMap).map((item) => ({
+    // 3) Ein erstes Portfolio-Array mit avgPrice erstellen
+    const aggregated = Object.values(skinMap).map((item) => ({
       skin: item.skin,
       purchases: item.purchases,
       amount: item.amount,
       avgPrice: item.amount > 0 ? item.totalInvested / item.amount : 0,
     }));
+
+    // 4) Aktuelle Marktpreise pro unique Skin parallel laden
+    //    (Hinweis: Das ist ein MVP – später besser cachen / throttlen)
+    const uniqueSkins = [...new Set(aggregated.map(a => a.skin.market_hash_name))];
+    const priceMap = {};
+    await Promise.all(
+      uniqueSkins.map(async (mhn) => {
+        if (!mhn) return;
+        const p = await getCurrentSteamPrice(mhn);
+        priceMap[mhn] = typeof p === 'number' ? p : null;
+      })
+    );
+
+    // 5) Antwort normalisieren (camelCase in der API) + marketPrice ergänzen
+    const portfolio = aggregated.map((item) => {
+      const s = item.skin;
+      const marketHashName = s.market_hash_name || s.marketHashName || s.name;
+      const imageUrl = s.image_url || s.imageUrl || null;
+      const marketPrice = priceMap[marketHashName] ?? null;
+
+      return {
+        skin: {
+          id: s.id,
+          name: s.name,
+          marketHashName,
+          imageUrl,
+          marketPrice, // <-- fürs Frontend wichtig
+        },
+        purchases: item.purchases,
+        amount: item.amount,
+        avgPrice: item.avgPrice,
+      };
+    });
 
     return res.json(portfolio);
   } catch (err) {

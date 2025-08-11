@@ -125,14 +125,6 @@ export default function WatchlistPage() {
         </div>
       )}
 
-      {/* Add Skin to Watchlist */}
-      <div className="mb-6">
-        {/* Add Skin to Watchlist */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
-          <WatchlistAdd onAdded={load} />
-        </div>
-      </div>
-
       {/* Loading State */}
       {loading && (
         <div className="text-center text-zinc-400 py-10">Loading…</div>
