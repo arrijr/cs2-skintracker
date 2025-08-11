@@ -8,20 +8,17 @@ import skinRoutes from "./routes/skinRoutes.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
 import portfolioRoutes from "./routes/portfolioRoutes.js";
 import portfolioHistoryRoutes from "./routes/portfolioHistoryRoutes.js";
-// Optional: Cronjobs
-// import "./cron/priceHistoryJob.js";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
-// ---------- CORS (URLs erlaubt) ----------
+// {/* Build CORS whitelist from ENV */}
 const parseCSV = (v) => (v || "").split(",").map(s => s.trim()).filter(Boolean);
 const whitelist = [
-  ...parseCSV(process.env.ALLOWED_ORIGINS),
-  process.env.FRONTEND_ORIGIN,
-  "http://localhost:3000",
+  ...parseCSV(process.env.ALLOWED_ORIGINS), // e.g. https://cs2-skintracker-arrijrs-projects.vercel.app, http://localhost:3000
+  process.env.FRONTEND_ORIGIN,              // optional single origin
 ].filter(Boolean);
 
 const allowVercelPreviews = process.env.ALLOW_VERCEL_PREVIEWS === "true";
@@ -38,9 +35,14 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 204,
 };
+
+// {/* Global CORS for all requests */}
 app.use(cors(corsOptions));
 
-// ---------- API-Routen (ACHTUNG: nur Pfade, keine URLs!) ----------
+// {/* Preflight for ALL paths (Regex, kein "*" mehr) */}
+app.options(/.*/, cors(corsOptions));
+
+// Routes (nur Pfade, keine URLs!)
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/skins", skinRoutes);
 app.use("/api/v1/watchlist", watchlistRoutes);
@@ -54,9 +56,9 @@ app.use((req, res) => {
   }
 });
 
-// Error Handler
+// Error handler
 app.use((err, req, res, next) => {
-  console.error("UNCAUGHT ERROR:", err);
+  console.error("UNCAUGHT ERROR:", err?.message || err);
   if (!res.headersSent) {
     res.status(500).json({ error: "Internal server error" });
   }
