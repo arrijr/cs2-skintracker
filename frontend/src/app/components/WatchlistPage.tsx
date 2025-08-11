@@ -1,3 +1,9 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
+import { useAuth } from "../context/AuthContext";
+
 type WatchlistItem = {
   id: number;
   skinId: number;
@@ -124,6 +130,8 @@ export default function WatchlistPage() {
           {error}
         </div>
       )}
+
+      
 
       {/* Loading State */}
       {loading && (
