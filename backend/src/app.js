@@ -8,13 +8,15 @@ import skinRoutes from "./routes/skinRoutes.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
 import portfolioRoutes from "./routes/portfolioRoutes.js";
 import portfolioHistoryRoutes from "./routes/portfolioHistoryRoutes.js";
-import "./cron/priceHistoryJob.js"; // Start cron job scheduler
+// Optional: Cronjobs
+// import "./cron/priceHistoryJob.js";
 
 dotenv.config();
 
 const app = express();
+app.use(express.json());
 
-
+// ---------- CORS (URLs erlaubt) ----------
 const parseCSV = (v) => (v || "").split(",").map(s => s.trim()).filter(Boolean);
 const whitelist = [
   ...parseCSV(process.env.ALLOWED_ORIGINS),
@@ -26,15 +28,9 @@ const allowVercelPreviews = process.env.ALLOW_VERCEL_PREVIEWS === "true";
 
 const corsOptions = {
   origin(origin, cb) {
-    
-    if (!origin) return cb(null, true);
-
+    if (!origin) return cb(null, true); // server-to-server/no-origin
     if (whitelist.includes(origin)) return cb(null, true);
-
-    if (allowVercelPreviews && /\.vercel\.app$/.test(origin)) {
-      return cb(null, true);
-    }
-
+    if (allowVercelPreviews && /\.vercel\.app$/.test(origin)) return cb(null, true);
     return cb(new Error(`Not allowed by CORS: ${origin}`));
   },
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
@@ -42,28 +38,24 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 204,
 };
-
-// {/* Apply CORS for all routes + handle preflight */}
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
-app.use(express.json());
-
-// Routes
+// ---------- API-Routen (ACHTUNG: nur Pfade, keine URLs!) ----------
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/skins", skinRoutes);
 app.use("/api/v1/watchlist", watchlistRoutes);
 app.use("/api/v1/portfolio", portfolioRoutes);
 app.use("/api/v1/portfolio/history", portfolioHistoryRoutes);
 
-// 404 handler
+// 404
 app.use((req, res) => {
   if (!res.headersSent) {
     res.status(404).json({ error: `No route for: ${req.method} ${req.originalUrl}` });
   }
 });
 
-// Error handler
+// Error Handler
 app.use((err, req, res, next) => {
   console.error("UNCAUGHT ERROR:", err);
   if (!res.headersSent) {
