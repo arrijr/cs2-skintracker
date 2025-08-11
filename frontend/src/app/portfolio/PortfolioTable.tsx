@@ -8,20 +8,19 @@ import clsx from "clsx";
 import Tooltip from "../components/Tooltip";
 
 
-
+type Skin = {
+  id: number;
+  name: string;
+  imageUrl?: string | null;
+  itemimage?: string | null;  
+  marketPrice?: number | null;
+};
 
 type Purchase = {
   id: number;
   amount: number;
   buyPrice: number;
   buyDate: string;
-};
-
-type Skin = {
-  id: number;
-  name: string;
-  imageUrl: string;
-  marketPrice: number;
 };
 
 type PortfolioEntry = {
@@ -43,6 +42,8 @@ export default function PortfolioTable({ skins, watchlist = [] }: Props) {
   const [openSkinId, setOpenSkinId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"performance" | "recent" | "default">("default");
+
+  
 
   // Filtered & Sorted Skins
   let filteredSkins = skins;
@@ -148,25 +149,29 @@ if (!skins || skins.length === 0) {
             : 0;
 
         const isOpen = openSkinId === entry.skin.id;
+        const img =
+          entry.skin.itemimage ||
+          entry.skin.imageUrl ||
+          "/placeholder-skin.png";
 
         return (
           <div
             key={entry.skin.id}
-            className={`bg-zinc-900 rounded-xl shadow transition-all duration-300 border-2 ${
-              isOpen ? "border-blue-500" : "border-transparent"
-            }`}
-          >         
-
+            className={`bg-zinc-900 rounded-xl shadow transition-all duration-300 border-2 ${isOpen ? "border-blue-500" : "border-transparent"}`}
+          >
             {/* Klickbarer Header */}
             <div
               className="flex justify-between items-center cursor-pointer p-4"
               onClick={() => setOpenSkinId(isOpen ? null : entry.skin.id)}
             >
               <div className="flex gap-4 items-center">
-                <img
-                  src={entry.skin.imageUrl}
+                {/* Portfolio Row Image */}
+                <Image
+                  src={img}
                   alt={entry.skin.name}
-                  className="w-12 h-12 rounded"
+                  width={48}
+                  height={48}
+                  className="rounded w-12 h-12 object-cover"
                 />
                 <div>
                   <div className="font-bold flex items-center gap-2">

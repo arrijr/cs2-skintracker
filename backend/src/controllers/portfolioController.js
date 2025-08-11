@@ -62,7 +62,13 @@ export const getPortfolio = async (req, res) => {
 
     // 4) Aktuelle Marktpreise pro unique Skin parallel laden
     //    (Hinweis: Das ist ein MVP – später besser cachen / throttlen)
-    const uniqueSkins = [...new Set(aggregated.map(a => a.skin.market_hash_name))];
+    const uniqueSkins = [
+      ...new Set(
+        aggregated.map(a =>
+          a.skin.market_hash_name || a.skin.marketHashName || a.skin.name
+        )
+      ),
+    ];
     const priceMap = {};
     await Promise.all(
       uniqueSkins.map(async (mhn) => {
@@ -76,7 +82,7 @@ export const getPortfolio = async (req, res) => {
     const portfolio = aggregated.map((item) => {
       const s = item.skin;
       const marketHashName = s.market_hash_name || s.marketHashName || s.name;
-      const imageUrl = s.image_url || s.imageUrl || null;
+      const imageUrl = s.imageUrl || s.image_url || s.itemimage || null;
       const marketPrice = priceMap[marketHashName] ?? null;
 
       return {
@@ -85,7 +91,7 @@ export const getPortfolio = async (req, res) => {
           name: s.name,
           marketHashName,
           imageUrl,
-          marketPrice, // <-- fürs Frontend wichtig
+          marketPrice,
         },
         purchases: item.purchases,
         amount: item.amount,

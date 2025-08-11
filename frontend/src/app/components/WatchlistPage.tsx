@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+
 type WatchlistItem = {
   id: number;
   skinId: number;
@@ -14,6 +16,8 @@ type WatchlistItem = {
     name: string;
     image_url?: string;
     imageUrl?: string;
+    itemimage?: string;      
+    itemImage?: string;
     market_hash_name?: string;
     marketHashName?: string;
   };
@@ -26,21 +30,22 @@ export default function WatchlistPage() {
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
-  // {/* Helper: sichere API-Fetch-Funktion mit Token */}
+  // {/* Helper: sichere API-Fetch-Funktion mit Token + Base URL */}
   const apiFetch = useMemo(() => {
-    return async (input: RequestInfo | URL, init?: RequestInit) => {
+    return async (path: string, init?: RequestInit) => {
       const headers: HeadersInit = {
         "Content-Type": "application/json",
         ...(init?.headers || {}),
       };
       if (token) headers.Authorization = `Bearer ${token}`;
-      const res = await fetch(input, { ...init, headers });
+      const url = `${API_BASE}${path}`; // <- wichtig für Vercel
+      const res = await fetch(url, { ...init, headers });
       if (!res.ok) {
         let msg = "Request failed";
         try {
           const j = await res.json();
           msg = j?.message || msg;
-        } catch { /* ignore */ }
+        } catch {}
         throw new Error(msg);
       }
       return res;
@@ -49,7 +54,7 @@ export default function WatchlistPage() {
 
   // {/* Load Watchlist */}
   async function load() {
-    if (!token) return; // Wartet, bis AuthContext den Token hat
+    if (!token) return;
     setLoading(true);
     setError(null);
     try {
@@ -78,11 +83,8 @@ export default function WatchlistPage() {
         method: "PATCH",
         body: JSON.stringify({ priceAlert }),
       });
-      // Lokale Liste aktualisieren ohne Full-Reload
       setItems((prev) =>
-        prev.map((it) =>
-          it.skinId === skinId ? { ...it, priceAlert } : it
-        )
+        prev.map((it) => (it.skinId === skinId ? { ...it, priceAlert } : it))
       );
     } catch (err: any) {
       setError(err?.message || "Failed to update alert");
@@ -105,13 +107,6 @@ export default function WatchlistPage() {
     }
   }
 
-  // {/* UI */}
-  if (!token) {
-    return (
-      <div className="text-center text-zinc-300 py-10">
-        Please log in to see your watchlist.
-      </div>
-    );
   }
 
   return (
@@ -149,20 +144,23 @@ export default function WatchlistPage() {
       {!loading && items.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {items.map((it) => {
+            // Bildfelder priorisieren: itemimage -> image_url -> imageUrl -> placeholder
             const img =
+              it.skin.itemimage ||
+              it.skin.itemImage ||
               it.skin.image_url ||
               it.skin.imageUrl ||
               "/placeholder-skin.png";
+
             const mhn =
               it.skin.market_hash_name || it.skin.marketHashName || it.skin.name;
 
             return (
-              <div
-                key={`${it.id}-${it.skinId}`}
-                className="flex gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4"
-              >
+              <div key={`${it.id}-${it.skinId}`} className="flex gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
                 {/* Skin Image */}
                 <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-zinc-800">
+                  <Image src={img} alt={it.skin.name} fill className="object-cover" />
+                </div>
                   {/* Skin Image */}
                   <Image
                     src={img}
