@@ -3,8 +3,9 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
-
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
+
+// {/* Types */}
 type WatchlistItem = {
   id: number;
   skinId: number;
@@ -15,7 +16,7 @@ type WatchlistItem = {
     name: string;
     image_url?: string;
     imageUrl?: string;
-    itemimage?: string;      
+    itemimage?: string;
     itemImage?: string;
     market_hash_name?: string;
     marketHashName?: string;
@@ -29,16 +30,24 @@ export default function WatchlistPage() {
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
-  // {/* Helper: sichere API-Fetch-Funktion mit Token + Base URL */}
+  // {/* Helper: API fetch with token + base URL */}
   const apiFetch = useMemo(() => {
     return async (path: string, init?: RequestInit) => {
-      const headers: HeadersInit = { "Content-Type": "application/json", ...(init?.headers || {}) };
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(init?.headers || {}),
+      };
       if (token) headers.Authorization = `Bearer ${token}`;
       const url = `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
       const res = await fetch(url, { ...init, headers });
       if (!res.ok) {
         let msg = "Request failed";
-        try { msg = (await res.json())?.message || msg; } catch {}
+        try {
+          const j = await res.json();
+          msg = j?.message || msg;
+        } catch {
+          /* ignore */
+        }
         throw new Error(msg);
       }
       return res;
@@ -66,7 +75,7 @@ export default function WatchlistPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // {/* Update Price Alert (onBlur oder Clear) */}
+  // {/* Update Price Alert (onBlur or Clear) */}
   async function handleUpdateAlert(skinId: number, value: string) {
     if (!token) return;
     const priceAlert = value === "" ? null : Number(value);
@@ -100,16 +109,22 @@ export default function WatchlistPage() {
     }
   }
 
+  // {/* UI: require login */}
+  if (!token) {
+    return (
+      <div className="text-center text-zinc-300 py-10">
+        Please log in to see your watchlist.
+      </div>
+    );
   }
 
+  // {/* Main render */}
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Watchlist</h1>
-        <span className="text-sm text-zinc-400">
-          Max. 5 items on free plan
-        </span>
+        <span className="text-sm text-zinc-400">Max. 5 items on free plan</span>
       </div>
 
       {/* Error Alert */}
@@ -118,8 +133,6 @@ export default function WatchlistPage() {
           {error}
         </div>
       )}
-
-      
 
       {/* Loading State */}
       {loading && (
@@ -137,7 +150,7 @@ export default function WatchlistPage() {
       {!loading && items.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {items.map((it) => {
-            // Bildfelder priorisieren: itemimage -> image_url -> imageUrl -> placeholder
+            // {/* Image fallback: itemimage -> image_url -> imageUrl -> placeholder */}
             const img =
               it.skin.itemimage ||
               it.skin.itemImage ||
@@ -149,18 +162,13 @@ export default function WatchlistPage() {
               it.skin.market_hash_name || it.skin.marketHashName || it.skin.name;
 
             return (
-              <div key={`${it.id}-${it.skinId}`} className="flex gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
+              <div
+                key={`${it.id}-${it.skinId}`}
+                className="flex gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4"
+              >
                 {/* Skin Image */}
                 <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-zinc-800">
                   <Image src={img} alt={it.skin.name} fill className="object-cover" />
-                </div>
-                  {/* Skin Image */}
-                  <Image
-                    src={img}
-                    alt={it.skin.name}
-                    fill
-                    className="object-cover"
-                  />
                 </div>
 
                 {/* Skin Info */}
@@ -169,7 +177,7 @@ export default function WatchlistPage() {
                   <div className="font-medium">{it.skin.name}</div>
                   <div className="text-xs text-zinc-400">{mhn}</div>
 
-                  {/* Alert Editor */}
+                  {/* Price Alert Editor */}
                   {/* Price Alert Editor */}
                   <div className="mt-3 flex items-center gap-2">
                     <input
@@ -179,9 +187,7 @@ export default function WatchlistPage() {
                       min={0}
                       placeholder="Price Alert ($)"
                       defaultValue={
-                        typeof it.priceAlert === "number"
-                          ? it.priceAlert
-                          : ""
+                        typeof it.priceAlert === "number" ? it.priceAlert : ""
                       }
                       onBlur={(e) =>
                         handleUpdateAlert(it.skinId, e.currentTarget.value)
@@ -199,7 +205,6 @@ export default function WatchlistPage() {
                   </div>
                 </div>
 
-                {/* Actions */}
                 {/* Remove from Watchlist */}
                 <div className="flex items-start">
                   <button
