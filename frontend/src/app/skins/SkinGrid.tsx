@@ -12,6 +12,20 @@ export default function SkinGrid({ filter }: { filter?: string | null }) {
   const router = useRouter();
   const [selected, setSelected] = useState<number | null>(null);
 
+fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/portfolio`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    skinId: skin.id,
+    amount: 1,
+    buyPrice: skin.price,
+    buyDate: new Date().toISOString().slice(0,10),
+  }),
+});
+
   // {/* Add to Portfolio from grid */}
   async function handleAdd(skin: typeof dummySkins[0]) {
     if (!user) { router.push("/login"); return; }

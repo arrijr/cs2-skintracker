@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import SkinSearchBar from "../components/SkinSearchBar";
+import SkinSearchBar from "../skins/SkinSearchBar";
 import { http } from "@/lib/http";
 import { useAuth } from "../context/AuthContext";
 
@@ -12,6 +12,7 @@ export default function WatchlistAdd({ onAdded }: Props) {
   const [priceAlert, setPriceAlert] = useState<number | "">("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
 
   async function handleAdd() {
     if (!newSkin || !token) return;

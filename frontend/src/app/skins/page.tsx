@@ -34,7 +34,7 @@ export default function SkinsPage() {
         CS2 Skins – Browse & Discover
       </h1>
       <div className="max-w-6xl mx-auto">
-        <SkinSearchBar onSelect={setFilter} />
+        <SkinSearchBar onSelect={(skin) => setFilter(skin.name)} />
         {loading ? (
           <div className="py-10 text-center">Loading skins...</div>
         ) : (
