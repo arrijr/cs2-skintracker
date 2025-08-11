@@ -4,8 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
-
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 type WatchlistItem = {
   id: number;
   skinId: number;
@@ -33,19 +32,13 @@ export default function WatchlistPage() {
   // {/* Helper: sichere API-Fetch-Funktion mit Token + Base URL */}
   const apiFetch = useMemo(() => {
     return async (path: string, init?: RequestInit) => {
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(init?.headers || {}),
-      };
+      const headers: HeadersInit = { "Content-Type": "application/json", ...(init?.headers || {}) };
       if (token) headers.Authorization = `Bearer ${token}`;
-      const url = `${API_BASE}${path}`; // <- wichtig für Vercel
+      const url = `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
       const res = await fetch(url, { ...init, headers });
       if (!res.ok) {
         let msg = "Request failed";
-        try {
-          const j = await res.json();
-          msg = j?.message || msg;
-        } catch {}
+        try { msg = (await res.json())?.message || msg; } catch {}
         throw new Error(msg);
       }
       return res;
