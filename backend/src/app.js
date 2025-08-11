@@ -39,7 +39,6 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
 
 // ---------- API-Routen (ACHTUNG: nur Pfade, keine URLs!) ----------
 app.use("/api/v1/users", userRoutes);
