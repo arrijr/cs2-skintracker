@@ -1,4 +1,3 @@
-// /frontend/src/app/portfolio/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,12 +6,14 @@ import { useAuth } from "../context/AuthContext";
 import PortfolioChart from "./PortfolioChart";
 import PortfolioTable from "./PortfolioTable";
 import WatchlistTable from "./WatchlistTable";
+
+// {/* API helpers (zentral aus /src/lib/api.ts) */}
 import {
   getPortfolio,
   getPortfolioHistory,
   getWatchlist,
   removeFromWatchlist,
-} from "../api/api";
+} from "@/lib/api";
 
 // {/* Types kept minimal; UI components do stricter typing */}
 type WatchlistEntry = {
@@ -33,27 +34,32 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // {/* Require Auth Gate – block while auth is initializing */}
+  {/* Require Auth Gate – block while auth is initializing */}
   if (token === undefined) {
     return <div className="text-white p-6">Loading…</div>;
   }
 
-  // {/* Require Auth Gate – redirect suggestion */}
+  {/* Require Auth Gate – redirect suggestion */}
   if (!token) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-white bg-gray-950">
         <div className="card p-8 text-center">
-          <h2 className="text-2xl font-bold mb-2">Please login to view your portfolio.</h2>
-          <p className="mb-4">You need to be signed in to access your personal skin tracker and stats.</p>
+          <h2 className="text-2xl font-bold mb-2">
+            Please login to view your portfolio.
+          </h2>
+        <p className="mb-4">
+          You need to be signed in to access your personal skin tracker and stats.
+        </p>
           <Link href="/login" className="btn-main">Login</Link>
         </div>
       </div>
     );
   }
 
-  // {/* Load portfolio data (history, holdings, watchlist) */}
+  {/* Load portfolio data (history, holdings, watchlist) */}
   useEffect(() => {
     let isCancelled = false;
+
     async function loadAll() {
       if (!token) return;
       setLoading(true);
@@ -75,17 +81,16 @@ export default function PortfolioPage() {
         if (!isCancelled) setLoading(false);
       }
     }
+
     loadAll();
-    return () => {
-      isCancelled = true;
-    };
+    return () => { isCancelled = true; };
   }, [token]);
 
-  // {/* Remove from Watchlist */}
+  {/* Remove from Watchlist */}
   async function handleRemoveWatchlist(skinId: number) {
     try {
       await removeFromWatchlist(skinId);
-      setWatchlist((prev) => prev.filter((entry) => entry.skinId !== skinId));
+      setWatchlist(prev => prev.filter(entry => entry.skinId !== skinId));
     } catch (e: any) {
       setError(e?.message || "Failed to remove from watchlist");
     }
@@ -120,7 +125,10 @@ export default function PortfolioPage() {
 
         {/* Watchlist Table Section */}
         <section className="card">
-          <WatchlistTable watchlist={watchlist} onRemove={handleRemoveWatchlist} />
+          <WatchlistTable
+            watchlist={watchlist}
+            onRemove={handleRemoveWatchlist}
+          />
         </section>
       </main>
     </div>
