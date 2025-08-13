@@ -1,85 +1,52 @@
+"use client";
 import { useState } from "react";
-import SkinSearchBar from "../skins/SkinSearchBar";
+import SkinSearchBar from "../components/SkinSearchBar";
 import { useAuth } from "../context/AuthContext";
+import { addToWatchlist } from "@/lib/api";
 
-export default function PortfolioAdd({ onAdded }: { onAdded?: () => void }) {
+type Props = { onAdded?: () => void };
+
+export default function WatchlistAdd({ onAdded }: Props) {
   const { token } = useAuth();
   const [selectedSkin, setSelectedSkin] = useState<any>(null);
-  const [amount, setAmount] = useState<number>(1);
-  const [buyPrice, setBuyPrice] = useState<number>();
-  const [buyDate, setBuyDate] = useState<string>("");
+  const [priceAlert, setPriceAlert] = useState<number | "">("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // {/* Add Skin to Watchlist */}
   async function handleAdd() {
-    if (!token || !selectedSkin || !amount || !buyPrice || !buyDate) {
-      setError("All fields required!");
-      return;
-    }
+    if (!selectedSkin || !token) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:5000/api/v1/portfolio", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          skinId: selectedSkin.id,
-          amount,
-          buyPrice,
-          buyDate,
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to add skin to portfolio.");
+      await addToWatchlist(selectedSkin.id, priceAlert === "" ? undefined : Number(priceAlert));
       setSelectedSkin(null);
-      setAmount(1);
-      setBuyPrice(undefined);
-      setBuyDate("");
-      if (onAdded) onAdded();
-    } catch (e: any) {
-      setError(e.message || "Error adding to portfolio.");
+      setPriceAlert("");
+      onAdded?.();
+    } catch (err: any) {
+      setError(err?.message || "Error adding to watchlist.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
     <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-center mb-6">
-      {/* Add Skin to Portfolio */}
-      <SkinSearchBar onSelect={setSelectedSkin} />
+      {/* Add Skin to Watchlist */}
+      <SkinSearchBar selectMode="skin" onSelect={setSelectedSkin} />
       <input
         type="number"
-        min={1}
-        value={amount}
-        placeholder="Amount"
-        onChange={(e) => setAmount(Number(e.target.value))}
-        className="input-main w-24"
-      />
-      <input
-        type="number"
+        placeholder="Price Alert (optional)"
+        value={priceAlert}
+        onChange={(e) => setPriceAlert(e.target.value === "" ? "" : Number(e.target.value))}
+        className="input-main w-36"
         min={0}
         step={0.01}
-        value={buyPrice ?? ""}
-        placeholder="Buy Price"
-        onChange={(e) => setBuyPrice(Number(e.target.value))}
-        className="input-main w-24"
       />
-      <input
-        type="date"
-        value={buyDate}
-        onChange={(e) => setBuyDate(e.target.value)}
-        className="input-main w-36"
-      />
-      <button
-        className="btn-main"
-        onClick={handleAdd}
-        disabled={loading || !selectedSkin}
-        style={{ minWidth: 64 }}
-      >
+      <button onClick={handleAdd} className="btn-main" style={{ minWidth: 64 }} disabled={loading || !selectedSkin}>
         {loading ? "Adding…" : "Add"}
       </button>
-      {error && <span className="text-red-500 text-xs">{error}</span>}
+      {error && <span className="text-red-500 text-sm ml-2">{error}</span>}
     </div>
   );
 }

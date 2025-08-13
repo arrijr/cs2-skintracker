@@ -1,40 +1,30 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+// /frontend/src/app/layout.tsx  (Frontend)
 import "./globals.css";
-import { AuthProvider } from "./context/AuthContext";
-import NavBar from "./components/NavBar";
-import { Toaster } from "react-hot-toast";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import Providers from "./providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
+export const metadata = {
   title: "CS2 Skin Price Tracker",
-  description: "Web-App for skin price history, portfolio & alerts",
+  description: "Track and analyze CS2 skin prices",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* Toast Notifications */}
-        <Toaster position="top-right" />
+    <html lang="en">
+      <body className="bg-gray-950 text-white min-h-screen">
+        <Providers>
+          {/* App Shell */}
+          <header className="border-b border-zinc-800">
+            <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+              <div className="font-bold">CS2 Skin Price Tracker</div>
+              <nav className="text-sm text-zinc-400">
+                {/* add nav links if you like */}
+              </nav>
+            </div>
+          </header>
 
-        <AuthProvider>
-          <NavBar />     {/* <-- Jetzt ist die Navigation GLOBAL überall! */}
-          {children}
-        </AuthProvider>
+          <main className="max-w-6xl mx-auto px-4 py-6">{children}</main>
+        </Providers>
       </body>
     </html>
   );
 }
-
-

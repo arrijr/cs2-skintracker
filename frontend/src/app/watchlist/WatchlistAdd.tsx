@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import SkinSearchBar from "../skins/SkinSearchBar";
+import SkinSearchBar from "../components/SkinSearchBar";
 import { http } from "@/lib/http";
 import { useAuth } from "../context/AuthContext";
 

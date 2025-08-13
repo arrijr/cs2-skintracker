@@ -1,12 +1,12 @@
 "use client";
 import { useAuth } from "../context/AuthContext";
 import Link from "next/link";
-import { LogOut, User2, Star, Eye } from "lucide-react";
-import { Trash2 } from "lucide-react";
+import { LogOut, User2, Star, Eye, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { apiFetch } from "@/lib/http";
 
 export default function AccountPage() {
-  const { user,token, loading, logout } = useAuth();
+  const { user, token, loading, logout } = useAuth();
   const [showDelete, setShowDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showPwModal, setShowPwModal] = useState(false);
@@ -118,7 +118,7 @@ export default function AccountPage() {
         </button>
       </div>
 
-      {/* Delete Modal */}
+      {/* Delete Account */}
       {showDelete && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
           <div className="bg-zinc-900 rounded-xl p-8 shadow-lg w-full max-w-sm text-center">
@@ -134,19 +134,9 @@ export default function AccountPage() {
                 onClick={async () => {
                   setIsDeleting(true);
                   try {
-                    const res = await fetch("/api/v1/users/me", {
-                      method: "DELETE",
-                      headers: {
-                        Authorization: `Bearer ${token}`,
-                      },
-                    });
-                    if (res.ok) {
-                      logout();
-                      window.location.href = "/"; // Oder router.push("/") wenn du Next-Router nutzt
-                    } else {
-                      alert("Error deleting account.");
-                      setIsDeleting(false);
-                    }
+                    await apiFetch("/api/v1/users/me", { method: "DELETE" });
+                    logout();
+                    window.location.href = "/";
                   } catch {
                     alert("Error deleting account.");
                     setIsDeleting(false);
@@ -192,25 +182,17 @@ export default function AccountPage() {
                     setPwError("Password must be at least 6 characters.");
                     return;
                   }
+                  {/* Change Password */}
                   setPwLoading(true);
                   try {
-                    const res = await fetch("/api/v1/users/me/password", {
+                    const data = await apiFetch("/api/v1/users/me/password", {
                       method: "PATCH",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                      },
                       body: JSON.stringify({ newPassword: newPw }),
                     });
-                    const data = await res.json();
-                    if (res.ok) {
-                      setPwSuccess("Password changed successfully!");
-                      setNewPw("");
-                    } else {
-                      setPwError(data.error || "Error changing password.");
-                    }
-                  } catch {
-                    setPwError("Error changing password.");
+                    setPwSuccess("Password changed successfully!");
+                    setNewPw("");
+                  } catch (e: any) {
+                    setPwError(e?.message || "Error changing password.");
                   }
                   setPwLoading(false);
                 }}

@@ -2,14 +2,27 @@
 import Image from "next/image";
 import Link from "next/link";
 
-type WatchlistEntry = {
-  id: number;
-  skinId: number;
-  marketHashName: string;
-  name: string;
-  imageUrl: string;
-  priceAlert: number | null;
-};
+type WatchlistEntry =
+  | {
+      id: number;
+      skinId: number;
+      priceAlert: number | null;
+      // flat
+      name?: string;
+      imageUrl?: string;
+      marketHashName?: string;
+      // nested
+      skin?: {
+        id: number;
+        name: string;
+        image_url?: string;
+        imageUrl?: string;
+        itemimage?: string;
+        itemImage?: string;
+        market_hash_name?: string;
+        marketHashName?: string;
+      };
+    };
 
 type Props = {
   watchlist: WatchlistEntry[];
@@ -23,41 +36,47 @@ export default function WatchlistTable({ watchlist, onRemove }: Props) {
       <table className="w-full text-sm">
         <thead>
           <tr className="text-gray-300 border-b border-gray-700">
-            <th className="py-2">Bild</th>
+            <th className="py-2">Image</th>
             <th>Name</th>
-            <th>Marktpreis</th>
-            <th>Alarmgrenze</th>
+            <th>Alert</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {watchlist.map((entry) => (
-            <tr key={entry.id} className="border-b border-gray-800">
-              <td className="py-2">
-                {entry.imageUrl ? (
-                    <Image src={entry.imageUrl} width={48} height={48} alt={entry.name} className="rounded" />
-                    ) : (
-                    <div className="w-12 h-12 bg-gray-800 rounded flex items-center justify-center text-gray-500 text-xs">
-                        ?
-                    </div>
-                    )}
-              </td>
-              <td>  <Link href={`/skins/${entry.skinId}`} className="text-blue-400 hover:underline">
-                      {entry.name}
-                    </Link>
-              </td>
-              <td className="text-center">{/* Marktpreis später ergänzen */}</td>
-              <td className="text-center">{entry.priceAlert ?? "-"}</td>
-              <td>
-                <button
-                  onClick={() => onRemove(entry.skinId)}
-                  className="px-3 py-1 bg-red-700 text-white rounded hover:bg-red-800"
-                >
-                  Entfernen
-                </button>
-              </td>
-            </tr>
-          ))}
+          {watchlist.map((entry) => {
+            const s = entry.skin;
+            const name = s?.name ?? entry.name ?? "Unknown item";
+            const img =
+              s?.itemimage ||
+              s?.itemImage ||
+              s?.image_url ||
+              s?.imageUrl ||
+              entry.imageUrl ||
+              "/placeholder-skin.png";
+            const linkId = s?.id ?? entry.skinId;
+
+            return (
+              <tr key={`${entry.id}-${linkId}`} className="border-b border-gray-800">
+                <td className="py-2">
+                  <Image src={img} width={48} height={48} alt={name} className="rounded" />
+                </td>
+                <td>
+                  <Link href={`/skins/${linkId}`} className="text-blue-400 hover:underline">
+                    {name}
+                  </Link>
+                </td>
+                <td className="text-center">{entry.priceAlert ?? "-"}</td>
+                <td>
+                  <button
+                    onClick={() => onRemove(linkId)}
+                    className="px-3 py-1 bg-red-700 text-white rounded hover:bg-red-800"
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

@@ -1,5 +1,5 @@
 "use client";
-import { signup as apiSignup } from "../api/api";
+import { signup as apiSignup } from "@/lib/api";
 import { useState } from "react";
 import Link from "next/link";
 

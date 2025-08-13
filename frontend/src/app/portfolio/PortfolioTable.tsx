@@ -167,7 +167,13 @@ if (!skins || skins.length === 0) {
               <div className="flex gap-4 items-center">
                 {/* Portfolio Row Image */}
                 <Image
-                  src={img}
+                  src={
+                    entry.skin.itemimage ||
+                    entry.skin.itemImage ||        // <-- added
+                    entry.skin.imageUrl ||
+                    (entry as any).skin?.image_url || // <-- added (falls Typ abweicht)
+                    "/placeholder-skin.png"
+                  }
                   alt={entry.skin.name}
                   width={48}
                   height={48}

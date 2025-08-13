@@ -16,14 +16,7 @@ import {
 } from "@/lib/api";
 
 // {/* Types kept minimal; UI components do stricter typing */}
-type WatchlistEntry = {
-  id: number;
-  skinId: number;
-  name: string;
-  marketHashName?: string;
-  imageUrl?: string;
-  priceAlert: number | null;
-};
+type WatchlistEntry = any;
 
 export default function PortfolioPage() {
   const { token } = useAuth();

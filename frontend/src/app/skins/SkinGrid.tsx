@@ -5,7 +5,7 @@ import SkinDetailModal from "./SkinDetailModal";
 import { dummySkins } from "./dummySkins";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
-import { http } from "@/lib/http";
+import { apiFetch } from "@/lib/http";
 
 export default function SkinGrid({ filter }: { filter?: string | null }) {
   const { user, token } = useAuth();
@@ -30,15 +30,18 @@ fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/portfolio`, {
   async function handleAdd(skin: typeof dummySkins[0]) {
     if (!user) { router.push("/login"); return; }
     try {
-      await http.post(`/portfolio`, {
-        marketHashName: skin.marketHashName,
-        amount: 1,
-        buyPrice: skin.price,
-        buyDate: new Date().toISOString().split("T")[0],
+      await apiFetch(`/api/v1/portfolio`, {
+        method: "POST",
+        body: JSON.stringify({
+          skinId: skin.id,
+          amount: 1,
+          buyPrice: skin.price,
+          buyDate: new Date().toISOString().slice(0, 10),
+        }),
       });
-      alert(`Skin "${skin.name}" wurde deinem Portfolio hinzugefügt!`);
+      alert(`Skin "${skin.name}" added to your portfolio!`);
     } catch {
-      alert("Fehler beim Hinzufügen zum Portfolio!");
+      alert("Failed to add to portfolio!");
     }
   }
 

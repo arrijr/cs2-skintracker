@@ -1,29 +1,44 @@
 "use client";
+
 import { useEffect, useState } from "react";
-import { getPortfolioHistory } from "../api/portfolio";
 import { useAuth } from "../context/AuthContext";
+// {/* Central API client (no axios) */}
+import { getPortfolioHistory } from "@/lib/api";
 import { Line } from "react-chartjs-2";
+
+type Point = { date: string; value: number };
 
 export default function PortfolioChart() {
   const { token } = useAuth();
-  const [data, setData] = useState<{ date: string; value: number }[]>([]);
+  const [data, setData] = useState<Point[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!token) return;
-    getPortfolioHistory(token).then(setData);
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const d = await getPortfolioHistory();
+        if (!cancelled) setData(Array.isArray(d) ? d : []);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [token]);
 
   if (!token) return <div>Please log in to see your chart.</div>;
-  if (!data.length) return <div>Loading chart...</div>;
+  if (loading || !data.length) return <div>Loading chart...</div>;
 
   const chartData = {
     labels: data.map(d => d.date),
     datasets: [
       {
-        label: "Portfolio Value (€)",
+        label: "Portfolio Value ($)", // <-- App-Währung $
         data: data.map(d => d.value),
         fill: false,
-        borderColor: "rgb(59,130,246)", // blue-500
+        borderColor: "rgb(59,130,246)",
         tension: 0.2,
       },
     ],

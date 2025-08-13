@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
+// {/* Central API calls */}
+import { getWatchlist, updatePriceAlert, removeFromWatchlist } from "@/lib/api";
 
-// {/* Types */}
 type WatchlistItem = {
   id: number;
   skinId: number;
@@ -60,8 +60,7 @@ export default function WatchlistPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiFetch("/api/v1/watchlist", { method: "GET" });
-      const data: WatchlistItem[] = await res.json();
+      const data: WatchlistItem[] = await getWatchlist();
       setItems(data || []);
     } catch (err: any) {
       setError(err?.message || "Failed to load watchlist");
@@ -72,7 +71,6 @@ export default function WatchlistPage() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   // {/* Update Price Alert (onBlur or Clear) */}
@@ -81,13 +79,8 @@ export default function WatchlistPage() {
     const priceAlert = value === "" ? null : Number(value);
     setUpdatingId(skinId);
     try {
-      await apiFetch(`/api/v1/watchlist/${skinId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ priceAlert }),
-      });
-      setItems((prev) =>
-        prev.map((it) => (it.skinId === skinId ? { ...it, priceAlert } : it))
-      );
+      await updatePriceAlert(skinId, priceAlert);
+      setItems(prev => prev.map(it => it.skinId === skinId ? { ...it, priceAlert } : it));
     } catch (err: any) {
       setError(err?.message || "Failed to update alert");
     } finally {
@@ -100,8 +93,8 @@ export default function WatchlistPage() {
     if (!token) return;
     setUpdatingId(skinId);
     try {
-      await apiFetch(`/api/v1/watchlist/${skinId}`, { method: "DELETE" });
-      setItems((prev) => prev.filter((it) => it.skinId !== skinId));
+      await removeFromWatchlist(skinId);
+      setItems(prev => prev.filter(it => it.skinId !== skinId));
     } catch (err: any) {
       setError(err?.message || "Failed to remove item");
     } finally {
