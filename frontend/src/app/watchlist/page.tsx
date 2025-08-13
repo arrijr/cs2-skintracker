@@ -1,10 +1,6 @@
-import dynamic from "next/dynamic";
-
-// Client-Komponente lazy laden (kein SSR nötig)
-const WatchlistPage = dynamic(() => import("../components/WatchlistPage"), {
-  ssr: false,
-});
+import WatchlistPage from "../components/WatchlistPage";
 
 export default function Page() {
+  // {/* Keine React-Hooks hier benutzen! */}
   return <WatchlistPage />;
 }
