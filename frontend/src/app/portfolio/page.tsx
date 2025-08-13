@@ -49,12 +49,22 @@ export default function PortfolioPage() {
     );
   }
 
-  {/* Load portfolio data (history, holdings, watchlist) */}
+  // {/* Load portfolio data (history, holdings, watchlist) – Hook MUST be called every render */}
   useEffect(() => {
     let isCancelled = false;
 
     async function loadAll() {
-      if (!token) return;
+      if (!token) {
+        // not logged in yet → just clear and stop
+        if (!isCancelled) {
+          setHistory([]);
+          setPortfolioSkins([]);
+          setWatchlist([]);
+          setLoading(false);
+        }
+        return;
+      }
+
       setLoading(true);
       setError(null);
       try {
@@ -76,17 +86,37 @@ export default function PortfolioPage() {
     }
 
     loadAll();
-    return () => { isCancelled = true; };
+    return () => {
+      isCancelled = true;
+    };
   }, [token]);
 
-  {/* Remove from Watchlist */}
+
+  // {/* Remove from Watchlist */}
   async function handleRemoveWatchlist(skinId: number) {
     try {
       await removeFromWatchlist(skinId);
-      setWatchlist(prev => prev.filter(entry => entry.skinId !== skinId));
+      setWatchlist((prev) => prev.filter((entry: any) => entry.skinId !== skinId));
     } catch (e: any) {
       setError(e?.message || "Failed to remove from watchlist");
     }
+  }
+
+  // {/* Require Auth Gate – UI only (hooks are already defined above) */}
+  if (token === undefined) {
+    return <div className="text-white p-6">Loading…</div>;
+  }
+
+  if (!token) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-white bg-gray-950">
+        <div className="card p-8 text-center">
+          <h2 className="text-2xl font-bold mb-2">Please login to view your portfolio.</h2>
+          <p className="mb-4">You need to be signed in to access your personal skin tracker and stats.</p>
+          <Link href="/login" className="btn-main">Login</Link>
+        </div>
+      </div>
+    );
   }
 
   if (loading) return <div className="text-white p-6">Loading portfolio…</div>;
