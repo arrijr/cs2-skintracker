@@ -1,6 +1,7 @@
 // /frontend/src/app/layout.tsx  (Frontend)
 import "./globals.css";
 import Providers from "./providers";
+import NavBar from "./components/NavBar";
 
 export const metadata = {
   title: "CS2 Skin Price Tracker",
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
               <div className="font-bold">CS2 Skin Price Tracker</div>
               <nav className="text-sm text-zinc-400">
+                <NavBar />
                 {/* add nav links if you like */}
               </nav>
             </div>
