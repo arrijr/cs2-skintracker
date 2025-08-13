@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
-// {/* Central API calls */}
-import { getWatchlist, updatePriceAlert, removeFromWatchlist } from "@/lib/api";
+import {
+  getWatchlist,
+  updatePriceAlert as apiUpdatePriceAlert,
+  removeFromWatchlist as apiRemoveFromWatchlist,
+} from "@/lib/api";
 
 type WatchlistItem = {
   id: number;
@@ -14,10 +17,10 @@ type WatchlistItem = {
   skin: {
     id: number;
     name: string;
-    image_url?: string;
-    imageUrl?: string;
     itemimage?: string;
     itemImage?: string;
+    image_url?: string;
+    imageUrl?: string;
     market_hash_name?: string;
     marketHashName?: string;
   };
@@ -25,34 +28,11 @@ type WatchlistItem = {
 
 export default function WatchlistPage() {
   const { token } = useAuth();
+
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
-
-  // {/* Helper: API fetch with token + base URL */}
-  const apiFetch = useMemo(() => {
-    return async (path: string, init?: RequestInit) => {
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(init?.headers || {}),
-      };
-      if (token) headers.Authorization = `Bearer ${token}`;
-      const url = `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
-      const res = await fetch(url, { ...init, headers });
-      if (!res.ok) {
-        let msg = "Request failed";
-        try {
-          const j = await res.json();
-          msg = j?.message || msg;
-        } catch {
-          /* ignore */
-        }
-        throw new Error(msg);
-      }
-      return res;
-    };
-  }, [token]);
 
   // {/* Load Watchlist */}
   async function load() {
@@ -60,8 +40,8 @@ export default function WatchlistPage() {
     setLoading(true);
     setError(null);
     try {
-      const data: WatchlistItem[] = await getWatchlist();
-      setItems(data || []);
+      const data = await getWatchlist();
+      setItems(Array.isArray(data) ? (data as WatchlistItem[]) : []);
     } catch (err: any) {
       setError(err?.message || "Failed to load watchlist");
     } finally {
@@ -71,16 +51,19 @@ export default function WatchlistPage() {
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // {/* Update Price Alert (onBlur or Clear) */}
+  // {/* Update Price Alert (onBlur oder Clear) */}
   async function handleUpdateAlert(skinId: number, value: string) {
     if (!token) return;
     const priceAlert = value === "" ? null : Number(value);
     setUpdatingId(skinId);
     try {
-      await updatePriceAlert(skinId, priceAlert);
-      setItems(prev => prev.map(it => it.skinId === skinId ? { ...it, priceAlert } : it));
+      await apiUpdatePriceAlert(skinId, priceAlert);
+      setItems((prev) =>
+        prev.map((it) => (it.skinId === skinId ? { ...it, priceAlert } : it))
+      );
     } catch (err: any) {
       setError(err?.message || "Failed to update alert");
     } finally {
@@ -93,8 +76,8 @@ export default function WatchlistPage() {
     if (!token) return;
     setUpdatingId(skinId);
     try {
-      await removeFromWatchlist(skinId);
-      setItems(prev => prev.filter(it => it.skinId !== skinId));
+      await apiRemoveFromWatchlist(skinId);
+      setItems((prev) => prev.filter((it) => it.skinId !== skinId));
     } catch (err: any) {
       setError(err?.message || "Failed to remove item");
     } finally {
@@ -102,7 +85,7 @@ export default function WatchlistPage() {
     }
   }
 
-  // {/* UI: require login */}
+  // {/* UI */}
   if (!token) {
     return (
       <div className="text-center text-zinc-300 py-10">
@@ -111,7 +94,6 @@ export default function WatchlistPage() {
     );
   }
 
-  // {/* Main render */}
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       {/* Header */}
@@ -128,9 +110,7 @@ export default function WatchlistPage() {
       )}
 
       {/* Loading State */}
-      {loading && (
-        <div className="text-center text-zinc-400 py-10">Loading…</div>
-      )}
+      {loading && <div className="text-center text-zinc-400 py-10">Loading…</div>}
 
       {/* Empty State */}
       {!loading && items.length === 0 && (
@@ -143,7 +123,7 @@ export default function WatchlistPage() {
       {!loading && items.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {items.map((it) => {
-            // {/* Image fallback: itemimage -> image_url -> imageUrl -> placeholder */}
+            // Bildfelder priorisieren: itemimage -> itemImage -> image_url -> imageUrl -> placeholder
             const img =
               it.skin.itemimage ||
               it.skin.itemImage ||
@@ -152,7 +132,9 @@ export default function WatchlistPage() {
               "/placeholder-skin.png";
 
             const mhn =
-              it.skin.market_hash_name || it.skin.marketHashName || it.skin.name;
+              it.skin.market_hash_name ||
+              it.skin.marketHashName ||
+              it.skin.name;
 
             return (
               <div
@@ -198,6 +180,7 @@ export default function WatchlistPage() {
                   </div>
                 </div>
 
+                {/* Actions */}
                 {/* Remove from Watchlist */}
                 <div className="flex items-start">
                   <button
