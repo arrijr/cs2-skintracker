@@ -54,6 +54,21 @@ export default function PortfolioChart({ history }: { history: Point[] }) {
   const valueDiffSign = valueDiff >= 0 ? "+" : "-";
   const valueDiffClass = valueDiff >= 0 ? "text-emerald-400" : "text-red-400";
 
+
+  const chartData: ChartData<"line"> = {
+    labels: filtered.map(entry => new Date(entry.date).toLocaleDateString()),
+    datasets: [
+      {
+        label: "Portfolio Value",
+        data: filtered.map(entry => entry.value),
+        fill: false,
+        borderColor: "#10b981", // Tailwind emerald-500
+        tension: 0.25,
+        pointRadius: 0,
+      },
+    ],
+  };
+=======
   const chartData = useMemo(() => {
     const labels = Array.isArray(history) ? history.map(p => p.date) : [];
     const data = Array.isArray(history) ? history.map(p => p.value) : [];
@@ -70,6 +85,7 @@ export default function PortfolioChart({ history }: { history: Point[] }) {
       ],
     };
   }, [history]);
+
 
   const options: ChartOptions<"line"> = {
     responsive: true,
@@ -114,7 +130,7 @@ export default function PortfolioChart({ history }: { history: Point[] }) {
       </div>
 
       {/* Chart */}
-      <Line data={data} options={options} height={300} />
+      <Line data={chartData} options={options} height={300} />
     </div>
   );
 }
