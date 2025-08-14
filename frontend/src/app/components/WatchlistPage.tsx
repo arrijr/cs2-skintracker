@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
+import { useRequireAuth } from "../hooks/useRequireAuth";
 import {
   getWatchlist,
   updatePriceAlert as apiUpdatePriceAlert,
@@ -28,6 +29,7 @@ type WatchlistItem = {
 
 export default function WatchlistPage() {
   const { token } = useAuth();
+  useRequireAuth();
 
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,12 +88,10 @@ export default function WatchlistPage() {
   }
 
   // {/* UI */}
-  if (!token) {
-    return (
-      <div className="text-center text-zinc-300 py-10">
-        Please log in to see your watchlist.
-      </div>
-    );
+  // The useRequireAuth hook will handle redirection if the user is not logged in.
+  // We can show a loading state until the auth status is confirmed and data is loaded.
+  if (token === undefined || loading) {
+    return <div className="text-center text-zinc-400 py-10">Loading…</div>;
   }
 
   return (
