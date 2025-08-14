@@ -1,7 +1,11 @@
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
+/* ============================
+   Types
+============================ */
 type WatchlistEntry =
   | {
       id: number;
@@ -29,21 +33,41 @@ type Props = {
   onRemove: (skinId: number) => void;
 };
 
+/* ============================
+   WatchlistTable Component
+============================ */
 export default function WatchlistTable({ watchlist, onRemove }: Props) {
+  // {/* Early exit / empty state */}
+  if (!watchlist || watchlist.length === 0) {
+    return (
+      <div className="bg-gray-900 rounded-xl p-6 shadow-md w-full max-w-3xl mx-auto mt-8 text-center text-zinc-400">
+        {/* Watchlist Empty State */}
+        No items in your watchlist yet.
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-900 rounded-xl p-6 shadow-md w-full max-w-3xl mx-auto mt-8">
+      {/* Table Title */}
       <h2 className="text-xl font-bold mb-4">Watchlist</h2>
+
+      {/* Table Wrapper */}
       <table className="w-full text-sm">
+        {/* Table Head */}
         <thead>
           <tr className="text-gray-300 border-b border-gray-700">
             <th className="py-2">Image</th>
             <th>Name</th>
-            <th>Alert</th>
+            <th>Alert ($)</th>
             <th></th>
           </tr>
         </thead>
+
+        {/* Table Body */}
         <tbody>
           {watchlist.map((entry) => {
+            /* Row: derive fields (supports flat or nested shapes) */
             const s = entry.skin;
             const name = s?.name ?? entry.name ?? "Unknown item";
             const img =
@@ -52,24 +76,41 @@ export default function WatchlistTable({ watchlist, onRemove }: Props) {
               s?.image_url ||
               s?.imageUrl ||
               entry.imageUrl ||
-              "/placeholder-skin.png";
+              "/placeholder-skin.png"; // <-- fallback from /public
             const linkId = s?.id ?? entry.skinId;
 
             return (
               <tr key={`${entry.id}-${linkId}`} className="border-b border-gray-800">
+                {/* Row: Image */}
                 <td className="py-2">
-                  <Image src={img} width={48} height={48} alt={name} className="rounded" />
+                  <Image
+                    src={img}
+                    width={48}
+                    height={48}
+                    alt={name}
+                    className="rounded object-cover"
+                  />
                 </td>
+
+                {/* Row: Name Link */}
                 <td>
-                  <Link href={`/skins/${linkId}`} className="text-blue-400 hover:underline">
+                  <Link
+                    href={`/skins/${linkId}`}
+                    className="text-blue-400 hover:underline"
+                  >
                     {name}
                   </Link>
                 </td>
+
+                {/* Row: Alert Value */}
                 <td className="text-center">{entry.priceAlert ?? "-"}</td>
-                <td>
+
+                {/* Quick Action: Remove */}
+                <td className="text-right">
                   <button
                     onClick={() => onRemove(linkId)}
                     className="px-3 py-1 bg-red-700 text-white rounded hover:bg-red-800"
+                    aria-label={`Remove ${name} from watchlist`}
                   >
                     Remove
                   </button>
