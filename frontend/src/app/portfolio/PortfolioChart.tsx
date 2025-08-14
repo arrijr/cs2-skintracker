@@ -7,8 +7,6 @@ import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, 
 // Chart.js Registration
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
-type Point = { date: string; value: number };
-
 type HistoryEntry = {
   id: number;
   userId: number;
@@ -36,8 +34,7 @@ function filterHistory(history: HistoryEntry[], days: number | null) {
   return history.filter(h => new Date(h.date) >= cutoff);
 }
 
-/* Portfolio Value Chart (pure, props-driven) */
-export default function PortfolioChart({ history }: { history: Point[] }) {
+export default function PortfolioChart({ history }: Props) {
   const [selected, setSelected] = useState(2); // Default: 6M
 
   const filtered = useMemo(
@@ -54,7 +51,6 @@ export default function PortfolioChart({ history }: { history: Point[] }) {
   const valueDiffSign = valueDiff >= 0 ? "+" : "-";
   const valueDiffClass = valueDiff >= 0 ? "text-emerald-400" : "text-red-400";
 
-
   const chartData: ChartData<"line"> = {
     labels: filtered.map(entry => new Date(entry.date).toLocaleDateString()),
     datasets: [
@@ -68,24 +64,6 @@ export default function PortfolioChart({ history }: { history: Point[] }) {
       },
     ],
   };
-=======
-  const chartData = useMemo(() => {
-    const labels = Array.isArray(history) ? history.map(p => p.date) : [];
-    const data = Array.isArray(history) ? history.map(p => p.value) : [];
-    return {
-      labels,
-      datasets: [
-        {
-          label: "Portfolio Value ($)",
-          data,
-          fill: false,
-          borderColor: "rgb(59,130,246)",
-          tension: 0.2,
-        },
-      ],
-    };
-  }, [history]);
-
 
   const options: ChartOptions<"line"> = {
     responsive: true,
