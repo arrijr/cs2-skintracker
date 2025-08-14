@@ -1,5 +1,6 @@
 "use client";
 import { useAuth } from "../context/AuthContext";
+import { useRequireAuth } from "../hooks/useRequireAuth";
 import Link from "next/link";
 import { LogOut, User2, Star, Eye, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -7,6 +8,8 @@ import { apiFetch } from "@/lib/http";
 
 export default function AccountPage() {
   const { user, token, loading, logout } = useAuth();
+  useRequireAuth();
+
   const [showDelete, setShowDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showPwModal, setShowPwModal] = useState(false);
@@ -15,30 +18,10 @@ export default function AccountPage() {
   const [pwSuccess, setPwSuccess] = useState("");
   const [pwLoading, setPwLoading] = useState(false);
 
-  if (token === undefined) {
-  return <div className="text-white p-6">Loading...</div>;
-  }
-
-  if (!token) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-white bg-gray-950">
-        <div className="card p-8 text-center">
-          <h2 className="text-2xl font-bold mb-2">Please login to view your account.</h2>
-          <Link href="/login" className="btn-main">Login</Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-white bg-gray-950">
-        <div className="card p-8 text-center">
-          <h2 className="text-2xl font-bold mb-2">Please login to view your account.</h2>
-          <Link href="/login" className="btn-main">Login</Link>
-        </div>
-      </div>
-    );
+  // Show a loading state while auth is being checked or if there's no user yet.
+  // The hook will handle the redirect.
+  if (token === undefined || !user) {
+    return <div className="text-white p-6">Loading...</div>;
   }
 
 

@@ -25,8 +25,10 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";
+      // Return a promise that never resolves to prevent further execution
+      return new Promise(() => {});
     }
-    throw new Error("Unauthorized");
+    throw new Error("Unauthorized"); // This will still be thrown if window is undefined (e.g. SSR)
   }
 
   if (!res.ok) {
