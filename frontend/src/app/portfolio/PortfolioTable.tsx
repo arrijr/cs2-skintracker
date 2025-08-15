@@ -152,7 +152,7 @@ if (!skins || skins.length === 0) {
         const img =
           entry.skin.itemimage ||
           entry.skin.imageUrl ||
-          "/placeholder-skin.png";
+          "/images/placeholder-skin.png";
 
         return (
           <div

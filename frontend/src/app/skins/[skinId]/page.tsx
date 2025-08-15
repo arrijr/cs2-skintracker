@@ -32,7 +32,10 @@ export default function SkinDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { token } = useAuth();
-  const skinId = String(params.skinId ?? params.id ?? "");
+
+  // {/* derive skinId */}
+  const p = (params as any) ?? {};
+  const skinId = String(p.skinid ?? p.skinId ?? p.id ?? "");
 
   const [mounted, setMounted] = useState(false);
   const [skin, setSkin] = useState<Skin | null>(null);
@@ -58,10 +61,15 @@ export default function SkinDetailPage() {
   const [sort, setSort] = useState("recent");
   const [search, setSearch] = useState("");
 
+
+  if (!skinId) {
+    console.warn("Invalid skinId param");
+  }
+
   // {/* Data load effect */}
   useEffect(() => {
     if (!skinId) return;
-
+    console.warn("Invalid skinId param");
     let cancelled = false;
     setLoading(true);
 
@@ -98,13 +106,16 @@ export default function SkinDetailPage() {
       cancelled = true;
     };
   }, [skinId, token]);
-  
+
+  // {/* mounted guard */}
+  useEffect(() => { setMounted(true); }, []);
+
   if (!mounted) return null;
   if (loading) return <div className="text-white py-8">Loading…</div>;
   if (!skin) return <div className="text-red-400 py-8">Skin not found!</div>;
 
   // {/* Derived */}
-  const img = skin.itemimage || skin.itemImage || skin.image_url || skin.imageUrl || "/placeholder-skin.png";
+  const img = skin.itemimage || skin.itemImage || skin.image_url || skin.imageUrl || "/images/placeholder-skin.png";
   const marketPrice = skin.marketPrice ?? null;
 
   // Portfolio-Käufe für diesen Skin
@@ -164,23 +175,28 @@ export default function SkinDetailPage() {
     }
   }
 
-  // Handler: Add to Portfolio
+  // {/* Handler: Add to Portfolio */}
   const addToPortfolio = async () => {
-    if (!token) {
-      router.push("/login");
-      return;
-    }
+    if (!token) return router.push("/login");
     setAddingPortfolio(true);
     setPortfolioMsg("");
 
     try {
-      await http.post("/portfolio", {
-        skinId: skin!.id,
-        amount: Number(amount),
-        buyPrice: Number(useMarketPrice ? skin!.marketPrice : buyPrice),
-        buyDate,
+      await apiFetch(`/api/v1/portfolio`, {
+        method: "POST",
+        body: JSON.stringify({
+          skinId: Number(skin!.id),
+          amount: Number(amount),
+          buyPrice: Number(useMarketPrice ? skin!.marketPrice : buyPrice),
+          buyDate,
+        }),
       });
+
       setPortfolioMsg("Added to portfolio!");
+      // optional: lokale Daten neu laden
+      const p = await getPortfolio().catch(() => []);
+      setPortfolioSkins(Array.isArray(p) ? p : []);
+
       setTimeout(() => {
         setShowPortfolioModal(false);
         setPortfolioMsg("");
@@ -188,11 +204,12 @@ export default function SkinDetailPage() {
         setBuyPrice("");
         setBuyDate("");
         setUseMarketPrice(false);
-      }, 1200);
+      }, 800);
     } catch (e: any) {
-      setPortfolioMsg(e?.response?.data?.error || "Could not add skin.");
+      setPortfolioMsg(e?.message || "Could not add skin.");
+    } finally {
+      setAddingPortfolio(false);
     }
-    setAddingPortfolio(false);
   };
 
   return (

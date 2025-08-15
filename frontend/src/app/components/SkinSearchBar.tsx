@@ -110,7 +110,7 @@ export default function SkinSearchBar<T = number | Skin>({
               s.itemImage ||
               s.image_url ||
               s.imageUrl ||
-              "/placeholder-skin.png";
+              "/images/placeholder-skin.png";
             return (
               <li
                 key={s.id}
