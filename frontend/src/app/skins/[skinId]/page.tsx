@@ -58,40 +58,47 @@ export default function SkinDetailPage() {
   const [sort, setSort] = useState("recent");
   const [search, setSearch] = useState("");
 
-  // *** ALLE useEffect HOOKS OBEN ***
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  // {/* Data load effect */}
   useEffect(() => {
     if (!skinId) return;
-    let cancelled = false;
 
-    async function load() {
-      setLoading(true);
+    let cancelled = false;
+    setLoading(true);
+
+    (async () => {
       try {
+        // Basis-Daten: Skin + History parallel laden
         const [s, h] = await Promise.all([
           apiFetch(`/api/v1/skins/${skinId}`),
           apiFetch(`/api/v1/skins/${skinId}/history`).catch(() => []),
         ]);
+
         if (!cancelled) {
           setSkin(s || null);
           setHistory(Array.isArray(h) ? h : []);
         }
+
+        // Auth-Daten nur laden, wenn eingeloggt
+        if (token) {
+          const [w, p] = await Promise.all([getWatchlist(), getPortfolio()]);
+          if (!cancelled) {
+            setWatchlist(Array.isArray(w) ? w : []);
+            setPortfolioSkins(Array.isArray(p) ? p : []);
+          }
+        }
+      } catch (err) {
+        // optional: setError(String(err));
+        console.error("skin detail load failed:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
+    })();
 
-      if (token) {
-        getWatchlist().then((w) => !cancelled && setWatchlist(Array.isArray(w) ? w : []));
-        getPortfolio().then((p) => !cancelled && setPortfolioSkins(Array.isArray(p) ? p : []));
-      }
-    }
-
-    load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [skinId, token]);
-
+  
   if (!mounted) return null;
   if (loading) return <div className="text-white py-8">Loading…</div>;
   if (!skin) return <div className="text-red-400 py-8">Skin not found!</div>;
