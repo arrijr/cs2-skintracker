@@ -330,7 +330,7 @@ export default function SkinDetailPage() {
               <button
                 onClick={addToWatchlist}
                 className="btn-main w-full sm:w-auto"
-                disabled={adding}
+                disabled={addingAlert}
               >
                 Add to Watchlist
               </button>
