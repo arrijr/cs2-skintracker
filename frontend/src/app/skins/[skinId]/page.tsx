@@ -34,8 +34,9 @@ export default function SkinDetailPage() {
   const { token } = useAuth();
 
   // {/* derive skinId */}
-  const p = (params as any) ?? {};
-  const skinId = String(p.skinid ?? p.skinId ?? p.id ?? "");
+  const routeParams = useParams<{ skinid?: string; skinId?: string; id?: string }>();
+  const skinId = String(routeParams?.skinid ?? routeParams?.skinId ?? routeParams?.id ?? "");
+  console.log("[SkinDetail] routeParams:", routeParams, "→ skinId:", skinId);
 
   const [mounted, setMounted] = useState(false);
   const [skin, setSkin] = useState<Skin | null>(null);
@@ -68,45 +69,47 @@ export default function SkinDetailPage() {
 
   // {/* Data load effect */}
   useEffect(() => {
-    // ohne gültige ID: nichts laden → verhindert /undefined-Requests
-    if (!skinId || isNaN(Number(skinId))) {
-      setLoading(false);
-      return;
-    }
+  // Guard – verhindert /undefined Calls
+  if (!skinId || isNaN(Number(skinId))) {
+    console.warn("[SkinDetail] invalid skinId:", skinId);
+    setLoading(false);
+    return;
+  }
 
-    let cancelled = false;
-    setLoading(true);
+  let cancelled = false;
+  setLoading(true);
 
-    (async () => {
-      try {
-        // Basis-Daten parallel laden
-        const [s, h] = await Promise.all([
-          apiFetch(`/api/v1/skins/${skinId}`),
-          apiFetch(`/api/v1/skins/${skinId}/history`).catch(() => []),
-        ]);
-
-        if (!cancelled) {
-          setSkin(s || null);
-          setHistory(Array.isArray(h) ? h : []);
-        }
-
-        // Nur wenn eingeloggt: Watchlist + Portfolio
-        if (token) {
-          const [w, p] = await Promise.all([getWatchlist(), getPortfolio()]);
-          if (!cancelled) {
-            setWatchlist(Array.isArray(w) ? w : []);
-            setPortfolioSkins(Array.isArray(p) ? p : []);
-          }
-        }
-      } catch (err) {
-        console.error("skin detail load failed:", err);
-      } finally {
-        if (!cancelled) setLoading(false);
+  (async () => {
+    try {
+      // Basisdaten parallel
+      const [s, h] = await Promise.all([
+        apiFetch(`/api/v1/skins/${skinId}`),
+        apiFetch(`/api/v1/skins/${skinId}/history`).catch(() => []),
+      ]);
+      if (!cancelled) {
+        setSkin(s || null);
+        setHistory(Array.isArray(h) ? h : []);
       }
-    })();
 
-    return () => { cancelled = true; };
-  }, [skinId, token]);
+      // Auth-Daten nur wenn eingeloggt
+      if (token) {
+        const [w, p] = await Promise.all([getWatchlist(), getPortfolio()]);
+        if (!cancelled) {
+          setWatchlist(Array.isArray(w) ? w : []);
+          setPortfolioSkins(Array.isArray(p) ? p : []);
+        }
+      }
+    } catch (err) {
+      console.error("[SkinDetail] load failed:", err);
+    } finally {
+      if (!cancelled) setLoading(false);
+    }
+  })();
+
+  return () => {
+    cancelled = true;
+  };
+}, [skinId, token]);
 
   // {/* mounted guard */}
   useEffect(() => { setMounted(true); }, []);
