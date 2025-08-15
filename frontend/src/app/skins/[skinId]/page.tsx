@@ -68,14 +68,18 @@ export default function SkinDetailPage() {
 
   // {/* Data load effect */}
   useEffect(() => {
-    if (!skinId) return;
-    console.warn("Invalid skinId param");
+    // ohne gültige ID: nichts laden → verhindert /undefined-Requests
+    if (!skinId || isNaN(Number(skinId))) {
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
 
     (async () => {
       try {
-        // Basis-Daten: Skin + History parallel laden
+        // Basis-Daten parallel laden
         const [s, h] = await Promise.all([
           apiFetch(`/api/v1/skins/${skinId}`),
           apiFetch(`/api/v1/skins/${skinId}/history`).catch(() => []),
@@ -86,7 +90,7 @@ export default function SkinDetailPage() {
           setHistory(Array.isArray(h) ? h : []);
         }
 
-        // Auth-Daten nur laden, wenn eingeloggt
+        // Nur wenn eingeloggt: Watchlist + Portfolio
         if (token) {
           const [w, p] = await Promise.all([getWatchlist(), getPortfolio()]);
           if (!cancelled) {
@@ -95,16 +99,13 @@ export default function SkinDetailPage() {
           }
         }
       } catch (err) {
-        // optional: setError(String(err));
         console.error("skin detail load failed:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [skinId, token]);
 
   // {/* mounted guard */}
@@ -411,7 +412,7 @@ export default function SkinDetailPage() {
             View on Steam Market
           </a>
           <div className="mt-6 text-center">
-            <Link href="/skins" className="text-neutral-400 hover:underline">
+            <Link href="/skins/${skin.id}" className="text-neutral-400 hover:underline">
               ← Back to all skins
             </Link>
           </div>
