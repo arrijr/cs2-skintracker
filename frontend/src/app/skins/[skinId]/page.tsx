@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Line } from "react-chartjs-2";
 import { useAuth } from "../../context/AuthContext";
-import { useMemo } from "react";
+
 
 // {/* API layer */}
 import {
@@ -32,7 +32,6 @@ type PriceHistory = { date: string; price: number };
 
 export default function SkinDetailPage() {
   // *** ALLE STATES GANZ OBEN ***
-  const params = useParams();
   const router = useRouter();
   const { token } = useAuth();
 
@@ -229,16 +228,11 @@ export default function SkinDetailPage() {
   };
 
   // {/* Steam market hash resolver */}
-  const marketHashName = useMemo(() => {
-    if (!skin) return "";
-    // akzeptiere verschiedene API-Schreibweisen, sonst fallback auf den sichtbaren Namen
-    return (
-      (skin as any).marketHashName ??
-      (skin as any).market_hash_name ??
-      skin.name ??
-      ""
-    );
-  }, [skin]);
+  const marketHashName =
+    (skin as any)?.marketHashName ??
+    (skin as any)?.market_hash_name ??
+    skin?.name ??
+    "";
 
   return (
   //Chart DIV
@@ -258,7 +252,7 @@ export default function SkinDetailPage() {
               skin.itemImage ||
               skin.image_url ||
               skin.imageUrl ||
-              "/placeholder-skin.png"
+              "/images/placeholder-skin.png"
             }
             alt={skin.name}
             className="w-36 h-36 md:w-48 md:h-48 object-contain rounded-xl mb-4 shadow-lg bg-neutral-800"
@@ -438,7 +432,9 @@ export default function SkinDetailPage() {
               >
                 View on Steam Market
               </a>
-            ) : null}
+            ) : (
+              <div className="text-neutral-500 text-sm">No Steam listing key available.</div>
+            )}
 
             <div>
               <Link href="/skins" className="text-neutral-400 hover:underline">
