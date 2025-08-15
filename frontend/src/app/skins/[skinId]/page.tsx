@@ -4,10 +4,13 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Line } from "react-chartjs-2";
 import { useAuth } from "../../context/AuthContext";
-// {/* Central API helpers */}
+import { useMemo } from "react";
+
+// {/* API layer */}
 import {
-  getPortfolio,
+  addToWatchlist as apiAddToWatchlist,
   getWatchlist,
+  getPortfolio,
 } from "@/lib/api";
 import { apiFetch } from "@/lib/http"; // for skin detail/history
 import PurchaseAccordion from "../../components/PurchaseAccordion";
@@ -43,10 +46,12 @@ export default function SkinDetailPage() {
   const [history, setHistory] = useState<PriceHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
+  
+  // {/* Watchlist UI state */}
+  const [alert, setAlert] = useState<number | "">("");  // Preis-Alert Eingabe
+  const [adding, setAdding] = useState(false);          // <-- FEHLTE (Fix)
+  const [watchlistMsg, setWatchlistMsg] = useState(""); // Feedback/Fehlertext
   const [watchlist, setWatchlist] = useState<any[]>([]);
-  const [alert, setAlert] = useState<number | "">("");
-  const [addingAlert, setAddingAlert] = useState(false);
-  const [msg, setMsg] = useState("");
 
   // Portfolio
   const [portfolioSkins, setPortfolioSkins] = useState<any[]>([]);
@@ -156,26 +161,33 @@ export default function SkinDetailPage() {
       return new Date(b.buyDate).getTime() - new Date(a.buyDate).getTime(); // recent
     });
 
-  // {/* Add to Watchlist */}
-  async function addToWatchlist() {
-    if (!token) return router.push("/login");
-    setAddingAlert(true);
-    setMsg("");
+  // {/* Handler: Add to Watchlist */}
+  async function handleAddToWatchlist() {
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+    if (!skin?.id) {
+      setWatchlistMsg("Invalid skin.");
+      return;
+    }
+
+    setAdding(true);
+    setWatchlistMsg("");
+
     try {
-      await apiFetch(`/api/v1/watchlist`, {
-        method: "POST",
-        body: JSON.stringify({
-          skinId: skin.id,
-          priceAlert: alert === "" ? null : Number(alert),
-        }),
-      });
-      setMsg("Added to watchlist!");
-      const w = await getWatchlist();
+      // alert === "" -> optional (Backend darf null/undefined akzeptieren)
+      const payloadAlert = alert === "" ? undefined : Number(alert);
+      await apiAddToWatchlist(Number(skin.id), payloadAlert);
+
+      setWatchlistMsg("Added to watchlist!");
+      // Watchlist lokal nachziehen
+      const w = await getWatchlist().catch(() => []);
       setWatchlist(Array.isArray(w) ? w : []);
     } catch (e: any) {
-      setMsg(e.message || "Could not add skin.");
+      setWatchlistMsg(e?.message || "Failed to add to watchlist.");
     } finally {
-      setAddingAlert(false);
+      setAdding(false);
     }
   }
 
@@ -215,6 +227,18 @@ export default function SkinDetailPage() {
       setAddingPortfolio(false);
     }
   };
+
+  // {/* Steam market hash resolver */}
+  const marketHashName = useMemo(() => {
+    if (!skin) return "";
+    // akzeptiere verschiedene API-Schreibweisen, sonst fallback auf den sichtbaren Namen
+    return (
+      (skin as any).marketHashName ??
+      (skin as any).market_hash_name ??
+      skin.name ??
+      ""
+    );
+  }, [skin]);
 
   return (
   //Chart DIV
@@ -358,7 +382,7 @@ export default function SkinDetailPage() {
                 step={0.01}
               />
               <button
-                onClick={addToWatchlist}
+                onClick={handleAddToWatchlist}
                 className="btn-main w-full sm:w-auto"
                 disabled={adding}
               >
@@ -404,20 +428,23 @@ export default function SkinDetailPage() {
           />
 
           {/* Steam-Link & Navigation */}
-          <a
-            href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(
-              skin.marketHashName
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-400 underline mt-2"
-          >
-            View on Steam Market
-          </a>
-          <div className="mt-6 text-center">
-            <Link href="/skins/${skin.id}" className="text-neutral-400 hover:underline">
-              ← Back to all skins
-            </Link>
+          <div className="mt-6 text-center space-y-2">
+            {marketHashName ? (
+              <a
+                href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(marketHashName)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 underline"
+              >
+                View on Steam Market
+              </a>
+            ) : null}
+
+            <div>
+              <Link href="/skins" className="text-neutral-400 hover:underline">
+                ← Back to all skins
+              </Link>
+            </div>
           </div>
         </>
       )}
