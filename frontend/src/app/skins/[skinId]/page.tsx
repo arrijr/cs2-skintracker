@@ -1,7 +1,6 @@
 "use client";
-"use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Line } from "react-chartjs-2";
 import { useAuth } from "../../context/AuthContext";
@@ -25,9 +24,8 @@ type Skin = {
 
 type PriceHistory = { date: string; price: number };
 
-export default function SkinDetailPage() {
+export default function SkinDetailPage({ params }: { params: { skinId: string } }) {
   // *** ALLE STATES GANZ OBEN ***
-  const params = useParams();
   const router = useRouter();
   const { token } = useAuth();
   const skinId = String(params.skinId ?? params.id ?? "");
