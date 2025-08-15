@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import SkinCard from "./SkinCard";
 import SkinDetailModal from "./SkinDetailModal";
@@ -7,28 +8,19 @@ import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/http";
 
-export default function SkinGrid({ filter }: { filter?: string | null }) {
+type Props = { filter?: string | null };
+
+export default function SkinGrid({ filter }: Props) {
   const { user, token } = useAuth();
   const router = useRouter();
   const [selected, setSelected] = useState<number | null>(null);
 
-fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/portfolio`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  },
-  body: JSON.stringify({
-    skinId: skin.id,
-    amount: 1,
-    buyPrice: skin.price,
-    buyDate: new Date().toISOString().slice(0,10),
-  }),
-});
-
   // {/* Add to Portfolio from grid */}
-  async function handleAdd(skin: typeof dummySkins[0]) {
-    if (!user) { router.push("/login"); return; }
+  async function handleAdd(skin: (typeof dummySkins)[number]) {
+    if (!user || !token) {
+      router.push("/login");
+      return;
+    }
     try {
       await apiFetch(`/api/v1/portfolio`, {
         method: "POST",
@@ -40,16 +32,18 @@ fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/portfolio`, {
         }),
       });
       alert(`Skin "${skin.name}" added to your portfolio!`);
-    } catch {
+    } catch (e) {
+      console.error("[SkinGrid] add to portfolio failed:", e);
       alert("Failed to add to portfolio!");
     }
   }
 
+  // {/* Filtered list */}
   const skins = !filter
     ? dummySkins
-    : dummySkins.filter((skin) => skin.name === filter);
+    : dummySkins.filter((s) => s.name === filter);
 
-  const selectedSkin = skins.find((skin) => skin.id === selected) || null;
+  const selectedSkin = skins.find((s) => s.id === selected) || null;
 
   return (
     <>
@@ -58,16 +52,21 @@ fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/portfolio`, {
         {skins.map((skin) => (
           <SkinCard
             key={skin.id}
+            id={skin.id}                           {/* <-- wichtig: ID für Detail-Link */}
             name={skin.name}
             imageUrl={skin.imageUrl}
             price={skin.price}
             onAdd={() => handleAdd(skin)}
+            // Hinweis: Wenn deine SkinCard per <Link> navigiert,
+            // öffnet onClick zusätzlich dein Modal. Wenn du NUR Modal willst,
+            // erweitere SkinCard um eine "disableLink" Prop und verhindere dort die Navigation.
             onClick={() => setSelected(skin.id)}
           />
         ))}
+
         {skins.length === 0 && (
           <div className="col-span-full text-center text-gray-400 mt-8">
-            Kein Skin gefunden.
+            No skins found.
           </div>
         )}
       </div>
@@ -77,7 +76,9 @@ fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/portfolio`, {
         open={selected !== null}
         onClose={() => setSelected(null)}
         skin={selectedSkin}
-        onAdd={() => { if (selectedSkin) handleAdd(selectedSkin); }}
+        onAdd={() => {
+          if (selectedSkin) handleAdd(selectedSkin);
+        }}
       />
     </>
   );
