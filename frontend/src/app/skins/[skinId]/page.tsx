@@ -1,5 +1,4 @@
 "use client";
-"use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -11,6 +10,9 @@ import {
   getWatchlist,
 } from "@/lib/api";
 import { apiFetch } from "@/lib/http"; // for skin detail/history
+import PurchaseAccordion from "../../components/PurchaseAccordion";
+import SkinPortfolioCard from "../../components/SkinPortfolioCard";
+
 
 type Skin = {
   id: number;
