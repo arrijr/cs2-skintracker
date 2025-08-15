@@ -165,25 +165,26 @@ export default function SkinDetailPage() {
     setPortfolioMsg("");
 
     try {
-      await http.post("/portfolio", {
-        skinId: skin!.id,
-        amount: Number(amount),
-        buyPrice: Number(useMarketPrice ? skin!.marketPrice : buyPrice),
-        buyDate,
+      await apiFetch("/api/v1/portfolio", {
+        method: "POST",
+        body: JSON.stringify({
+          skinId: skin!.id,
+          amount: Number(amount),
+          buyPrice: Number(useMarketPrice ? skin!.marketPrice : buyPrice),
+          buyDate,
+        }),
       });
       setPortfolioMsg("Added to portfolio!");
+      // Refetch portfolio to show new item
+      getPortfolio().then((p) => setPortfolioSkins(Array.isArray(p) ? p : []));
       setTimeout(() => {
         setShowPortfolioModal(false);
-        setPortfolioMsg("");
-        setAmount(1);
-        setBuyPrice("");
-        setBuyDate("");
-        setUseMarketPrice(false);
       }, 1200);
     } catch (e: any) {
-      setPortfolioMsg(e?.response?.data?.error || "Could not add skin.");
+      setPortfolioMsg(e.message || "Could not add skin.");
+    } finally {
+      setAddingPortfolio(false);
     }
-    setAddingPortfolio(false);
   };
 
   return (
@@ -335,8 +336,8 @@ export default function SkinDetailPage() {
                 Add to Watchlist
               </button>
             </div>
-            {watchlistMsg && (
-              <div className="mt-2 text-sm text-yellow-400">{watchlistMsg}</div>
+            {msg && (
+              <div className="mt-2 text-sm text-yellow-400">{msg}</div>
             )}
             {watchlist.some((item) => item.skinId === skin.id) && (
               <div className="mb-2 text-green-400 text-sm font-semibold">
