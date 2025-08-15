@@ -4,15 +4,18 @@ import Link from "next/link";
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Bell } from "lucide-react";
 import PurchaseAccordion from "../components/PurchaseAccordion";
-import clsx from "clsx";
 import Tooltip from "../components/Tooltip";
 
+// {/* Local minimal type to avoid missing import */}
+type WatchlistEntry = { skinId: number; priceAlert?: number | null };
 
 type Skin = {
   id: number;
   name: string;
   imageUrl?: string | null;
+  image_url?: string | null;
   itemimage?: string | null;
+  itemImage?: string | null;
   marketPrice?: number | null;
 };
 
@@ -24,9 +27,7 @@ type Purchase = {
 };
 
 type PortfolioEntry = {
-  id: number;
   amount: number;
-  buyPrice: number;
   avgPrice: number;
   purchases: Purchase[];
   skin: Skin;
@@ -43,8 +44,6 @@ export default function PortfolioTable({ skins, watchlist = [] }: Props) {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"performance" | "recent" | "default">("default");
 
-
-
   // Filtered & Sorted Skins
   let filteredSkins = skins;
 
@@ -58,7 +57,6 @@ export default function PortfolioTable({ skins, watchlist = [] }: Props) {
   // Sortierung
   if (sortBy === "performance") {
     filteredSkins = [...filteredSkins].sort((a, b) => {
-      // Performance robust berechnen
       const perfA =
         typeof a.skin.marketPrice === "number" &&
         typeof a.avgPrice === "number" &&
@@ -75,7 +73,6 @@ export default function PortfolioTable({ skins, watchlist = [] }: Props) {
     });
   } else if (sortBy === "recent") {
     filteredSkins = [...filteredSkins].sort((a, b) => {
-      // Most recent buy: nach neustem Kaufdatum
       const dateA = a.purchases?.[a.purchases.length - 1]?.buyDate
         ? new Date(a.purchases[a.purchases.length - 1].buyDate).getTime()
         : 0;
@@ -87,35 +84,28 @@ export default function PortfolioTable({ skins, watchlist = [] }: Props) {
   }
 
   {/* Portfolio Empty State */}
-if (!skins || skins.length === 0) {
-  return (
-    <div className="flex flex-col items-center justify-center py-12 text-zinc-400">
-      {/* Optional: Small illustration */}
-      <svg width="72" height="72" fill="none" viewBox="0 0 24 24" className="mb-4 opacity-70">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M8 14s1.5-2 4-2 4 2 4 2" stroke="currentColor" strokeWidth="1.5" fill="none" />
-        <circle cx="9" cy="10" r="1" fill="currentColor" />
-        <circle cx="15" cy="10" r="1" fill="currentColor" />
-      </svg>
-      <h2 className="text-2xl font-semibold mb-2">No skins in your portfolio yet</h2>
-      <p className="mb-4 text-center max-w-xs">
-        Add your first CS2 skin to start tracking your portfolio’s value and performance over time.
-      </p>
-      {/* Optional: Add Skin Button */}
-      <button
-        className="btn-main"
-        onClick={() => {/* Open add skin modal or redirect to add page */}}
-      >
-        Add Skin
-      </button>
-    </div>
-  );
-}
+  if (!skins || skins.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-zinc-400">
+        {/* Optional: Small illustration */}
+        <svg width="72" height="72" fill="none" viewBox="0 0 24 24" className="mb-4 opacity-70">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M8 14s1.5-2 4-2 4 2 4 2" stroke="currentColor" strokeWidth="1.5" fill="none" />
+          <circle cx="9" cy="10" r="1" fill="currentColor" />
+          <circle cx="15" cy="10" r="1" fill="currentColor" />
+        </svg>
+        <h2 className="text-2xl font-semibold mb-2">No skins in your portfolio yet</h2>
+        <p className="mb-4 text-center max-w-xs">
+          Add your first CS2 skin to start tracking your portfolio’s value and performance over time.
+        </p>
+        {/* Optional: Add Skin Button */}
+        <a className="btn-main" href="/skins">Add Skin</a>
+      </div>
+    );
+  }
 
   return (
-
     <div className="flex flex-col gap-4">
-
       {/* Portfolio Filter & Searchbar */}
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 items-center">
         <input
@@ -140,7 +130,6 @@ if (!skins || skins.length === 0) {
         const alertObj = watchlist.find(
           (w) => w.skinId === entry.skin.id && w.priceAlert && w.priceAlert > 0
         );
-        // Performance robust berechnen (0% wenn MarketPrice fehlt)
         const performance =
           typeof entry.skin.marketPrice === "number" &&
           typeof entry.avgPrice === "number" &&
@@ -149,8 +138,12 @@ if (!skins || skins.length === 0) {
             : 0;
 
         const isOpen = openSkinId === entry.skin.id;
+
+        // {/* Robust image resolution + consistent placeholder path */}
         const img =
           entry.skin.itemimage ||
+          entry.skin.itemImage ||
+          entry.skin.image_url ||
           entry.skin.imageUrl ||
           "/images/placeholder-skin.png";
 
@@ -167,13 +160,7 @@ if (!skins || skins.length === 0) {
               <div className="flex gap-4 items-center">
                 {/* Portfolio Row Image */}
                 <Image
-                  src={
-                    entry.skin.itemimage ||
-                    entry.skin.itemImage ||        // <-- added
-                    entry.skin.imageUrl ||
-                    (entry as any).skin?.image_url || // <-- added (falls Typ abweicht)
-                    "/placeholder-skin.png"
-                  }
+                  src={img}
                   alt={entry.skin.name}
                   width={48}
                   height={48}
@@ -185,9 +172,7 @@ if (!skins || skins.length === 0) {
                     {/* Alert Badge */}
                     {alertObj && (
                       <Tooltip content={`Price alert: ${alertObj.priceAlert} $`}>
-                        <span>
-                          <Bell className="inline w-5 h-5 text-amber-400" />
-                        </span>
+                        <span><Bell className="inline w-5 h-5 text-amber-400" /></span>
                       </Tooltip>
                     )}
                   </div>
@@ -199,26 +184,22 @@ if (!skins || skins.length === 0) {
                 <div>
                   <span className="text-zinc-400 text-xs">Avg. Buy</span>
                   <div className="font-mono">
-                    {typeof entry.avgPrice === "number"
-                      ? entry.avgPrice.toFixed(2) + " $"
-                      : "-"}
+                    {typeof entry.avgPrice === "number" ? entry.avgPrice.toFixed(2) + " $" : "-"}
                   </div>
                 </div>
                 <div>
                   <span className="text-zinc-400 text-xs">Market</span>
                   <div className="font-mono">
-                    {typeof entry.skin.marketPrice === "number"
-                      ? entry.skin.marketPrice.toFixed(2) + " $"
-                      : "-"}
+                    {typeof entry.skin.marketPrice === "number" ? entry.skin.marketPrice.toFixed(2) + " $" : "-"}
                   </div>
                 </div>
                 <div className={performance >= 0 ? "text-emerald-400" : "text-red-400"}>
-                  {performance > 0 ? "+" : ""}
-                  {performance.toFixed(1)}%
+                  {performance > 0 ? "+" : ""}{performance.toFixed(1)}%
                 </div>
                 <span>{isOpen ? <ChevronUp /> : <ChevronDown />}</span>
               </div>
             </div>
+
             {/* Accordion: Statistiken + Käufe-Tabelle */}
             {isOpen && (
               <div className="bg-zinc-950 p-4 border-t border-zinc-800 rounded-b-xl">
@@ -230,9 +211,7 @@ if (!skins || skins.length === 0) {
                   <div>
                     <div className="font-bold text-xs text-zinc-400">Avg. Buy:</div>
                     <div className="font-mono">
-                      {typeof entry.avgPrice === "number"
-                        ? entry.avgPrice.toFixed(2) + " $"
-                        : "-"}
+                      {typeof entry.avgPrice === "number" ? entry.avgPrice.toFixed(2) + " $" : "-"}
                     </div>
                   </div>
                   <div>
@@ -246,11 +225,11 @@ if (!skins || skins.length === 0) {
                   <div>
                     <div className="font-bold text-xs text-zinc-400">Performance:</div>
                     <div className={performance >= 0 ? "text-emerald-400 font-mono" : "text-red-400 font-mono"}>
-                      {performance > 0 ? "+" : ""}
-                      {performance.toFixed(1)}%
+                      {performance > 0 ? "+" : ""}{performance.toFixed(1)}%
                     </div>
                   </div>
                 </div>
+
                 {/* Käufe-Tabelle */}
                 <table className="w-full text-xs">
                   <thead>
@@ -266,15 +245,9 @@ if (!skins || skins.length === 0) {
                       <tr key={p.id}>
                         <td>{new Date(p.buyDate).toLocaleDateString("en-US")}</td>
                         <td className="text-right">{p.amount}</td>
+                        <td className="text-right">{typeof p.buyPrice === "number" ? p.buyPrice.toFixed(2) : "-"}</td>
                         <td className="text-right">
-                          {typeof p.buyPrice === "number"
-                            ? p.buyPrice.toFixed(2)
-                            : "-"}
-                        </td>
-                        <td className="text-right">
-                          {typeof p.buyPrice === "number"
-                            ? (p.amount * p.buyPrice).toFixed(2)
-                            : "-"}
+                          {typeof p.buyPrice === "number" ? (p.amount * p.buyPrice).toFixed(2) : "-"}
                         </td>
                       </tr>
                     ))}
@@ -283,20 +256,13 @@ if (!skins || skins.length === 0) {
 
                 {/* Quick Actions im Accordion */}
                 <div className="flex gap-3 mt-6">
-                  <button
-                    className="btn-main"
-                    onClick={() => alert("Add More not yet implemented!")}
-                  >
+                  <button className="btn-main" onClick={() => alert("Add More not yet implemented!")}>
                     Add more
                   </button>
-                  <button
-                    className="btn-main bg-red-700 hover:bg-red-800"
-                    onClick={() => alert("Sell not yet implemented!")}
-                  >
+                  <button className="btn-main bg-red-700 hover:bg-red-800" onClick={() => alert("Sell not yet implemented!")}>
                     Sell
                   </button>
                 </div>
-
               </div>
             )}
           </div>
