@@ -27,7 +27,7 @@ export default function NavBar() {
         <div className="flex-1 flex justify-center">
           <div className="w-full max-w-lg">
             <SkinSearchBar
-              onSelect={skin => router.push(`/skins/${skin.id}`)} 
+              onSelect={(skinId) => router.push(`/skins/${skinId}`)}
               className="h-11 text-base px-5 rounded-xl w-full input-main"
             />
           </div>

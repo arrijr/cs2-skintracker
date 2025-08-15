@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
+import { useRequireAuth } from "../hooks/useRequireAuth";
 import PortfolioChart from "./PortfolioChart";
 import PortfolioTable from "./PortfolioTable";
 import WatchlistTable from "./WatchlistTable";
@@ -20,34 +21,13 @@ type WatchlistEntry = any;
 
 export default function PortfolioPage() {
   const { token } = useAuth();
+  useRequireAuth(); // Redirect if not logged in
 
   const [history, setHistory] = useState<any[]>([]);
   const [portfolioSkins, setPortfolioSkins] = useState<any[]>([]);
   const [watchlist, setWatchlist] = useState<WatchlistEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  {/* Require Auth Gate – block while auth is initializing */}
-  if (token === undefined) {
-    return <div className="text-white p-6">Loading…</div>;
-  }
-
-  {/* Require Auth Gate – redirect suggestion */}
-  if (!token) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-white bg-gray-950">
-        <div className="card p-8 text-center">
-          <h2 className="text-2xl font-bold mb-2">
-            Please login to view your portfolio.
-          </h2>
-        <p className="mb-4">
-          You need to be signed in to access your personal skin tracker and stats.
-        </p>
-          <Link href="/login" className="btn-main">Login</Link>
-        </div>
-      </div>
-    );
-  }
 
   // {/* Load portfolio data (history, holdings, watchlist) – Hook MUST be called every render */}
   useEffect(() => {
@@ -102,24 +82,11 @@ export default function PortfolioPage() {
     }
   }
 
-  // {/* Require Auth Gate – UI only (hooks are already defined above) */}
-  if (token === undefined) {
-    return <div className="text-white p-6">Loading…</div>;
+  // While loading auth state or data, show a loading message.
+  // The redirect will happen via the hook if auth fails.
+  if (token === undefined || loading) {
+    return <div className="text-white p-6">Loading portfolio…</div>;
   }
-
-  if (!token) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-white bg-gray-950">
-        <div className="card p-8 text-center">
-          <h2 className="text-2xl font-bold mb-2">Please login to view your portfolio.</h2>
-          <p className="mb-4">You need to be signed in to access your personal skin tracker and stats.</p>
-          <Link href="/login" className="btn-main">Login</Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) return <div className="text-white p-6">Loading portfolio…</div>;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-2 sm:p-4">

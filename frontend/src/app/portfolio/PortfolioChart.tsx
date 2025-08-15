@@ -51,7 +51,7 @@ export default function PortfolioChart({ history }: Props) {
   const valueDiffSign = valueDiff >= 0 ? "+" : "-";
   const valueDiffClass = valueDiff >= 0 ? "text-emerald-400" : "text-red-400";
 
-  const data: ChartData<"line"> = {
+  const chartData: ChartData<"line"> = {
     labels: filtered.map(entry => new Date(entry.date).toLocaleDateString()),
     datasets: [
       {
@@ -108,7 +108,7 @@ export default function PortfolioChart({ history }: Props) {
       </div>
 
       {/* Chart */}
-      <Line data={data} options={options} height={300} />
+      <Line data={chartData} options={options} height={300} />
     </div>
   );
 }
