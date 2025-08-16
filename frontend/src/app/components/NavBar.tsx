@@ -23,7 +23,6 @@ export default function NavBar() {
           <Link href="/portfolio" className="text-blue-400 hover:text-blue-300 transition">Portfolio</Link>
         </div>
 
-
         {/* Zentrale Suchleiste */}
         <div className="flex-1 flex justify-center">
           <div className="w-full max-w-lg">
@@ -32,19 +31,6 @@ export default function NavBar() {
               className="h-11 text-base px-5 rounded-xl w-full input-main"
             />
           </div>
-
-        {/* Global Search */}
-        <div className="w-full max-w-lg mx-auto">
-          <SkinSearchBar
-            onSelect={(id) => {
-              if (!id || Number.isNaN(Number(id))) {
-                console.warn("[NavBar] invalid id from search:", id);
-                return;
-              }
-              router.push(`/skins/${Number(id)}`);
-            }}
-          />
-
         </div>
 
         {/* Account-Link ganz rechts */}
