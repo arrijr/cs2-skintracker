@@ -129,7 +129,7 @@ export default function WatchlistPage() {
               it.skin.itemImage ||
               it.skin.image_url ||
               it.skin.imageUrl ||
-              "/placeholder-skin.png";
+              "/images/placeholder-skin.png";
 
             const mhn =
               it.skin.market_hash_name ||
