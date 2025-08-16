@@ -22,8 +22,6 @@ type WatchlistEntry = any;
 // {/* Normalizer: akzeptiert verschiedene Backend-Shapes und erzeugt PortfolioTable-kompatible Einträge */}
 function normalizePortfolio(raw: any) {
   if (!raw) return [];
-
-  // Case A: already aggregated per skin
   if (Array.isArray(raw) && raw.length && (raw[0].skin || raw[0].amount)) {
     return raw.map((row: any) => {
       const skin =
@@ -39,7 +37,6 @@ function normalizePortfolio(raw: any) {
 
       const purchases: any[] = Array.isArray(row.purchases) ? row.purchases : [];
 
-      // avgPrice berechnen falls nicht vorhanden
       const avg =
         typeof row.avgPrice === "number"
           ? row.avgPrice
@@ -76,7 +73,7 @@ function normalizePortfolio(raw: any) {
     });
   }
 
-  // Case B: purchases list → group by skinId
+  // purchases list → group
   if (Array.isArray(raw)) {
     const map = new Map<number, any>();
     for (const p of raw) {
@@ -121,6 +118,7 @@ function normalizePortfolio(raw: any) {
 
   return [];
 }
+
 
 export default function PortfolioPage() {
   const { token } = useAuth();
@@ -189,10 +187,20 @@ export default function PortfolioPage() {
     }
   }
 
-  // While loading auth state or data, show a loading message.
-  // The redirect will happen via the hook if auth fails.
-  if (token === undefined || loading) {
-    return <div className="text-white p-6">Loading portfolio…</div>;
+  // Render gates AFTER hooks are called (safe)
+  if (token === undefined) {
+    return <div className="text-white p-6">Loading…</div>;
+  }
+  if (!token) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-white bg-gray-950">
+        <div className="card p-8 text-center">
+          <h2 className="text-2xl font-bold mb-2">Please login to view your portfolio.</h2>
+          <p className="mb-4">You need to be signed in to access your personal skin tracker and stats.</p>
+          <Link href="/login" className="btn-main">Login</Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -220,11 +228,20 @@ export default function PortfolioPage() {
           <PortfolioTable skins={portfolioSkins} watchlist={watchlist} />
         </section>
 
-        {/* Watchlist Table Section */}
+        {/* Watchlist */}
         <section className="card">
           <WatchlistTable
             watchlist={watchlist}
-            onRemove={handleRemoveWatchlist}
+            onRemove={async (skinId) => {
+              try {
+                await removeFromWatchlist(skinId);
+                setWatchlist((prev) =>
+                  prev.filter((e: any) => (e.skin?.id ?? e.skinId) !== skinId)
+                );
+              } catch (e: any) {
+                setError(e?.message || "Failed to remove from watchlist");
+              }
+            }}
           />
         </section>
       </main>
