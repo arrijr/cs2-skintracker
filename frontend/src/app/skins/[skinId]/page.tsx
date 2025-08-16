@@ -1,7 +1,6 @@
 "use client";
-"use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Line } from "react-chartjs-2";
 import { useAuth } from "../../context/AuthContext";
@@ -25,9 +24,8 @@ type Skin = {
 
 type PriceHistory = { date: string; price: number };
 
-export default function SkinDetailPage() {
+export default function SkinDetailPage({ params }: { params: { skinId: string } }) {
   // *** ALLE STATES GANZ OBEN ***
-  const params = useParams();
   const router = useRouter();
   const { token } = useAuth();
   const skinId = String(params.skinId ?? params.id ?? "");
@@ -165,25 +163,26 @@ export default function SkinDetailPage() {
     setPortfolioMsg("");
 
     try {
-      await http.post("/portfolio", {
-        skinId: skin!.id,
-        amount: Number(amount),
-        buyPrice: Number(useMarketPrice ? skin!.marketPrice : buyPrice),
-        buyDate,
+      await apiFetch("/api/v1/portfolio", {
+        method: "POST",
+        body: JSON.stringify({
+          skinId: skin!.id,
+          amount: Number(amount),
+          buyPrice: Number(useMarketPrice ? skin!.marketPrice : buyPrice),
+          buyDate,
+        }),
       });
       setPortfolioMsg("Added to portfolio!");
+      // Refetch portfolio to show new item
+      getPortfolio().then((p) => setPortfolioSkins(Array.isArray(p) ? p : []));
       setTimeout(() => {
         setShowPortfolioModal(false);
-        setPortfolioMsg("");
-        setAmount(1);
-        setBuyPrice("");
-        setBuyDate("");
-        setUseMarketPrice(false);
       }, 1200);
     } catch (e: any) {
-      setPortfolioMsg(e?.response?.data?.error || "Could not add skin.");
+      setPortfolioMsg(e.message || "Could not add skin.");
+    } finally {
+      setAddingPortfolio(false);
     }
-    setAddingPortfolio(false);
   };
 
   return (
@@ -330,13 +329,13 @@ export default function SkinDetailPage() {
               <button
                 onClick={addToWatchlist}
                 className="btn-main w-full sm:w-auto"
-                disabled={adding}
+                disabled={addingAlert}
               >
                 Add to Watchlist
               </button>
             </div>
-            {watchlistMsg && (
-              <div className="mt-2 text-sm text-yellow-400">{watchlistMsg}</div>
+            {msg && (
+              <div className="mt-2 text-sm text-yellow-400">{msg}</div>
             )}
             {watchlist.some((item) => item.skinId === skin.id) && (
               <div className="mb-2 text-green-400 text-sm font-semibold">
