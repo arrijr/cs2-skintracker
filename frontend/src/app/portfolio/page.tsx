@@ -239,7 +239,7 @@ export default function PortfolioPage() {
                   prev.filter((e: any) => (e.skin?.id ?? e.skinId) !== skinId)
                 );
               } catch (e: any) {
-                setError(e?.message || "Failed to remove from watchlist"); //ok
+                setError(e?.message || "Failed to remove from watchlist"); 
               }
             }}
           />
