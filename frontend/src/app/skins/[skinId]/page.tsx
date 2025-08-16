@@ -73,47 +73,44 @@ export default function SkinDetailPage() {
 
   // {/* Data load effect */}
   useEffect(() => {
-  // Guard – verhindert /undefined Calls
-  if (!skinId || isNaN(Number(skinId))) {
-    console.warn("[SkinDetail] invalid skinId:", skinId);
-    setLoading(false);
-    return;
-  }
+    if (!skinId) return;
 
-  let cancelled = false;
-  setLoading(true);
+    let cancelled = false;
+    setLoading(true);
 
-  (async () => {
-    try {
-      // Basisdaten parallel
-      const [s, h] = await Promise.all([
-        apiFetch(`/api/v1/skins/${skinId}`),
-        apiFetch(`/api/v1/skins/${skinId}/history`).catch(() => []),
-      ]);
-      if (!cancelled) {
-        setSkin(s || null);
-        setHistory(Array.isArray(h) ? h : []);
-      }
+    (async () => {
+      try {
+        // Basis-Daten: Skin + History parallel laden
+        const [s, h] = await Promise.all([
+          apiFetch(`/api/v1/skins/${skinId}`),
+          apiFetch(`/api/v1/skins/${skinId}/history`).catch(() => []),
+        ]);
 
-      // Auth-Daten nur wenn eingeloggt
-      if (token) {
-        const [w, p] = await Promise.all([getWatchlist(), getPortfolio()]);
         if (!cancelled) {
-          setWatchlist(Array.isArray(w) ? w : []);
-          setPortfolioSkins(Array.isArray(p) ? p : []);
+          setSkin(s || null);
+          setHistory(Array.isArray(h) ? h : []);
         }
-      }
-    } catch (err) {
-      console.error("[SkinDetail] load failed:", err);
-    } finally {
-      if (!cancelled) setLoading(false);
-    }
-  })();
 
-  return () => {
-    cancelled = true;
-  };
-}, [skinId, token]);
+        // Auth-Daten nur laden, wenn eingeloggt
+        if (token) {
+          const [w, p] = await Promise.all([getWatchlist(), getPortfolio()]);
+          if (!cancelled) {
+            setWatchlist(Array.isArray(w) ? w : []);
+            setPortfolioSkins(Array.isArray(p) ? p : []);
+          }
+        }
+      } catch (err) {
+        // optional: setError(String(err));
+        console.error("skin detail load failed:", err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [skinId, token]);
 
   // {/* mounted guard */}
   useEffect(() => { setMounted(true); }, []);
