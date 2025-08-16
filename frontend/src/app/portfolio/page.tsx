@@ -220,11 +220,20 @@ export default function PortfolioPage() {
           <PortfolioTable skins={portfolioSkins} watchlist={watchlist} />
         </section>
 
-        {/* Watchlist Table Section */}
+        {/* Watchlist */}
         <section className="card">
           <WatchlistTable
             watchlist={watchlist}
-            onRemove={handleRemoveWatchlist}
+            onRemove={async (skinId) => {
+              try {
+                await removeFromWatchlist(skinId);
+                setWatchlist((prev) =>
+                  prev.filter((e: any) => (e.skin?.id ?? e.skinId) !== skinId)
+                );
+              } catch (e: any) {
+                setError(e?.message || "Failed to remove from watchlist");
+              }
+            }}
           />
         </section>
       </main>
