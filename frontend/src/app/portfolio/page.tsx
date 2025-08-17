@@ -227,6 +227,10 @@ export default function PortfolioPage() {
     return <div className="text-white p-6">Loading portfolio…</div>;
   }
 
+  // {/* DEBUG: Queryparam ?debug=1 aktivieren */}
+  const searchParams = useSearchParams();
+  const debug = searchParams?.get("debug") === "1";
+
   return (
     <div className="min-h-screen bg-gray-950 text-white p-2 sm:p-4">
       {/* Error Banner */}
