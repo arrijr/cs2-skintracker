@@ -7,6 +7,7 @@ import { useRequireAuth } from "../hooks/useRequireAuth";
 import PortfolioChart from "./PortfolioChart";
 import PortfolioTable from "./PortfolioTable";
 import WatchlistTable from "./WatchlistTable";
+import { useSearchParams } from "next/navigation";
 
 // {/* API helpers (zentral aus /src/lib/api.ts) */}
 import {
@@ -18,6 +19,10 @@ import {
 
 // {/* Types kept minimal; UI components do stricter typing */}
 type WatchlistEntry = any;
+
+// {/* DEBUG: Queryparam ?debug=1 aktivieren */}
+const searchParams = useSearchParams();
+const debug = searchParams?.get("debug") === "1";
 
 // {/* Normalizer: akzeptiert verschiedene Backend-Shapes und erzeugt PortfolioTable-kompatible Einträge */}
 function normalizePortfolio(rawIn: any) {
@@ -243,6 +248,20 @@ export default function PortfolioPage() {
           </p>
           <PortfolioChart history={history} />
         </section>
+
+        {/* DEBUG: Portfolio-Inspection (sichtbar mit ?debug=1) */}
+        {debug && (
+          <section className="card">
+            <div className="text-xs text-zinc-300 space-y-2">
+              <div>raw history len: {Array.isArray(history) ? history.length : 0}</div>
+              <div>normalized portfolio len: {Array.isArray(portfolioSkins) ? portfolioSkins.length : 0}</div>
+              <div>watchlist len: {Array.isArray(watchlist) ? watchlist.length : 0}</div>
+              <pre className="bg-zinc-900/60 p-2 rounded max-h-64 overflow-auto">
+                {JSON.stringify(portfolioSkins?.[0], null, 2)}
+              </pre>
+            </div>
+          </section>
+        )}
 
         {/* Portfolio Table Section */}
         <section className="card">
