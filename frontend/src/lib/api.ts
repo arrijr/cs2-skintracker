@@ -8,8 +8,9 @@ export async function searchSkins(query: string) {
 }
 
 // {/* Skins: History */}
-export async function getSkinHistory(id: number | string) {
-  return await apiFetch(`/api/v1/skins/${id}/history`);
+export async function getSkinHistory(id: number | string, range?: string) {
+  const rangeParam = range ? `?range=${encodeURIComponent(range)}` : '';
+  return await apiFetch(`/api/v1/skins/${id}/history${rangeParam}`);
 }
 
 // {/* Watchlist: lesen */}
@@ -48,6 +49,20 @@ export async function getPortfolioHistory() {
   return await apiFetch(`/api/v1/portfolio/history`);
 }
 
+// {/* Portfolio: Transactions */}
+export async function addPortfolioTransaction(skinId: number, type: "BUY" | "SELL", quantity: number, price: number, date?: string) {
+  return await apiFetch(`/api/v1/portfolio`, {
+    method: "POST",
+    body: JSON.stringify({ 
+      skinId, 
+      type, 
+      amount: quantity, 
+      buyPrice: price, 
+      buyDate: date || new Date().toISOString() 
+    }),
+  });
+}
+
 // {/* Auth: Login – speichert Token/User wie dein AuthContext es erwartet */}
 export async function login(email: string, password: string) {
   const data = await apiFetch(`/api/v1/users/login`, {
@@ -79,6 +94,7 @@ export const api = {
   updatePriceAlert,
   getPortfolio,
   getPortfolioHistory,
+  addPortfolioTransaction,
   login,
   signup,
 };

@@ -9,7 +9,8 @@ function authenticateToken(req, res, next) {
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
       console.error('JWT verify failed:', err.message);
-      return res.sendStatus(403);         // invalid token → 403
+      // Auth: enforce 401 on invalid/expired token
+      return res.sendStatus(401);         // invalid/expired token → 401
     }
     req.user = user;                      // attach user data to request
     next();                               // all good → next

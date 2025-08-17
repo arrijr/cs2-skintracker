@@ -2,6 +2,7 @@
 import "./globals.css";
 import Providers from "./providers";
 import NavBar from "./components/NavBar";
+import ToastContainer from "./components/ToastContainer";
 
 export const metadata = {
   title: "CS2 Skin Price Tracker",
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </header>
 
           <main className="max-w-6xl mx-auto px-4 py-6">{children}</main>
+          <ToastContainer />
         </Providers>
       </body>
     </html>

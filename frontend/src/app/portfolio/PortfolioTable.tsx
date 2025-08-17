@@ -200,61 +200,18 @@ export default function PortfolioTable({ skins, watchlist = [] }: Props) {
               </div>
             </div>
 
-            {/* Accordion: Statistiken + Käufe-Tabelle */}
+            {/* Portfolio – Accordion of skins & purchases */}
             {isOpen && (
               <div className="bg-zinc-950 p-4 border-t border-zinc-800 rounded-b-xl">
-                <div className="flex gap-8 mb-2">
-                  <div>
-                    <div className="font-bold text-xs text-zinc-400">In Portfolio:</div>
-                    <div className="text-emerald-400 font-mono">{entry.amount}</div>
-                  </div>
-                  <div>
-                    <div className="font-bold text-xs text-zinc-400">Avg. Buy:</div>
-                    <div className="font-mono">
-                      {typeof entry.avgPrice === "number" ? entry.avgPrice.toFixed(2) + " $" : "-"}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-bold text-xs text-zinc-400">Value:</div>
-                    <div className="font-mono">
-                      {typeof entry.skin.marketPrice === "number"
-                        ? (entry.skin.marketPrice * entry.amount).toFixed(2) + " $"
-                        : "-"}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-bold text-xs text-zinc-400">Performance:</div>
-                    <div className={performance >= 0 ? "text-emerald-400 font-mono" : "text-red-400 font-mono"}>
-                      {performance > 0 ? "+" : ""}{performance.toFixed(1)}%
-                    </div>
-                  </div>
-                </div>
+                <PurchaseAccordion
+                  purchases={entry.purchases || []}
+                  total={entry.amount}
+                  avgPrice={entry.avgPrice}
+                  performance={performance}
+                  marketPrice={entry.skin.marketPrice}
+                />
 
-                {/* Käufe-Tabelle */}
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr>
-                      <th className="text-left">Date</th>
-                      <th className="text-right">Amount</th>
-                      <th className="text-right">Price/Unit ($)</th>
-                      <th className="text-right">Total ($)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {entry.purchases?.map((p) => (
-                      <tr key={p.id}>
-                        <td>{new Date(p.buyDate).toLocaleDateString("en-US")}</td>
-                        <td className="text-right">{p.amount}</td>
-                        <td className="text-right">{typeof p.buyPrice === "number" ? p.buyPrice.toFixed(2) : "-"}</td>
-                        <td className="text-right">
-                          {typeof p.buyPrice === "number" ? (p.amount * p.buyPrice).toFixed(2) : "-"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {/* Quick Actions im Accordion */}
+                {/* Quick Actions */}
                 <div className="flex gap-3 mt-6">
                   <button className="btn-main" onClick={() => alert("Add More not yet implemented!")}>
                     Add more
