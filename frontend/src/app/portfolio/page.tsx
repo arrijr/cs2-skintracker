@@ -20,9 +20,7 @@ import {
 // {/* Types kept minimal; UI components do stricter typing */}
 type WatchlistEntry = any;
 
-// {/* DEBUG: Queryparam ?debug=1 aktivieren */}
-const searchParams = useSearchParams();
-const debug = searchParams?.get("debug") === "1";
+
 
 // {/* Normalizer: akzeptiert verschiedene Backend-Shapes und erzeugt PortfolioTable-kompatible Einträge */}
 function normalizePortfolio(rawIn: any) {
