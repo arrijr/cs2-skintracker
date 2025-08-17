@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
 import { useRequireAuth } from "../hooks/useRequireAuth";
@@ -154,11 +154,34 @@ function normalizePortfolio(rawIn: any) {
   return Array.from(map.values());
 }
 
+// Component that handles search params and debug display
+function DebugSection({ portfolioSkins, history, watchlist }: { 
+  portfolioSkins: any[], 
+  history: any[], 
+  watchlist: any[] 
+}) {
+  const searchParams = useSearchParams();
+  const debug = searchParams?.get("debug") === "1";
+
+  if (!debug) return null;
+
+  return (
+    <section className="card">
+      <div className="text-xs text-zinc-300 space-y-2">
+        <div>raw history len: {Array.isArray(history) ? history.length : 0}</div>
+        <div>normalized portfolio len: {Array.isArray(portfolioSkins) ? portfolioSkins.length : 0}</div>
+        <div>watchlist len: {Array.isArray(watchlist) ? watchlist.length : 0}</div>
+        <pre className="bg-zinc-900/60 p-2 rounded max-h-64 overflow-auto">
+          {JSON.stringify(portfolioSkins?.[0], null, 2)}
+        </pre>
+      </div>
+    </section>
+  );
+}
+
 export default function PortfolioPage() {
   const { token } = useAuth();
   useRequireAuth(); // Redirect if not logged in
-  const searchParams = useSearchParams();
-  const debug = searchParams?.get("debug") === "1";
 
   const [history, setHistory] = useState<any[]>([]);
   const [portfolioSkins, setPortfolioSkins] = useState<any[]>([]);
@@ -253,18 +276,13 @@ export default function PortfolioPage() {
         </section>
 
         {/* DEBUG: Portfolio-Inspection (sichtbar mit ?debug=1) */}
-        {debug && (
-          <section className="card">
-            <div className="text-xs text-zinc-300 space-y-2">
-              <div>raw history len: {Array.isArray(history) ? history.length : 0}</div>
-              <div>normalized portfolio len: {Array.isArray(portfolioSkins) ? portfolioSkins.length : 0}</div>
-              <div>watchlist len: {Array.isArray(watchlist) ? watchlist.length : 0}</div>
-              <pre className="bg-zinc-900/60 p-2 rounded max-h-64 overflow-auto">
-                {JSON.stringify(portfolioSkins?.[0], null, 2)}
-              </pre>
-            </div>
-          </section>
-        )}
+        <Suspense fallback={null}>
+          <DebugSection 
+            portfolioSkins={portfolioSkins}
+            history={history}
+            watchlist={watchlist}
+          />
+        </Suspense>
 
         {/* Portfolio Table Section */}
         <section className="card">
