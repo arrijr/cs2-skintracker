@@ -1,13 +1,14 @@
+// /frontend/src/app/portfolio/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation"; // <-- HOOK IMPORT OBEN
 import { useAuth } from "../context/AuthContext";
 import { useRequireAuth } from "../hooks/useRequireAuth";
 import PortfolioChart from "./PortfolioChart";
 import PortfolioTable from "./PortfolioTable";
 import WatchlistTable from "./WatchlistTable";
-import { useSearchParams } from "next/navigation";
 
 // {/* API helpers (zentral aus /src/lib/api.ts) */}
 import {
@@ -20,11 +21,8 @@ import {
 // {/* Types kept minimal; UI components do stricter typing */}
 type WatchlistEntry = any;
 
-
-
 // {/* Normalizer: akzeptiert verschiedene Backend-Shapes und erzeugt PortfolioTable-kompatible Einträge */}
 function normalizePortfolio(rawIn: any) {
-  // --- Unwrap common wrappers ------------------------------------------------
   let raw = rawIn;
   if (raw && typeof raw === "object" && !Array.isArray(raw)) {
     raw =
@@ -35,13 +33,12 @@ function normalizePortfolio(rawIn: any) {
       raw.portfolio ??
       raw.entries ??
       raw.list ??
-      raw; // fallback
+      raw;
   }
 
   if (!raw) return [];
   if (!Array.isArray(raw)) raw = [raw];
 
-  // Helper to pick the best available image field
   const pickImage = (s: any) =>
     s?.itemimage ??
     s?.itemImage ??
@@ -51,14 +48,12 @@ function normalizePortfolio(rawIn: any) {
     s?.icon ??
     null;
 
-  // Helper to pick market price
   const pickMarket = (s: any) =>
     (typeof s?.marketPrice === "number" && s.marketPrice) ??
     (typeof s?.market_price === "number" && s.market_price) ??
     (typeof s?.price === "number" && s.price) ??
     null;
 
-  // Case A: already aggregated per skin (has row.skin OR has amount+avgPrice)
   const looksAggregated =
     raw.length > 0 &&
     (raw[0]?.skin ||
@@ -67,7 +62,6 @@ function normalizePortfolio(rawIn: any) {
 
   if (looksAggregated) {
     return raw.map((row: any) => {
-      // row.skin or row.item or flat fields
       const s = row.skin ?? row.item ?? row;
 
       const skin = {
@@ -80,10 +74,8 @@ function normalizePortfolio(rawIn: any) {
         imageUrl: s?.imageUrl,
       };
 
-      // purchases optional
       const purchases: any[] = Array.isArray(row.purchases) ? row.purchases : [];
 
-      // amount/avgPrice berechnen, falls fehlen
       const amountFromPurchases = purchases.reduce(
         (acc, p) => acc + (Number(p.amount) || 0),
         0
@@ -106,7 +98,6 @@ function normalizePortfolio(rawIn: any) {
     });
   }
 
-  // Case B: purchases list → group by skinId
   const map = new Map<number, any>();
   for (const p of raw) {
     const sid = Number(p.skinId ?? p.skin_id ?? p.id ?? p.itemId);
@@ -155,8 +146,11 @@ function normalizePortfolio(rawIn: any) {
 }
 
 export default function PortfolioPage() {
+  // {/* Hooks müssen immer ganz oben stehen */}
   const { token } = useAuth();
-  useRequireAuth(); // Redirect if not logged in
+  useRequireAuth(); // Redirect wenn nicht eingeloggt
+  const searchParams = useSearchParams(); // <-- VOR JEDEM RETURN
+  const debug = searchParams?.get("debug") === "1";
 
   const [history, setHistory] = useState<any[]>([]);
   const [portfolioSkins, setPortfolioSkins] = useState<any[]>([]);
@@ -164,13 +158,12 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // {/* Load portfolio data (history, holdings, watchlist) – Hook MUST be called every render */}
+  // {/* Daten laden */}
   useEffect(() => {
     let isCancelled = false;
 
     async function loadAll() {
       if (!token) {
-        // not logged in yet → just clear and stop
         if (!isCancelled) {
           setHistory([]);
           setPortfolioSkins([]);
@@ -204,32 +197,13 @@ export default function PortfolioPage() {
     }
 
     loadAll();
-    return () => {
-      isCancelled = true;
-    };
+    return () => { isCancelled = true; };
   }, [token]);
 
-  // {/* Remove from Watchlist */}
-  async function handleRemoveWatchlist(skinId: number) {
-    try {
-      await removeFromWatchlist(skinId);
-      setWatchlist((prev) =>
-        prev.filter((entry: any) => (entry.skin?.id ?? entry.skinId) !== skinId)
-      );
-    } catch (e: any) {
-      setError(e?.message || "Failed to remove from watchlist");
-    }
-  }
-
-  // While loading auth state or data, show a loading message.
-  // The redirect will happen via the hook if auth fails.
+  // {/* Safe guard: erst nach allen Hooks frühzeitig rendern */}
   if (token === undefined || loading) {
     return <div className="text-white p-6">Loading portfolio…</div>;
   }
-
-  // {/* DEBUG: Queryparam ?debug=1 aktivieren */}
-  const searchParams = useSearchParams();
-  const debug = searchParams?.get("debug") === "1";
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-2 sm:p-4">
@@ -240,14 +214,11 @@ export default function PortfolioPage() {
         </div>
       )}
 
-      {/* Main */}
       <main className="max-w-6xl mx-auto flex flex-col gap-8">
         {/* Portfolio Chart Section */}
         <section className="card">
           <h1 className="text-3xl sm:text-4xl font-extrabold mb-2">Your Portfolio</h1>
-          <p className="text-gray-400 text-sm mb-6">
-            Overview of your skins, value history & watchlist
-          </p>
+          <p className="text-gray-400 text-sm mb-6">Overview of your skins, value history & watchlist</p>
           <PortfolioChart history={history} />
         </section>
 
@@ -286,6 +257,15 @@ export default function PortfolioPage() {
             }}
           />
         </section>
+
+        {/* Not logged in CTA (falls useRequireAuth nicht greift) */}
+        {!token && (
+          <div className="card text-center">
+            <h2 className="text-2xl font-bold mb-2">Please login to view your portfolio.</h2>
+            <p className="mb-4">You need to be signed in to access your personal skin tracker and stats.</p>
+            <Link href="/login" className="btn-main">Login</Link>
+          </div>
+        )}
       </main>
     </div>
   );
