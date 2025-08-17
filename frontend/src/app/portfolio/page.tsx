@@ -20,106 +20,135 @@ import {
 type WatchlistEntry = any;
 
 // {/* Normalizer: akzeptiert verschiedene Backend-Shapes und erzeugt PortfolioTable-kompatible Einträge */}
-function normalizePortfolio(raw: any) {
+function normalizePortfolio(rawIn: any) {
+  // --- Unwrap common wrappers ------------------------------------------------
+  let raw = rawIn;
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    raw =
+      raw.items ??
+      raw.data ??
+      raw.result ??
+      raw.results ??
+      raw.portfolio ??
+      raw.entries ??
+      raw.list ??
+      raw; // fallback
+  }
+
   if (!raw) return [];
+  if (!Array.isArray(raw)) raw = [raw];
 
-  // Case A: already aggregated per skin
-  if (Array.isArray(raw) && raw.length && (raw[0].skin || raw[0].amount)) {
+  // Helper to pick the best available image field
+  const pickImage = (s: any) =>
+    s?.itemimage ??
+    s?.itemImage ??
+    s?.image_url ??
+    s?.imageUrl ??
+    s?.img ??
+    s?.icon ??
+    null;
+
+  // Helper to pick market price
+  const pickMarket = (s: any) =>
+    (typeof s?.marketPrice === "number" && s.marketPrice) ??
+    (typeof s?.market_price === "number" && s.market_price) ??
+    (typeof s?.price === "number" && s.price) ??
+    null;
+
+  // Case A: already aggregated per skin (has row.skin OR has amount+avgPrice)
+  const looksAggregated =
+    raw.length > 0 &&
+    (raw[0]?.skin ||
+      typeof raw[0]?.amount === "number" ||
+      typeof raw[0]?.avgPrice === "number");
+
+  if (looksAggregated) {
     return raw.map((row: any) => {
-      const skin =
-        row.skin ?? {
-          id: row.skinId ?? row.id,
-          name: row.name ?? "Unknown",
-          marketPrice: row.marketPrice ?? row.market_price ?? row.price ?? null,
-          itemimage: row.itemimage,
-          itemImage: row.itemImage,
-          image_url: row.image_url,
-          imageUrl: row.imageUrl,
-        };
+      // row.skin or row.item or flat fields
+      const s = row.skin ?? row.item ?? row;
 
+      const skin = {
+        id: Number(s?.id ?? row.skinId ?? row.skin_id ?? row.id),
+        name: String(s?.name ?? row.name ?? row.skinName ?? "Unknown"),
+        marketPrice: pickMarket(s),
+        itemimage: pickImage(s),
+        itemImage: s?.itemImage,
+        image_url: s?.image_url,
+        imageUrl: s?.imageUrl,
+      };
+
+      // purchases optional
       const purchases: any[] = Array.isArray(row.purchases) ? row.purchases : [];
 
-      // avgPrice berechnen falls nicht vorhanden
-      const avg =
-        typeof row.avgPrice === "number"
-          ? row.avgPrice
-          : (() => {
-              if (!purchases.length) return 0;
-              const total = purchases.reduce(
-                (acc, p) => acc + (Number(p.buyPrice) || 0) * (Number(p.amount) || 0),
-                0
-              );
-              const units = purchases.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
-              return units > 0 ? total / units : 0;
-            })();
+      // amount/avgPrice berechnen, falls fehlen
+      const amountFromPurchases = purchases.reduce(
+        (acc, p) => acc + (Number(p.amount) || 0),
+        0
+      );
+      const totalFromPurchases = purchases.reduce(
+        (acc, p) => acc + (Number(p.amount) || 0) * (Number(p.buyPrice ?? p.price) || 0),
+        0
+      );
 
       const amount =
-        typeof row.amount === "number"
-          ? row.amount
-          : purchases.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+        typeof row.amount === "number" ? row.amount : amountFromPurchases;
+      const avgPrice =
+        typeof row.avgPrice === "number"
+          ? row.avgPrice
+          : amountFromPurchases > 0
+          ? totalFromPurchases / amountFromPurchases
+          : 0;
 
-      return {
-        skin: {
-          id: Number(skin.id),
-          name: String(skin.name),
-          marketPrice:
-            typeof skin.marketPrice === "number" ? skin.marketPrice : null,
-          itemimage: skin.itemimage,
-          itemImage: skin.itemImage,
-          image_url: skin.image_url,
-          imageUrl: skin.imageUrl,
-        },
-        amount,
-        avgPrice: avg,
-        purchases,
-      };
+      return { skin, amount, avgPrice, purchases };
     });
   }
 
   // Case B: purchases list → group by skinId
-  if (Array.isArray(raw)) {
-    const map = new Map<number, any>();
-    for (const p of raw) {
-      const sid = Number(p.skinId ?? p.skin_id ?? p.id);
-      if (!Number.isFinite(sid)) continue;
+  const map = new Map<number, any>();
+  for (const p of raw) {
+    const sid = Number(p.skinId ?? p.skin_id ?? p.id ?? p.itemId);
+    if (!Number.isFinite(sid)) continue;
 
-      const existing = map.get(sid) ?? {
+    const s = p.skin ?? p.item ?? {};
+    const existing =
+      map.get(sid) ??
+      ({
         skin: {
           id: sid,
-          name: p.skin?.name ?? p.name ?? "Unknown",
-          marketPrice: p.skin?.marketPrice ?? p.marketPrice ?? null,
-          itemimage: p.skin?.itemimage,
-          itemImage: p.skin?.itemImage,
-          image_url: p.skin?.image_url,
-          imageUrl: p.skin?.imageUrl,
+          name: String(s?.name ?? p.skinName ?? p.name ?? "Unknown"),
+          marketPrice: pickMarket(s) ?? (typeof p.marketPrice === "number" ? p.marketPrice : null),
+          itemimage: pickImage(s),
+          itemImage: s?.itemImage,
+          image_url: s?.image_url,
+          imageUrl: s?.imageUrl,
         },
         amount: 0,
         avgPrice: 0,
         purchases: [],
-      };
+      } as any);
 
-      existing.purchases.push({
-        id: Number(p.id ?? existing.purchases.length + 1),
-        skinId: sid,
-        amount: Number(p.amount ?? 1),
-        buyPrice: Number(p.buyPrice ?? p.price ?? 0),
-        buyDate: String(p.buyDate ?? p.date ?? new Date().toISOString()),
-      });
+    existing.purchases.push({
+      id: Number(p.id ?? existing.purchases.length + 1),
+      skinId: sid,
+      amount: Number(p.amount ?? p.qty ?? 1),
+      buyPrice: Number(p.buyPrice ?? p.price ?? p.unitPrice ?? 0),
+      buyDate: String(p.buyDate ?? p.date ?? new Date().toISOString()),
+    });
 
-      map.set(sid, existing);
-    }
-
-    for (const [, entry] of map) {
-      const total = entry.purchases.reduce((acc: number, x: any) => acc + x.amount * x.buyPrice, 0);
-      const units = entry.purchases.reduce((a: number, x: any) => a + x.amount, 0);
-      entry.amount = units;
-      entry.avgPrice = units > 0 ? total / units : 0;
-    }
-
-    return Array.from(map.values());
+    map.set(sid, existing);
   }
 
-  return [];
+  for (const [, entry] of map) {
+    const total = entry.purchases.reduce(
+      (acc: number, x: any) => acc + x.amount * x.buyPrice,
+      0
+    );
+    const units = entry.purchases.reduce((a: number, x: any) => a + x.amount, 0);
+    entry.amount = units;
+    entry.avgPrice = units > 0 ? total / units : 0;
+  }
+
+  return Array.from(map.values());
 }
 
 export default function PortfolioPage() {
