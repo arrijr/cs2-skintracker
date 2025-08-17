@@ -117,25 +117,42 @@ export default function SkinSearchBar<T = number | Skin>({
   return (
     <div className="relative w-full max-w-md">
       {/* Search Input */}
-      <input
-        value={q}
-        onChange={(e) => {
-          setQ(e.target.value);
-          setShow(true);
-        }}
-        onFocus={() => setShow(true)}
-        onBlur={() => setTimeout(() => setShow(false), 150)}
-        onKeyDown={(e) => {
-          // {/* Optional: Enter wählt erstes Ergebnis */}
-          if (e.key === "Enter" && items[0]) {
-            e.preventDefault();
-            handleSelect(items[0]);
-          }
-        }}
-        placeholder={placeholder}
-        className="input-main w-full"
-        autoComplete="off"
-      />
+      <div className="relative">
+        <input
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setShow(true);
+          }}
+          onFocus={() => setShow(true)}
+          onBlur={() => setTimeout(() => setShow(false), 150)}
+          onKeyDown={(e) => {
+            // {/* Optional: Enter wählt erstes Ergebnis */}
+            if (e.key === "Enter" && items[0]) {
+              e.preventDefault();
+              handleSelect(items[0]);
+            }
+          }}
+          placeholder={placeholder}
+          className="input-main w-full pr-8"
+          autoComplete="off"
+        />
+        {/* Clear Button */}
+        {q.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              setQ("");
+              setItems([]);
+              setShow(false);
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-200 text-sm"
+            tabIndex={-1}
+          >
+            ✕
+          </button>
+        )}
+      </div>
 
       {/* Results Dropdown */}
       {show && q.trim().length >= minLength && (

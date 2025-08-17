@@ -32,3 +32,18 @@ body {
 ::-webkit-scrollbar-thumb  { background:#313131; border-radius:4px; }
 
 a,button,input,.transition { transition:all .15s cubic-bezier(.4,0,.2,1); }
+
+@keyframes slide-in-right {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}

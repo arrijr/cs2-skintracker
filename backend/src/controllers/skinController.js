@@ -51,16 +51,60 @@ export const searchSkin = async (req, res) => {
   });
 };
 
+{/* Price History – apply range filter */}
 export const getPriceHistory = async (req, res) => {
   const { skinId } = req.params;
+  const { range } = req.query;
+  
   try {
+    let dateFilter = {};
+    
+    // Apply date range filter
+    if (range) {
+      const now = new Date();
+      let daysBack;
+      
+      switch (range) {
+        case '1W':
+          daysBack = 7;
+          break;
+        case '1M':
+          daysBack = 30;
+          break;
+        case '6M':
+          daysBack = 180;
+          break;
+        case '1Y':
+          daysBack = 365;
+          break;
+        case 'ALL':
+        default:
+          daysBack = null;
+          break;
+      }
+      
+      if (daysBack) {
+        const startDate = new Date(now);
+        startDate.setDate(startDate.getDate() - daysBack);
+        dateFilter = {
+          date: {
+            gte: startDate
+          }
+        };
+      }
+    }
+
     const priceHistory = await prisma.priceHistory.findMany({
-      where: { skinId: parseInt(skinId) },
+      where: { 
+        skinId: parseInt(skinId),
+        ...dateFilter
+      },
       orderBy: { date: "asc" },
       select: { date: true, price: true }
     });
     res.json(priceHistory);
   } catch (err) {
+    console.error("Price history error:", err);
     res.status(500).json({ error: "Could not fetch price history" });
   }
 };

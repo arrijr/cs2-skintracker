@@ -8,6 +8,8 @@ import PortfolioChart from "./PortfolioChart";
 import PortfolioTable from "./PortfolioTable";
 import WatchlistTable from "./WatchlistTable";
 import { useSearchParams } from "next/navigation";
+import { SkeletonChart, SkeletonTable } from "../components/Skeleton";
+import { showSuccess, showError } from "@/lib/toast";
 
 // {/* API helpers (zentral aus /src/lib/api.ts) */}
 import {
@@ -236,7 +238,15 @@ export default function PortfolioPage() {
 
   // {/* Safe guard: erst nach allen Hooks frühzeitig rendern */}
   if (token === undefined || loading) {
-    return <div className="text-white p-6">Loading portfolio…</div>;
+    return (
+      <div className="min-h-screen bg-gray-950 text-white p-2 sm:p-4">
+        <main className="max-w-6xl mx-auto flex flex-col gap-8">
+          <SkeletonChart />
+          <SkeletonTable />
+          <SkeletonTable />
+        </main>
+      </div>
+    );
   }
 
   // {/* Remove from Watchlist */}
@@ -299,9 +309,22 @@ export default function PortfolioPage() {
                 setWatchlist((prev) =>
                   prev.filter((e: any) => (e.skin?.id ?? e.skinId) !== skinId)
                 );
+                showSuccess("Removed from watchlist");
               } catch (e: any) {
-                setError(e?.message || "Failed to remove from watchlist");
+                showError(e?.message || "Failed to remove from watchlist");
               }
+            }}
+            onAlertUpdate={(skinId, priceAlert) => {
+              setWatchlist((prev) =>
+                prev.map((entry: any) => {
+                  const entryId = entry.skin?.id ?? entry.skinId;
+                  if (entryId === skinId) {
+                    return { ...entry, priceAlert };
+                  }
+                  return entry;
+                })
+              );
+              showSuccess(priceAlert ? `Price alert set to ${priceAlert.toFixed(2)}` : "Price alert removed");
             }}
           />
         </section>
