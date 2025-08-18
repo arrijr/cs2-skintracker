@@ -38,6 +38,19 @@ type Props = {
 };
 
 export default function PortfolioTable({ skins, watchlist = [] }: Props) {
+  // =================================================================
+  // Jules's Temporary Debugging Block
+  // =================================================================
+  return (
+    <div style={{ color: 'white', background: 'black', padding: '20px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+      <h2>-- DEBUG: Raw `skins` Prop --</h2>
+      <p>Number of items: {skins.length}</p>
+      <p>Data:</p>
+      <div>{JSON.stringify(skins, null, 2)}</div>
+    </div>
+  );
+  // =================================================================
+
   // EIN State für alle Accordions – merkt sich, welches Skin-Accordion offen ist:
   const [openSkinId, setOpenSkinId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
@@ -152,7 +165,7 @@ if (!skins || skins.length === 0) {
         const img =
           entry.skin.itemimage ||
           entry.skin.imageUrl ||
-          "/placeholder-skin.png";
+          "/images/placeholder-skin.png";
 
         return (
           <div
@@ -172,7 +185,7 @@ if (!skins || skins.length === 0) {
                     entry.skin.itemImage ||        // <-- added
                     entry.skin.imageUrl ||
                     (entry as any).skin?.image_url || // <-- added (falls Typ abweicht)
-                    "/placeholder-skin.png"
+                    "/images/placeholder-skin.png"
                   }
                   alt={entry.skin.name}
                   width={48}

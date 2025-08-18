@@ -52,7 +52,7 @@ export default function WatchlistTable({ watchlist, onRemove }: Props) {
               s?.image_url ||
               s?.imageUrl ||
               entry.imageUrl ||
-              "/placeholder-skin.png";
+              "/images/placeholder-skin.png";
             const linkId = s?.id ?? entry.skinId;
 
             return (
