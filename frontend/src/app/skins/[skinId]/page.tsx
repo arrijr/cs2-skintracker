@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Line } from "react-chartjs-2";
+import type { ChartData, ChartOptions } from "chart.js";
+import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
 import { useAuth } from "../../context/AuthContext";
 // {/* Central API helpers */}
 import {
@@ -11,6 +13,9 @@ import {
 } from "@/lib/api";
 import { apiFetch } from "@/lib/http"; // for skin detail/history
 import PurchaseAccordion from "../../components/PurchaseAccordion";
+
+// Chart.js Registration
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 type Skin = {
   id: number;
