@@ -38,19 +38,6 @@ type Props = {
 };
 
 export default function PortfolioTable({ skins, watchlist = [] }: Props) {
-  // =================================================================
-  // Jules's Temporary Debugging Block
-  // =================================================================
-  return (
-    <div style={{ color: 'white', background: 'black', padding: '20px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
-      <h2>-- DEBUG: Raw `skins` Prop --</h2>
-      <p>Number of items: {skins.length}</p>
-      <p>Data:</p>
-      <div>{JSON.stringify(skins, null, 2)}</div>
-    </div>
-  );
-  // =================================================================
-
   // EIN State für alle Accordions – merkt sich, welches Skin-Accordion offen ist:
   const [openSkinId, setOpenSkinId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
