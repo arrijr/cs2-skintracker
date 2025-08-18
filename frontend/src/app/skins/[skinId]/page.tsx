@@ -10,6 +10,7 @@ import {
   getWatchlist,
 } from "@/lib/api";
 import { apiFetch } from "@/lib/http"; // for skin detail/history
+import PurchaseAccordion from "../../components/PurchaseAccordion";
 
 type Skin = {
   id: number;
