@@ -34,7 +34,7 @@ export default function SkinPortfolioCard({ item }: { item: SkinPortfolioItem })
     item.skin.itemImage ||
     item.skin.image_url ||
     item.skin.imageUrl ||
-    "/placeholder-skin.png";
+    "/images/placeholder-skin.png";
 
   const mhn = item.skin.market_hash_name || item.skin.marketHashName;
 

@@ -48,7 +48,7 @@ export const login = async (req, res) => {
 // DELETE ACCOUNT
 export const deleteAccount = async (req, res) => {
   try {
-    const userId = req.user.id || req.user.userId;
+    const userId = req.user.userId;
     await prisma.user.delete({ where: { id: userId } });
     res.json({ message: "Account deleted" });
   } catch (err) {
@@ -59,7 +59,7 @@ export const deleteAccount = async (req, res) => {
 // CHANGE PASSWORD
 export const changePassword = async (req, res) => {
   try {
-    const userId = req.user.id || req.user.userId;
+    const userId = req.user.userId;
     const { newPassword } = req.body;
     if (!newPassword || newPassword.length < 6) {
       return res.status(400).json({ error: "Password too short" });

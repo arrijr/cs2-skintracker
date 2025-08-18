@@ -21,6 +21,7 @@ const nextConfig = {
   // {/* Allow remote images from Steam CDNs (if you use next/image) */}
   images: {
     remotePatterns: [
+      { protocol: "http", hostname: "media.steampowered.com" },
       { protocol: "https", hostname: "community.cloudflare.steamstatic.com" },
       { protocol: "https", hostname: "cdn.cloudflare.steamstatic.com" },
       { protocol: "https", hostname: "steamcdn-a.akamaihd.net" },

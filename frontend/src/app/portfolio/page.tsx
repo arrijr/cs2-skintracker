@@ -22,6 +22,7 @@ type WatchlistEntry = any;
 
 
 
+
 // {/* Normalizer: akzeptiert verschiedene Backend-Shapes und erzeugt PortfolioTable-kompatible Einträge */}
 function normalizePortfolio(rawIn: any) {
   // --- Unwrap common wrappers ------------------------------------------------
@@ -179,6 +180,7 @@ function DebugSection({ portfolioSkins, history, watchlist }: {
   );
 }
 
+
 export default function PortfolioPage() {
   const { token } = useAuth();
   useRequireAuth(); // Redirect if not logged in
@@ -209,17 +211,14 @@ export default function PortfolioPage() {
       setError(null);
       try {
         const [h, p, w] = await Promise.all([
-          getPortfolioHistory().catch(() => []),
-          getPortfolio().catch(() => []),
-          getWatchlist().catch(() => []),
+          getPortfolioHistory(),
+          getPortfolio(),
+          getWatchlist(),
         ]);
-
         if (!isCancelled) {
-          setHistory(Array.isArray(h) ? h : []);
-          const norm = normalizePortfolio(p);
-          console.log("[Portfolio] raw:", p, "→ normalized:", norm);
-          setPortfolioSkins(norm);
-          setWatchlist(Array.isArray(w) ? w : []);
+          setHistory(h || []);
+          setPortfolioSkins(p || []);
+          setWatchlist(w || []);
         }
       } catch (e: any) {
         if (!isCancelled) setError(e?.message || "Failed to load portfolio data");
@@ -234,18 +233,18 @@ export default function PortfolioPage() {
     };
   }, [token]);
 
+
   // {/* Safe guard: erst nach allen Hooks frühzeitig rendern */}
   if (token === undefined || loading) {
     return <div className="text-white p-6">Loading portfolio…</div>;
   }
 
+
   // {/* Remove from Watchlist */}
   async function handleRemoveWatchlist(skinId: number) {
     try {
       await removeFromWatchlist(skinId);
-      setWatchlist((prev) =>
-        prev.filter((entry: any) => (entry.skin?.id ?? entry.skinId) !== skinId)
-      );
+      setWatchlist((prev) => prev.filter((entry: any) => entry.skinId !== skinId));
     } catch (e: any) {
       setError(e?.message || "Failed to remove from watchlist");
     }

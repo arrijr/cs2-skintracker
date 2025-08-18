@@ -58,7 +58,7 @@ export default function SkinsPage() {
       {/* Results Grid */} 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 py-4">
         {skins.map((skin) => {
-          const img = skin.itemimage || skin.itemImage || skin.image_url || skin.imageUrl || "/placeholder-skin.png";
+          const img = skin.itemimage || skin.itemImage || skin.image_url || skin.imageUrl || "/images/placeholder-skin.png";
           return (
             <Link
               href={`/skins/${skin.id}`}

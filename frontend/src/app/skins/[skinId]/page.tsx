@@ -1,21 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Line } from "react-chartjs-2";
+import type { ChartData, ChartOptions } from "chart.js";
+import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
 import { useAuth } from "../../context/AuthContext";
-
-
-// {/* API layer */}
+// {/* Central API helpers */}
 import {
-  addToWatchlist as apiAddToWatchlist,
-  getWatchlist,
   getPortfolio,
+  getWatchlist,
 } from "@/lib/api";
 import { apiFetch } from "@/lib/http"; // for skin detail/history
 import PurchaseAccordion from "../../components/PurchaseAccordion";
 import SkinPortfolioCard from "../../components/SkinPortfolioCard";
 
+// Chart.js Registration
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 type Skin = {
   id: number;
@@ -30,27 +31,21 @@ type Skin = {
 
 type PriceHistory = { date: string; price: number };
 
-export default function SkinDetailPage() {
+export default function SkinDetailPage({ params }: { params: { skinId: string } }) {
   // *** ALLE STATES GANZ OBEN ***
   const router = useRouter();
   const { token } = useAuth();
-
-  // {/* derive skinId */}
-  const routeParams = useParams<{ skinid?: string; skinId?: string; id?: string }>();
-  const skinId = String(routeParams?.skinid ?? routeParams?.skinId ?? routeParams?.id ?? "");
-  console.log("[SkinDetail] routeParams:", routeParams, "→ skinId:", skinId);
+  const skinId = String(params.skinId ?? params.id ?? "");
 
   const [mounted, setMounted] = useState(false);
   const [skin, setSkin] = useState<Skin | null>(null);
   const [history, setHistory] = useState<PriceHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  
-  // {/* Watchlist UI state */}
-  const [alert, setAlert] = useState<number | "">("");  // Preis-Alert Eingabe
-  const [adding, setAdding] = useState(false);          // <-- FEHLTE (Fix)
-  const [watchlistMsg, setWatchlistMsg] = useState(""); // Feedback/Fehlertext
   const [watchlist, setWatchlist] = useState<any[]>([]);
+  const [alert, setAlert] = useState<number | "">("");
+  const [addingAlert, setAddingAlert] = useState(false);
+  const [msg, setMsg] = useState("");
 
   // Portfolio
   const [portfolioSkins, setPortfolioSkins] = useState<any[]>([]);
@@ -66,54 +61,39 @@ export default function SkinDetailPage() {
   const [sort, setSort] = useState("recent");
   const [search, setSearch] = useState("");
 
+  // *** ALLE useEffect HOOKS OBEN ***
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  if (!skinId) {
-    console.warn("Invalid skinId param");
-  }
-
-  // {/* Data load effect */}
   useEffect(() => {
     if (!skinId) return;
-
     let cancelled = false;
-    setLoading(true);
 
-    (async () => {
+    async function load() {
+      setLoading(true);
       try {
-        // Basis-Daten: Skin + History parallel laden
         const [s, h] = await Promise.all([
           apiFetch(`/api/v1/skins/${skinId}`),
           apiFetch(`/api/v1/skins/${skinId}/history`).catch(() => []),
         ]);
-
         if (!cancelled) {
           setSkin(s || null);
           setHistory(Array.isArray(h) ? h : []);
         }
-
-        // Auth-Daten nur laden, wenn eingeloggt
-        if (token) {
-          const [w, p] = await Promise.all([getWatchlist(), getPortfolio()]);
-          if (!cancelled) {
-            setWatchlist(Array.isArray(w) ? w : []);
-            setPortfolioSkins(Array.isArray(p) ? p : []);
-          }
-        }
-      } catch (err) {
-        // optional: setError(String(err));
-        console.error("skin detail load failed:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
 
-    return () => {
-      cancelled = true;
-    };
+      if (token) {
+        getWatchlist().then((w) => !cancelled && setWatchlist(Array.isArray(w) ? w : []));
+        getPortfolio().then((p) => !cancelled && setPortfolioSkins(Array.isArray(p) ? p : []));
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
   }, [skinId, token]);
-
-  // {/* mounted guard */}
-  useEffect(() => { setMounted(true); }, []);
 
   if (!mounted) return null;
   if (loading) return <div className="text-white py-8">Loading…</div>;
@@ -151,85 +131,73 @@ export default function SkinDetailPage() {
   // Filtered Portfolio (optional)
   const filteredPortfolio = portfolioSkins
     .filter((p: any) => p.skin?.name?.toLowerCase().includes(search.toLowerCase()))
+    .map((item: any) => {
+      const performance =
+        item.skin?.marketPrice && item.avgPrice
+          ? ((item.skin.marketPrice - item.avgPrice) / item.avgPrice) * 100
+          : 0;
+      return { ...item, performance };
+    })
     .sort((a: any, b: any) => {
       if (sort === "performance") return (b.performance || 0) - (a.performance || 0);
       if (sort === "amount") return (b.amount || 0) - (a.amount || 0);
       return new Date(b.buyDate).getTime() - new Date(a.buyDate).getTime(); // recent
     });
 
-  // {/* Handler: Add to Watchlist */}
-  async function handleAddToWatchlist() {
+  // {/* Add to Watchlist */}
+  async function addToWatchlist() {
+    if (!token) return router.push("/login");
+    setAddingAlert(true);
+    setMsg("");
+    try {
+      await apiFetch(`/api/v1/watchlist`, {
+        method: "POST",
+        body: JSON.stringify({
+          skinId: skin.id,
+          priceAlert: alert === "" ? null : Number(alert),
+        }),
+      });
+      setMsg("Added to watchlist!");
+      const w = await getWatchlist();
+      setWatchlist(Array.isArray(w) ? w : []);
+    } catch (e: any) {
+      setMsg(e.message || "Could not add skin.");
+    } finally {
+      setAddingAlert(false);
+    }
+  }
+
+  // Handler: Add to Portfolio
+  const addToPortfolio = async () => {
     if (!token) {
       router.push("/login");
       return;
     }
-    if (!skin?.id) {
-      setWatchlistMsg("Invalid skin.");
-      return;
-    }
-
-    setAdding(true);
-    setWatchlistMsg("");
-
-    try {
-      // alert === "" -> optional (Backend darf null/undefined akzeptieren)
-      const payloadAlert = alert === "" ? undefined : Number(alert);
-      await apiAddToWatchlist(Number(skin.id), payloadAlert);
-
-      setWatchlistMsg("Added to watchlist!");
-      // Watchlist lokal nachziehen
-      const w = await getWatchlist().catch(() => []);
-      setWatchlist(Array.isArray(w) ? w : []);
-    } catch (e: any) {
-      setWatchlistMsg(e?.message || "Failed to add to watchlist.");
-    } finally {
-      setAdding(false);
-    }
-  }
-
-  // {/* Handler: Add to Portfolio */}
-  const addToPortfolio = async () => {
-    if (!token) return router.push("/login");
     setAddingPortfolio(true);
     setPortfolioMsg("");
 
     try {
-      await apiFetch(`/api/v1/portfolio`, {
+      await apiFetch("/api/v1/portfolio", {
         method: "POST",
         body: JSON.stringify({
-          skinId: Number(skin!.id),
+          skinId: skin!.id,
           amount: Number(amount),
           buyPrice: Number(useMarketPrice ? skin!.marketPrice : buyPrice),
           buyDate,
         }),
       });
-
       setPortfolioMsg("Added to portfolio!");
-      // optional: lokale Daten neu laden
-      const p = await getPortfolio().catch(() => []);
-      setPortfolioSkins(Array.isArray(p) ? p : []);
-
+      // Refetch portfolio to show new item
+      getPortfolio().then((p) => setPortfolioSkins(Array.isArray(p) ? p : []));
       setTimeout(() => {
         setShowPortfolioModal(false);
-        setPortfolioMsg("");
-        setAmount(1);
-        setBuyPrice("");
-        setBuyDate("");
-        setUseMarketPrice(false);
-      }, 800);
+      }, 1200);
     } catch (e: any) {
-      setPortfolioMsg(e?.message || "Could not add skin.");
+      setPortfolioMsg(e.message || "Could not add skin.");
     } finally {
       setAddingPortfolio(false);
     }
   };
-
-  // {/* Steam market hash resolver */}
-  const marketHashName =
-    (skin as any)?.marketHashName ??
-    (skin as any)?.market_hash_name ??
-    skin?.name ??
-    "";
 
   return (
   //Chart DIV
@@ -373,15 +341,15 @@ export default function SkinDetailPage() {
                 step={0.01}
               />
               <button
-                onClick={handleAddToWatchlist}
+                onClick={addToWatchlist}
                 className="btn-main w-full sm:w-auto"
-                disabled={adding}
+                disabled={addingAlert}
               >
                 Add to Watchlist
               </button>
             </div>
-            {watchlistMsg && (
-              <div className="mt-2 text-sm text-yellow-400">{watchlistMsg}</div>
+            {msg && (
+              <div className="mt-2 text-sm text-yellow-400">{msg}</div>
             )}
             {watchlist.some((item) => item.skinId === skin.id) && (
               <div className="mb-2 text-green-400 text-sm font-semibold">
@@ -419,25 +387,20 @@ export default function SkinDetailPage() {
           />
 
           {/* Steam-Link & Navigation */}
-          <div className="mt-6 text-center space-y-2">
-            {marketHashName ? (
-              <a
-                href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(marketHashName)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-400 underline"
-              >
-                View on Steam Market
-              </a>
-            ) : (
-              <div className="text-neutral-500 text-sm">No Steam listing key available.</div>
-            )}
-
-            <div>
-              <Link href="/skins" className="text-neutral-400 hover:underline">
-                ← Back to all skins
-              </Link>
-            </div>
+          <a
+            href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(
+              skin.marketHashName
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 underline mt-2"
+          >
+            View on Steam Market
+          </a>
+          <div className="mt-6 text-center">
+            <Link href="/skins" className="text-neutral-400 hover:underline">
+              ← Back to all skins
+            </Link>
           </div>
         </>
       )}

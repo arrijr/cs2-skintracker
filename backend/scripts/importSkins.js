@@ -22,7 +22,7 @@ async function importAllSkins() {
         where: { marketHashName: item.markethashname },
         update: {
           name: item.marketname,
-          imageUrl: item.image,
+          imageUrl: item.itemimage,
           collection: item.collection || null,
           wear: item.wear || null,
           rarity: item.rarity || null,
@@ -41,7 +41,7 @@ async function importAllSkins() {
         create: {
           name: item.marketname,
           marketHashName: item.markethashname,
-          imageUrl: item.image,
+          imageUrl: item.itemimage,
           collection: item.collection || null,
           wear: item.wear || null,
           rarity: item.rarity || null,
