@@ -131,6 +131,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   // Filtered Portfolio (optional)
   const filteredPortfolio = portfolioSkins
     .filter((p: any) => p.skin?.name?.toLowerCase().includes(search.toLowerCase()))
+    .map((item: any) => {
+      const performance =
+        item.skin?.marketPrice && item.avgPrice
+          ? ((item.skin.marketPrice - item.avgPrice) / item.avgPrice) * 100
+          : 0;
+      return { ...item, performance };
+    })
     .sort((a: any, b: any) => {
       if (sort === "performance") return (b.performance || 0) - (a.performance || 0);
       if (sort === "amount") return (b.amount || 0) - (a.amount || 0);
