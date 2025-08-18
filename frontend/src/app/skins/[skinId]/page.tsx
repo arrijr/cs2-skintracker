@@ -13,6 +13,7 @@ import {
 } from "@/lib/api";
 import { apiFetch } from "@/lib/http"; // for skin detail/history
 import PurchaseAccordion from "../../components/PurchaseAccordion";
+import SkinPortfolioCard from "../../components/SkinPortfolioCard";
 
 // Chart.js Registration
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
