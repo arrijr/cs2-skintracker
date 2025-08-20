@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import * as Tooltip from "@radix-ui/react-tooltip";
+import { deletePortfolioEntry } from "@/lib/api";
 
 type Purchase = {
   id: number;
@@ -14,10 +15,12 @@ type Props = {
   total?: number;
   avgPrice?: number;
   performance?: number | null;
+  onTransactionChange: () => void; // Callback to refresh portfolio data
 };
 
-export default function PurchaseAccordion({ purchases, total, avgPrice, performance }: Props) {
+export default function PurchaseAccordion({ purchases, total, avgPrice, performance, onTransactionChange }: Props) {
   const [open, setOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<number | null>(null);
   const totalInvested = purchases.reduce((sum, p) => sum + (p.amount * p.buyPrice), 0);
   const [tableSort, setTableSort] = useState<"date" | "amount" | "price">("date");
   const [tableSortDir, setTableSortDir] = useState<"asc" | "desc">("desc");
@@ -152,6 +155,7 @@ export default function PurchaseAccordion({ purchases, total, avgPrice, performa
                   <th className="text-right py-1 px-2">Amount</th>
                   <th className="text-right py-1 px-2">Price/Unit ($)</th>
                   <th className="text-right py-1 px-2">Total ($)</th>
+                  <th className="text-right py-1 px-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,6 +165,27 @@ export default function PurchaseAccordion({ purchases, total, avgPrice, performa
                             <td className="py-1 px-2 text-right">{p.amount}</td>
                             <td className="py-1 px-2 text-right">{p.buyPrice?.toFixed(2) ?? "-"}</td>
                             <td className="py-1 px-2 text-right">{(p.amount * p.buyPrice).toFixed(2)}</td>
+                            <td className="py-1 px-2 text-right">
+                                <button
+                                  onClick={async () => {
+                                    if (window.confirm("Are you sure you want to delete this purchase?")) {
+                                      setIsDeleting(p.id);
+                                      try {
+                                        await deletePortfolioEntry(p.id);
+                                        onTransactionChange(); // Refresh data on parent
+                                      } catch (e) {
+                                        alert("Failed to delete entry.");
+                                      } finally {
+                                        setIsDeleting(null);
+                                      }
+                                    }
+                                  }}
+                                  disabled={isDeleting === p.id}
+                                  className="p-1 text-red-400 hover:text-red-300 disabled:opacity-50"
+                                >
+                                  {isDeleting === p.id ? "..." : <Trash2 size={14} />}
+                                </button>
+                            </td>
                         </tr>
                     ))}
               </tbody>

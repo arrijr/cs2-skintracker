@@ -34,10 +34,11 @@ type PortfolioEntry = {
 
 type Props = {
   skins: PortfolioEntry[];
-  watchlist: WatchlistEntry[];
+  watchlist: any[]; // WatchlistEntry is not defined here, using any
+  onDataChange: () => void; // Callback to trigger data refresh
 };
 
-export default function PortfolioTable({ skins, watchlist = [] }: Props) {
+export default function PortfolioTable({ skins, watchlist = [], onDataChange }: Props) {
   // EIN State für alle Accordions – merkt sich, welches Skin-Accordion offen ist:
   const [openSkinId, setOpenSkinId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
@@ -226,6 +227,7 @@ if (!skins || skins.length === 0) {
                 total={entry.amount}
                 avgPrice={entry.avgPrice}
                 performance={performance}
+                onTransactionChange={onDataChange}
               />
             )}
           </div>

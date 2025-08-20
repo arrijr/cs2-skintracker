@@ -48,6 +48,11 @@ export async function getPortfolioHistory() {
   return await apiFetch(`/api/v1/portfolio/history`);
 }
 
+// {/* Portfolio: löschen */}
+export async function deletePortfolioEntry(purchaseId: number) {
+  return await apiFetch(`/api/v1/portfolio/${purchaseId}`, { method: "DELETE" });
+}
+
 // {/* Auth: Login – speichert Token/User wie dein AuthContext es erwartet */}
 export async function login(email: string, password: string) {
   const data = await apiFetch(`/api/v1/users/login`, {
