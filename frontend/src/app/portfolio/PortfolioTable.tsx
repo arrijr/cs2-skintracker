@@ -220,13 +220,10 @@ if (!skins || skins.length === 0) {
                 <span>{isOpen ? <ChevronUp /> : <ChevronDown />}</span>
               </div>
             </div>
-            {/* Accordion, using the dedicated component */}
+            {/* Accordion Content */}
             {isOpen && (
               <PurchaseAccordion
                 purchases={entry.purchases}
-                total={entry.amount}
-                avgPrice={entry.avgPrice}
-                performance={performance}
                 onTransactionChange={onDataChange}
               />
             )}
