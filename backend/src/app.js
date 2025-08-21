@@ -2,6 +2,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import "./cron/index.js";
 
 import userRoutes from "./routes/userRoutes.js";
 import skinRoutes from "./routes/skinRoutes.js";
