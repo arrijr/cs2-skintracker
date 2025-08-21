@@ -2,7 +2,7 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-const API_KEY = process.env.STEAM_API_KEY || "1F737QB957GZJT4I"; // besser per .env einlesen
+const API_KEY = process.env.STEAM_API_KEY;
 
 // node-fetch als ESM
 const fetch = (...args) =>

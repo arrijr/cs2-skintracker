@@ -1,5 +1,6 @@
-import prisma from "../prisma/prismaClient.js";
-const API_KEY = "1F737QB957GZJT4I";
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+const API_KEY = process.env.STEAM_API_KEY;
 
 // node-fetch importieren (ESM)
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
@@ -68,5 +69,10 @@ async function importAllSkins() {
   console.log(`✅ Import abgeschlossen! ${count} Skins importiert/aktualisiert.`);
   await prisma.$disconnect();
 }
-await prisma.$disconnect();
-importAllSkins();
+importAllSkins()
+  .catch(err => {
+    console.error("❌ Import-Fehler:", err);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
