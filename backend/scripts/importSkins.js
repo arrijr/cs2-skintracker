@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 const API_KEY = process.env.STEAM_API_KEY;
