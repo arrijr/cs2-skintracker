@@ -1,6 +1,6 @@
 import prisma from "../../prisma/prismaClient.js";
 import { sendPriceAlertEmail } from "../services/emailService.js";
-import { fetchSteamPrice } from "../services/steamService.js";
+import { fetchSkinPrice } from "../services/steamService.js";
 
 async function checkPriceAlerts() {
   // Load all watchlist entries with an active price alert
@@ -12,7 +12,16 @@ async function checkPriceAlerts() {
   });
 
   for (const entry of alerts) {
-    const currentPrice = await fetchSteamPrice(entry.skin.market_hash_name);
+    const currentPriceData = await fetchSkinPrice(entry.skin.market_hash_name);
+    // The service returns an object like { lowest_price: '...' }, not just a number.
+    // We need to parse it, just like in portfolioController.
+    let currentPrice = null;
+    if (currentPriceData && currentPriceData.lowest_price) {
+      currentPrice = parseFloat(currentPriceData.lowest_price.replace('€', '').replace(',', '.').trim());
+    } else if (currentPriceData && currentPriceData.median_price) {
+      currentPrice = parseFloat(currentPriceData.median_price.replace('€', '').replace(',', '.').trim());
+    }
+
     // If no price is available, continue
     if (!currentPrice) continue;
 
