@@ -7,6 +7,7 @@ const router = express.Router();
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
+    console.log(`[DEBUG] Starting portfolio history for userId: ${userId}`);
 
     // 1. Get all user's transactions
     const transactions = await prisma.portfolio.findMany({
@@ -14,8 +15,10 @@ router.get('/', authMiddleware, async (req, res) => {
       include: { skin: true },
       orderBy: { buyDate: 'asc' },
     });
+    console.log(`[DEBUG] Found ${transactions.length} transactions.`);
 
     if (transactions.length === 0) {
+      console.log("[DEBUG] No transactions, returning empty history.");
       return res.json([]);
     }
 
@@ -27,6 +30,7 @@ router.get('/', authMiddleware, async (req, res) => {
       },
       orderBy: { date: 'asc' },
     });
+    console.log(`[DEBUG] Found ${priceHistories.length} total price history records for ${skinIds.length} unique skins.`);
 
     // 3. Create a map for easy price lookups: { skinId: { 'YYYY-MM-DD': price } }
     const priceMap = {};
@@ -37,11 +41,13 @@ router.get('/', authMiddleware, async (req, res) => {
       const dateStr = ph.date.toISOString().split('T')[0];
       priceMap[ph.skinId][dateStr] = ph.price;
     }
+    console.log(`[DEBUG] Built priceMap for ${Object.keys(priceMap).length} skins.`);
 
     // 4. Generate portfolio value for each day
     const history = [];
     const today = new Date();
-    const startDate = new Date(transactions[0].buyDate); // Start from the first purchase
+    const startDate = new Date(transactions[0].buyDate);
+    console.log(`[DEBUG] Calculating history from ${startDate.toISOString().split('T')[0]} to ${today.toISOString().split('T')[0]}`);
 
     // Fill in missing prices with the last known price
     for (const skinId of skinIds) {
@@ -57,14 +63,14 @@ router.get('/', authMiddleware, async (req, res) => {
         }
     }
 
+    let loopCount = 0;
     for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+      loopCount++;
       const dateStr = d.toISOString().split('T')[0];
       let dailyValue = 0;
 
-      // Find skins owned on this day
       const ownedSkins = transactions.filter(t => new Date(t.buyDate) <= d);
 
-      // Group by skinId to get total amount owned of each skin
       const holdings = {};
       for (const t of ownedSkins) {
           if (!holdings[t.skinId]) holdings[t.skinId] = 0;
@@ -79,9 +85,14 @@ router.get('/', authMiddleware, async (req, res) => {
         }
       }
 
+      if(loopCount < 5 || loopCount > 360) { // Log first few and last few days
+        console.log(`[DEBUG] Day ${dateStr}: Total Value = ${dailyValue.toFixed(2)}`);
+      }
+
       history.push({ date: dateStr, value: dailyValue });
     }
 
+    console.log(`[DEBUG] Finished calculation. Total history points: ${history.length}. Final value: ${history[history.length - 1]?.value}`);
     res.json(history);
   } catch (error) {
     console.error("Failed to generate portfolio history:", error);
