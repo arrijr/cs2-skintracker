@@ -50,6 +50,8 @@ router.get("/:skinId", async (req, res) => {
       return res.status(404).json({ message: "Skin not found" });
     }
 
+    console.log(`[DEBUG] Fetching skin ${skinId}: ${skin.marketHashName}`);
+
     // Read latest price from DB
     let marketPrice = null;
     const latest = await prisma.priceHistory.findFirst({
@@ -57,22 +59,37 @@ router.get("/:skinId", async (req, res) => {
       orderBy: { date: "desc" },
       select: { price: true },
     });
+    console.log(`[DEBUG] Latest DB price:`, latest);
+    
     if (latest?.price != null) {
       marketPrice = latest.price;
+      console.log(`[DEBUG] Using DB price: ${marketPrice}`);
     } else {
+      console.log(`[DEBUG] No DB price, trying live Steam fetch...`);
       // Fallback: live fetch from Steam
       try {
         const priceData = await fetchSkinPrice(skin.marketHashName);
+        console.log(`[DEBUG] Steam API response:`, priceData);
+        
         const raw = priceData?.lowest_price || priceData?.median_price || null;
+        console.log(`[DEBUG] Raw price from Steam:`, raw);
+        
         if (raw) {
           const numeric = parseFloat(String(raw).replace(/[^\d.,-]/g, "").replace(",", "."));
           marketPrice = Number.isFinite(numeric) ? numeric : null;
+          console.log(`[DEBUG] Parsed numeric price:`, numeric, `→ marketPrice:`, marketPrice);
         }
-      } catch {}
+      } catch (e) {
+        console.error(`[DEBUG] Steam fetch error:`, e.message);
+      }
     }
 
-    res.json({ ...skin, marketPrice });
+    const response = { ...skin, marketPrice };
+    console.log(`[DEBUG] Final response:`, response);
+    
+    res.json(response);
   } catch (e) {
+    console.error(`[DEBUG] Route error:`, e);
     res.status(500).json({ message: "Error fetching skin" });
   }
 });

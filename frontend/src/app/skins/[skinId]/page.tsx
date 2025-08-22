@@ -73,10 +73,14 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     async function load() {
       setLoading(true);
       try {
+        console.log(`[DEBUG] Loading skin ${skinId}...`);
         const [s, h] = await Promise.all([
           apiFetch(`/api/v1/skins/${skinId}`),
           apiFetch(`/api/v1/skins/${skinId}/history`).catch(() => []),
         ]);
+        console.log(`[DEBUG] API response - skin:`, s);
+        console.log(`[DEBUG] API response - history:`, h);
+        
         if (!cancelled) {
           setSkin(s || null);
           setHistory(Array.isArray(h) ? h : []);
@@ -102,6 +106,10 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   // {/* Derived */}
   const img = skin.itemimage || skin.itemImage || skin.image_url || skin.imageUrl || "/images/placeholder-skin.png";
   const marketPrice = skin.marketPrice ?? null;
+  
+  console.log(`[DEBUG] Skin object:`, skin);
+  console.log(`[DEBUG] marketPrice value:`, marketPrice);
+  console.log(`[DEBUG] marketPrice type:`, typeof marketPrice);
 
   // Portfolio-Käufe für diesen Skin
   const portfolioPurchasesForSkin = portfolioSkins.filter(
