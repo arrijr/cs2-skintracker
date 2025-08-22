@@ -57,10 +57,6 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const [addingPortfolio, setAddingPortfolio] = useState(false);
   const [portfolioMsg, setPortfolioMsg] = useState("");
 
-  // Filter/Sort für Portfolio
-  const [sort, setSort] = useState("recent");
-  const [search, setSearch] = useState("");
-
   // *** ALLE useEffect HOOKS OBEN ***
   useEffect(() => {
     setMounted(true);
@@ -135,22 +131,6 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
       },
     ],
   };
-
-  // Filtered Portfolio (optional)
-  const filteredPortfolio = portfolioSkins
-    .filter((p: any) => p.skin?.name?.toLowerCase().includes(search.toLowerCase()))
-    .map((item: any) => {
-      const performance =
-        item.skin?.marketPrice && item.avgPrice
-          ? ((item.skin.marketPrice - item.avgPrice) / item.avgPrice) * 100
-          : 0;
-      return { ...item, performance };
-    })
-    .sort((a: any, b: any) => {
-      if (sort === "performance") return (b.performance || 0) - (a.performance || 0);
-      if (sort === "amount") return (b.amount || 0) - (a.amount || 0);
-      return new Date(b.buyDate).getTime() - new Date(a.buyDate).getTime(); // recent
-    });
 
   // {/* Add to Watchlist */}
   async function addToWatchlist() {
@@ -366,33 +346,15 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             )}
           </div>
 
-          {/* Portfolio Filter */}
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <select
-              className="input-main"
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-            >
-              <option value="recent">Recent buy</option>
-              <option value="performance">Best performance</option>
-              <option value="amount">Most owned</option>
-            </select>
-          </div>
-
-          {/* Portfolio Card */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {filteredPortfolio.map((item: any) => (
-              <SkinPortfolioCard key={item.skinId} item={item} />
-            ))}
-          </div>
-
-          {/* Purchase Accordion */}
-          <PurchaseAccordion
-            purchases={portfolioPurchasesForSkin}
-            total={totalAmount}
-            avgPrice={avgPrice}
-            performance={performance}
-          />
+          {/* Purchase Accordion - Shows portfolio data for THIS skin only */}
+          {portfolioPurchasesForSkin.length > 0 && (
+            <PurchaseAccordion
+              purchases={portfolioPurchasesForSkin}
+              total={totalAmount}
+              avgPrice={avgPrice}
+              performance={performance}
+            />
+          )}
 
           {/* Steam-Link & Navigation */}
           <a

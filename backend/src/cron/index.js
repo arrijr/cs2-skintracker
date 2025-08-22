@@ -8,12 +8,27 @@ import { calculateAndStorePortfolioValues } from "../services/portfolioHistorySe
 
 // {/* 02:00 UTC → z.B. 04:00 Berlin im Sommer */}
 // Preise updaten über dein robustes Script (separater Prozess = stabiler)
+// Environment-Variablen für bessere Kontrolle in Produktion
+const UPDATE_ALL_SKINS = process.env.UPDATE_ALL_SKINS !== "false"; // Standard: true
+const UPDATE_BATCH_SIZE = process.env.PRICE_UPDATE_BATCH_SIZE || 1000; // Batch-Größe
+const UPDATE_DELAY = process.env.PRICE_UPDATE_GLOBAL_DELAY_MS || 40; // Delay zwischen API-Calls
+
 cron.schedule("0 2 * * *", () => {
   console.log("[CRON] Starting updateSkinPrices.js...");
+  
+  // Environment-Variablen für den Cron-Job setzen
+  const env = {
+    ...process.env,
+    PRICE_UPDATE_ONLY_ACTIVE: UPDATE_ALL_SKINS ? "false" : "true", // Alle Skins oder nur aktive
+    PRICE_UPDATE_BATCH_SIZE: UPDATE_BATCH_SIZE.toString(),
+    PRICE_UPDATE_GLOBAL_DELAY_MS: UPDATE_DELAY.toString(),
+  };
+  
   const p = spawn("node", ["scripts/updateSkinPrices.js"], {
     cwd: process.cwd(),
     stdio: "inherit",
     shell: process.platform === "win32",
+    env: env,
   });
   p.on("close", (code) => console.log(`[CRON] updateSkinPrices.js exited with ${code}`));
 });
