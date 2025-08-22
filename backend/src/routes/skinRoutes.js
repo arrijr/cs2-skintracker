@@ -66,24 +66,32 @@ router.get("/:skinId", async (req, res) => {
       marketPrice = latest.price;
       console.log(`[DEBUG] Using DB price: ${marketPrice}`);
     } else {
-      console.log(`[DEBUG] No DB price, trying live Steam fetch...`);
-      // Fallback: live fetch from Steam
-      try {
-        const priceData = await fetchSkinPrice(skin.marketHashName);
-        console.log(`[DEBUG] Steam API response:`, JSON.stringify(priceData, null, 2));
-        
-        const raw = priceData?.lowest_price || priceData?.median_price || null;
-        console.log(`[DEBUG] Raw price from Steam:`, raw);
-        
-        if (raw) {
-          const numeric = parseFloat(String(raw).replace(/[^\d.,-]/g, "").replace(",", "."));
-          marketPrice = Number.isFinite(numeric) ? numeric : null;
-          console.log(`[DEBUG] Parsed numeric price:`, numeric, `→ marketPrice:`, marketPrice);
-        } else {
-          console.log(`[DEBUG] No valid price found in Steam response`);
+      // Try to use existing price fields from skin object
+      console.log(`[DEBUG] Checking skin object prices: priceMedian=${skin.priceMedian}, priceAvg=${skin.priceAvg}`);
+      
+      if (skin.priceMedian || skin.priceAvg) {
+        marketPrice = skin.priceMedian || skin.priceAvg;
+        console.log(`[DEBUG] Using skin object price: ${marketPrice}`);
+      } else {
+        console.log(`[DEBUG] No skin object prices, trying live Steam fetch...`);
+        // Fallback: live fetch from Steam
+        try {
+          const priceData = await fetchSkinPrice(skin.marketHashName);
+          console.log(`[DEBUG] Steam API response:`, JSON.stringify(priceData, null, 2));
+          
+          const raw = priceData?.lowest_price || priceData?.median_price || null;
+          console.log(`[DEBUG] Raw price from Steam:`, raw);
+          
+          if (raw) {
+            const numeric = parseFloat(String(raw).replace(/[^\d.,-]/g, "").replace(",", "."));
+            marketPrice = Number.isFinite(numeric) ? numeric : null;
+            console.log(`[DEBUG] Parsed numeric price:`, numeric, `→ marketPrice:`, marketPrice);
+          } else {
+            console.log(`[DEBUG] No valid price found in Steam response`);
+          }
+        } catch (e) {
+          console.error(`[DEBUG] Steam fetch error:`, e.message);
         }
-      } catch (e) {
-        console.error(`[DEBUG] Steam fetch error:`, e.message);
       }
     }
 
