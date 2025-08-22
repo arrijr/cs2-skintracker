@@ -182,7 +182,13 @@ if (!skins || skins.length === 0) {
                 />
                 <div>
                   <div className="font-bold flex items-center gap-2">
-                    {entry.skin.name}
+                    <Link 
+                      href={`/skins/${entry.skin.id}`}
+                      onClick={(e) => e.stopPropagation()} // Verhindert Accordion-Toggle
+                      className="hover:text-blue-400 transition-colors"
+                    >
+                      {entry.skin.name}
+                    </Link>
                     {/* Alert Badge */}
                     {alertObj && (
                       <Tooltip content={`Price alert: ${alertObj.priceAlert} $`}>
