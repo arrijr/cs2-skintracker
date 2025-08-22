@@ -9,6 +9,7 @@ import skinRoutes from "./routes/skinRoutes.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
 import portfolioRoutes from "./routes/portfolioRoutes.js";
 import portfolioHistoryRoutes from "./routes/portfolioHistoryRoutes.js";
+import healthRoutes from "./routes/healthRoutes.js";
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ app.use("/api/v1/skins", skinRoutes);
 app.use("/api/v1/watchlist", watchlistRoutes);
 app.use("/api/v1/portfolio", portfolioRoutes);
 app.use("/api/v1/portfolio/history", portfolioHistoryRoutes);
+app.use("/api/v1/health", healthRoutes);
 
 // 404
 app.use((req, res) => {

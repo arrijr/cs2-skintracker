@@ -143,6 +143,27 @@ model PriceHistory {
   date    DateTime
   price   Float
 }
+
+## 🔍 Cron Sanity Checks
+
+**Price History (last 10):**
+```bash
+cd backend
+node scripts/checkPriceHistory.js
+```
+
+**Portfolio History (today):**
+```bash
+cd backend
+node scripts/checkPortfolioHistory.js
+```
+
+**Health endpoint (local / prod):**
+```bash
+GET /api/v1/health/cron-status
+```
+
+Returns last write timestamps for PriceHistory and PortfolioHistory.
 🔑 Authentifizierung & Erweiterbarkeit
 Aktuell: JWT-basierte Auth (E-Mail + Passwort, sicher gehasht)
 

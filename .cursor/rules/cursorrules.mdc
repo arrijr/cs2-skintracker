@@ -1,0 +1,39 @@
+---
+alwaysApply: true
+---
+# CS2 Skin Price Tracker — Cursor Rules
+
+General
+- Always read the existing README and project files before proposing new components.
+- UI language: English. Currency symbol in UI: $.
+- When you output code, ALWAYS include:
+  1) the file path, and
+  2) whether it's [Frontend] or [Backend].
+- In React/TSX, ALWAYS place a clear block comment above the snippet, e.g.:
+  {/* Add Skin to Watchlist */}
+- Never hardcode secrets. Use process.env and document new env keys in README.
+- Respect existing structure and naming.
+
+Frontend (Next.js App Router, TS, Tailwind)
+- Keep components small and commented.
+- Prefer explicit types, no `any`.
+- Do not introduce new UI libs without asking.
+
+Backend (Node/Express, Prisma, PostgreSQL)
+- Use `@prisma/client` (single PrismaClient). Disconnect in `finally`.
+- Do NOT modify these unless explicitly asked:
+  - backend/scripts/updateSkinPrices.js
+  - backend/src/cron/index.js
+  - backend/src/services/portfolioHistoryService.js
+  - prisma/schema.prisma
+- For test runs, use env guards:
+  - PRICE_UPDATE_TAKE, PRICE_UPDATE_BATCH_SIZE, PRICE_UPDATE_ONLY_ACTIVE
+- Scripts must read env via `import "dotenv/config"`.
+
+Branch / CI
+- Use Conventional Commits (feat:, fix:, chore:, refactor:, docs:).
+- On non-main branches set RUN_SCHEDULER=false (no cron in staging).
+- Frontend must read `NEXT_PUBLIC_API_URL` from env.
+
+Logging
+- Keep logs minimal in production. Use clear tags for cron start/end.
