@@ -1,6 +1,6 @@
 import prisma from "../../prisma/prismaClient.js";
 import { sendPriceAlertEmail } from "../services/emailService.js";
-import { fetchSteamPrice } from "../services/steamService.js";
+import { fetchSkinPrice } from "../services/steamService.js";
 
 async function checkPriceAlerts() {
   const alerts = await prisma.watchlist.findMany({
@@ -9,9 +9,10 @@ async function checkPriceAlerts() {
   });
 
   for (const entry of alerts) {
-    const currentPrice = await fetchSteamPrice(entry.skin.market_hash_name);
-    if (!currentPrice) continue;
+    const priceData = await fetchSkinPrice(entry.skin.marketHashName);
+    if (!priceData || !priceData.lowest_price) continue;
 
+    const currentPrice = parseFloat(priceData.lowest_price.replace(/[€$]/g, ''));
     if (currentPrice <= entry.priceAlert) {
       await sendPriceAlertEmail(entry.user.email, entry.skin.name, currentPrice, entry.priceAlert);
       await prisma.watchlist.update({ where: { id: entry.id }, data: { priceAlert: null } });
@@ -19,3 +20,5 @@ async function checkPriceAlerts() {
     }
   }
 }
+
+export default checkPriceAlerts;

@@ -1,32 +1,25 @@
 import cron from "node-cron";
 import prisma from "../prisma/prismaClient.js";
-import axios from "axios";
-import { sendPriceAlertEmail } from "../services/emailService.js"; // <- Richtiger Name!
+import { fetchSkinPrice } from "../services/steamService.js";
+import { sendPriceAlertEmail } from "../services/emailService.js";
 
-async function fetchSteamPrice(marketHashName) {
-  const url = `https://steamcommunity.com/market/priceoverview/?appid=730&market_hash_name=${encodeURIComponent(marketHashName)}&currency=3`;
-  try {
-    console.log("Steam API Call:", url);
-    const res = await axios.get(url);
-    console.log("Steam response:", res.data);
+async function getSteamPrice(marketHashName) {
+  const priceData = await fetchSkinPrice(marketHashName);
+  if (!priceData) return null;
 
-    let price = null;
-    if (res.data && res.data.lowest_price) {
-      price = parseFloat(
-        res.data.lowest_price.replace('€', '').replace(',', '.').trim()
-      );
-    } else if (res.data && res.data.median_price) {
-      price = parseFloat(
-        res.data.median_price.replace('€', '').replace(',', '.').trim()
-      );
-      console.log("No lowest_price – using median_price:", price);
-    }
-
-    return price;
-  } catch (e) {
-    console.error(`Price fetch failed for ${marketHashName}:`, e.message);
+  let price = null;
+  if (priceData.lowest_price) {
+    price = parseFloat(
+      priceData.lowest_price.replace('€', '').replace(',', '.').trim()
+    );
+  } else if (priceData.median_price) {
+    price = parseFloat(
+      priceData.median_price.replace('€', '').replace(',', '.').trim()
+    );
+    console.log("No lowest_price – using median_price:", price);
   }
-  return null;
+
+  return price;
 }
 
 export async function saveAllSkinPrices() {
@@ -41,7 +34,7 @@ export async function saveAllSkinPrices() {
   });
 
   for (const skin of skins) {
-    const price = await fetchSteamPrice(skin.marketHashName);
+    const price = await getSteamPrice(skin.marketHashName);
     if (price) {
       await prisma.priceHistory.create({
         data: {
