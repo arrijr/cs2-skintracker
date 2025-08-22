@@ -1,6 +1,7 @@
 import express from "express";
 import prisma from "../prisma/prismaClient.js";
 import { getPriceHistory } from "../controllers/skinController.js";
+import { fetchSkinPrice } from "../services/steamService.js";
 
 const router = express.Router();
 
@@ -37,7 +38,6 @@ router.get("/search", async (req, res) => {
 });
 
 router.get("/:skinId", async (req, res) => {
-  
   const skinId = parseInt(req.params.skinId, 10);
   if (isNaN(skinId)) {
     return res.status(400).json({ message: "Invalid skinId" });
@@ -49,7 +49,29 @@ router.get("/:skinId", async (req, res) => {
     if (!skin) {
       return res.status(404).json({ message: "Skin not found" });
     }
-    res.json(skin);
+
+    // Read latest price from DB
+    let marketPrice = null;
+    const latest = await prisma.priceHistory.findFirst({
+      where: { skinId },
+      orderBy: { date: "desc" },
+      select: { price: true },
+    });
+    if (latest?.price != null) {
+      marketPrice = latest.price;
+    } else {
+      // Fallback: live fetch from Steam
+      try {
+        const priceData = await fetchSkinPrice(skin.marketHashName);
+        const raw = priceData?.lowest_price || priceData?.median_price || null;
+        if (raw) {
+          const numeric = parseFloat(String(raw).replace(/[^\d.,-]/g, "").replace(",", "."));
+          marketPrice = Number.isFinite(numeric) ? numeric : null;
+        }
+      } catch {}
+    }
+
+    res.json({ ...skin, marketPrice });
   } catch (e) {
     res.status(500).json({ message: "Error fetching skin" });
   }
