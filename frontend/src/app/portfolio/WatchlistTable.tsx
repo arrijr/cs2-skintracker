@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import placeholderSkin from "../../../public/images/placeholder-skin.png";
 
 type WatchlistEntry =
   | {
@@ -46,19 +47,13 @@ export default function WatchlistTable({ watchlist, onRemove }: Props) {
           {watchlist.map((entry) => {
             const s = entry.skin;
             const name = s?.name ?? entry.name ?? "Unknown item";
-            const img =
-              s?.itemimage ||
-              s?.itemImage ||
-              s?.image_url ||
-              s?.imageUrl ||
-              entry.imageUrl ||
-              "/images/placeholder-skin.png";
+            const imgSrc = s?.imageUrl || entry.imageUrl || placeholderSkin;
             const linkId = s?.id ?? entry.skinId;
 
             return (
               <tr key={`${entry.id}-${linkId}`} className="border-b border-gray-800">
                 <td className="py-2">
-                  <Image src={img} width={48} height={48} alt={name} className="rounded" />
+                  <Image src={imgSrc} width={48} height={48} alt={name} className="rounded" />
                 </td>
                 <td>
                   <Link href={`/skins/${linkId}`} className="text-blue-400 hover:underline">

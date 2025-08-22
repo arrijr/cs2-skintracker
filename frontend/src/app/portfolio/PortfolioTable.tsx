@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import placeholderSkin from "../../../public/images/placeholder-skin.png";
 import { ChevronDown, ChevronUp, Bell } from "lucide-react";
 import PurchaseAccordion from "../components/PurchaseAccordion";
 import clsx from "clsx";
@@ -150,7 +151,7 @@ if (!skins || skins.length === 0) {
             : 0;
 
         const isOpen = openSkinId === entry.skin.id;
-        const imgSrc = entry.skin.imageUrl || "/images/placeholder-skin.png";
+        const imgSrc = entry.skin.imageUrl || placeholderSkin;
 
         return (
           <div

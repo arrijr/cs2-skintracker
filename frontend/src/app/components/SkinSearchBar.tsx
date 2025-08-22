@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { searchSkins } from "@/lib/api";
+import placeholderSkin from "../../../public/images/placeholder-skin.png";
 
 type Skin = {
   id: number;
@@ -105,19 +106,14 @@ export default function SkinSearchBar<T = number | Skin>({
             <li className="px-4 py-2 text-xs text-zinc-400">No results</li>
           )}
           {items.map((s) => {
-            const img =
-              s.itemimage ||
-              s.itemImage ||
-              s.image_url ||
-              s.imageUrl ||
-              "/images/placeholder-skin.png";
+            const imgSrc = s.imageUrl || placeholderSkin.src;
             return (
               <li
                 key={s.id}
                 className="flex items-center gap-2 px-3 py-2 hover:bg-zinc-800/50 cursor-pointer"
                 onMouseDown={() => handleSelect(s)}
               >
-                <img src={img} alt={s.name} className="w-8 h-8 rounded object-cover" />
+                <img src={imgSrc} alt={s.name} className="w-8 h-8 rounded object-cover" />
                 <div className="truncate">
                   <span className="font-medium">{s.name}</span>
                   {s.wear && <span className="ml-2 text-xs text-zinc-400">{s.wear}</span>}

@@ -14,6 +14,7 @@ import {
 import { apiFetch } from "@/lib/http"; // for skin detail/history
 import PurchaseAccordion from "../../components/PurchaseAccordion";
 import SkinPortfolioCard from "../../components/SkinPortfolioCard";
+import placeholderSkin from "../../../../public/images/placeholder-skin.png";
 
 // Chart.js Registration
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
@@ -100,7 +101,6 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   if (!skin) return <div className="text-red-400 py-8">Skin not found!</div>;
 
   // {/* Derived */}
-  const img = skin.itemimage || skin.itemImage || skin.image_url || skin.imageUrl || "/images/placeholder-skin.png";
   const marketPrice = skin.marketPrice ?? null;
 
   // Portfolio-Käufe für diesen Skin
@@ -212,13 +212,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
       {skin && (
         <>
           <img
-            src={
-              skin.itemimage ||
-              skin.itemImage ||
-              skin.image_url ||
-              skin.imageUrl ||
-              "/images/placeholder-skin.png"
-            }
+            src={skin.imageUrl || placeholderSkin.src}
             alt={skin.name}
             className="w-36 h-36 md:w-48 md:h-48 object-contain rounded-xl mb-4 shadow-lg bg-neutral-800"
           />

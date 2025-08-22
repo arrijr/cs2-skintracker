@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import SkinSearchBar from "../components/SkinSearchBar";
 import { searchSkins } from "@/lib/api";
+import placeholderSkin from "../../../public/images/placeholder-skin.png";
 
 // {/* Minimal Skin type */}
 type Skin = {
@@ -58,14 +59,14 @@ export default function SkinsPage() {
       {/* Results Grid */} 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 py-4">
         {skins.map((skin) => {
-          const img = skin.itemimage || skin.itemImage || skin.image_url || skin.imageUrl || "/images/placeholder-skin.png";
+          const imgSrc = skin.imageUrl || placeholderSkin.src;
           return (
             <Link
               href={`/skins/${skin.id}`}
               key={skin.id}
               className="bg-neutral-900 rounded-xl hover:bg-neutral-800 transition flex flex-col items-center p-3"
             >
-              <img src={img} alt={skin.name} className="mb-2 w-24 h-24 object-contain rounded" />
+              <img src={imgSrc} alt={skin.name} className="mb-2 w-24 h-24 object-contain rounded" />
               <div className="font-semibold text-center">{skin.name}</div>
             </Link>
           );
