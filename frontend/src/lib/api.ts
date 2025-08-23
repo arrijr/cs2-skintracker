@@ -7,6 +7,37 @@ export async function searchSkins(query: string) {
   return await apiFetch(`/api/v1/skins/search?query=${q}`);
 }
 
+// {/* Browse all skins with filters and pagination */}
+export async function browseSkins(params: {
+  page?: number;
+  limit?: number;
+  weaponType?: string;
+  wear?: string;
+  rarity?: string;
+  quality?: string;
+  isStattrak?: boolean;
+  isStar?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}) {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, String(value));
+    }
+  });
+  
+  return await apiFetch(`/api/v1/skins?${searchParams.toString()}`);
+}
+
+// {/* Get filter options */}
+export async function getFilterOptions() {
+  return await apiFetch('/api/v1/skins/filters');
+}
+
 // {/* Skins: History */}
 export async function getSkinHistory(id: number | string) {
   return await apiFetch(`/api/v1/skins/${id}/history`);
@@ -77,6 +108,8 @@ export async function signup(email: string, password: string) {
 // {/* Optional: Kompatibilität – api-Objekt mit denselben Funktionen */}
 export const api = {
   searchSkins,
+  browseSkins,
+  getFilterOptions,
   getSkinHistory,
   getWatchlist,
   addToWatchlist,

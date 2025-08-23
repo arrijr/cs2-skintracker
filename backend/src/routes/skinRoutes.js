@@ -5,6 +5,92 @@ import { fetchSkinPrice } from "../services/steamService.js";
 
 const router = express.Router();
 
+// {/* Browse all skins with filters and pagination */}
+router.get("/", async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 50,
+      weaponType,
+      wear,
+      rarity,
+      quality,
+      isStattrak,
+      isStar,
+      minPrice,
+      maxPrice,
+      search,
+      sortBy = 'name',
+      sortOrder = 'asc'
+    } = req.query;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Build where clause
+    const where = {};
+    
+    if (search && search.length >= 2) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { marketHashName: { contains: search, mode: "insensitive" } },
+        { itemName: { contains: search, mode: "insensitive" } },
+      ];
+    }
+    
+    if (weaponType) where.weaponType = weaponType;
+    if (wear) where.wear = wear;
+    if (rarity) where.rarity = rarity;
+    if (quality) where.quality = quality;
+    if (isStattrak !== undefined) where.isStattrak = isStattrak === 'true';
+    if (isStar !== undefined) where.isStar = isStar === 'true';
+    
+    if (minPrice || maxPrice) {
+      where.OR = where.OR || [];
+      const priceFilter = {};
+      if (minPrice) priceFilter.gte = parseFloat(minPrice);
+      if (maxPrice) priceFilter.lte = parseFloat(maxPrice);
+      
+      where.OR.push(
+        { priceMedian: priceFilter },
+        { priceAvg: priceFilter },
+      );
+    }
+
+    // Build orderBy
+    const orderBy = {};
+    if (sortBy === 'price') {
+      orderBy.priceMedian = sortOrder;
+    } else if (sortBy === 'rarity') {
+      orderBy.rarity = sortOrder;
+    } else {
+      orderBy[sortBy] = sortOrder;
+    }
+
+    const [skins, total] = await Promise.all([
+      prisma.skin.findMany({
+        where,
+        orderBy,
+        skip,
+        take: parseInt(limit),
+      }),
+      prisma.skin.count({ where }),
+    ]);
+
+    res.json({
+      skins,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit)),
+      },
+    });
+  } catch (e) {
+    console.error("Browse skins error:", e);
+    res.status(500).json({ message: "Failed to fetch skins." });
+  }
+});
+
 router.get("/search", async (req, res) => {
   const { query } = req.query;
   if (!query || query.length < 2) {
@@ -34,6 +120,44 @@ router.get("/search", async (req, res) => {
     res.json(skins);
   } catch (e) {
     res.status(500).json({ message: "Search failed." });
+  }
+});
+
+// {/* Get filter options for UI */}
+router.get("/filters", async (req, res) => {
+  try {
+    const [weaponTypes, wears, rarities, qualities] = await Promise.all([
+      prisma.skin.findMany({
+        select: { weaponType: true },
+        where: { weaponType: { not: null } },
+        distinct: ['weaponType'],
+      }),
+      prisma.skin.findMany({
+        select: { wear: true },
+        where: { wear: { not: null } },
+        distinct: ['wear'],
+      }),
+      prisma.skin.findMany({
+        select: { rarity: true },
+        where: { rarity: { not: null } },
+        distinct: ['rarity'],
+      }),
+      prisma.skin.findMany({
+        select: { quality: true },
+        where: { quality: { not: null } },
+        distinct: ['quality'],
+      }),
+    ]);
+
+    res.json({
+      weaponTypes: weaponTypes.map(w => w.weaponType).filter(Boolean),
+      wears: wears.map(w => w.wear).filter(Boolean),
+      rarities: rarities.map(r => r.rarity).filter(Boolean),
+      qualities: qualities.map(q => q.quality).filter(Boolean),
+    });
+  } catch (e) {
+    console.error("Get filters error:", e);
+    res.status(500).json({ message: "Failed to fetch filter options." });
   }
 });
 
