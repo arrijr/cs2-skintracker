@@ -45,21 +45,21 @@ type Filters = {
 
 const WEAPON_CATEGORIES = [
   { id: '', name: 'All', icon: '🔫' },
-  { id: 'rifle', name: 'Rifles', icon: '🔫' },
-  { id: 'pistol', name: 'Pistols', icon: '🔫' },
-  { id: 'smg', name: 'SMGs', icon: '⚡' },
-  { id: 'shotgun', name: 'Shotguns', icon: '💥' },
-  { id: 'sniper', name: 'Snipers', icon: '🎯' },
-  { id: 'knife', name: 'Knives', icon: '🔪' },
-  { id: 'glove', name: 'Gloves', icon: '🧤' },
-  { id: 'mp5', name: 'MP5', icon: '🔫' },
-  { id: 'ak47', name: 'AK-47', icon: '🔫' },
   { id: 'm4a4', name: 'M4A4', icon: '🔫' },
-  { id: 'm4a1s', name: 'M4A1-S', icon: '🔫' },
+  { id: 'ak47', name: 'AK-47', icon: '🔫' },
   { id: 'awp', name: 'AWP', icon: '🎯' },
   { id: 'deagle', name: 'Desert Eagle', icon: '🔫' },
   { id: 'glock', name: 'Glock-18', icon: '🔫' },
   { id: 'usp', name: 'USP-S', icon: '🔫' },
+  { id: 'mp5', name: 'MP5', icon: '🔫' },
+  { id: 'nomad knife', name: 'Nomad Knife', icon: '🔪' },
+  { id: 'm9 bayonet', name: 'M9 Bayonet', icon: '🔪' },
+  { id: 'flip knife', name: 'Flip Knife', icon: '🔪' },
+  { id: 'sport gloves', name: 'Sport Gloves', icon: '🧤' },
+  { id: 'rifle', name: 'Other Rifles', icon: '🔫' },
+  { id: 'pistol', name: 'Other Pistols', icon: '🔫' },
+  { id: 'smg', name: 'SMGs', icon: '⚡' },
+  { id: 'shotgun', name: 'Shotguns', icon: '💥' },
 ];
 
 const RARITY_COLORS = {
@@ -98,6 +98,7 @@ export default function SkinsPage() {
     async function loadFilters() {
       try {
         const options = await getFilterOptions();
+        console.log('[DEBUG] Available filter options:', options);
         setFilterOptions(options);
       } catch (e) {
         console.error("Failed to load filter options:", e);
