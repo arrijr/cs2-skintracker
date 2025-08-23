@@ -158,6 +158,15 @@ if (!skins || skins.length === 0) {
           entry.skin.imageUrl ||
           "/images/placeholder-skin.png";
 
+        // Debug-Logging für Bilder
+        console.log(`[DEBUG] Skin ${entry.skin.id} (${entry.skin.name}):`, {
+          itemimage: entry.skin.itemimage,
+          itemImage: entry.skin.itemImage,
+          image_url: entry.skin.image_url,
+          imageUrl: entry.skin.imageUrl,
+          finalImg: img
+        });
+
         return (
           <div
             key={entry.skin.id}
