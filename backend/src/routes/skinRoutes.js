@@ -81,6 +81,13 @@ router.get("/", async (req, res) => {
     // Debug: Log the final where clause
     console.log('[DEBUG] Final where clause:', JSON.stringify(where, null, 2));
     
+    // Debug: Check what's actually in the database
+    const sampleSkins = await prisma.skin.findMany({
+      take: 5,
+      select: { id: true, name: true, weaponType: true, isStattrak: true, isStar: true }
+    });
+    console.log('[DEBUG] Sample skins from DB:', sampleSkins);
+    
     const [skins, total] = await Promise.all([
       prisma.skin.findMany({
         where,
@@ -164,12 +171,15 @@ router.get("/filters", async (req, res) => {
       }),
     ]);
 
-    res.json({
+    const result = {
       weaponTypes: weaponTypes.map(w => w.weaponType).filter(Boolean),
       wears: wears.map(w => w.wear).filter(Boolean),
       rarities: rarities.map(r => r.rarity).filter(Boolean),
       qualities: qualities.map(q => q.quality).filter(Boolean),
-    });
+    };
+    
+    console.log('[DEBUG] Filter options:', result);
+    res.json(result);
   } catch (e) {
     console.error("Get filters error:", e);
     res.status(500).json({ message: "Failed to fetch filter options." });
