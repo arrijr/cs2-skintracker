@@ -34,13 +34,49 @@ model Skin {
   isStar       Boolean?    // aus isstar
   itemType     String?     // aus itemtype
   itemName     String?     // aus itemname
-  sold24h      Int?        // Verkaufsstatistik
-  offerVolume  Int?
-  priceMedian  Float?
-  priceMin     Float?
-  priceMax     Float?
-  priceAvg     Float?
-
+  itemGroup    String?     // aus itemgroup (rifle, pistol, etc.)
+  
+  // Current prices
+  priceLatest  Float?      // aus pricelatest
+  priceLatestSell Float?   // aus pricelatestsell
+  priceMedian  Float?      // aus pricemedian
+  priceAvg     Float?      // aus priceavg
+  priceSafe    Float?      // aus pricesafe (95% vom Median)
+  priceMin     Float?      // aus pricemin (90-Tage Min)
+  priceMax     Float?      // aus pricemax (90-Tage Max)
+  
+  // Historical prices (90 days)
+  priceMedian24h Float?    // aus pricemedian24h
+  priceMedian7d  Float?    // aus pricemedian7d
+  priceMedian30d Float?    // aus pricemedian30d
+  priceMedian90d Float?    // aus pricemedian90d
+  priceAvg24h    Float?    // aus priceavg24h
+  priceAvg7d     Float?    // aus priceavg7d
+  priceAvg30d    Float?    // aus priceavg30d
+  priceAvg90d    Float?    // aus priceavg90d
+  
+  // Sales statistics
+  soldToday     Int?       // aus soldtoday
+  sold24h       Int?       // aus sold24h
+  sold7d        Int?       // aus sold7d
+  sold30d       Int?       // aus sold30d
+  sold90d       Int?       // aus sold90d
+  soldTotal     Int?       // aus soldtotal
+  hoursToSold   Float?     // aus hourstosold
+  
+  // Steam market data
+  buyOrderPrice Float?     // aus buyorderprice
+  buyOrderMedian Float?    // aus buyordermedian
+  buyOrderAvg   Float?     // aus buyorderavg
+  buyOrderVolume Int?      // aus buyordervolume
+  offerVolume   Int?       // aus offervolume
+  
+  // Market metadata
+  priceUpdatedAt DateTime? // aus priceupdatedat
+  unstable       Boolean?  // aus unstable (1 = true, 0 = false)
+  unstableReason String?   // aus unstablereason
+  
+  // Legacy fields (for backward compatibility)
   priceHistory   PriceHistory[]
   watchlist      Watchlist[]
   portfolio      Portfolio[]
