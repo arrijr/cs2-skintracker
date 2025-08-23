@@ -52,6 +52,14 @@ const WEAPON_CATEGORIES = [
   { id: 'sniper', name: 'Snipers', icon: '🎯' },
   { id: 'knife', name: 'Knives', icon: '🔪' },
   { id: 'glove', name: 'Gloves', icon: '🧤' },
+  { id: 'mp5', name: 'MP5', icon: '🔫' },
+  { id: 'ak47', name: 'AK-47', icon: '🔫' },
+  { id: 'm4a4', name: 'M4A4', icon: '🔫' },
+  { id: 'm4a1s', name: 'M4A1-S', icon: '🔫' },
+  { id: 'awp', name: 'AWP', icon: '🎯' },
+  { id: 'deagle', name: 'Desert Eagle', icon: '🔫' },
+  { id: 'glock', name: 'Glock-18', icon: '🔫' },
+  { id: 'usp', name: 'USP-S', icon: '🔫' },
 ];
 
 const RARITY_COLORS = {
@@ -112,7 +120,12 @@ export default function SkinsPage() {
         limit: pagination.limit,
       };
       
+      // Debug: Log what we're sending to the API
+      console.log('[DEBUG] Sending filters to API:', params);
+      
       const response = await browseSkins(params);
+      console.log('[DEBUG] API response:', response);
+      
       setSkins(response.skins || []);
       setPagination(prev => ({
         ...prev,
@@ -266,8 +279,8 @@ export default function SkinsPage() {
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={filters.isStattrak || false}
-                  onChange={(e) => updateFilters({ isStattrak: e.target.checked || undefined })}
+                  checked={filters.isStattrak === true}
+                  onChange={(e) => updateFilters({ isStattrak: e.target.checked ? true : undefined })}
                   className="mr-2 rounded"
                 />
                 StatTrak™
@@ -275,8 +288,8 @@ export default function SkinsPage() {
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={filters.isStar || false}
-                  onChange={(e) => updateFilters({ isStar: e.target.checked || undefined })}
+                  checked={filters.isStar === true}
+                  onChange={(e) => updateFilters({ isStar: e.target.checked ? true : undefined })}
                   className="mr-2 rounded"
                 />
                 ★ Special (Knives/Gloves)

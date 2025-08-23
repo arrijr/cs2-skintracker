@@ -41,8 +41,20 @@ router.get("/", async (req, res) => {
     if (wear) where.wear = wear;
     if (rarity) where.rarity = rarity;
     if (quality) where.quality = quality;
-    if (isStattrak !== undefined) where.isStattrak = isStattrak === 'true';
-    if (isStar !== undefined) where.isStar = isStar === 'true';
+    if (isStattrak !== undefined) {
+      if (isStattrak === 'true' || isStattrak === true) {
+        where.isStattrak = true;
+      } else if (isStattrak === 'false' || isStattrak === false) {
+        where.isStattrak = false;
+      }
+    }
+    if (isStar !== undefined) {
+      if (isStar === 'true' || isStar === true) {
+        where.isStar = true;
+      } else if (isStar === 'false' || isStar === false) {
+        where.isStar = false;
+      }
+    }
     
     if (minPrice || maxPrice) {
       where.OR = where.OR || [];
@@ -66,6 +78,9 @@ router.get("/", async (req, res) => {
       orderBy[sortBy] = sortOrder;
     }
 
+    // Debug: Log the final where clause
+    console.log('[DEBUG] Final where clause:', JSON.stringify(where, null, 2));
+    
     const [skins, total] = await Promise.all([
       prisma.skin.findMany({
         where,
