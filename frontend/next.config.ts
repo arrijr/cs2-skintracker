@@ -23,6 +23,7 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "http", hostname: "media.steampowered.com" },
       { protocol: "https", hostname: "community.cloudflare.steamstatic.com" },
+      { protocol: "https", hostname: "community.akamai.steamstatic.com" },
       { protocol: "https", hostname: "cdn.cloudflare.steamstatic.com" },
       { protocol: "https", hostname: "steamcdn-a.akamaihd.net" },
       { protocol: "https", hostname: "steamuserimages-a.akamaihd.net" },
