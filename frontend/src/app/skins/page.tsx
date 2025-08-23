@@ -46,7 +46,7 @@ type Filters = {
 const WEAPON_CATEGORIES = [
   { id: '', name: 'All', icon: '🔫' },
   { id: 'm4a4', name: 'M4A4', icon: '🔫' },
-  { id: 'ak47', name: 'AK-47', icon: '🔫' },
+  { id: 'ak-47', name: 'AK-47', icon: '🔫' },
   { id: 'awp', name: 'AWP', icon: '🎯' },
   { id: 'deagle', name: 'Desert Eagle', icon: '🔫' },
   { id: 'glock', name: 'Glock-18', icon: '🔫' },
@@ -99,6 +99,7 @@ export default function SkinsPage() {
       try {
         const options = await getFilterOptions();
         console.log('[DEBUG] Available filter options:', options);
+        console.log('[DEBUG] Available weapon types:', options.weaponTypes);
         setFilterOptions(options);
       } catch (e) {
         console.error("Failed to load filter options:", e);
