@@ -150,8 +150,11 @@ if (!skins || skins.length === 0) {
             : 0;
 
         const isOpen = openSkinId === entry.skin.id;
+        // Bildfelder priorisieren: itemimage -> itemImage -> image_url -> imageUrl -> placeholder
         const img =
           entry.skin.itemimage ||
+          entry.skin.itemImage ||
+          entry.skin.image_url ||
           entry.skin.imageUrl ||
           "/images/placeholder-skin.png";
 
@@ -168,13 +171,7 @@ if (!skins || skins.length === 0) {
               <div className="flex gap-4 items-center">
                 {/* Portfolio Row Image */}
                 <Image
-                  src={
-                    entry.skin.itemimage ||
-                    entry.skin.itemImage ||        // <-- added
-                    entry.skin.imageUrl ||
-                    (entry as any).skin?.image_url || // <-- added (falls Typ abweicht)
-                    "/images/placeholder-skin.png"
-                  }
+                  src={img}
                   alt={entry.skin.name}
                   width={48}
                   height={48}
