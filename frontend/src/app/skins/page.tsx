@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { browseSkins, getFilterOptions } from "@/lib/api";
+import { getFilterOptions, browseSkins, getSkinCategories } from "@/lib/api";
 
 // {/* Types */}
 type Skin = {
@@ -22,45 +22,41 @@ type Skin = {
   priceAvg?: number;
 };
 
-type FilterOptions = {
-  weaponTypes: string[];
+interface FilterOptions {
   wears: string[];
   rarities: string[];
   qualities: string[];
-};
+  categories: Record<string, { count: number; weaponTypes: string[] }>;
+}
 
 type Filters = {
-  weaponType?: string;
-  wear?: string;
-  rarity?: string;
-  quality?: string;
-  isStattrak?: boolean;
-  isStar?: boolean;
-  minPrice?: number;
-  maxPrice?: number;
-  search?: string;
+  search: string;
+  minPrice: string;
+  maxPrice: string;
+  wear: string;
+  rarity: string;
+  quality: string;
+  isStattrak: boolean;
+  isStar: boolean;
   sortBy: string;
   sortOrder: 'asc' | 'desc';
+  category?: string;
 };
 
-const WEAPON_CATEGORIES = [
-  { id: '', name: 'All', icon: '🔫' },
-  { id: 'm4a4', name: 'M4A4', icon: '🔫' },
-  { id: 'ak-47', name: 'AK-47', icon: '🔫' },
-  { id: 'awp', name: 'AWP', icon: '🎯' },
-  { id: 'deagle', name: 'Desert Eagle', icon: '🔫' },
-  { id: 'glock', name: 'Glock-18', icon: '🔫' },
-  { id: 'usp', name: 'USP-S', icon: '🔫' },
-  { id: 'mp5', name: 'MP5', icon: '🔫' },
-  { id: 'nomad knife', name: 'Nomad Knife', icon: '🔪' },
-  { id: 'm9 bayonet', name: 'M9 Bayonet', icon: '🔪' },
-  { id: 'flip knife', name: 'Flip Knife', icon: '🔪' },
-  { id: 'sport gloves', name: 'Sport Gloves', icon: '🧤' },
-  { id: 'rifle', name: 'Other Rifles', icon: '🔫' },
-  { id: 'pistol', name: 'Other Pistols', icon: '🔫' },
-  { id: 'smg', name: 'SMGs', icon: '⚡' },
-  { id: 'shotgun', name: 'Shotguns', icon: '💥' },
-];
+// Standard CS2 categories like skinbid.com
+const CS2_CATEGORIES = {
+  knives: { name: "Knives", icon: "🔪", color: "bg-red-500" },
+  gloves: { name: "Gloves", icon: "🧤", color: "bg-orange-500" },
+  pistols: { name: "Pistols", icon: "🔫", color: "bg-yellow-500" },
+  smgs: { name: "SMGs", icon: "🔫", color: "bg-green-500" },
+  rifles: { name: "Rifles", icon: "🔫", color: "bg-blue-500" },
+  shotguns: { name: "Shotguns", icon: "🔫", color: "bg-purple-500" },
+  machineGuns: { name: "Machine Guns", icon: "🔫", color: "bg-pink-500" },
+  stickers: { name: "Stickers", icon: "🏷️", color: "bg-indigo-500" },
+  agents: { name: "Agents", icon: "👤", color: "bg-teal-500" },
+  cases: { name: "Cases", icon: "📦", color: "bg-gray-500" },
+  charms: { name: "Charms", icon: "🔗", color: "bg-amber-500" }
+};
 
 const RARITY_COLORS = {
   'Consumer Grade': 'text-gray-400',
@@ -75,14 +71,23 @@ const RARITY_COLORS = {
 export default function SkinsPage() {
   const [skins, setSkins] = useState<Skin[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    weaponTypes: [],
     wears: [],
     rarities: [],
     qualities: [],
+    categories: {}
   });
   const [filters, setFilters] = useState<Filters>({
-    sortBy: 'name',
-    sortOrder: 'asc',
+    search: "",
+    minPrice: "",
+    maxPrice: "",
+    wear: "",
+    rarity: "",
+    quality: "",
+    isStattrak: false,
+    isStar: false,
+    sortBy: "name",
+    sortOrder: "asc",
+    category: undefined
   });
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -95,51 +100,80 @@ export default function SkinsPage() {
 
   // {/* Load filter options on mount */}
   useEffect(() => {
-    async function loadFilters() {
+    const loadFilterOptions = async () => {
       try {
-        const options = await getFilterOptions();
-        console.log('[DEBUG] Available filter options:', options);
-        console.log('[DEBUG] Available weapon types:', options.weaponTypes);
-        setFilterOptions(options);
-      } catch (e) {
-        console.error("Failed to load filter options:", e);
+        const [filtersResponse, categoriesResponse] = await Promise.all([
+          getFilterOptions(),
+          getSkinCategories()
+        ]);
+        
+        if (filtersResponse.ok) {
+          setFilterOptions(prev => ({
+            ...prev,
+            wears: filtersResponse.wears || [],
+            rarities: filtersResponse.rarities || [],
+            qualities: filtersResponse.qualities || []
+          }));
+        }
+        
+        if (categoriesResponse.ok) {
+          setFilterOptions(prev => ({
+            ...prev,
+            categories: categoriesResponse.categories || {}
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to load filter options:", error);
       }
-    }
-    loadFilters();
+    };
+
+    loadFilterOptions();
   }, []);
 
   // {/* Load skins when filters change */}
   useEffect(() => {
+    const loadSkins = async () => {
+      try {
+        setLoading(true);
+        
+        // Convert string filters to proper types for API
+        const apiFilters = {
+          page: pagination.page,
+          limit: pagination.limit,
+          search: filters.search || undefined,
+          minPrice: filters.minPrice ? parseFloat(filters.minPrice) : undefined,
+          maxPrice: filters.maxPrice ? parseFloat(filters.maxPrice) : undefined,
+          wear: filters.wear || undefined,
+          rarity: filters.rarity || undefined,
+          quality: filters.quality || undefined,
+          isStattrak: filters.isStattrak || undefined,
+          isStar: filters.isStar || undefined,
+          sortBy: filters.sortBy,
+          sortOrder: filters.sortOrder,
+          category: filters.category
+        };
+        
+        const response = await browseSkins(apiFilters);
+        
+        if (response.ok) {
+          setSkins(response.skins || []);
+          setPagination(prev => ({
+            ...prev,
+            ...response.pagination,
+          }));
+          console.log(`[DEBUG] Loaded ${response.skins?.length || 0} skins for filters:`, apiFilters);
+        } else {
+          console.error("Failed to load skins:", response.error);
+        }
+      } catch (error) {
+        console.error("Error loading skins:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadSkins();
   }, [filters, pagination.page]);
-
-  async function loadSkins() {
-    setLoading(true);
-    try {
-      const params = {
-        ...filters,
-        page: pagination.page,
-        limit: pagination.limit,
-      };
-      
-      // Debug: Log what we're sending to the API
-      console.log('[DEBUG] Sending filters to API:', params);
-      
-      const response = await browseSkins(params);
-      console.log('[DEBUG] API response:', response);
-      
-      setSkins(response.skins || []);
-      setPagination(prev => ({
-        ...prev,
-        ...response.pagination,
-      }));
-    } catch (e) {
-      console.error("Failed to load skins:", e);
-      setSkins([]);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function updateFilters(newFilters: Partial<Filters>) {
     setFilters(prev => ({ ...prev, ...newFilters }));
@@ -148,8 +182,17 @@ export default function SkinsPage() {
 
   function clearFilters() {
     setFilters({
-      sortBy: 'name',
-      sortOrder: 'asc',
+      search: "",
+      minPrice: "",
+      maxPrice: "",
+      wear: "",
+      rarity: "",
+      quality: "",
+      isStattrak: false,
+      isStar: false,
+      sortBy: "name",
+      sortOrder: "asc",
+      category: undefined
     });
     setPagination(prev => ({ ...prev, page: 1 }));
   }
@@ -165,21 +208,30 @@ export default function SkinsPage() {
         <h1 className="text-3xl font-bold mb-4 text-center">CS2 Skins Browse</h1>
         
         {/* Weapon Category Tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-4">
-          {WEAPON_CATEGORIES.map(category => (
-            <button
-              key={category.id}
-              onClick={() => updateFilters({ weaponType: category.id || undefined })}
-              className={`px-4 py-2 rounded-lg transition ${
-                filters.weaponType === category.id || (!filters.weaponType && category.id === '')
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-neutral-800 hover:bg-neutral-700'
-              }`}
-            >
-              <span className="mr-2">{category.icon}</span>
-              {category.name}
-            </button>
-          ))}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(CS2_CATEGORIES).map(([key, category]) => {
+              const categoryData = filterOptions.categories[key];
+              const count = categoryData?.count || 0;
+              const isActive = filters.category === key;
+              
+              return (
+                <button
+                  key={key}
+                  onClick={() => updateFilters({ category: isActive ? undefined : key })}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                    isActive 
+                      ? `${category.color} text-white shadow-lg` 
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                  }`}
+                >
+                  <span className="text-lg">{category.icon}</span>
+                  <span className="font-medium">{category.name}</span>
+                  <span className="text-sm opacity-75">({count})</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -215,14 +267,14 @@ export default function SkinsPage() {
               <input
                 type="number"
                 value={filters.minPrice || ''}
-                onChange={(e) => updateFilters({ minPrice: e.target.value ? parseFloat(e.target.value) : undefined })}
+                onChange={(e) => updateFilters({ minPrice: e.target.value || undefined })}
                 placeholder="Min $"
                 className="w-full px-3 py-2 bg-neutral-800 rounded-lg border border-neutral-700 focus:border-blue-500 focus:outline-none"
               />
               <input
                 type="number"
                 value={filters.maxPrice || ''}
-                onChange={(e) => updateFilters({ maxPrice: e.target.value ? parseFloat(e.target.value) : undefined })}
+                onChange={(e) => updateFilters({ maxPrice: e.target.value || undefined })}
                 placeholder="Max $"
                 className="w-full px-3 py-2 bg-neutral-800 rounded-lg border border-neutral-700 focus:border-blue-500 focus:outline-none"
               />

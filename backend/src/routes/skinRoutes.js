@@ -5,23 +5,23 @@ import { fetchSkinPrice } from "../services/steamService.js";
 
 const router = express.Router();
 
-// {/* Browse all skins with filters and pagination */}
+// Get skins with filters and pagination
 router.get("/", async (req, res) => {
   try {
     const {
       page = 1,
       limit = 50,
-      weaponType,
+      search,
+      minPrice,
+      maxPrice,
       wear,
       rarity,
       quality,
       isStattrak,
       isStar,
-      minPrice,
-      maxPrice,
-      search,
-      sortBy = 'name',
-      sortOrder = 'asc'
+      sortBy = "name",
+      sortOrder = "asc",
+      category
     } = req.query;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -37,7 +37,33 @@ router.get("/", async (req, res) => {
       ];
     }
     
-    if (weaponType) where.weaponType = weaponType;
+    // Category filter - map to weapon types
+    if (category) {
+      const categoryKeywords = {
+        knives: ["★", "knife", "bayonet", "karambit", "m9", "talon", "huntsman", "falchion", "navaja", "ursus", "paracord", "skeleton", "classic", "flip", "gut", "bowie", "stiletto", "shadow", "nomad"],
+        gloves: ["gloves", "hand wraps", "moto", "specialist", "sport", "driver", "wraps"],
+        pistols: ["pistol", "glock", "usp", "p250", "deagle", "tec-9", "cz75", "revolver", "dual", "r8", "p2000", "five-seven"],
+        smgs: ["smg", "mp5", "mp7", "ump", "p90", "mac-10", "pp-bizon", "mp9"],
+        rifles: ["rifle", "ak", "m4", "awp", "aug", "sg", "famas", "galil", "scar", "g3sg1", "ssg08"],
+        shotguns: ["shotgun", "nova", "xm1014", "mag7", "sawed-off", "m249"],
+        machineGuns: ["machine gun", "m249", "negev"],
+        stickers: ["sticker", "decal"],
+        agents: ["agent", "character"],
+        cases: ["case", "container", "package"],
+        charms: ["charm", "keychain"]
+      };
+
+      const keywords = categoryKeywords[category] || [];
+      if (keywords.length > 0) {
+        where.OR = keywords.map(keyword => ({
+          weaponType: {
+            contains: keyword,
+            mode: 'insensitive'
+          }
+        }));
+      }
+    }
+
     if (wear) where.wear = wear;
     if (rarity) where.rarity = rarity;
     if (quality) where.quality = quality;
@@ -183,6 +209,65 @@ router.get("/filters", async (req, res) => {
   } catch (e) {
     console.error("Get filters error:", e);
     res.status(500).json({ message: "Failed to fetch filter options." });
+  }
+});
+
+// Get skin categories (like skinbid.com)
+router.get("/categories", async (_req, res) => {
+  try {
+    const categories = {
+      knives: ["★", "knife", "bayonet", "karambit", "m9", "talon", "huntsman", "falchion", "navaja", "ursus", "paracord", "skeleton", "classic", "flip", "gut", "bowie", "stiletto", "shadow", "nomad"],
+      gloves: ["gloves", "hand wraps", "moto", "specialist", "sport", "driver", "wraps"],
+      pistols: ["pistol", "glock", "usp", "p250", "deagle", "tec-9", "cz75", "revolver", "dual", "r8", "p2000", "five-seven"],
+      smgs: ["smg", "mp5", "mp7", "ump", "p90", "mac-10", "pp-bizon", "mp9"],
+      rifles: ["rifle", "ak", "m4", "awp", "aug", "sg", "famas", "galil", "scar", "g3sg1", "ssg08"],
+      shotguns: ["shotgun", "nova", "xm1014", "mag7", "sawed-off", "m249"],
+      machineGuns: ["machine gun", "m249", "negev"],
+      stickers: ["sticker", "decal"],
+      agents: ["agent", "character"],
+      cases: ["case", "container", "package"],
+      charms: ["charm", "keychain"]
+    };
+
+    // Get all unique weapon types from database
+    const weaponTypes = await prisma.skin.findMany({
+      select: { weaponType: true },
+      where: { weaponType: { not: null } },
+      distinct: ['weaponType']
+    });
+
+    const uniqueWeaponTypes = weaponTypes.map(wt => wt.weaponType).filter(Boolean);
+
+    // Count skins per category
+    const categoryCounts = {};
+    for (const [category, keywords] of Object.entries(categories)) {
+      const matchingTypes = uniqueWeaponTypes.filter(type => 
+        keywords.some(keyword => 
+          type.toLowerCase().includes(keyword.toLowerCase())
+        )
+      );
+      
+      // Count total skins for this category
+      const count = await prisma.skin.count({
+        where: {
+          weaponType: { in: matchingTypes }
+        }
+      });
+      
+      categoryCounts[category] = {
+        count,
+        weaponTypes: matchingTypes
+      };
+    }
+
+    res.json({
+      ok: true,
+      categories: categoryCounts,
+      totalSkins: await prisma.skin.count()
+    });
+  } catch (error) {
+    console.error("[/categories] error:", error);
+    res.status(500).json({ ok: false, error: "categories-error" });
   }
 });
 

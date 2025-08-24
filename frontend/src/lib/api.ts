@@ -120,3 +120,13 @@ export const api = {
   login,
   signup,
 };
+
+export async function getSkinCategories() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/skins/categories`);
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to fetch skin categories:", error);
+    return { ok: false, error: "Failed to fetch categories" };
+  }
+}
