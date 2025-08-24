@@ -45,6 +45,7 @@ type Filters = {
 
 // Standard CS2 categories like skinbid.com
 const CS2_CATEGORIES = {
+  all: { name: "All", color: "bg-gray-600" },
   knives: { name: "Knives", color: "bg-red-500" },
   gloves: { name: "Gloves", color: "bg-orange-500" },
   pistols: { name: "Pistols", color: "bg-yellow-500" },
@@ -261,7 +262,18 @@ export default function SkinsPage() {
               return (
                 <button
                   key={key}
-                  onClick={() => updateFilters({ category: isActive ? undefined : key })}
+                  onClick={() => {
+                    if (key === 'all') {
+                      // "All" button always shows all skins
+                      updateFilters({ category: undefined });
+                    } else if (isActive) {
+                      // Clicking active category deactivates it (shows all)
+                      updateFilters({ category: undefined });
+                    } else {
+                      // Clicking inactive category activates it
+                      updateFilters({ category: key });
+                    }
+                  }}
                   className={`px-4 py-2 rounded-lg transition-all font-medium ${
                     isActive 
                       ? `${category.color} text-white shadow-lg` 
