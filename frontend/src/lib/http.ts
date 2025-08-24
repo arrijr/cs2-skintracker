@@ -43,6 +43,6 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
   try {
     return await res.json();
   } catch {
-    return null;
+    return { ok: false, error: "Failed to parse response" };
   }
 }

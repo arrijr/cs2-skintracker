@@ -22,6 +22,7 @@ export async function browseSkins(params: {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  category?: string;
 }) {
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
