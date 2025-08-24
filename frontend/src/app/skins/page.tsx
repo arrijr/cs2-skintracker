@@ -130,8 +130,43 @@ export default function SkinsPage() {
     loadFilterOptions();
   }, []);
 
+  // {/* Load all skins on mount */}
+  useEffect(() => {
+    const loadInitialSkins = async () => {
+      try {
+        setLoading(true);
+        const response = await browseSkins({
+          page: 1,
+          limit: 50
+        });
+        
+        if (response.ok) {
+          setSkins(response.skins || []);
+          setPagination(prev => ({
+            ...prev,
+            ...response.pagination,
+          }));
+          console.log(`[DEBUG] Loaded ${response.skins?.length || 0} initial skins`);
+        } else {
+          console.error("Failed to load initial skins:", response.error);
+        }
+      } catch (error) {
+        console.error("Error loading initial skins:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialSkins();
+  }, []);
+
   // {/* Load skins when filters change */}
   useEffect(() => {
+    // Skip initial load (already handled above)
+    if (Object.values(filters).every(v => v === "" || v === false || v === "name" || v === "asc" || v === undefined)) {
+      return;
+    }
+
     const loadSkins = async () => {
       try {
         setLoading(true);
