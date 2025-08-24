@@ -257,7 +257,8 @@ export default function SkinsPage() {
         <div className="mb-6">
           <div className="flex flex-wrap gap-2">
             {Object.entries(CS2_CATEGORIES).map(([key, category]) => {
-              const isActive = filters.category === key;
+              // "All" is active when no category is selected, others are active when their category is selected
+              const isActive = key === 'all' ? !filters.category : filters.category === key;
               
               return (
                 <button
