@@ -171,7 +171,33 @@ export default function SkinsPage() {
   useEffect(() => {
     // Skip initial load (already handled above)
     if (Object.values(filters).every(v => v === "" || v === false || v === "name" || v === "asc" || v === undefined)) {
-      console.log('[DEBUG] ⏭️ Skipping filter load - no filters active');
+      console.log('[DEBUG] ⏭️ No filters active, loading all skins...');
+      
+      // Load all skins when no filters are active (All category)
+      const loadAllSkins = async () => {
+        try {
+          setLoading(true);
+          const response = await browseSkins({
+            page: pagination.page,
+            limit: pagination.limit
+          });
+          
+          if (response && (response.ok || response.skins)) {
+            setSkins(response.skins || []);
+            setPagination(prev => ({
+              ...prev,
+              ...response.pagination,
+            }));
+            console.log(`[DEBUG] 🎯 Loaded ${response.skins?.length || 0} all skins (no filters)`);
+          }
+        } catch (error) {
+          console.error('[DEBUG] 💥 Error loading all skins:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      loadAllSkins();
       return;
     }
 
