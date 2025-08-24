@@ -260,18 +260,25 @@ export default function SkinsPage() {
               // "All" is active when no category is selected, others are active when their category is selected
               const isActive = key === 'all' ? !filters.category : filters.category === key;
               
+              console.log(`[DEBUG] Button ${key}: isActive=${isActive}, filters.category=${filters.category}`);
+              
               return (
                 <button
                   key={key}
                   onClick={() => {
+                    console.log(`[DEBUG] Clicked button: ${key}, current category: ${filters.category}`);
+                    
                     if (key === 'all') {
                       // "All" button always shows all skins
+                      console.log('[DEBUG] Setting category to undefined (All)');
                       updateFilters({ category: undefined });
                     } else if (isActive) {
                       // Clicking active category deactivates it (shows all)
+                      console.log('[DEBUG] Deactivating category, setting to undefined');
                       updateFilters({ category: undefined });
                     } else {
                       // Clicking inactive category activates it
+                      console.log(`[DEBUG] Activating category: ${key}`);
                       updateFilters({ category: key });
                     }
                   }}
