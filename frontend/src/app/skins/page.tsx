@@ -143,7 +143,7 @@ export default function SkinsPage() {
         const response = await browseSkins(params);
         console.log('[DEBUG] 📥 Raw API response:', response);
         
-        if (response && response.ok) {
+        if (response && (response.ok || response.skins)) {
           console.log('[DEBUG] ✅ Response OK, skins:', response.skins?.length || 0);
           setSkins(response.skins || []);
           setPagination(prev => ({
@@ -200,7 +200,7 @@ export default function SkinsPage() {
         const response = await browseSkins(apiFilters);
         console.log('[DEBUG] 📥 Filter API response:', response);
         
-        if (response && response.ok) {
+        if (response && (response.ok || response.skins)) {
           setSkins(response.skins || []);
           setPagination(prev => ({
             ...prev,
