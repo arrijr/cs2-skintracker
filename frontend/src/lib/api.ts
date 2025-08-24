@@ -123,8 +123,7 @@ export const api = {
 
 export async function getSkinCategories() {
   try {
-    const response = await fetch(`${API_BASE_URL}/skins/categories`);
-    return await response.json();
+    return await apiFetch('/api/v1/skins/categories');
   } catch (error) {
     console.error("Failed to fetch skin categories:", error);
     return { ok: false, error: "Failed to fetch categories" };
