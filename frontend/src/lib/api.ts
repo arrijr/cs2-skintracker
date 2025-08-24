@@ -24,14 +24,27 @@ export async function browseSkins(params: {
   sortOrder?: 'asc' | 'desc';
   category?: string;
 }) {
-  const searchParams = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      searchParams.append(key, String(value));
-    }
-  });
-  
-  return await apiFetch(`/api/v1/skins?${searchParams.toString()}`);
+  try {
+    console.log('[DEBUG] 🔍 browseSkins called with params:', params);
+    
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        searchParams.append(key, String(value));
+      }
+    });
+    
+    const url = `/api/v1/skins?${searchParams.toString()}`;
+    console.log('[DEBUG] 📤 Calling API URL:', url);
+    
+    const response = await apiFetch(url);
+    console.log('[DEBUG] 📥 API response:', response);
+    
+    return response;
+  } catch (error) {
+    console.error('[DEBUG] 💥 browseSkins error:', error);
+    return { ok: false, error: String(error) };
+  }
 }
 
 // {/* Get filter options */}

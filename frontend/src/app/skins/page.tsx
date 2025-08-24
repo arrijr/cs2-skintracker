@@ -134,24 +134,30 @@ export default function SkinsPage() {
   useEffect(() => {
     const loadInitialSkins = async () => {
       try {
+        console.log('[DEBUG] 🚀 Loading initial skins...');
         setLoading(true);
-        const response = await browseSkins({
-          page: 1,
-          limit: 50
-        });
         
-        if (response.ok) {
+        const params = { page: 1, limit: 50 };
+        console.log('[DEBUG] 📤 Sending params:', params);
+        
+        const response = await browseSkins(params);
+        console.log('[DEBUG] 📥 Raw API response:', response);
+        
+        if (response && response.ok) {
+          console.log('[DEBUG] ✅ Response OK, skins:', response.skins?.length || 0);
           setSkins(response.skins || []);
           setPagination(prev => ({
             ...prev,
             ...response.pagination,
           }));
-          console.log(`[DEBUG] Loaded ${response.skins?.length || 0} initial skins`);
+          console.log(`[DEBUG] 🎯 Loaded ${response.skins?.length || 0} initial skins`);
         } else {
-          console.error("Failed to load initial skins:", response.error);
+          console.error('[DEBUG] ❌ Response not OK:', response);
+          setSkins([]);
         }
       } catch (error) {
-        console.error("Error loading initial skins:", error);
+        console.error('[DEBUG] 💥 Error loading initial skins:', error);
+        setSkins([]);
       } finally {
         setLoading(false);
       }
@@ -164,11 +170,13 @@ export default function SkinsPage() {
   useEffect(() => {
     // Skip initial load (already handled above)
     if (Object.values(filters).every(v => v === "" || v === false || v === "name" || v === "asc" || v === undefined)) {
+      console.log('[DEBUG] ⏭️ Skipping filter load - no filters active');
       return;
     }
 
     const loadSkins = async () => {
       try {
+        console.log('[DEBUG] 🔍 Loading skins with filters:', filters);
         setLoading(true);
         
         // Convert string filters to proper types for API
@@ -188,20 +196,22 @@ export default function SkinsPage() {
           category: filters.category
         };
         
+        console.log('[DEBUG] 📤 Sending API filters:', apiFilters);
         const response = await browseSkins(apiFilters);
+        console.log('[DEBUG] 📥 Filter API response:', response);
         
-        if (response.ok) {
+        if (response && response.ok) {
           setSkins(response.skins || []);
           setPagination(prev => ({
             ...prev,
             ...response.pagination,
           }));
-          console.log(`[DEBUG] Loaded ${response.skins?.length || 0} skins for filters:`, apiFilters);
+          console.log(`[DEBUG] 🎯 Loaded ${response.skins?.length || 0} skins for filters:`, apiFilters);
         } else {
-          console.error("Failed to load skins:", response.error);
+          console.error('[DEBUG] ❌ Filter response not OK:', response);
         }
       } catch (error) {
-        console.error("Error loading skins:", error);
+        console.error('[DEBUG] 💥 Error loading filtered skins:', error);
       } finally {
         setLoading(false);
       }
