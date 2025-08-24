@@ -45,17 +45,17 @@ type Filters = {
 
 // Standard CS2 categories like skinbid.com
 const CS2_CATEGORIES = {
-  knives: { name: "Knives", icon: "🔪", color: "bg-red-500" },
-  gloves: { name: "Gloves", icon: "🧤", color: "bg-orange-500" },
-  pistols: { name: "Pistols", icon: "🔫", color: "bg-yellow-500" },
-  smgs: { name: "SMGs", icon: "🔫", color: "bg-green-500" },
-  rifles: { name: "Rifles", icon: "🔫", color: "bg-blue-500" },
-  shotguns: { name: "Shotguns", icon: "🔫", color: "bg-purple-500" },
-  machineGuns: { name: "Machine Guns", icon: "🔫", color: "bg-pink-500" },
-  stickers: { name: "Stickers", icon: "🏷️", color: "bg-indigo-500" },
-  agents: { name: "Agents", icon: "👤", color: "bg-teal-500" },
-  cases: { name: "Cases", icon: "📦", color: "bg-gray-500" },
-  charms: { name: "Charms", icon: "🔗", color: "bg-amber-500" }
+  knives: { name: "Knives", color: "bg-red-500" },
+  gloves: { name: "Gloves", color: "bg-orange-500" },
+  pistols: { name: "Pistols", color: "bg-yellow-500" },
+  smgs: { name: "SMGs", color: "bg-green-500" },
+  rifles: { name: "Rifles", color: "bg-blue-500" },
+  shotguns: { name: "Shotguns", color: "bg-purple-500" },
+  machineGuns: { name: "Machine Guns", color: "bg-pink-500" },
+  stickers: { name: "Stickers", color: "bg-indigo-500" },
+  agents: { name: "Agents", color: "bg-teal-500" },
+  cases: { name: "Cases", color: "bg-gray-500" },
+  charms: { name: "Charms", color: "bg-amber-500" }
 };
 
 const RARITY_COLORS = {
@@ -211,23 +211,19 @@ export default function SkinsPage() {
         <div className="mb-6">
           <div className="flex flex-wrap gap-2">
             {Object.entries(CS2_CATEGORIES).map(([key, category]) => {
-              const categoryData = filterOptions.categories[key];
-              const count = categoryData?.count || 0;
               const isActive = filters.category === key;
               
               return (
                 <button
                   key={key}
                   onClick={() => updateFilters({ category: isActive ? undefined : key })}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                  className={`px-4 py-2 rounded-lg transition-all font-medium ${
                     isActive 
                       ? `${category.color} text-white shadow-lg` 
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                   }`}
                 >
-                  <span className="text-lg">{category.icon}</span>
-                  <span className="font-medium">{category.name}</span>
-                  <span className="text-sm opacity-75">({count})</span>
+                  {category.name}
                 </button>
               );
             })}
