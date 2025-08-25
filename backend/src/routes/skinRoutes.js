@@ -48,6 +48,9 @@ router.get("/", async (req, res) => {
       price_asc: [{ priceAvg: "asc" }, { name: "asc" }],
       price_desc:[{ priceAvg: "desc" },{ name: "asc" }],
       newest:    [{ id: "desc" }],
+      popularity_desc: [{ sold24h: "desc" }, { offerVolume: "desc" }, { name: "asc" }],
+      wear_asc: [{ wear: "asc" }, { name: "asc" }],
+      wear_desc: [{ wear: "desc" }, { name: "asc" }],
     };
     const orderBy = orderByMap[sort] || [{ name: "asc" }];
 

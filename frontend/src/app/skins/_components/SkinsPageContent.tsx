@@ -131,6 +131,7 @@ export function SkinsPageContent() {
   }, [items.length, total, loading]);
 
   function updateCategory(newCategory: string | undefined) {
+    console.log("Updating category:", newCategory); // Debug log
     if (newCategory === 'all') {
       setCategory(undefined);
     } else if (category === newCategory) {
@@ -139,6 +140,19 @@ export function SkinsPageContent() {
     } else {
       setCategory(newCategory);
     }
+  }
+
+  function clearFilters() {
+    setQ("");
+    setMin("");
+    setMax("");
+    setRarity("");
+    setWear("");
+    setQuality("");
+    setStattrak(false);
+    setSpecial(false);
+    setSort("name_asc");
+    setCategory(undefined);
   }
 
   return (
@@ -168,160 +182,212 @@ export function SkinsPageContent() {
             })}
           </div>
         </div>
-        
-        {/* Filters */}
-        <div className="bg-gray-800 rounded-xl p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {/* Search */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Search</label>
-              <input
-                type="text"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search skins..."
-                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-              />
-            </div>
 
-            {/* Price Range */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Min Price</label>
-              <input
-                type="number"
-                value={min}
-                onChange={(e) => setMin(e.target.value)}
-                placeholder="0"
-                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Max Price</label>
-              <input
-                type="number"
-                value={max}
-                onChange={(e) => setMax(e.target.value)}
-                placeholder="1000"
-                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-
-            {/* Sort */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Sort By</label>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-              >
-                <option value="name_asc">Name A-Z</option>
-                <option value="name_desc">Name Z-A</option>
-                <option value="price_asc">Price Low-High</option>
-                <option value="price_desc">Price High-Low</option>
-                <option value="newest">Newest</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Additional Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-            {/* Wear */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Wear</label>
-              <select
-                value={wear}
-                onChange={(e) => setWear(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">All Wear</option>
-                <option value="fn">Factory New</option>
-                <option value="mw">Minimal Wear</option>
-                <option value="ft">Field-Tested</option>
-                <option value="ww">Well-Worn</option>
-                <option value="bs">Battle-Scarred</option>
-              </select>
-            </div>
-
-            {/* Rarity */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Rarity</label>
-              <select
-                value={rarity}
-                onChange={(e) => setRarity(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">All Rarities</option>
-                <option value="Consumer Grade">Consumer Grade</option>
-                <option value="Industrial Grade">Industrial Grade</option>
-                <option value="Mil-Spec">Mil-Spec</option>
-                <option value="Restricted">Restricted</option>
-                <option value="Classified">Classified</option>
-                <option value="Covert">Covert</option>
-                <option value="Contraband">Contraband</option>
-              </select>
-            </div>
-
-            {/* Quality */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Quality</label>
-              <select
-                value={quality}
-                onChange={(e) => setQuality(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">All Qualities</option>
-                <option value="Normal">Normal</option>
-                <option value="StatTrak">StatTrak</option>
-                <option value="Souvenir">Souvenir</option>
-              </select>
-            </div>
-
-            {/* Boolean Filters */}
-            <div className="flex flex-col gap-3">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={stattrak}
-                  onChange={(e) => setStattrak(e.target.checked)}
-                  className="mr-2 rounded"
-                />
-                StatTrak
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={special}
-                  onChange={(e) => setSpecial(e.target.checked)}
-                  className="mr-2 rounded"
-                />
-                Special (Star)
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Results */}
+        {/* Quick Sort Bar */}
         <div className="mb-6">
-          <p className="text-gray-400 text-center">
-            Showing {items.length} of {total} skins
-          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <button
+              onClick={() => setSort("popularity_desc")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                sort === "popularity_desc" 
+                  ? "bg-blue-600 text-white" 
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              Beliebteste
+            </button>
+            <button
+              onClick={() => setSort("price_asc")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                sort === "price_asc" 
+                  ? "bg-green-600 text-white" 
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              Günstigste
+            </button>
+            <button
+              onClick={() => setSort("price_desc")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                sort === "price_desc" 
+                  ? "bg-red-600 text-white" 
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              Teuerste
+            </button>
+            <button
+              onClick={() => setSort("wear_asc")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                sort === "wear_asc" 
+                  ? "bg-purple-600 text-white" 
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              Niedrigste Abnutzung
+            </button>
+            <button
+              onClick={() => setSort("wear_desc")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                sort === "wear_desc" 
+                  ? "bg-orange-600 text-white" 
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              Höchste Abnutzung
+            </button>
+          </div>
         </div>
 
-        {/* Skin Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {items.map(skin => (
-            <SkinCard key={skin.id} skin={skin} onAdded={() => {}} />
-          ))}
-          
-          {/* Skeleton Loaders */}
-          {loading && Array.from({ length: 6 }).map((_, i) => (
-            <div key={`skeleton-${i}`} className="h-48 rounded-2xl bg-gray-800 animate-pulse" />
-          ))}
-        </div>
+        <div className="flex gap-8">
+          {/* Left Sidebar - Filters */}
+          <div className="w-80 flex-shrink-0">
+            <div className="bg-gray-800 rounded-xl p-6 sticky top-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-semibold">Filters</h3>
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-blue-400 hover:text-blue-300 underline"
+                >
+                  Clear All
+                </button>
+              </div>
 
-        {/* Infinite Scroll Sentinel */}
-        <div ref={sentinelRef} className="h-4" />
+              <div className="space-y-6">
+                {/* Search */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Search</label>
+                  <input
+                    type="text"
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder="Search skins..."
+                    className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+
+                {/* Price Range */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Price Range</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={min}
+                      onChange={(e) => setMin(e.target.value)}
+                      placeholder="Min"
+                      className="flex-1 px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                    />
+                    <input
+                      type="number"
+                      value={max}
+                      onChange={(e) => setMax(e.target.value)}
+                      placeholder="Max"
+                      className="flex-1 px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Wear */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Wear</label>
+                  <select
+                    value={wear}
+                    onChange={(e) => setWear(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="">All Wear</option>
+                    <option value="fn">Factory New</option>
+                    <option value="mw">Minimal Wear</option>
+                    <option value="ft">Field-Tested</option>
+                    <option value="ww">Well-Worn</option>
+                    <option value="bs">Battle-Scarred</option>
+                  </select>
+                </div>
+
+                {/* Rarity */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Rarity</label>
+                  <select
+                    value={rarity}
+                    onChange={(e) => setRarity(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="">All Rarities</option>
+                    <option value="Consumer Grade">Consumer Grade</option>
+                    <option value="Industrial Grade">Industrial Grade</option>
+                    <option value="Mil-Spec">Mil-Spec</option>
+                    <option value="Restricted">Restricted</option>
+                    <option value="Classified">Classified</option>
+                    <option value="Covert">Covert</option>
+                    <option value="Contraband">Contraband</option>
+                  </select>
+                </div>
+
+                {/* Quality */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Quality</label>
+                  <select
+                    value={quality}
+                    onChange={(e) => setQuality(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="">All Qualities</option>
+                    <option value="Normal">Normal</option>
+                    <option value="StatTrak">StatTrak</option>
+                    <option value="Souvenir">Souvenir</option>
+                  </select>
+                </div>
+
+                {/* Boolean Filters */}
+                <div className="space-y-3">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={stattrak}
+                      onChange={(e) => setStattrak(e.target.checked)}
+                      className="mr-2 rounded"
+                    />
+                    StatTrak
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={special}
+                      onChange={(e) => setSpecial(e.target.checked)}
+                      className="mr-2 rounded"
+                    />
+                    Special (Star)
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Content - Results */}
+          <div className="flex-1">
+            {/* Results Info */}
+            <div className="mb-6">
+              <p className="text-gray-400 text-center">
+                Showing {items.length} of {total} skins
+              </p>
+            </div>
+
+            {/* Skin Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {items.map(skin => (
+                <SkinCard key={skin.id} skin={skin} onAdded={() => {}} />
+              ))}
+              
+              {/* Skeleton Loaders */}
+              {loading && Array.from({ length: 6 }).map((_, i) => (
+                <div key={`skeleton-${i}`} className="h-48 rounded-2xl bg-gray-800 animate-pulse" />
+              ))}
+            </div>
+
+            {/* Infinite Scroll Sentinel */}
+            <div ref={sentinelRef} className="h-4" />
+          </div>
+        </div>
       </div>
     </div>
   );
