@@ -166,28 +166,8 @@ router.get("/", async (req, res) => {
         { offerVolume: "desc", nulls: "last" }, 
         { name: "asc" }
       ],
-      wear_asc: [
-        { 
-          wear: {
-            sort: "asc",
-            nulls: "last",
-            // Custom wear order: fn, mw, ft, ww, bs
-            custom: ["fn", "mw", "ft", "ww", "bs"]
-          }
-        }, 
-        { name: "asc" }
-      ],
-      wear_desc: [
-        { 
-          wear: {
-            sort: "desc",
-            nulls: "last",
-            // Custom wear order: bs, ww, ft, mw, fn
-            custom: ["bs", "ww", "ft", "mw", "fn"]
-          }
-        }, 
-        { name: "asc" }
-      ],
+      wear_asc: [{ wear: "asc", nulls: "last" }, { name: "asc" }],
+      wear_desc: [{ wear: "desc", nulls: "last" }, { name: "asc" }]
     };
     
     // Handle custom wear sorting since Prisma doesn't support custom order
