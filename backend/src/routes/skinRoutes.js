@@ -46,31 +46,117 @@ router.get("/", async (req, res) => {
     // Category filter - map to weapon types
     if (category) {
       const categoryKeywords = {
-        knives: ["★", "knife", "bayonet", "karambit", "m9", "talon", "huntsman", "falchion", "navaja", "ursus", "paracord", "skeleton", "classic", "flip", "gut", "bowie", "stiletto", "shadow", "nomad"],
-        gloves: ["gloves", "hand wraps", "moto", "specialist", "sport", "driver", "wraps", "bloodhound"],
-        pistols: ["pistol", "glock", "usp", "p250", "deagle", "tec-9", "cz75", "revolver", "dual", "r8", "p2000", "five-seven"],
-        smgs: ["smg", "mp5", "mp7", "ump", "p90", "mac-10", "pp-bizon", "mp9"],
-        rifles: ["rifle", "ak", "m4", "awp", "aug", "sg", "famas", "galil", "scar", "g3sg1", "ssg08"],
-        shotguns: ["shotgun", "nova", "xm1014", "mag-7", "sawed-off", "mag7"],
-        machineGuns: ["machine gun", "m249", "negev"],
-        stickers: ["sticker", "decal", "2018", "2019", "2017", "2016", "2015", "2014", "2020", "2021", "2022", "2023", "2024", "2025", "eleague", "iem", "pgl", "blast", "faceit", "starladder", "dreamhack", "esl", "mlg", "rmr", "katowice", "cologne", "berlin", "atlanta", "cluj", "stockholm", "antwerp", "rio", "austin", "paris", "copenhagen"],
-        agents: ["agent", "character", "swat", "fbi", "sas", "ksk", "nswc", "seal", "tacp", "phoenix", "sabre", "elite", "freaky", "blitz", "gendarmerie", "professionals", "guerrilla", "brazilian", "nzsas", "humanity", "hundredth", "rad", "roam", "mord", "midnight", "new beat", "bbno", "damjan", "awolnation", "verkkars", "twerl", "ekko", "sidetrack", "cavalry", "frogman"],
-        cases: ["case", "container", "package", "capsule", "box", "pack"],
-        charms: ["charm", "keychain", "pin"]
+        knives: {
+          // Only items that are actually knives
+          weaponTypes: ["★", "knife", "bayonet", "karambit", "m9", "talon", "huntsman", "falchion", "navaja", "ursus", "paracord", "skeleton", "classic", "flip", "gut", "bowie", "stiletto", "shadow", "nomad"],
+          // Must contain these exact patterns
+          patterns: ["★ ", "★ StatTrak™ ", "★ Souvenir "],
+          // Exclude these to avoid false positives
+          exclude: ["knife", "knives", "knife-like"]
+        },
+        gloves: {
+          weaponTypes: ["gloves", "hand wraps", "moto", "specialist", "sport", "driver", "wraps", "bloodhound"],
+          patterns: ["Gloves", "Hand Wraps", "Moto", "Specialist", "Sport", "Driver", "Bloodhound"],
+          exclude: ["knife", "rifle", "pistol", "smg", "shotgun"]
+        },
+        pistols: {
+          weaponTypes: ["pistol", "glock", "usp", "p250", "deagle", "tec-9", "cz75", "revolver", "dual", "r8", "p2000", "five-seven"],
+          patterns: ["Glock", "USP", "P250", "Desert Eagle", "Tec-9", "CZ75", "Revolver", "Dual", "R8", "P2000", "Five-SeveN"],
+          exclude: ["★", "knife", "rifle", "smg", "shotgun", "machine gun"]
+        },
+        smgs: {
+          weaponTypes: ["smg", "mp5", "mp7", "ump", "p90", "mac-10", "pp-bizon", "mp9"],
+          patterns: ["MP5", "MP7", "UMP", "P90", "MAC-10", "PP-Bizon", "MP9"],
+          exclude: ["★", "knife", "rifle", "pistol", "shotgun", "machine gun"]
+        },
+        rifles: {
+          weaponTypes: ["rifle", "ak", "m4", "awp", "aug", "sg", "famas", "galil", "scar", "g3sg1", "ssg08"],
+          patterns: ["AK", "M4", "AWP", "AUG", "SG", "FAMAS", "Galil", "SCAR", "G3SG1", "SSG 08"],
+          exclude: ["★", "knife", "gloves", "pistol", "smg", "shotgun", "machine gun"]
+        },
+        shotguns: {
+          weaponTypes: ["shotgun", "nova", "xm1014", "mag-7", "sawed-off", "mag7"],
+          patterns: ["Nova", "XM1014", "MAG-7", "Sawed-Off", "MAG7"],
+          exclude: ["★", "knife", "rifle", "pistol", "smg", "machine gun"]
+        },
+        machineGuns: {
+          weaponTypes: ["machine gun", "m249", "negev"],
+          patterns: ["M249", "Negev"],
+          exclude: ["★", "knife", "rifle", "pistol", "smg", "shotgun"]
+        },
+        stickers: {
+          weaponTypes: ["sticker", "decal"],
+          patterns: ["Sticker", "Decal", "2018", "2019", "2017", "2016", "2015", "2014", "2020", "2021", "2022", "2023", "2024", "2025"],
+          exclude: ["★", "knife", "rifle", "pistol", "smg", "shotgun", "machine gun", "gloves"]
+        },
+        agents: {
+          weaponTypes: ["agent", "character"],
+          patterns: ["Agent", "Character", "SWAT", "FBI", "SAS", "KSK", "NSWC", "SEAL", "TACP", "Phoenix", "Sabre", "Elite", "Freaky", "Blitz", "Gendarmerie", "Professionals", "Guerrilla", "Brazilian", "NZSAS", "Humanity", "Hundredth", "RAD", "Roam", "Mord", "Midnight", "New Beat", "BBNO", "Damjan", "Awolnation", "Verkkars", "Twerl", "Ekko", "Sidetrack", "Cavalry", "Frogman"],
+          exclude: ["★", "knife", "rifle", "pistol", "smg", "shotgun", "machine gun", "gloves"]
+        },
+        cases: {
+          weaponTypes: ["case", "container", "package", "capsule", "box", "pack"],
+          patterns: ["Case", "Container", "Package", "Capsule", "Box", "Pack"],
+          exclude: ["★", "knife", "rifle", "pistol", "smg", "shotgun", "machine gun", "gloves", "sticker", "agent"]
+        },
+        charms: {
+          weaponTypes: ["charm", "keychain", "pin"],
+          patterns: ["Charm", "Keychain", "Pin"],
+          exclude: ["★", "knife", "rifle", "pistol", "smg", "shotgun", "machine gun", "gloves", "sticker", "agent", "case"]
+        }
       };
 
-      const keywords = categoryKeywords[category] || [];
-      if (keywords.length > 0) {
-        where.OR = where.OR || [];
-        where.OR.push(
-          ...keywords.map(keyword => ({
-            OR: [
-              { weaponType: { contains: keyword, mode: 'insensitive' } },
-              { name: { contains: keyword, mode: 'insensitive' } },
-              { marketHashName: { contains: keyword, mode: 'insensitive' } }
-            ]
+      const categoryConfig = categoryKeywords[category];
+      if (categoryConfig) {
+        // Build complex OR condition for this category
+        const categoryConditions = [];
+        
+        // Pattern matching (most specific)
+        categoryConditions.push({
+          OR: categoryConfig.patterns.map(pattern => ({
+            name: { contains: pattern, mode: 'insensitive' }
           }))
-        );
+        });
+        
+        // Weapon type matching (medium specific)
+        categoryConditions.push({
+          OR: categoryConfig.weaponTypes.map(weaponType => ({
+            weaponType: { contains: weaponType, mode: 'insensitive' }
+          }))
+        });
+        
+        // Name matching (least specific, but with exclusions)
+        const nameConditions = categoryConfig.weaponTypes.map(weaponType => ({
+          name: { contains: weaponType, mode: 'insensitive' }
+        }));
+        
+        // Add exclusions to avoid false positives
+        if (categoryConfig.exclude) {
+          categoryConditions.push({
+            AND: [
+              {
+                OR: nameConditions
+              },
+              {
+                NOT: {
+                  OR: categoryConfig.exclude.map(exclude => ({
+                    name: { contains: exclude, mode: 'insensitive' }
+                  }))
+                }
+              }
+            ]
+          });
+        } else {
+          categoryConditions.push({
+            OR: nameConditions
+          });
+        }
+
+        // Add category conditions to main where clause
+        where.OR = where.OR || [];
+        where.OR.push({
+          OR: categoryConditions
+        });
       }
     }
 
@@ -79,14 +165,48 @@ router.get("/", async (req, res) => {
     const orderByMap = {
       name_asc:  [{ name: "asc" }],
       name_desc: [{ name: "desc" }],
-      price_asc: [{ priceAvg: "asc" }, { name: "asc" }],
-      price_desc:[{ priceAvg: "desc" },{ name: "asc" }],
+      price_asc: [{ priceAvg: "asc", nulls: "last" }, { priceMedian: "asc", nulls: "last" }, { name: "asc" }],
+      price_desc:[{ priceAvg: "desc", nulls: "last" }, { priceMedian: "desc", nulls: "last" }, { name: "asc" }],
       newest:    [{ id: "desc" }],
-      popularity_desc: [{ sold24h: "desc" }, { offerVolume: "desc" }, { name: "asc" }],
-      wear_asc: [{ wear: "asc" }, { name: "asc" }],
-      wear_desc: [{ wear: "desc" }, { name: "asc" }],
+      popularity_desc: [
+        { sold24h: "desc", nulls: "last" }, 
+        { offerVolume: "desc", nulls: "last" }, 
+        { name: "asc" }
+      ],
+      wear_asc: [
+        { 
+          wear: {
+            sort: "asc",
+            nulls: "last",
+            // Custom wear order: fn, mw, ft, ww, bs
+            custom: ["fn", "mw", "ft", "ww", "bs"]
+          }
+        }, 
+        { name: "asc" }
+      ],
+      wear_desc: [
+        { 
+          wear: {
+            sort: "desc",
+            nulls: "last",
+            // Custom wear order: bs, ww, ft, mw, fn
+            custom: ["bs", "ww", "ft", "mw", "fn"]
+          }
+        }, 
+        { name: "asc" }
+      ],
     };
-    const orderBy = orderByMap[sort] || [{ name: "asc" }];
+    
+    // Handle custom wear sorting since Prisma doesn't support custom order
+    let orderBy = orderByMap[sort] || [{ name: "asc" }];
+    
+    // Special handling for wear sorting
+    if (sort === "wear_asc" || sort === "wear_desc") {
+      // Use simple wear sorting for now, we'll sort in memory if needed
+      orderBy = sort === "wear_asc" 
+        ? [{ wear: "asc", nulls: "last" }, { name: "asc" }]
+        : [{ wear: "desc", nulls: "last" }, { name: "asc" }];
+    }
 
     const [items, total] = await Promise.all([
       prisma.skin.findMany({ 
