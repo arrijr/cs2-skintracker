@@ -181,40 +181,54 @@ router.get("/", async (req, res) => {
         : [{ wear: "desc", nulls: "last" }, { name: "asc" }];
     }
 
-    const [items, total] = await Promise.all([
-      prisma.skin.findMany({ 
-        where, 
-        orderBy, 
-        take, 
-        skip,
-        select: {
-          id: true,
-          name: true,
-          marketHashName: true,
-          imageUrl: true,
-          weaponType: true,
-          wear: true,
-          rarity: true,
-          quality: true,
-          isStattrak: true,
-          isStar: true,
-          priceAvg: true,
-          priceMedian: true,
-          offerVolume: true,
-          sold24h: true
-        }
-      }),
-      prisma.skin.count({ where }),
-    ]);
+    console.log("[DEBUG] Using orderBy:", JSON.stringify(orderBy, null, 2));
+    console.log("[DEBUG] Using where clause:", JSON.stringify(where, null, 2));
 
-    console.log(`[DEBUG] Found ${items.length} skins for category: ${category}`);
+    try {
+      const [items, total] = await Promise.all([
+        prisma.skin.findMany({ 
+          where, 
+          orderBy, 
+          take, 
+          skip,
+          select: {
+            id: true,
+            name: true,
+            marketHashName: true,
+            imageUrl: true,
+            weaponType: true,
+            wear: true,
+            rarity: true,
+            quality: true,
+            isStattrak: true,
+            isStar: true,
+            priceAvg: true,
+            priceMedian: true,
+            offerVolume: true,
+            sold24h: true
+          }
+        }),
+        prisma.skin.count({ where }),
+      ]);
 
-    res.json({ 
-      items, 
-      total, 
-      page: Number(page) || 1, 
-      pageSize: take 
-    });
+      console.log(`[DEBUG] Found ${items.length} skins for category: ${category}`);
+      console.log(`[DEBUG] Total count: ${total}`);
+
+      res.json({ 
+        items, 
+        total, 
+        page: Number(page) || 1, 
+        pageSize: take 
+      });
+    } catch (dbError) {
+      console.error("[DEBUG] Database error:", dbError);
+      console.error("[DEBUG] Error details:", {
+        message: dbError.message,
+        code: dbError.code,
+        meta: dbError.meta
+      });
+      res.status(500).json({ error: "Database error", details: dbError.message });
+    }
   } catch (error) {
     console.error("[DEBUG] Error in skins route:", error);
     res.status(500).json({ error: "Internal server error" });
