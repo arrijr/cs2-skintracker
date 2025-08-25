@@ -240,7 +240,7 @@ export function SkinsPageContent() {
                   : "bg-gray-700 text-gray-300 hover:bg-gray-600"
               }`}
             >
-              Beliebteste
+              Most Popular
             </button>
             <button
               onClick={() => setSort("price_asc")}
@@ -250,7 +250,7 @@ export function SkinsPageContent() {
                   : "bg-gray-700 text-gray-300 hover:bg-gray-600"
               }`}
             >
-              Günstigste
+              Cheapest
             </button>
             <button
               onClick={() => setSort("price_desc")}
@@ -260,7 +260,7 @@ export function SkinsPageContent() {
                   : "bg-gray-700 text-gray-300 hover:bg-gray-600"
               }`}
             >
-              Teuerste
+              Most Expensive
             </button>
             <button
               onClick={() => setSort("wear_asc")}
@@ -270,7 +270,7 @@ export function SkinsPageContent() {
                   : "bg-gray-700 text-gray-300 hover:bg-gray-600"
               }`}
             >
-              Niedrigste Abnutzung
+              Lowest Wear
             </button>
             <button
               onClick={() => setSort("wear_desc")}
@@ -280,7 +280,7 @@ export function SkinsPageContent() {
                   : "bg-gray-700 text-gray-300 hover:bg-gray-600"
               }`}
             >
-              Höchste Abnutzung
+              Highest Wear
             </button>
           </div>
         </div>
