@@ -112,15 +112,27 @@ export function SkinsPageContent() {
       console.log("🚀 Calling API:", apiUrl);
       
       const res = await fetch(apiUrl);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
       
       console.log("🚀 API Response:", data);
       console.log("🚀 Items count:", data.items?.length || 0);
       
-      setItems(prev => page === 1 ? data.items : [...prev, ...data.items]);
-      setTotal(data.total);
+      // Ensure data.items is always an array
+      const items = Array.isArray(data.items) ? data.items : [];
+      const total = data.total || 0;
+      
+      setItems(prev => page === 1 ? items : [...prev, ...items]);
+      setTotal(total);
     } catch (error) {
       console.error("💥 Error loading skins:", error);
+      // Set empty state on error
+      setItems(prev => page === 1 ? [] : prev);
+      setTotal(prev => page === 1 ? 0 : prev);
     } finally {
       setLoading(false);
     }
@@ -414,15 +426,22 @@ export function SkinsPageContent() {
             {/* Results Info */}
             <div className="mb-6">
               <p className="text-gray-400 text-center">
-                Showing {items.length} of {total} skins
+                Showing {Array.isArray(items) ? items.length : 0} of {total || 0} skins
               </p>
             </div>
 
             {/* Skin Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {items.map(skin => (
-                <SkinCard key={skin.id} skin={skin} onAdded={() => {}} />
-              ))}
+              {Array.isArray(items) && items.length > 0 ? (
+                items.map(skin => (
+                  <SkinCard key={skin.id} skin={skin} onAdded={() => {}} />
+                ))
+              ) : !loading ? (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-400 text-lg">No skins found</p>
+                  <p className="text-gray-500 text-sm mt-2">Try adjusting your filters</p>
+                </div>
+              ) : null}
               
               {/* Skeleton Loaders */}
               {loading && Array.from({ length: 6 }).map((_, i) => (
