@@ -17,9 +17,48 @@ async function importAllSkins() {
     console.error("❌ Kein items-Array im Response! Prüfe API-Key und Endpoint.");
     process.exit(1);
   }
+  
+  // Debug: Show first few items structure
+  console.log("🔍 First 3 items structure:");
+  for (let i = 0; i < Math.min(3, items.length); i++) {
+    const item = items[i];
+    console.log(`Item ${i + 1}:`, {
+      name: item.marketname,
+      stattrak: item.isstattrack,
+      star: item.isstar,
+      allFields: Object.keys(item)
+    });
+  }
+  
   let count = 0;
+  let stattrakCount = 0;
+  let starCount = 0;
+  
   for (const item of items) {
     try {
+      // Debug logging for StatTrak and Star items
+      if (item.isstattrack === 1) {
+        stattrakCount++;
+        console.log(`[DEBUG] StatTrak item found: ${item.marketname} (isstattrack: ${item.isstattrack})`);
+      }
+      if (item.isstar === 1) {
+        starCount++;
+        console.log(`[DEBUG] Star item found: ${item.marketname} (isstar: ${item.isstar})`);
+      }
+      
+      // Fix: Parse StatTrak from market name since isstattrak field is undefined
+      const isStattrak = item.marketname.includes('StatTrak™') || item.marketname.includes('StatTrak');
+      const isStar = item.marketname.includes('★') || item.isstar === 1;
+      
+      if (isStattrak) {
+        stattrakCount++;
+        console.log(`[DEBUG] StatTrak detected from name: ${item.marketname}`);
+      }
+      if (isStar) {
+        starCount++;
+        console.log(`[DEBUG] Star detected from name: ${item.marketname}`);
+      }
+      
       await prisma.skin.upsert({
         where: { marketHashName: item.markethashname },
         update: {
@@ -37,8 +76,8 @@ async function importAllSkins() {
           offerVolume: item.offervolume || null,
           sold24h: item.sold24h || null,
           quality: item.quality || null,
-          isStattrak: item.isstattrack === 1,
-          isStar: item.isstar === 1,
+          isStattrak: isStattrak,
+          isStar: isStar,
         },
         create: {
           name: item.marketname,
@@ -56,8 +95,8 @@ async function importAllSkins() {
           offerVolume: item.offervolume || null,
           sold24h: item.sold24h || null,
           quality: item.quality || null,
-          isStattrak: item.isstattrack === 1,
-          isStar: item.isstar === 1,
+          isStattrak: isStattrak,
+          isStar: isStar,
         }
       });
       count++;
@@ -68,6 +107,15 @@ async function importAllSkins() {
   }
 
   console.log(`✅ Import abgeschlossen! ${count} Skins importiert/aktualisiert.`);
+  console.log(`📊 StatTrak Skins: ${stattrakCount}`);
+  console.log(`⭐ Star Skins: ${starCount}`);
+  
+  // Debug: Check what's actually in the database
+  const dbStattrakCount = await prisma.skin.count({ where: { isStattrak: true } });
+  const dbStarCount = await prisma.skin.count({ where: { isStar: true } });
+  console.log(`🗄️ DB StatTrak count: ${dbStattrakCount}`);
+  console.log(`🗄️ DB Star count: ${dbStarCount}`);
+  
   await prisma.$disconnect();
 }
 importAllSkins()
