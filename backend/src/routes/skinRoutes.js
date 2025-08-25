@@ -158,16 +158,16 @@ router.get("/", async (req, res) => {
     const orderByMap = {
       name_asc:  [{ name: "asc" }],
       name_desc: [{ name: "desc" }],
-      price_asc: [{ priceAvg: "asc", nulls: "last" }, { priceMedian: "asc", nulls: "last" }, { name: "asc" }],
-      price_desc:[{ priceAvg: "desc", nulls: "last" }, { priceMedian: "desc", nulls: "last" }, { name: "asc" }],
+      price_asc: [{ priceAvg: "asc" }, { priceMedian: "asc" }, { name: "asc" }],
+      price_desc:[{ priceAvg: "desc" }, { priceMedian: "desc" }, { name: "asc" }],
       newest:    [{ id: "desc" }],
       popularity_desc: [
-        { sold24h: "desc", nulls: "last" }, 
-        { offerVolume: "desc", nulls: "last" }, 
+        { sold24h: "desc" }, 
+        { offerVolume: "desc" }, 
         { name: "asc" }
       ],
-      wear_asc: [{ wear: "asc", nulls: "last" }, { name: "asc" }],
-      wear_desc: [{ wear: "desc", nulls: "last" }, { name: "asc" }]
+      wear_asc: [{ wear: "asc" }, { name: "asc" }],
+      wear_desc: [{ wear: "desc" }, { name: "asc" }]
     };
     
     // Handle custom wear sorting since Prisma doesn't support custom order
@@ -177,8 +177,8 @@ router.get("/", async (req, res) => {
     if (sort === "wear_asc" || sort === "wear_desc") {
       // Use simple wear sorting for now, we'll sort in memory if needed
       orderBy = sort === "wear_asc" 
-        ? [{ wear: "asc", nulls: "last" }, { name: "asc" }]
-        : [{ wear: "desc", nulls: "last" }, { name: "asc" }];
+        ? [{ wear: "asc" }, { name: "asc" }]
+        : [{ wear: "desc" }, { name: "asc" }];
     }
 
     console.log("[DEBUG] Using orderBy:", JSON.stringify(orderBy, null, 2));
