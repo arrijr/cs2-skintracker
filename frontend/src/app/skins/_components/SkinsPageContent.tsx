@@ -77,6 +77,8 @@ export function SkinsPageContent() {
     if (special) p.set("special", "true");
     if (sort) p.set("sort", sort);
     if (category) p.set("category", category);
+    
+    console.log("🔄 Updating URL with params:", p.toString());
     router.replace(`/skins?${p.toString()}`, { scroll: false });
   }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, router]);
 
@@ -94,7 +96,10 @@ export function SkinsPageContent() {
     if (category) p.set("category", category);
     p.set("page", String(page));
     p.set("pageSize", String(PAGE_SIZE));
-    return p.toString();
+    
+    const result = p.toString();
+    console.log("🔄 Generated queryString:", result);
+    return result;
   }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, page]);
 
   async function load() {
@@ -122,8 +127,15 @@ export function SkinsPageContent() {
   }
 
   // Initial load & when filters change → reset to page 1 and load
-  useEffect(() => { setPage(1); }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category]);
-  useEffect(() => { load(); }, [queryString]);
+  useEffect(() => { 
+    console.log("🔄 Filters changed, resetting to page 1");
+    setPage(1); 
+  }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category]);
+  
+  useEffect(() => { 
+    console.log("🔄 queryString changed, calling load()");
+    load(); 
+  }, [queryString]);
 
   // Intersection observer for infinite scroll
   useEffect(() => {
@@ -132,13 +144,14 @@ export function SkinsPageContent() {
     
     const io = new IntersectionObserver(([e]) => {
       if (e.isIntersecting && !loading && items.length < total) {
+        console.log("🔄 Loading next page:", page + 1);
         setPage(p => p + 1);
       }
     }, { rootMargin: "200px" });
     
     io.observe(el);
     return () => io.disconnect();
-  }, [items.length, total, loading]);
+  }, [items.length, total, loading, page]);
 
   function updateCategory(newCategory: string | undefined) {
     console.log("🔄 updateCategory called with:", newCategory);
@@ -160,6 +173,7 @@ export function SkinsPageContent() {
   }
 
   function clearFilters() {
+    console.log("🔄 Clearing all filters");
     setQ("");
     setMin("");
     setMax("");
@@ -171,6 +185,21 @@ export function SkinsPageContent() {
     setSort("name_asc");
     setCategory(undefined);
   }
+
+  // Filter change handlers with validation
+  const handleMinPriceChange = (value: string) => {
+    const numValue = value === "" ? "" : Number(value);
+    if (numValue === "" || (typeof numValue === "number" && numValue >= 0)) {
+      setMin(value);
+    }
+  };
+
+  const handleMaxPriceChange = (value: string) => {
+    const numValue = value === "" ? "" : Number(value);
+    if (numValue === "" || (typeof numValue === "number" && numValue >= 0)) {
+      setMax(value);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -290,14 +319,14 @@ export function SkinsPageContent() {
                     <input
                       type="number"
                       value={min}
-                      onChange={(e) => setMin(e.target.value)}
+                      onChange={(e) => handleMinPriceChange(e.target.value)}
                       placeholder="Min"
                       className="flex-1 px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
                     />
                     <input
                       type="number"
                       value={max}
-                      onChange={(e) => setMax(e.target.value)}
+                      onChange={(e) => handleMaxPriceChange(e.target.value)}
                       placeholder="Max"
                       className="flex-1 px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
                     />
