@@ -393,6 +393,37 @@ router.get("/categories", async (_req, res) => {
   }
 });
 
+// Get preset values for UI (wear, rarity, etc.)
+router.get("/presets", async (_req, res) => {
+  try {
+    const [wears, rarities] = await Promise.all([
+      prisma.skin.findMany({
+        select: { wear: true },
+        where: { wear: { not: null } },
+        distinct: ['wear'],
+        orderBy: { wear: 'asc' }
+      }),
+      prisma.skin.findMany({
+        select: { rarity: true },
+        where: { rarity: { not: null } },
+        distinct: ['rarity'],
+        orderBy: { rarity: 'asc' }
+      })
+    ]);
+
+    const result = {
+      wears: wears.map(w => w.wear).filter(Boolean),
+      rarities: rarities.map(r => r.rarity).filter(Boolean)
+    };
+    
+    console.log('[DEBUG] Preset values:', result);
+    res.json(result);
+  } catch (e) {
+    console.error("Get presets error:", e);
+    res.status(500).json({ message: "Failed to fetch preset values." });
+  }
+});
+
 router.get("/:skinId", async (req, res) => {
   const skinId = parseInt(req.params.skinId, 10);
   if (isNaN(skinId)) {
