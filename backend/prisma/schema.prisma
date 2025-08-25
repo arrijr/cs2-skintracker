@@ -80,6 +80,10 @@ model Skin {
   priceHistory   PriceHistory[]
   watchlist      Watchlist[]
   portfolio      Portfolio[]
+
+  @@index([rarity])
+  @@index([wear])
+  @@index([priceAvg])
 }
 
 
@@ -108,10 +112,12 @@ model Portfolio {
 
 model PriceHistory {
   id      Int      @id @default(autoincrement())
-  skin    Skin     @relation(fields: [skinId], references: [id])
   skinId  Int
   date    DateTime
   price   Float
+  skin    Skin     @relation(fields: [skinId], references: [id])
+
+  @@index([skinId, date])
 }
 
 model PortfolioHistory {

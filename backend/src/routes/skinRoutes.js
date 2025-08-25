@@ -5,137 +5,87 @@ import { fetchSkinPrice } from "../services/steamService.js";
 
 const router = express.Router();
 
-// Get skins with filters and pagination
+// Get skins with enhanced filters, sort & pagination
 router.get("/", async (req, res) => {
   try {
     const {
-      page = 1,
-      limit = 50,
-      search,
-      minPrice,
-      maxPrice,
-      wear,
-      rarity,
-      quality,
-      isStattrak,
-      isStar,
-      sortBy = "name",
-      sortOrder = "asc",
-      category
+      q, min, max, rarity, wear, stattrak, special,
+      sort = "name_asc", page = 1, pageSize = 24,
     } = req.query;
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    
-    // Build where clause
-    const where = {};
-    
-    if (search && search.length >= 2) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { marketHashName: { contains: search, mode: "insensitive" } },
-        { itemName: { contains: search, mode: "insensitive" } },
-      ];
-    }
-    
-    // Category filter - map to weapon types
-    if (category) {
-      const categoryKeywords = {
-        knives: ["★", "knife", "bayonet", "karambit", "m9", "talon", "huntsman", "falchion", "navaja", "ursus", "paracord", "skeleton", "classic", "flip", "gut", "bowie", "stiletto", "shadow", "nomad"],
-        gloves: ["gloves", "hand wraps", "moto", "specialist", "sport", "driver", "wraps", "bloodhound"],
-        pistols: ["pistol", "glock", "usp", "p250", "deagle", "tec-9", "cz75", "revolver", "dual", "r8", "p2000", "five-seven"],
-        smgs: ["smg", "mp5", "mp7", "ump", "p90", "mac-10", "pp-bizon", "mp9"],
-        rifles: ["rifle", "ak", "m4", "awp", "aug", "sg", "famas", "galil", "scar", "g3sg1", "ssg08"],
-        shotguns: ["shotgun", "nova", "xm1014", "mag-7", "sawed-off", "mag7"],
-        machineGuns: ["machine gun", "m249", "negev"],
-        stickers: ["sticker", "decal", "2018", "2019", "2017", "2016", "2015", "2014", "2020", "2021", "2022", "2023", "2024", "2025", "eleague", "iem", "pgl", "blast", "faceit", "starladder", "dreamhack", "esl", "mlg", "rmr", "katowice", "cologne", "berlin", "atlanta", "cluj", "stockholm", "antwerp", "rio", "austin", "paris", "copenhagen", "shanghai"],
-        agents: ["agent", "character", "swat", "fbi", "sas", "ksk", "nswc", "seal", "tacp", "phoenix", "sabre", "elite", "freaky", "blitz", "gendarmerie", "professionals", "guerrilla", "brazilian", "nzsas", "humanity", "hundredth", "rad", "roam", "mord", "midnight", "new beat", "bbno", "damjan", "awolnation", "verkkars", "twerl", "ekko", "sidetrack", "cavalry", "frogman"],
-        cases: ["case", "container", "package", "capsule", "box", "pack"],
-        charms: ["charm", "keychain", "pin"]
-      };
+    const take = Math.min(Math.max(Number(pageSize) || 24, 1), 60);
+    const skip = (Math.max(Number(page) || 1, 1) - 1) * take;
 
-      const keywords = categoryKeywords[category] || [];
-      if (keywords.length > 0) {
-        where.OR = keywords.map(keyword => ({
-          weaponType: {
-            contains: keyword,
-            mode: 'insensitive'
-          }
-        }));
-      }
-    }
+    const where = {
+      ...(q ? { 
+        OR: [
+          { name: { contains: String(q), mode: "insensitive" } },
+          { marketHashName: { contains: String(q), mode: "insensitive" } },
+          { itemName: { contains: String(q), mode: "insensitive" } },
+        ]
+      } : {}),
+      ...(rarity ? { rarity: String(rarity) } : {}),
+      ...(wear ? { wear: String(wear) } : {}),
+      ...(stattrak !== undefined ? { isStattrak: String(stattrak) === "true" } : {}),
+      ...(special !== undefined ? { isStar: String(special) === "true" } : {}),
+      ...((min || max) ? {
+        OR: [
+          { priceAvg: {
+            ...(min ? { gte: Number(min) } : {}),
+            ...(max ? { lte: Number(max) } : {}),
+          }},
+          { priceMedian: {
+            ...(min ? { gte: Number(min) } : {}),
+            ...(max ? { lte: Number(max) } : {}),
+          }}
+        ]
+      } : {}),
+    };
 
-    if (wear) where.wear = wear;
-    if (rarity) where.rarity = rarity;
-    if (quality) where.quality = quality;
-    if (isStattrak !== undefined) {
-      if (isStattrak === 'true' || isStattrak === true) {
-        where.isStattrak = true;
-      } else if (isStattrak === 'false' || isStattrak === false) {
-        where.isStattrak = false;
-      }
-    }
-    if (isStar !== undefined) {
-      if (isStar === 'true' || isStar === true) {
-        where.isStar = true;
-      } else if (isStar === 'false' || isStar === false) {
-        where.isStar = false;
-      }
-    }
-    
-    if (minPrice || maxPrice) {
-      where.OR = where.OR || [];
-      const priceFilter = {};
-      if (minPrice) priceFilter.gte = parseFloat(minPrice);
-      if (maxPrice) priceFilter.lte = parseFloat(maxPrice);
-      
-      where.OR.push(
-        { priceMedian: priceFilter },
-        { priceAvg: priceFilter },
-      );
-    }
+    const orderByMap = {
+      name_asc:  [{ name: "asc" }],
+      name_desc: [{ name: "desc" }],
+      price_asc: [{ priceAvg: "asc" }, { name: "asc" }],
+      price_desc:[{ priceAvg: "desc" },{ name: "asc" }],
+      newest:    [{ id: "desc" }],
+    };
+    const orderBy = orderByMap[sort] || [{ name: "asc" }];
 
-    // Build orderBy
-    const orderBy = {};
-    if (sortBy === 'price') {
-      orderBy.priceMedian = sortOrder;
-    } else if (sortBy === 'rarity') {
-      orderBy.rarity = sortOrder;
-    } else {
-      orderBy[sortBy] = sortOrder;
-    }
-
-    // Debug: Log the final where clause
-    console.log('[DEBUG] Final where clause:', JSON.stringify(where, null, 2));
-    
-    // Debug: Check what's actually in the database
-    const sampleSkins = await prisma.skin.findMany({
-      take: 5,
-      select: { id: true, name: true, weaponType: true, isStattrak: true, isStar: true }
-    });
-    console.log('[DEBUG] Sample skins from DB:', sampleSkins);
-    
-    const [skins, total] = await Promise.all([
-      prisma.skin.findMany({
-        where,
-        orderBy,
+    const [items, total] = await Promise.all([
+      prisma.skin.findMany({ 
+        where, 
+        orderBy, 
+        take, 
         skip,
-        take: parseInt(limit),
+        select: {
+          id: true,
+          name: true,
+          marketHashName: true,
+          imageUrl: true,
+          weaponType: true,
+          wear: true,
+          rarity: true,
+          quality: true,
+          isStattrak: true,
+          isStar: true,
+          priceAvg: true,
+          priceMedian: true,
+          offerVolume: true,
+          sold24h: true
+        }
       }),
       prisma.skin.count({ where }),
     ]);
 
-    res.json({
-      skins,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / parseInt(limit)),
-      },
+    res.json({ 
+      items, 
+      total, 
+      page: Number(page) || 1, 
+      pageSize: take 
     });
-  } catch (e) {
-    console.error("Browse skins error:", e);
-    res.status(500).json({ message: "Failed to fetch skins." });
+  } catch (error) {
+    console.error("[DEBUG] Error in skins route:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
