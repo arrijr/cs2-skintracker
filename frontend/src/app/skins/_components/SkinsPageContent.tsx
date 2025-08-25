@@ -23,6 +23,22 @@ type Skin = {
   sold24h?: number;
 };
 
+// Standard CS2 categories like skinbid.com
+const CS2_CATEGORIES = {
+  all: { name: "All", color: "bg-gray-600" },
+  knives: { name: "Knives", color: "bg-red-500" },
+  gloves: { name: "Gloves", color: "bg-orange-500" },
+  pistols: { name: "Pistols", color: "bg-yellow-500" },
+  smgs: { name: "SMGs", color: "bg-green-500" },
+  rifles: { name: "Rifles", color: "bg-blue-500" },
+  shotguns: { name: "Shotguns", color: "bg-purple-500" },
+  machineGuns: { name: "Machine Guns", color: "bg-pink-500" },
+  stickers: { name: "Stickers", color: "bg-indigo-500" },
+  agents: { name: "Agents", color: "bg-teal-500" },
+  cases: { name: "Cases", color: "bg-gray-500" },
+  charms: { name: "Charms", color: "bg-amber-500" }
+};
+
 const PAGE_SIZE = 24;
 
 export function SkinsPageContent() {
@@ -35,9 +51,11 @@ export function SkinsPageContent() {
   const [max, setMax] = useState(sp.get("max") ?? "");
   const [rarity, setRarity] = useState(sp.get("rarity") ?? "");
   const [wear, setWear] = useState(sp.get("wear") ?? "");
+  const [quality, setQuality] = useState(sp.get("quality") ?? "");
   const [stattrak, setStattrak] = useState(sp.get("stattrak") === "true");
   const [special, setSpecial] = useState(sp.get("special") === "true");
   const [sort, setSort] = useState(sp.get("sort") ?? "name_asc");
+  const [category, setCategory] = useState(sp.get("category") ?? undefined);
 
   // Data state
   const [items, setItems] = useState<Skin[]>([]);
@@ -54,11 +72,13 @@ export function SkinsPageContent() {
     if (max) p.set("max", max);
     if (rarity) p.set("rarity", rarity);
     if (wear) p.set("wear", wear);
+    if (quality) p.set("quality", quality);
     if (stattrak) p.set("stattrak", "true");
     if (special) p.set("special", "true");
     if (sort) p.set("sort", sort);
+    if (category) p.set("category", category);
     router.replace(`/skins?${p.toString()}`, { scroll: false });
-  }, [q, min, max, rarity, wear, stattrak, special, sort, router]);
+  }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, router]);
 
   const queryString = useMemo(() => {
     const p = new URLSearchParams();
@@ -67,13 +87,15 @@ export function SkinsPageContent() {
     if (max) p.set("max", max);
     if (rarity) p.set("rarity", rarity);
     if (wear) p.set("wear", wear);
+    if (quality) p.set("quality", quality);
     if (stattrak) p.set("stattrak", "true");
     if (special) p.set("special", "true");
     if (sort) p.set("sort", sort);
+    if (category) p.set("category", category);
     p.set("page", String(page));
     p.set("pageSize", String(PAGE_SIZE));
     return p.toString();
-  }, [q, min, max, rarity, wear, stattrak, special, sort, page]);
+  }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, page]);
 
   async function load() {
     setLoading(true);
@@ -90,7 +112,7 @@ export function SkinsPageContent() {
   }
 
   // Initial load & when filters change → reset to page 1 and load
-  useEffect(() => { setPage(1); }, [q, min, max, rarity, wear, stattrak, special, sort]);
+  useEffect(() => { setPage(1); }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category]);
   useEffect(() => { load(); }, [queryString]);
 
   // Intersection observer for infinite scroll
@@ -108,14 +130,48 @@ export function SkinsPageContent() {
     return () => io.disconnect();
   }, [items.length, total, loading]);
 
+  function updateCategory(newCategory: string | undefined) {
+    if (newCategory === 'all') {
+      setCategory(undefined);
+    } else if (category === newCategory) {
+      // Toggle off if same category clicked
+      setCategory(undefined);
+    } else {
+      setCategory(newCategory);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">CS2 Skins Browse</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">CS2 Skins Browse</h1>
+        
+        {/* Weapon Category Tabs */}
+        <div className="mb-8">
+          <div className="flex flex-wrap justify-center gap-3">
+            {Object.entries(CS2_CATEGORIES).map(([key, cat]) => {
+              const isActive = key === 'all' ? !category : category === key;
+              
+              return (
+                <button
+                  key={key}
+                  onClick={() => updateCategory(key === 'all' ? undefined : key)}
+                  className={`px-6 py-3 rounded-xl transition-all duration-200 font-medium text-sm ${
+                    isActive 
+                      ? `${cat.color} text-white shadow-lg transform scale-105` 
+                      : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         
         {/* Filters */}
-        <div className="bg-gray-800 rounded-lg p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-gray-800 rounded-xl p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {/* Search */}
             <div>
               <label className="block text-sm font-medium mb-2">Search</label>
@@ -124,7 +180,7 @@ export function SkinsPageContent() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search skins..."
-                className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
@@ -136,7 +192,7 @@ export function SkinsPageContent() {
                 value={min}
                 onChange={(e) => setMin(e.target.value)}
                 placeholder="0"
-                className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
@@ -147,7 +203,7 @@ export function SkinsPageContent() {
                 value={max}
                 onChange={(e) => setMax(e.target.value)}
                 placeholder="1000"
-                className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
@@ -157,7 +213,7 @@ export function SkinsPageContent() {
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
               >
                 <option value="name_asc">Name A-Z</option>
                 <option value="name_desc">Name Z-A</option>
@@ -168,32 +224,86 @@ export function SkinsPageContent() {
             </div>
           </div>
 
-          {/* Boolean Filters */}
-          <div className="flex flex-wrap gap-4 mt-4">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={stattrak}
-                onChange={(e) => setStattrak(e.target.checked)}
-                className="mr-2"
-              />
-              StatTrak
-            </label>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={special}
-                onChange={(e) => setSpecial(e.target.checked)}
-                className="mr-2"
-              />
-              Special (Star)
-            </label>
+          {/* Additional Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            {/* Wear */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Wear</label>
+              <select
+                value={wear}
+                onChange={(e) => setWear(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+              >
+                <option value="">All Wear</option>
+                <option value="fn">Factory New</option>
+                <option value="mw">Minimal Wear</option>
+                <option value="ft">Field-Tested</option>
+                <option value="ww">Well-Worn</option>
+                <option value="bs">Battle-Scarred</option>
+              </select>
+            </div>
+
+            {/* Rarity */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Rarity</label>
+              <select
+                value={rarity}
+                onChange={(e) => setRarity(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+              >
+                <option value="">All Rarities</option>
+                <option value="Consumer Grade">Consumer Grade</option>
+                <option value="Industrial Grade">Industrial Grade</option>
+                <option value="Mil-Spec">Mil-Spec</option>
+                <option value="Restricted">Restricted</option>
+                <option value="Classified">Classified</option>
+                <option value="Covert">Covert</option>
+                <option value="Contraband">Contraband</option>
+              </select>
+            </div>
+
+            {/* Quality */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Quality</label>
+              <select
+                value={quality}
+                onChange={(e) => setQuality(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+              >
+                <option value="">All Qualities</option>
+                <option value="Normal">Normal</option>
+                <option value="StatTrak">StatTrak</option>
+                <option value="Souvenir">Souvenir</option>
+              </select>
+            </div>
+
+            {/* Boolean Filters */}
+            <div className="flex flex-col gap-3">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={stattrak}
+                  onChange={(e) => setStattrak(e.target.checked)}
+                  className="mr-2 rounded"
+                />
+                StatTrak
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={special}
+                  onChange={(e) => setSpecial(e.target.checked)}
+                  className="mr-2 rounded"
+                />
+                Special (Star)
+              </label>
+            </div>
           </div>
         </div>
 
         {/* Results */}
-        <div className="mb-4">
-          <p className="text-gray-400">
+        <div className="mb-6">
+          <p className="text-gray-400 text-center">
             Showing {items.length} of {total} skins
           </p>
         </div>

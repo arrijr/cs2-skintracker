@@ -17,7 +17,10 @@ type Skin = {
 };
 
 export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }) {
-  async function addToWatchlist() {
+  async function addToWatchlist(e: React.MouseEvent) {
+    e.preventDefault(); // Prevent navigation when clicking the button
+    e.stopPropagation(); // Stop event bubbling
+    
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/watchlist`, {
         method: "POST",
@@ -41,74 +44,67 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
   const rarityColor = getRarityColor(skin.rarity);
 
   return (
-    <div className="rounded-2xl bg-gray-800 p-3 hover:bg-gray-700 transition-all duration-200 hover:scale-105 group">
-      {/* Image */}
-      <div className="aspect-square overflow-hidden rounded-xl mb-3 relative">
-        <Image
-          src={skin.imageUrl || "/images/placeholder-skin.png"}
-          alt={skin.name}
-          width={200}
-          height={200}
-          loading="lazy"
-          className="w-full h-full object-contain"
-        />
-        
-        {/* Special Indicators */}
-        {skin.isStattrak && (
-          <div className="absolute top-2 right-2 bg-orange-600 text-xs px-2 py-1 rounded font-bold">
-            ST
-          </div>
-        )}
-        {skin.isStar && (
-          <div className="absolute top-2 left-2 text-yellow-400 text-2xl">
-            ★
-          </div>
-        )}
-      </div>
+    <Link href={`/skins/${skin.id}`} className="block">
+      <div className="rounded-2xl bg-gray-800 p-3 hover:bg-gray-700 transition-all duration-200 hover:scale-105 group cursor-pointer">
+        {/* Image */}
+        <div className="aspect-square overflow-hidden rounded-xl mb-3 relative">
+          <Image
+            src={skin.imageUrl || "/images/placeholder-skin.png"}
+            alt={skin.name}
+            width={200}
+            height={200}
+            loading="lazy"
+            className="w-full h-full object-contain"
+          />
+          
+          {/* Special Indicators */}
+          {skin.isStattrak && (
+            <div className="absolute top-2 right-2 bg-orange-600 text-xs px-2 py-1 rounded font-bold">
+              ST
+            </div>
+          )}
+          {skin.isStar && (
+            <div className="absolute top-2 left-2 text-yellow-400 text-2xl">
+              ★
+            </div>
+          )}
+        </div>
 
-      {/* Title */}
-      <div className="text-sm font-semibold line-clamp-2 mb-2 group-hover:text-blue-400 transition-colors">
-        {skin.name}
-      </div>
-      
-      {/* Rarity & Wear */}
-      <div className="text-xs text-gray-400 mb-3">
-        {skin.rarity && (
-          <span className={`${rarityColor} mr-2`}>
-            {skin.rarity}
-          </span>
-        )}
-        {skin.wear && (
-          <span className="text-gray-500">
-            {skin.wear}
-          </span>
-        )}
-      </div>
-
-      {/* Price / Actions */}
-      <div className="flex items-center justify-between">
-        <span className="font-bold text-green-400">
-          ${price?.toFixed(2) ?? "--"}
-        </span>
+        {/* Title */}
+        <div className="text-sm font-semibold line-clamp-2 mb-2 group-hover:text-blue-400 transition-colors">
+          {skin.name}
+        </div>
         
-        <div className="flex items-center gap-2">
-          {/* Volume Indicator */}
-          {skin.offerVolume ? (
-            <span className="text-[10px] px-2 py-0.5 rounded bg-gray-700 text-gray-300">
-              💧 {skin.offerVolume}
+        {/* Rarity & Wear */}
+        <div className="text-xs text-gray-400 mb-3">
+          {skin.rarity && (
+            <span className={`${rarityColor} mr-2`}>
+              {skin.rarity}
             </span>
-          ) : null}
+          )}
+          {skin.wear && (
+            <span className="text-gray-500">
+              {skin.wear}
+            </span>
+          )}
+        </div>
+
+        {/* Price / Actions */}
+        <div className="flex items-center justify-between">
+          <span className="font-bold text-green-400">
+            ${price?.toFixed(2) ?? "--"}
+          </span>
           
           {/* Quick Add to Watchlist */}
           <button 
-            onClick={addToWatchlist} 
-            className="text-xs px-2 py-1 rounded bg-blue-600 hover:bg-blue-500 transition-colors"
+            onClick={addToWatchlist}
+            className="text-xs px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 transition-colors"
           >
             + Watchlist
           </button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
