@@ -43,6 +43,17 @@ router.get("/", async (req, res) => {
       } : {}),
     };
 
+    // Debug logging for boolean filters
+    console.log("[DEBUG] Boolean filter values:", {
+      stattrak: stattrak,
+      special: special,
+      stattrakString: String(stattrak),
+      specialString: String(special),
+      stattrakBoolean: String(stattrak) === "true",
+      specialBoolean: String(special) === "true"
+    });
+    console.log("[DEBUG] Where clause before category:", JSON.stringify(where, null, 2));
+
     // Category filter - map to weapon types
     if (category) {
       const categoryKeywords = {
@@ -154,6 +165,21 @@ router.get("/", async (req, res) => {
     }
 
     console.log("[DEBUG] Final where clause:", JSON.stringify(where, null, 2));
+
+    // Debug: Check if StatTrak skins exist
+    if (stattrak !== undefined) {
+      const stattrakCount = await prisma.skin.count({
+        where: { isStattrak: true }
+      });
+      console.log(`[DEBUG] Total StatTrak skins in DB: ${stattrakCount}`);
+      
+      const stattrakSample = await prisma.skin.findMany({
+        where: { isStattrak: true },
+        take: 3,
+        select: { id: true, name: true, isStattrak: true }
+      });
+      console.log("[DEBUG] StatTrak sample:", stattrakSample);
+    }
 
     const orderByMap = {
       name_asc:  [{ name: "asc" }],
