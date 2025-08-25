@@ -33,9 +33,9 @@ export default function NavBar() {
           </div>
         </div>
 
-        {/* Account-Link ganz rechts */}
+        {/* Profile-Link ganz rechts */}
         <div className="flex items-center gap-3">
-          <Link href="/account" className="text-blue-400 hover:text-blue-300 transition">Account</Link>
+          <Link href="/profile" className="text-blue-400 hover:text-blue-300 transition">Profile</Link>
         </div>
       </div>
     </header>

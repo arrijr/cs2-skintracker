@@ -13,6 +13,10 @@ model User {
   id           Int        @id @default(autoincrement())
   email        String     @unique
   passwordHash String
+  displayName  String?    // Optional display name
+  timezone     String?    // IANA timezone string
+  emailAlerts  Boolean    @default(true)  // Email notification preference
+  pushAlerts   Boolean    @default(false) // Push notification preference
   isPremium    Boolean    @default(false)
   createdAt    DateTime   @default(now())
   watchlist    Watchlist[]
