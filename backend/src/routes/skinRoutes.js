@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const {
-      q, min, max, rarity, wear, stattrak, special,
+      q, min, max, rarity, wear, quality, stattrak, special, category,
       sort = "name_asc", page = 1, pageSize = 24,
     } = req.query;
 
@@ -26,6 +26,7 @@ router.get("/", async (req, res) => {
       } : {}),
       ...(rarity ? { rarity: String(rarity) } : {}),
       ...(wear ? { wear: String(wear) } : {}),
+      ...(quality ? { quality: String(quality) } : {}),
       ...(stattrak !== undefined ? { isStattrak: String(stattrak) === "true" } : {}),
       ...(special !== undefined ? { isStar: String(special) === "true" } : {}),
       ...((min || max) ? {
@@ -41,6 +42,39 @@ router.get("/", async (req, res) => {
         ]
       } : {}),
     };
+
+    // Category filter - map to weapon types
+    if (category) {
+      const categoryKeywords = {
+        knives: ["★", "knife", "bayonet", "karambit", "m9", "talon", "huntsman", "falchion", "navaja", "ursus", "paracord", "skeleton", "classic", "flip", "gut", "bowie", "stiletto", "shadow", "nomad"],
+        gloves: ["gloves", "hand wraps", "moto", "specialist", "sport", "driver", "wraps", "bloodhound"],
+        pistols: ["pistol", "glock", "usp", "p250", "deagle", "tec-9", "cz75", "revolver", "dual", "r8", "p2000", "five-seven"],
+        smgs: ["smg", "mp5", "mp7", "ump", "p90", "mac-10", "pp-bizon", "mp9"],
+        rifles: ["rifle", "ak", "m4", "awp", "aug", "sg", "famas", "galil", "scar", "g3sg1", "ssg08"],
+        shotguns: ["shotgun", "nova", "xm1014", "mag-7", "sawed-off", "mag7"],
+        machineGuns: ["machine gun", "m249", "negev"],
+        stickers: ["sticker", "decal", "2018", "2019", "2017", "2016", "2015", "2014", "2020", "2021", "2022", "2023", "2024", "2025", "eleague", "iem", "pgl", "blast", "faceit", "starladder", "dreamhack", "esl", "mlg", "rmr", "katowice", "cologne", "berlin", "atlanta", "cluj", "stockholm", "antwerp", "rio", "austin", "paris", "copenhagen"],
+        agents: ["agent", "character", "swat", "fbi", "sas", "ksk", "nswc", "seal", "tacp", "phoenix", "sabre", "elite", "freaky", "blitz", "gendarmerie", "professionals", "guerrilla", "brazilian", "nzsas", "humanity", "hundredth", "rad", "roam", "mord", "midnight", "new beat", "bbno", "damjan", "awolnation", "verkkars", "twerl", "ekko", "sidetrack", "cavalry", "frogman"],
+        cases: ["case", "container", "package", "capsule", "box", "pack"],
+        charms: ["charm", "keychain", "pin"]
+      };
+
+      const keywords = categoryKeywords[category] || [];
+      if (keywords.length > 0) {
+        where.OR = where.OR || [];
+        where.OR.push(
+          ...keywords.map(keyword => ({
+            OR: [
+              { weaponType: { contains: keyword, mode: 'insensitive' } },
+              { name: { contains: keyword, mode: 'insensitive' } },
+              { marketHashName: { contains: keyword, mode: 'insensitive' } }
+            ]
+          }))
+        );
+      }
+    }
+
+    console.log("[DEBUG] Final where clause:", JSON.stringify(where, null, 2));
 
     const orderByMap = {
       name_asc:  [{ name: "asc" }],
@@ -79,6 +113,8 @@ router.get("/", async (req, res) => {
       }),
       prisma.skin.count({ where }),
     ]);
+
+    console.log(`[DEBUG] Found ${items.length} skins for category: ${category}`);
 
     res.json({ 
       items, 

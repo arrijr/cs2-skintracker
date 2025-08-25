@@ -98,14 +98,24 @@ export function SkinsPageContent() {
   }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, page]);
 
   async function load() {
+    console.log("🚀 load() called with queryString:", queryString);
+    console.log("🚀 Current filters:", { q, min, max, rarity, wear, quality, stattrak, special, sort, category });
+    
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/skins?${queryString}`);
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/skins?${queryString}`;
+      console.log("🚀 Calling API:", apiUrl);
+      
+      const res = await fetch(apiUrl);
       const data = await res.json();
+      
+      console.log("🚀 API Response:", data);
+      console.log("🚀 Items count:", data.items?.length || 0);
+      
       setItems(prev => page === 1 ? data.items : [...prev, ...data.items]);
       setTotal(data.total);
     } catch (error) {
-      console.error("Failed to load skins:", error);
+      console.error("💥 Error loading skins:", error);
     } finally {
       setLoading(false);
     }
@@ -131,15 +141,22 @@ export function SkinsPageContent() {
   }, [items.length, total, loading]);
 
   function updateCategory(newCategory: string | undefined) {
-    console.log("Updating category:", newCategory); // Debug log
+    console.log("🔄 updateCategory called with:", newCategory);
+    console.log("🔄 Current category state:", category);
+    
     if (newCategory === 'all') {
+      console.log("🔄 Setting category to undefined (All)");
       setCategory(undefined);
     } else if (category === newCategory) {
       // Toggle off if same category clicked
+      console.log("🔄 Toggling off category:", newCategory);
       setCategory(undefined);
     } else {
+      console.log("🔄 Setting new category:", newCategory);
       setCategory(newCategory);
     }
+    
+    console.log("🔄 Category state after update:", category);
   }
 
   function clearFilters() {
