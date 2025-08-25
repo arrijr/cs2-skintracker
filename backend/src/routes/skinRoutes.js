@@ -47,108 +47,73 @@ router.get("/", async (req, res) => {
     if (category) {
       const categoryKeywords = {
         knives: {
-          // Only items that are actually knives
-          weaponTypes: ["★", "knife", "bayonet", "karambit", "m9", "talon", "huntsman", "falchion", "navaja", "ursus", "paracord", "skeleton", "classic", "flip", "gut", "bowie", "stiletto", "shadow", "nomad"],
-          // Must contain these exact patterns
-          patterns: ["★ ", "★ StatTrak™ ", "★ Souvenir "],
-          // Exclude these to avoid false positives
-          exclude: ["knife", "knives", "knife-like"]
+          // Only items that start with ★ (star)
+          patterns: ["★ "],
+          // Specific knife names
+          names: ["Bayonet", "Karambit", "M9 Bayonet", "Talon Knife", "Huntsman Knife", "Falchion Knife", "Navaja Knife", "Ursus Knife", "Paracord Knife", "Skeleton Knife", "Classic Knife", "Flip Knife", "Gut Knife", "Bowie Knife", "Stiletto Knife", "Shadow Daggers", "Nomad Knife"]
         },
         gloves: {
-          weaponTypes: ["gloves", "hand wraps", "moto", "specialist", "sport", "driver", "wraps", "bloodhound"],
-          patterns: ["Gloves", "Hand Wraps", "Moto", "Specialist", "Sport", "Driver", "Bloodhound"],
-          exclude: ["knife", "rifle", "pistol", "smg", "shotgun"]
+          patterns: ["Gloves", "Hand Wraps"],
+          names: ["Moto Gloves", "Specialist Gloves", "Sport Gloves", "Driver Gloves", "Bloodhound Gloves"]
         },
         pistols: {
-          weaponTypes: ["pistol", "glock", "usp", "p250", "deagle", "tec-9", "cz75", "revolver", "dual", "r8", "p2000", "five-seven"],
           patterns: ["Glock", "USP", "P250", "Desert Eagle", "Tec-9", "CZ75", "Revolver", "Dual", "R8", "P2000", "Five-SeveN"],
-          exclude: ["★", "knife", "rifle", "smg", "shotgun", "machine gun"]
+          names: ["Glock", "USP", "P250", "Desert Eagle", "Tec-9", "CZ75", "Revolver", "Dual", "R8", "P2000", "Five-SeveN"]
         },
         smgs: {
-          weaponTypes: ["smg", "mp5", "mp7", "ump", "p90", "mac-10", "pp-bizon", "mp9"],
           patterns: ["MP5", "MP7", "UMP", "P90", "MAC-10", "PP-Bizon", "MP9"],
-          exclude: ["★", "knife", "rifle", "pistol", "shotgun", "machine gun"]
+          names: ["MP5", "MP7", "UMP", "P90", "MAC-10", "PP-Bizon", "MP9"]
         },
         rifles: {
-          weaponTypes: ["rifle", "ak", "m4", "awp", "aug", "sg", "famas", "galil", "scar", "g3sg1", "ssg08"],
           patterns: ["AK", "M4", "AWP", "AUG", "SG", "FAMAS", "Galil", "SCAR", "G3SG1", "SSG 08"],
-          exclude: ["★", "knife", "gloves", "pistol", "smg", "shotgun", "machine gun"]
+          names: ["AK", "M4", "AWP", "AUG", "SG", "FAMAS", "Galil", "SCAR", "G3SG1", "SSG 08"]
         },
         shotguns: {
-          weaponTypes: ["shotgun", "nova", "xm1014", "mag-7", "sawed-off", "mag7"],
-          patterns: ["Nova", "XM1014", "MAG-7", "Sawed-Off", "MAG7"],
-          exclude: ["★", "knife", "rifle", "pistol", "smg", "machine gun"]
+          patterns: ["Nova", "XM1014", "MAG-7", "Sawed-Off"],
+          names: ["Nova", "XM1014", "MAG-7", "Sawed-Off"]
         },
         machineGuns: {
-          weaponTypes: ["machine gun", "m249", "negev"],
           patterns: ["M249", "Negev"],
-          exclude: ["★", "knife", "rifle", "pistol", "smg", "shotgun"]
+          names: ["M249", "Negev"]
         },
         stickers: {
-          weaponTypes: ["sticker", "decal"],
-          patterns: ["Sticker", "Decal", "2018", "2019", "2017", "2016", "2015", "2014", "2020", "2021", "2022", "2023", "2024", "2025"],
-          exclude: ["★", "knife", "rifle", "pistol", "smg", "shotgun", "machine gun", "gloves"]
+          patterns: ["Sticker", "Decal"],
+          names: ["Sticker", "Decal", "2018", "2019", "2017", "2016", "2015", "2014", "2020", "2021", "2022", "2023", "2024", "2025"]
         },
         agents: {
-          weaponTypes: ["agent", "character"],
-          patterns: ["Agent", "Character", "SWAT", "FBI", "SAS", "KSK", "NSWC", "SEAL", "TACP", "Phoenix", "Sabre", "Elite", "Freaky", "Blitz", "Gendarmerie", "Professionals", "Guerrilla", "Brazilian", "NZSAS", "Humanity", "Hundredth", "RAD", "Roam", "Mord", "Midnight", "New Beat", "BBNO", "Damjan", "Awolnation", "Verkkars", "Twerl", "Ekko", "Sidetrack", "Cavalry", "Frogman"],
-          exclude: ["★", "knife", "rifle", "pistol", "smg", "shotgun", "machine gun", "gloves"]
+          patterns: ["Agent", "Character"],
+          names: ["SWAT", "FBI", "SAS", "KSK", "NSWC", "SEAL", "TACP", "Phoenix", "Sabre", "Elite", "Freaky", "Blitz", "Gendarmerie", "Professionals", "Guerrilla", "Brazilian", "NZSAS", "Humanity", "Hundredth", "RAD", "Roam", "Mord", "Midnight", "New Beat", "BBNO", "Damjan", "Awolnation", "Verkkars", "Twerl", "Ekko", "Sidetrack", "Cavalry", "Frogman"]
         },
         cases: {
-          weaponTypes: ["case", "container", "package", "capsule", "box", "pack"],
           patterns: ["Case", "Container", "Package", "Capsule", "Box", "Pack"],
-          exclude: ["★", "knife", "rifle", "pistol", "smg", "shotgun", "machine gun", "gloves", "sticker", "agent"]
+          names: ["Case", "Container", "Package", "Capsule", "Box", "Pack"]
         },
         charms: {
-          weaponTypes: ["charm", "keychain", "pin"],
           patterns: ["Charm", "Keychain", "Pin"],
-          exclude: ["★", "knife", "rifle", "pistol", "smg", "shotgun", "machine gun", "gloves", "sticker", "agent", "case"]
+          names: ["Charm", "Keychain", "Pin"]
         }
       };
 
       const categoryConfig = categoryKeywords[category];
       if (categoryConfig) {
-        // Build complex OR condition for this category
+        // Build OR condition for this category
         const categoryConditions = [];
         
-        // Pattern matching (most specific)
-        categoryConditions.push({
-          OR: categoryConfig.patterns.map(pattern => ({
-            name: { contains: pattern, mode: 'insensitive' }
-          }))
-        });
-        
-        // Weapon type matching (medium specific)
-        categoryConditions.push({
-          OR: categoryConfig.weaponTypes.map(weaponType => ({
-            weaponType: { contains: weaponType, mode: 'insensitive' }
-          }))
-        });
-        
-        // Name matching (least specific, but with exclusions)
-        const nameConditions = categoryConfig.weaponTypes.map(weaponType => ({
-          name: { contains: weaponType, mode: 'insensitive' }
-        }));
-        
-        // Add exclusions to avoid false positives
-        if (categoryConfig.exclude) {
+        // Pattern matching (most specific) - items that start with these patterns
+        if (categoryConfig.patterns.length > 0) {
           categoryConditions.push({
-            AND: [
-              {
-                OR: nameConditions
-              },
-              {
-                NOT: {
-                  OR: categoryConfig.exclude.map(exclude => ({
-                    name: { contains: exclude, mode: 'insensitive' }
-                  }))
-                }
-              }
-            ]
+            OR: categoryConfig.patterns.map(pattern => ({
+              name: { startsWith: pattern, mode: 'insensitive' }
+            }))
           });
-        } else {
+        }
+        
+        // Name matching - items that contain these names
+        if (categoryConfig.names.length > 0) {
           categoryConditions.push({
-            OR: nameConditions
+            OR: categoryConfig.names.map(name => ({
+              name: { contains: name, mode: 'insensitive' }
+            }))
           });
         }
 
