@@ -51,6 +51,85 @@ const FILTER_PRESETS = [
   { name: "Clear All", params: {} }
 ];
 
+// Enhanced filter presets based on user requirements
+interface PresetParams {
+  min?: string;
+  max?: string;
+  sort?: string;
+  wear?: string;
+  rarity?: string;
+  stattrak?: string;
+  special?: string;
+  q?: string;
+}
+
+interface Preset {
+  name: string;
+  params: PresetParams;
+}
+
+const ENHANCED_FILTER_PRESETS: Record<string, Preset[]> = {
+  // Budget Presets
+  budget: [
+    { name: "Under $5", params: { max: "5", sort: "price_asc" } },
+    { name: "Under $10", params: { max: "10", sort: "price_asc" } },
+    { name: "$10–$50", params: { min: "10", max: "50", sort: "price_asc" } },
+    { name: "$50–$100", params: { min: "50", max: "100" } },
+    { name: "$100–$500", params: { min: "100", max: "500" } },
+    { name: "$500+", params: { min: "500", sort: "price_desc" } }
+  ],
+  
+  // Wear Presets (will be populated from DB)
+  wear: [],
+  
+  // Rarity Presets (will be populated from DB)
+  rarity: [],
+  
+  // StatTrak & Star
+  special: [
+    { name: "StatTrak only", params: { stattrak: "true" } },
+    { name: "Non-StatTrak", params: { stattrak: "false" } },
+    { name: "★ Star items", params: { special: "true" } }
+  ],
+  
+  // Category Presets via Search
+  category: [
+    { name: "Knives", params: { q: "★" } },
+    { name: "Gloves", params: { q: "Gloves" } },
+    { name: "Stickers", params: { q: "Sticker |" } },
+    { name: "Souvenir", params: { q: "Souvenir " } },
+    { name: "AK-47", params: { q: "AK-47" } },
+    { name: "M4A1-S", params: { q: "M4A1-S" } },
+    { name: "AWP", params: { q: "AWP" } }
+  ],
+  
+  // Finish/Theme Presets
+  finish: [
+    { name: "Doppler", params: { q: "Doppler" } },
+    { name: "Case Hardened", params: { q: "Case Hardened" } },
+    { name: "Crimson Web", params: { q: "Crimson Web" } },
+    { name: "Gold Stickers", params: { q: "(Gold)" } }
+  ],
+  
+  // Combined Presets
+  combined: [
+    { name: "Budget Play Skins", params: { max: "10", wear: "Field-Tested", sort: "price_asc" } },
+    { name: "Covert FN", params: { rarity: "Covert", wear: "Factory New", sort: "price_desc" } },
+    { name: "★ Premium Knives", params: { special: "true", min: "200", sort: "price_desc" } },
+    { name: "Souvenir FN", params: { q: "Souvenir ", wear: "Factory New", sort: "price_desc" } },
+    { name: "Stickers <$5", params: { q: "Sticker |", max: "5", sort: "price_asc" } }
+  ],
+  
+  // Sort Presets
+  sort: [
+    { name: "Price ↑", params: { sort: "price_asc" } },
+    { name: "Price ↓", params: { sort: "price_desc" } },
+    { name: "Newest", params: { sort: "newest" } },
+    { name: "A→Z", params: { sort: "name_asc" } },
+    { name: "Z→A", params: { sort: "name_desc" } }
+  ]
+};
+
 const PAGE_SIZE = 24;
 
 export function SkinsPageContent() {
@@ -82,6 +161,12 @@ export function SkinsPageContent() {
   const [requestId, setRequestId] = useState(0);
   const [abortedRequests, setAbortedRequests] = useState(0);
   const [successfulRequests, setSuccessfulRequests] = useState(0);
+
+  // Preset values from backend
+  const [presetValues, setPresetValues] = useState<{
+    wears: string[];
+    rarities: string[];
+  }>({ wears: [], rarities: [] });
 
   // Debounced search effect
   useEffect(() => {
@@ -207,6 +292,34 @@ export function SkinsPageContent() {
     setPage(1); 
   }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category]);
   
+  // Load preset values from backend
+  useEffect(() => {
+    async function loadPresetValues() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/skins/presets`);
+        if (res.ok) {
+          const data = await res.json();
+          setPresetValues(data);
+          
+          // Populate wear and rarity presets with DB values
+          ENHANCED_FILTER_PRESETS.wear = data.wears.map((wear: string) => ({
+            name: wear,
+            params: { wear }
+          }));
+          
+          ENHANCED_FILTER_PRESETS.rarity = data.rarities.map((rarity: string) => ({
+            name: rarity,
+            params: { rarity }
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to load preset values:", error);
+      }
+    }
+    
+    loadPresetValues();
+  }, []);
+  
   useEffect(() => { 
     console.log("🔄 queryString changed, calling load()");
     load(); 
@@ -262,7 +375,7 @@ export function SkinsPageContent() {
   }
 
   // Enhanced filter preset handler
-  const applyFilterPreset = useCallback((preset: typeof FILTER_PRESETS[0]) => {
+  const applyFilterPreset = useCallback((preset: any) => {
     console.log("🔄 Applying filter preset:", preset.name);
     
     if (preset.name === "Clear All") {
@@ -274,6 +387,11 @@ export function SkinsPageContent() {
     if (preset.params.min !== undefined) setMin(preset.params.min);
     if (preset.params.max !== undefined) setMax(preset.params.max);
     if (preset.params.sort !== undefined) setSort(preset.params.sort);
+    if (preset.params.wear !== undefined) setWear(preset.params.wear);
+    if (preset.params.rarity !== undefined) setRarity(preset.params.rarity);
+    if (preset.params.stattrak !== undefined) setStattrak(preset.params.stattrak === "true");
+    if (preset.params.special !== undefined) setSpecial(preset.params.special === "true");
+    if (preset.params.q !== undefined) setQ(preset.params.q);
     
     // Reset to page 1 when applying presets
     setPage(1);
@@ -392,17 +510,133 @@ export function SkinsPageContent() {
 
         {/* Enhanced Filter Presets (Feature Flag) */}
         {SKINS_FILTERS_ENHANCED && (
-          <div className="mb-6">
-            <div className="flex flex-wrap justify-center gap-2">
-              {FILTER_PRESETS.map((preset) => (
-                <button
-                  key={preset.name}
-                  onClick={() => applyFilterPreset(preset)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-                >
-                  {preset.name}
-                </button>
-              ))}
+          <div className="mb-6 space-y-4">
+            {/* Budget Presets */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Budget</h4>
+              <div className="flex flex-wrap justify-center gap-2">
+                {ENHANCED_FILTER_PRESETS.budget.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => applyFilterPreset(preset)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Wear Presets */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Wear</h4>
+              <div className="flex flex-wrap justify-center gap-2">
+                {ENHANCED_FILTER_PRESETS.wear.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => applyFilterPreset(preset)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Rarity Presets */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Rarity</h4>
+              <div className="flex flex-wrap justify-center gap-2">
+                {ENHANCED_FILTER_PRESETS.rarity.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => applyFilterPreset(preset)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Special Presets */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Special</h4>
+              <div className="flex flex-wrap justify-center gap-2">
+                {ENHANCED_FILTER_PRESETS.special.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => applyFilterPreset(preset)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Category Presets */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Categories</h4>
+              <div className="flex flex-wrap justify-center gap-2">
+                {ENHANCED_FILTER_PRESETS.category.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => applyFilterPreset(preset)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Finish Presets */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Finishes</h4>
+              <div className="flex flex-wrap justify-center gap-2">
+                {ENHANCED_FILTER_PRESETS.finish.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => applyFilterPreset(preset)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Combined Presets */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Combined</h4>
+              <div className="flex flex-wrap justify-center gap-2">
+                {ENHANCED_FILTER_PRESETS.combined.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => applyFilterPreset(preset)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sort Presets */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Sort</h4>
+              <div className="flex flex-wrap justify-center gap-2">
+                {ENHANCED_FILTER_PRESETS.sort.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => applyFilterPreset(preset)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
