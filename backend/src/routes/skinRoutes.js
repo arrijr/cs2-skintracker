@@ -49,48 +49,67 @@ router.get("/", async (req, res) => {
         knives: {
           // Only items that start with ★ (star)
           patterns: ["★ "],
-          // Specific knife names
+          // Specific knife names - exact matches
           names: ["Bayonet", "Karambit", "M9 Bayonet", "Talon Knife", "Huntsman Knife", "Falchion Knife", "Navaja Knife", "Ursus Knife", "Paracord Knife", "Skeleton Knife", "Classic Knife", "Flip Knife", "Gut Knife", "Bowie Knife", "Stiletto Knife", "Shadow Daggers", "Nomad Knife"]
         },
         gloves: {
+          // Only items that contain "Gloves" or "Hand Wraps"
           patterns: ["Gloves", "Hand Wraps"],
           names: ["Moto Gloves", "Specialist Gloves", "Sport Gloves", "Driver Gloves", "Bloodhound Gloves"]
         },
         pistols: {
-          patterns: ["Glock", "USP", "P250", "Desert Eagle", "Tec-9", "CZ75", "Revolver", "Dual", "R8", "P2000", "Five-SeveN"],
+          // Only items that are actually pistols
+          weaponTypes: ["pistol"],
+          // Specific pistol names - exact matches
           names: ["Glock", "USP", "P250", "Desert Eagle", "Tec-9", "CZ75", "Revolver", "Dual", "R8", "P2000", "Five-SeveN"]
         },
         smgs: {
-          patterns: ["MP5", "MP7", "UMP", "P90", "MAC-10", "PP-Bizon", "MP9"],
+          // Only items that are actually SMGs
+          weaponTypes: ["smg"],
+          // Specific SMG names - exact matches
           names: ["MP5", "MP7", "UMP", "P90", "MAC-10", "PP-Bizon", "MP9"]
         },
         rifles: {
-          patterns: ["AK", "M4", "AWP", "AUG", "SG", "FAMAS", "Galil", "SCAR", "G3SG1", "SSG 08"],
+          // Only items that are actually rifles
+          weaponTypes: ["rifle"],
+          // Specific rifle names - exact matches
           names: ["AK", "M4", "AWP", "AUG", "SG", "FAMAS", "Galil", "SCAR", "G3SG1", "SSG 08"]
         },
         shotguns: {
-          patterns: ["Nova", "XM1014", "MAG-7", "Sawed-Off"],
+          // Only items that are actually shotguns
+          weaponTypes: ["shotgun"],
+          // Specific shotgun names - exact matches
           names: ["Nova", "XM1014", "MAG-7", "Sawed-Off"]
         },
         machineGuns: {
-          patterns: ["M249", "Negev"],
+          // Only items that are actually machine guns
+          weaponTypes: ["machine gun"],
+          // Specific machine gun names - exact matches
           names: ["M249", "Negev"]
         },
         stickers: {
-          patterns: ["Sticker", "Decal"],
-          names: ["Sticker", "Decal", "2018", "2019", "2017", "2016", "2015", "2014", "2020", "2021", "2022", "2023", "2024", "2025"]
+          // Only items that are actually stickers
+          weaponTypes: ["sticker", "decal"],
+          // Specific sticker patterns
+          patterns: ["Sticker", "Decal"]
         },
         agents: {
-          patterns: ["Agent", "Character"],
+          // Only items that are actually agents
+          weaponTypes: ["agent", "character"],
+          // Specific agent names - exact matches
           names: ["SWAT", "FBI", "SAS", "KSK", "NSWC", "SEAL", "TACP", "Phoenix", "Sabre", "Elite", "Freaky", "Blitz", "Gendarmerie", "Professionals", "Guerrilla", "Brazilian", "NZSAS", "Humanity", "Hundredth", "RAD", "Roam", "Mord", "Midnight", "New Beat", "BBNO", "Damjan", "Awolnation", "Verkkars", "Twerl", "Ekko", "Sidetrack", "Cavalry", "Frogman"]
         },
         cases: {
-          patterns: ["Case", "Container", "Package", "Capsule", "Box", "Pack"],
-          names: ["Case", "Container", "Package", "Capsule", "Box", "Pack"]
+          // Only items that are actually cases
+          weaponTypes: ["case", "container", "package", "capsule", "box", "pack"],
+          // Specific case patterns
+          patterns: ["Case", "Container", "Package", "Capsule", "Box", "Pack"]
         },
         charms: {
-          patterns: ["Charm", "Keychain", "Pin"],
-          names: ["Charm", "Keychain", "Pin"]
+          // Only items that are actually charms
+          weaponTypes: ["charm", "keychain", "pin"],
+          // Specific charm patterns
+          patterns: ["Charm", "Keychain", "Pin"]
         }
       };
 
@@ -99,8 +118,17 @@ router.get("/", async (req, res) => {
         // Build OR condition for this category
         const categoryConditions = [];
         
-        // Pattern matching (most specific) - items that start with these patterns
-        if (categoryConfig.patterns.length > 0) {
+        // Weapon type matching (most specific) - items that have the correct weapon type
+        if (categoryConfig.weaponTypes && categoryConfig.weaponTypes.length > 0) {
+          categoryConditions.push({
+            OR: categoryConfig.weaponTypes.map(weaponType => ({
+              weaponType: { contains: weaponType, mode: 'insensitive' }
+            }))
+          });
+        }
+        
+        // Pattern matching - items that start with these patterns
+        if (categoryConfig.patterns && categoryConfig.patterns.length > 0) {
           categoryConditions.push({
             OR: categoryConfig.patterns.map(pattern => ({
               name: { startsWith: pattern, mode: 'insensitive' }
@@ -108,8 +136,8 @@ router.get("/", async (req, res) => {
           });
         }
         
-        // Name matching - items that contain these names
-        if (categoryConfig.names.length > 0) {
+        // Name matching - items that contain these exact names
+        if (categoryConfig.names && categoryConfig.names.length > 0) {
           categoryConditions.push({
             OR: categoryConfig.names.map(name => ({
               name: { contains: name, mode: 'insensitive' }
