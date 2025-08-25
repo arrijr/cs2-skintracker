@@ -21,15 +21,23 @@ const parseCSV = (v) => (v || "").split(",").map(s => s.trim()).filter(Boolean);
 const whitelist = [
   ...parseCSV(process.env.ALLOWED_ORIGINS), // e.g. https://cs2-skintracker-arrijrs-projects.vercel.app, http://localhost:3000
   process.env.FRONTEND_ORIGIN,              // optional single origin
+  // Temporary: Allow all Vercel preview domains
+  "https://cs2-skintracker.vercel.app",
+  "https://cs2-skintracker-git-feature-cursor-workflow-arrijrs-projects.vercel.app"
 ].filter(Boolean);
 
-const allowVercelPreviews = process.env.ALLOW_VERCEL_PREVIEWS === "true";
+const allowVercelPreviews = true; // Force allow Vercel previews
 
 const corsOptions = {
   origin(origin, cb) {
     if (!origin) return cb(null, true); // server-to-server/no-origin
     if (whitelist.includes(origin)) return cb(null, true);
     if (allowVercelPreviews && /\.vercel\.app$/.test(origin)) return cb(null, true);
+    
+    console.log(`[CORS] Blocked origin: ${origin}`);
+    console.log(`[CORS] Allowed origins:`, whitelist);
+    console.log(`[CORS] Allow Vercel previews:`, allowVercelPreviews);
+    
     return cb(new Error(`Not allowed by CORS: ${origin}`));
   },
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
