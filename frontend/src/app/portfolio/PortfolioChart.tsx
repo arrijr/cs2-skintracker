@@ -16,14 +16,15 @@ type HistoryEntry = {
 
 type Props = {
   history: HistoryEntry[];
+  onRangeChange?: (range: string, days: number | null) => void;
 };
 
 const PERIODS = [
   { label: "1W", days: 7 },
   { label: "1M", days: 30 },
+  { label: "3M", days: 90 },
   { label: "6M", days: 180 },
   { label: "1Y", days: 365 },
-  { label: "5Y", days: 1825 },
   { label: "All", days: null },
 ];
 
@@ -34,8 +35,8 @@ function filterHistory(history: HistoryEntry[], days: number | null) {
   return history.filter(h => new Date(h.date) >= cutoff);
 }
 
-export default function PortfolioChart({ history }: Props) {
-  const [selected, setSelected] = useState(2); // Default: 6M
+export default function PortfolioChart({ history, onRangeChange }: Props) {
+  const [selected, setSelected] = useState(1); // Default: 1M
 
   const filtered = useMemo(
     () => filterHistory(history, PERIODS[selected].days),
@@ -51,6 +52,14 @@ export default function PortfolioChart({ history }: Props) {
   const valueDiffSign = valueDiff >= 0 ? "+" : "-";
   const valueDiffClass = valueDiff >= 0 ? "text-emerald-400" : "text-red-400";
 
+  // Notify parent of range change
+  const handleRangeChange = (index: number) => {
+    setSelected(index);
+    if (onRangeChange) {
+      onRangeChange(PERIODS[index].label, PERIODS[index].days);
+    }
+  };
+
   const chartData: ChartData<"line"> = {
     labels: filtered.map(entry => new Date(entry.date).toLocaleDateString()),
     datasets: [
@@ -59,21 +68,87 @@ export default function PortfolioChart({ history }: Props) {
         data: filtered.map(entry => entry.value),
         fill: false,
         borderColor: "#10b981", // Tailwind emerald-500
+        backgroundColor: "rgba(16, 185, 129, 0.1)",
         tension: 0.25,
         pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: "#10b981",
+        pointHoverBorderColor: "#ffffff",
+        pointHoverBorderWidth: 2,
       },
     ],
   };
 
   const options: ChartOptions<"line"> = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
-      tooltip: { mode: "index", intersect: false },
+      tooltip: { 
+        mode: "index", 
+        intersect: false,
+        backgroundColor: "rgba(0, 0, 0, 0.9)",
+        titleColor: "#ffffff",
+        bodyColor: "#ffffff",
+        borderColor: "#10b981",
+        borderWidth: 1,
+        callbacks: {
+          title: function(context) {
+            const date = new Date(context[0].label);
+            return date.toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            });
+          },
+          label: function(context) {
+            const value = context.parsed.y;
+            return `Value: $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          },
+          afterLabel: function(context) {
+            if (context.dataIndex > 0) {
+              const currentValue = context.parsed.y;
+              const previousValue = context.dataset.data[context.dataIndex - 1] as number;
+              const change = currentValue - previousValue;
+              const changePercent = previousValue > 0 ? (change / previousValue) * 100 : 0;
+              const sign = change >= 0 ? "+" : "";
+              return `Change: ${sign}$${change.toFixed(2)} (${sign}${changePercent.toFixed(2)}%)`;
+            }
+            return null;
+          }
+        }
+      },
     },
     scales: {
-      x: { grid: { color: "#222" }, ticks: { color: "#bbb" } },
-      y: { grid: { color: "#222" }, ticks: { color: "#bbb" } },
+      x: { 
+        grid: { color: "#374151" }, 
+        ticks: { color: "#9ca3af" },
+        border: { color: "#374151" }
+      },
+      y: { 
+        grid: { color: "#374151" }, 
+        ticks: { 
+          color: "#9ca3af",
+          callback: function(value) {
+            return '$' + Number(value).toLocaleString('en-US', { 
+              minimumFractionDigits: 0, 
+              maximumFractionDigits: 0 
+            });
+          }
+        },
+        border: { color: "#374151" },
+        beginAtZero: false, // Auto-scale based on data
+      },
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index',
+    },
+    elements: {
+      point: {
+        hoverRadius: 6,
+      },
     },
   };
 
@@ -84,12 +159,12 @@ export default function PortfolioChart({ history }: Props) {
         {PERIODS.map((p, i) => (
           <button
             key={p.label}
-            className={`px-3 py-1 rounded ${
+            className={`px-3 py-1 rounded transition-colors ${
               i === selected
                 ? "bg-emerald-600 text-white"
                 : "bg-gray-800 text-gray-300 hover:bg-gray-700"
             }`}
-            onClick={() => setSelected(i)}
+            onClick={() => handleRangeChange(i)}
           >
             {p.label}
           </button>
@@ -108,7 +183,9 @@ export default function PortfolioChart({ history }: Props) {
       </div>
 
       {/* Chart */}
-      <Line data={chartData} options={options} height={300} />
+      <div className="h-80">
+        <Line data={chartData} options={options} />
+      </div>
     </div>
   );
 }

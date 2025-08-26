@@ -42,7 +42,7 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange }: 
   // EIN State für alle Accordions – merkt sich, welches Skin-Accordion offen ist:
   const [openSkinId, setOpenSkinId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"performance" | "recent" | "default">("default");
+  const [sortBy, setSortBy] = useState<"performance" | "recent" | "default" | "name" | "weight">("default");
 
 
 
@@ -85,6 +85,18 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange }: 
         : 0;
       return dateB - dateA;
     });
+  } else if (sortBy === "weight") {
+    // Sort by position weight (value contribution)
+    filteredSkins = [...filteredSkins].sort((a, b) => {
+      const weightA = (a.avgPrice * a.amount) || 0;
+      const weightB = (b.avgPrice * b.amount) || 0;
+      return weightB - weightA;
+    });
+  } else if (sortBy === "name") {
+    // Sort alphabetically by name
+    filteredSkins = [...filteredSkins].sort((a, b) => 
+      a.skin.name.localeCompare(b.skin.name)
+    );
   }
 
   {/* Portfolio Empty State */}
@@ -132,8 +144,10 @@ if (!skins || skins.length === 0) {
           className="input-main"
         >
           <option value="default">Sort by...</option>
+          <option value="name">Name (A-Z)</option>
           <option value="performance">Best performance</option>
           <option value="recent">Most recent buy</option>
+          <option value="weight">Position weight</option>
         </select>
       </div>
 
@@ -150,19 +164,15 @@ if (!skins || skins.length === 0) {
             : 0;
 
         const isOpen = openSkinId === entry.skin.id;
-        // Bildfelder priorisieren: itemimage -> itemImage -> image_url -> imageUrl -> placeholder
+        // Bildfelder priorisieren: itemimage -> imageUrl -> placeholder
         const img =
           entry.skin.itemimage ||
-          entry.skin.itemImage ||
-          entry.skin.image_url ||
           entry.skin.imageUrl ||
           "/images/placeholder-skin.png";
 
         // Debug-Logging für Bilder
         console.log(`[DEBUG] Skin ${entry.skin.id} (${entry.skin.name}):`, {
           itemimage: entry.skin.itemimage,
-          itemImage: entry.skin.itemImage,
-          image_url: entry.skin.image_url,
           imageUrl: entry.skin.imageUrl,
           finalImg: img
         });
