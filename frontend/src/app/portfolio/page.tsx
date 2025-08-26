@@ -9,6 +9,9 @@ import PortfolioTable from "./PortfolioTable";
 import WatchlistTable from "./WatchlistTable";
 import PortfolioAllocation from "./PortfolioAllocation";
 import LastUpdatedChip from "./LastUpdatedChip";
+import PerformanceDashboard from "./PerformanceDashboard";
+import AdvancedCharts from "./AdvancedCharts";
+import PremiumFeatureFlag from "./PremiumFeatureFlag";
 
 
 // {/* API helpers (zentral aus /src/lib/api.ts) */}
@@ -193,6 +196,24 @@ export default function PortfolioPage() {
         <section className="card">
           <PortfolioChart history={history} />
         </section>
+
+        {/* Performance Dashboard */}
+        <PremiumFeatureFlag feature="performance-dashboard">
+          <PerformanceDashboard 
+            portfolio={portfolioSkins} 
+            history={history}
+            isPremium={true}
+          />
+        </PremiumFeatureFlag>
+
+        {/* Advanced Charts */}
+        <PremiumFeatureFlag feature="advanced-charts">
+          <AdvancedCharts 
+            portfolio={portfolioSkins} 
+            history={history}
+            isPremium={true}
+          />
+        </PremiumFeatureFlag>
 
         {/* Portfolio Allocation */}
         <PortfolioAllocation 
