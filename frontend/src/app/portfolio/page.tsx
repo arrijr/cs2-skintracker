@@ -14,6 +14,8 @@ import AdvancedCharts from "./AdvancedCharts";
 import PremiumFeatureFlag from "./PremiumFeatureFlag";
 import SmartAlerts from "./SmartAlerts";
 import TransactionAnalytics from "./TransactionAnalytics";
+import PortfolioHealthScore from "./PortfolioHealthScore";
+import MarketIntelligence from "./MarketIntelligence";
 
 
 // {/* API helpers (zentral aus /src/lib/api.ts) */}
@@ -229,6 +231,24 @@ export default function PortfolioPage() {
         {/* Transaction Analytics */}
         <PremiumFeatureFlag feature="transaction-analytics">
           <TransactionAnalytics 
+            portfolio={portfolioSkins} 
+            history={history}
+            isPremium={true}
+          />
+        </PremiumFeatureFlag>
+
+        {/* Portfolio Health Score */}
+        <PremiumFeatureFlag feature="portfolio-health-score">
+          <PortfolioHealthScore 
+            portfolio={portfolioSkins} 
+            history={history}
+            isPremium={true}
+          />
+        </PremiumFeatureFlag>
+
+        {/* Market Intelligence */}
+        <PremiumFeatureFlag feature="market-intelligence">
+          <MarketIntelligence 
             portfolio={portfolioSkins} 
             history={history}
             isPremium={true}
