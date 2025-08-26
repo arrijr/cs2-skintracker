@@ -197,23 +197,23 @@ export default function PortfolioPage() {
           <PortfolioChart history={history} />
         </section>
 
-        {/* Performance Dashboard */}
-        <PremiumFeatureFlag feature="performance-dashboard">
+        {/* Performance Dashboard - Temporarily Disabled */}
+        {/* <PremiumFeatureFlag feature="performance-dashboard">
           <PerformanceDashboard 
             portfolio={portfolioSkins} 
             history={history}
             isPremium={true}
           />
-        </PremiumFeatureFlag>
+        </PremiumFeatureFlag> */}
 
-        {/* Advanced Charts */}
-        <PremiumFeatureFlag feature="advanced-charts">
+        {/* Advanced Charts - Temporarily Disabled */}
+        {/* <PremiumFeatureFlag feature="advanced-charts">
           <AdvancedCharts 
             portfolio={portfolioSkins} 
             history={history}
             isPremium={true}
           />
-        </PremiumFeatureFlag>
+        </PremiumFeatureFlag> */}
 
         {/* Portfolio Allocation */}
         <PortfolioAllocation 
