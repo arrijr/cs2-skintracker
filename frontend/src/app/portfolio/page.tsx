@@ -12,6 +12,8 @@ import LastUpdatedChip from "./LastUpdatedChip";
 import PerformanceDashboard from "./PerformanceDashboard";
 import AdvancedCharts from "./AdvancedCharts";
 import PremiumFeatureFlag from "./PremiumFeatureFlag";
+import SmartAlerts from "./SmartAlerts";
+import TransactionAnalytics from "./TransactionAnalytics";
 
 
 // {/* API helpers (zentral aus /src/lib/api.ts) */}
@@ -214,6 +216,24 @@ export default function PortfolioPage() {
             isPremium={true}
           />
         </PremiumFeatureFlag> */}
+
+        {/* Smart Alerts */}
+        <PremiumFeatureFlag feature="smart-alerts">
+          <SmartAlerts 
+            portfolio={portfolioSkins} 
+            history={history}
+            isPremium={true}
+          />
+        </PremiumFeatureFlag>
+
+        {/* Transaction Analytics */}
+        <PremiumFeatureFlag feature="transaction-analytics">
+          <TransactionAnalytics 
+            portfolio={portfolioSkins} 
+            history={history}
+            isPremium={true}
+          />
+        </PremiumFeatureFlag>
 
         {/* Portfolio Allocation */}
         <PortfolioAllocation 
