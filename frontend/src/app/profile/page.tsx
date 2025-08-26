@@ -21,9 +21,17 @@ interface KPIData {
   portfolioValue: number;
   portfolioChange24h: number;
   portfolioChange7d: number;
+  totalInvested: number;
+  unrealizedPL: number;
   watchlistCount: number;
   activeAlerts: number;
   lastUpdated?: string;
+  // Risk metrics
+  volatility?: number;
+  volatilityMessage?: string;
+  maxDrawdown?: number;
+  maxDrawdownMessage?: string;
+  hasEnoughRiskData?: boolean;
 }
 
 export default function ProfilePage() {
@@ -88,31 +96,19 @@ export default function ProfilePage() {
 
   const loadKPIData = async () => {
     try {
-      // Load portfolio count and value
-      const portfolioResponse = await apiFetch("/api/v1/portfolio");
-      const portfolioData = portfolioResponse.portfolio || [];
-      
-      // Load watchlist count
-      const watchlistResponse = await apiFetch("/api/v1/watchlist");
-      const watchlistData = watchlistResponse.watchlist || [];
-      
-      // Calculate portfolio value and changes (simplified for now)
-      const portfolioValue = portfolioData.reduce((sum: number, item: any) => {
-        return sum + (item.skin?.priceLatest || 0) * item.amount;
-      }, 0);
-      
-      // Get last updated from portfolio history
-      const historyResponse = await apiFetch("/api/v1/portfolio/history");
-      const lastUpdated = historyResponse.history?.[0]?.date;
+      // Use new KPI endpoint for better performance
+      const kpiResponse = await apiFetch("/api/v1/portfolio/kpis");
       
       setKpiData({
-        portfolioCount: portfolioData.length,
-        portfolioValue,
-        portfolioChange24h: 0, // TODO: Calculate from history
-        portfolioChange7d: 0,  // TODO: Calculate from history
-        watchlistCount: watchlistData.length,
-        activeAlerts: watchlistData.filter((item: any) => item.priceAlert).length,
-        lastUpdated
+        portfolioCount: kpiResponse.portfolioCount || 0,
+        portfolioValue: kpiResponse.portfolioValue || 0,
+        portfolioChange24h: kpiResponse.portfolioChange24h || 0,
+        portfolioChange7d: kpiResponse.portfolioChange7d || 0,
+        totalInvested: kpiResponse.totalInvested || 0,
+        unrealizedPL: kpiResponse.unrealizedPL || 0,
+        watchlistCount: kpiResponse.watchlistCount || 0,
+        activeAlerts: kpiResponse.activeAlerts || 0,
+        lastUpdated: kpiResponse.lastUpdated
       });
     } catch (error) {
       console.error("Failed to load KPI data:", error);
@@ -122,6 +118,8 @@ export default function ProfilePage() {
         portfolioValue: 0,
         portfolioChange24h: 0,
         portfolioChange7d: 0,
+        totalInvested: 0,
+        unrealizedPL: 0,
         watchlistCount: 0,
         activeAlerts: 0
       });
@@ -249,7 +247,7 @@ export default function ProfilePage() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <div className="bg-zinc-800 rounded-lg p-4 text-center">
             <Star className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
             <div className="text-lg font-bold">{kpiData?.portfolioCount || 0}</div>
@@ -261,13 +259,34 @@ export default function ProfilePage() {
               ${kpiData?.portfolioValue?.toFixed(2) || "0.00"}
             </div>
             <div className="text-xs text-zinc-400">Total Value</div>
-                         <div className="text-xs text-zinc-500">
-               {kpiData?.portfolioChange24h !== 0 && kpiData && (
-                 <span className={kpiData.portfolioChange24h > 0 ? "text-green-400" : "text-red-400"}>
-                   {kpiData.portfolioChange24h > 0 ? "+" : ""}{kpiData.portfolioChange24h.toFixed(1)}% 24h
-                 </span>
-               )}
-             </div>
+            <div className="text-xs text-zinc-500">
+              {kpiData?.portfolioChange24h !== 0 && kpiData && (
+                <span className={kpiData.portfolioChange24h > 0 ? "text-green-400" : "red-400"}>
+                  {kpiData.portfolioChange24h > 0 ? "+" : ""}{kpiData.portfolioChange24h.toFixed(1)}% 24h
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div className="bg-zinc-800 rounded-lg p-4 text-center">
+            <div className="text-lg font-bold text-blue-400">
+              ${kpiData?.totalInvested?.toFixed(2) || "0.00"}
+            </div>
+            <div className="text-xs text-zinc-400">Total Invested</div>
+          </div>
+          
+          <div className="bg-zinc-800 rounded-lg p-4 text-center">
+            <div className="text-lg font-bold text-purple-400">
+              ${kpiData?.unrealizedPL?.toFixed(2) || "0.00"}
+            </div>
+            <div className="text-xs text-zinc-400">Unrealized P/L</div>
+            <div className="text-xs text-zinc-500">
+              {kpiData?.portfolioChange7d !== 0 && kpiData && (
+                <span className={kpiData.portfolioChange7d > 0 ? "text-green-400" : "text-red-400"}>
+                  {kpiData.portfolioChange7d > 0 ? "+" : ""}{kpiData.portfolioChange7d.toFixed(1)}% 7d
+                </span>
+              )}
+            </div>
           </div>
           
           <div className="bg-zinc-800 rounded-lg p-4 text-center">
@@ -287,6 +306,30 @@ export default function ProfilePage() {
         {kpiData?.lastUpdated && (
           <div className="mt-4 text-center text-sm text-zinc-500">
             Last updated: {new Date(kpiData.lastUpdated).toLocaleString()}
+          </div>
+        )}
+
+        {/* Risk Metrics */}
+        {kpiData?.hasEnoughRiskData && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-3 text-zinc-300">Risk Metrics</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-zinc-800 rounded-lg p-4">
+                <div className="text-sm text-zinc-400 mb-1">30-Day Volatility</div>
+                <div className="text-xl font-bold text-orange-400">
+                  {kpiData.volatility?.toFixed(2)}%
+                </div>
+                <div className="text-xs text-zinc-500">Daily return volatility</div>
+              </div>
+              
+              <div className="bg-zinc-800 rounded-lg p-4">
+                <div className="text-sm text-zinc-400 mb-1">Max Drawdown (90d)</div>
+                <div className="text-xl font-bold text-red-400">
+                  {kpiData.maxDrawdown?.toFixed(2)}%
+                </div>
+                <div className="text-xs text-zinc-500">Peak to trough decline</div>
+              </div>
+            </div>
           </div>
         )}
       </div>

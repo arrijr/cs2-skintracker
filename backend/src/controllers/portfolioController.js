@@ -1,5 +1,7 @@
 import prisma from "../prisma/prismaClient.js";
 import axios from "axios";
+import { getPortfolioRiskMetrics } from "../services/riskService.js";
+import { getPortfolioContributionRanges } from "../services/contributionService.js";
 
 async function getCurrentSteamPrice(marketHashName) {
   const url = `https://steamcommunity.com/market/priceoverview/?appid=730&market_hash_name=${encodeURIComponent(marketHashName)}&currency=3`;
@@ -196,5 +198,125 @@ export const updatePortfolio = async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// GET PORTFOLIO KPIs
+export const getPortfolioKPIs = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Get portfolio data
+    const portfolio = await prisma.portfolio.findMany({
+      where: { userId },
+      include: { skin: true },
+      orderBy: { buyDate: 'asc' }
+    });
+
+    // Get watchlist count
+    const watchlistCount = await prisma.watchlist.count({
+      where: { userId }
+    });
+
+    // Get active alerts count
+    const activeAlerts = await prisma.watchlist.count({
+      where: { 
+        userId,
+        priceAlert: { not: null }
+      }
+    });
+
+    // Calculate portfolio value and changes
+    let totalValue = 0;
+    let totalInvested = 0;
+    
+    for (const item of portfolio) {
+      const currentPrice = item.skin.priceLatest || 0;
+      totalValue += currentPrice * item.amount;
+      totalInvested += item.buyPrice * item.amount;
+    }
+
+    // Get last updated from portfolio history
+    const lastHistory = await prisma.portfolioHistory.findFirst({
+      where: { userId },
+      orderBy: { date: 'desc' }
+    });
+
+    // Get 24h and 7d changes from history
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const yesterdayValue = await prisma.portfolioHistory.findFirst({
+      where: { 
+        userId,
+        date: { gte: yesterday }
+      },
+      orderBy: { date: 'asc' }
+    });
+
+    const weekAgoValue = await prisma.portfolioHistory.findFirst({
+      where: { 
+        userId,
+        date: { gte: weekAgo }
+      },
+      orderBy: { date: 'asc' }
+    });
+
+    let change24h = 0;
+    let change7d = 0;
+
+    if (yesterdayValue && totalValue > 0) {
+      change24h = ((totalValue - yesterdayValue.value) / yesterdayValue.value) * 100;
+    }
+
+    if (weekAgoValue && totalValue > 0) {
+      change7d = ((totalValue - weekAgoValue.value) / weekAgoValue.value) * 100;
+    }
+
+    // Get risk metrics
+    const riskMetrics = await getPortfolioRiskMetrics(userId);
+
+    const kpis = {
+      portfolioCount: portfolio.length,
+      portfolioValue: totalValue,
+      portfolioChange24h: change24h,
+      portfolioChange7d: change7d,
+      totalInvested: totalInvested,
+      unrealizedPL: totalValue - totalInvested,
+      watchlistCount,
+      activeAlerts,
+      lastUpdated: lastHistory?.date || null,
+      // Risk metrics
+      volatility: riskMetrics.volatility,
+      volatilityMessage: riskMetrics.volatilityMessage,
+      maxDrawdown: riskMetrics.maxDrawdown,
+      maxDrawdownMessage: riskMetrics.maxDrawdownMessage,
+      hasEnoughRiskData: riskMetrics.hasEnoughData
+    };
+
+    res.json(kpis);
+  } catch (error) {
+    console.error("Failed to get portfolio KPIs:", error);
+    res.status(500).json({ error: "Failed to get portfolio KPIs" });
+  }
+};
+
+// GET PORTFOLIO CONTRIBUTION
+export const getPortfolioContribution = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { range = 'week' } = req.query; // week, month, quarter
+    
+    const contributionData = await getPortfolioContributionRanges(userId);
+    
+    if (!contributionData[range]) {
+      return res.status(400).json({ error: "Invalid range. Use: week, month, or quarter" });
+    }
+    
+    res.json(contributionData[range]);
+  } catch (error) {
+    console.error("Failed to get portfolio contribution:", error);
+    res.status(500).json({ error: "Failed to get portfolio contribution" });
   }
 };

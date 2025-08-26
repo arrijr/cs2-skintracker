@@ -4,7 +4,10 @@ import { fetchSkinPrice } from "../services/steamService.js";
 
 async function checkPriceAlerts() {
   const alerts = await prisma.watchlist.findMany({
-    where: { priceAlert: { not: null } },
+    where: { 
+      priceAlert: { not: null },
+      user: { emailAlerts: true } // Only send emails to users with emailAlerts enabled
+    },
     include: { user: true, skin: true },
   });
 

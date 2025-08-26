@@ -22,6 +22,7 @@ model User {
   watchlist    Watchlist[]
   portfolio    Portfolio[]
   portfolioHistory PortfolioHistory[]
+  transactions Transaction[]
 }
 
 model Skin {
@@ -84,6 +85,7 @@ model Skin {
   priceHistory   PriceHistory[]
   watchlist      Watchlist[]
   portfolio      Portfolio[]
+  transactions   Transaction[]
 
   @@index([rarity])
   @@index([wear])
@@ -130,4 +132,24 @@ model PortfolioHistory {
   userId  Int
   date    DateTime
   value   Float
+}
+
+model Transaction {
+  id        Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int
+  skin      Skin      @relation(fields: [skinId], references: [id])
+  skinId    Int
+  type      TransactionType
+  amount    Int
+  price     Float
+  date      DateTime  @default(now())
+  notes     String?
+  
+  @@index([userId, skinId, date])
+}
+
+enum TransactionType {
+  BUY
+  SELL
 }

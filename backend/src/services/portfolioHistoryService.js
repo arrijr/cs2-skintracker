@@ -61,7 +61,6 @@ export async function calculateAndStorePortfolioValues() {
     }
   }
 }
-await prisma.$disconnect();
 
 // Allow manual script execution for testing
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -75,4 +74,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       process.exit(1);
     });
 }
-await prisma.$disconnect();
