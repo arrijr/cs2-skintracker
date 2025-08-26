@@ -1,12 +1,11 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { ChevronDown, ChevronUp, Bell } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronDown, ChevronUp, Bell, AlertTriangle } from "lucide-react";
 import PurchaseAccordion from "../components/PurchaseAccordion";
 import clsx from "clsx";
 import Tooltip from "../components/Tooltip";
-
 
 type Skin = {
   id: number;
@@ -14,6 +13,10 @@ type Skin = {
   imageUrl?: string | null;
   itemimage?: string | null;
   marketPrice?: number | null;
+  weaponType?: string;
+  rarity?: string;
+  wear?: string;
+  lastPriceUpdate?: string;
 };
 
 type Purchase = {
@@ -36,18 +39,57 @@ type Props = {
   skins: PortfolioEntry[];
   watchlist: any[]; // WatchlistEntry is not defined here, using any
   onDataChange: () => void; // Callback to trigger data refresh
+  activeFilter?: { type: string; value: string; values?: string[] } | null;
 };
 
-export default function PortfolioTable({ skins, watchlist = [], onDataChange }: Props) {
+export default function PortfolioTable({ skins, watchlist = [], onDataChange, activeFilter }: Props) {
   // EIN State für alle Accordions – merkt sich, welches Skin-Accordion offen ist:
   const [openSkinId, setOpenSkinId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"performance" | "recent" | "default" | "name" | "weight">("default");
 
+  // Persistent sorting with localStorage
+  useEffect(() => {
+    const savedSort = localStorage.getItem('portfolio-sort');
+    if (savedSort && ['performance', 'recent', 'name', 'weight'].includes(savedSort)) {
+      setSortBy(savedSort as any);
+    }
+  }, []);
 
+  const handleSortChange = (newSort: typeof sortBy) => {
+    setSortBy(newSort);
+    localStorage.setItem('portfolio-sort', newSort);
+  };
 
   // Filtered & Sorted Skins
   let filteredSkins = skins;
+
+  // Apply allocation filter
+  if (activeFilter && activeFilter.value !== "Others") {
+    filteredSkins = filteredSkins.filter((entry) => {
+      if (activeFilter.type === "weaponType") {
+        return entry.skin.weaponType === activeFilter.value;
+      } else if (activeFilter.type === "rarity") {
+        return entry.skin.rarity === activeFilter.value;
+      } else if (activeFilter.type === "wear") {
+        return entry.skin.wear === activeFilter.value;
+      }
+      return true;
+    });
+  } else if (activeFilter && activeFilter.value === "Others" && activeFilter.values) {
+    // Filter for "Others" segment
+    filteredSkins = filteredSkins.filter((entry) => {
+      let entryValue = "Unknown";
+      if (activeFilter.type === "weaponType") {
+        entryValue = entry.skin.weaponType || "Unknown";
+      } else if (activeFilter.type === "rarity") {
+        entryValue = entry.skin.rarity || "Unknown";
+      } else if (activeFilter.type === "wear") {
+        entryValue = entry.skin.wear || "Unknown";
+      }
+      return activeFilter.values!.includes(entryValue);
+    });
+  }
 
   // Name-Filter
   if (search.trim() !== "") {
@@ -100,35 +142,61 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange }: 
   }
 
   {/* Portfolio Empty State */}
-if (!skins || skins.length === 0) {
-  return (
-    <div className="flex flex-col items-center justify-center py-12 text-zinc-400">
-      {/* Optional: Small illustration */}
-      <svg width="72" height="72" fill="none" viewBox="0 0 24 24" className="mb-4 opacity-70">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M8 14s1.5-2 4-2 4 2 4 2" stroke="currentColor" strokeWidth="1.5" fill="none" />
-        <circle cx="9" cy="10" r="1" fill="currentColor" />
-        <circle cx="15" cy="10" r="1" fill="currentColor" />
-      </svg>
-      <h2 className="text-2xl font-semibold mb-2">No skins in your portfolio yet</h2>
-      <p className="mb-4 text-center max-w-xs">
-        Add your first CS2 skin to start tracking your portfolio’s value and performance over time.
-      </p>
-      {/* Optional: Add Skin Button */}
-      <button
-        className="btn-main"
-        onClick={() => {/* Open add skin modal or redirect to add page */}}
-      >
-        Add Skin
-      </button>
-    </div>
-  );
-}
+  if (!skins || skins.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-zinc-400">
+        {/* Optional: Small illustration */}
+        <svg width="72" height="72" fill="none" viewBox="0 0 24 24" className="mb-4 opacity-70">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M8 14s1.5-2 4-2 4 2 4 2" stroke="currentColor" strokeWidth="1.5" fill="none" />
+          <circle cx="9" cy="10" r="1" fill="currentColor" />
+          <circle cx="15" cy="10" r="1" fill="currentColor" />
+        </svg>
+        <h2 className="text-2xl font-semibold mb-2">No skins in your portfolio yet</h2>
+        <p className="mb-4 text-center max-w-xs">
+          Add your first CS2 skin to start tracking your portfolio's value and performance over time.
+        </p>
+        {/* Optional: Add Skin Button */}
+        <button
+          className="btn-main"
+          onClick={() => {/* Open add skin modal or redirect to add page */}}
+        >
+          Add Skin
+        </button>
+      </div>
+    );
+  }
+
+  // Filtered empty state
+  if (filteredSkins.length === 0 && (activeFilter || search.trim() !== "")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-zinc-400">
+        <svg width="72" height="72" fill="none" viewBox="0 0 24 24" className="mb-4 opacity-70">
+          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        </svg>
+        <h2 className="text-2xl font-semibold mb-2">No holdings for this filter</h2>
+        <p className="mb-4 text-center max-w-xs">
+          {activeFilter 
+            ? `No portfolio items match "${activeFilter.type}: ${activeFilter.value}"`
+            : `No portfolio items match "${search}"`
+          }
+        </p>
+        <button
+          className="btn-main"
+          onClick={() => {
+            setSearch("");
+            // Clear filter by calling onDataChange (parent will handle)
+            onDataChange();
+          }}
+        >
+          Clear Filter
+        </button>
+      </div>
+    );
+  }
 
   return (
-
     <div className="flex flex-col gap-4">
-
       {/* Portfolio Filter & Searchbar */}
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 items-center">
         <input
@@ -140,7 +208,7 @@ if (!skins || skins.length === 0) {
         />
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as any)}
+          onChange={(e) => handleSortChange(e.target.value as any)}
           className="input-main"
         >
           <option value="default">Sort by...</option>
@@ -150,6 +218,20 @@ if (!skins || skins.length === 0) {
           <option value="weight">Position weight</option>
         </select>
       </div>
+
+      {/* Active Filter Display */}
+      {activeFilter && (
+        <div className="mb-4 p-3 bg-emerald-600/20 border border-emerald-600/40 rounded-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-emerald-400 text-sm">
+              Filtered by: <strong>{activeFilter.type === "weaponType" ? "Weapon Type" : activeFilter.type === "rarity" ? "Rarity" : "Wear"}: {activeFilter.value}</strong>
+            </span>
+            <span className="text-emerald-400 text-xs">
+              {filteredSkins.length} of {skins.length} items
+            </span>
+          </div>
+        </div>
+      )}
 
       {filteredSkins.map((entry) => {
         const alertObj = watchlist.find(
@@ -215,6 +297,29 @@ if (!skins || skins.length === 0) {
                     )}
                   </div>
                   <div className="text-xs text-zinc-400">{entry.amount}x</div>
+                  
+                  {/* Stale Price Warning */}
+                  {entry.skin.lastPriceUpdate && (
+                    (() => {
+                      try {
+                        const lastUpdate = new Date(entry.skin.lastPriceUpdate);
+                        const now = new Date();
+                        const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
+                        const isStale = diffHours > 48;
+                        
+                        return isStale ? (
+                          <Tooltip content={`Last price update: ${lastUpdate.toLocaleString()}`}>
+                            <div className="flex items-center gap-1 text-xs text-amber-400 mt-1">
+                              <AlertTriangle className="w-3 h-3" />
+                              <span>Stale</span>
+                            </div>
+                          </Tooltip>
+                        ) : null;
+                      } catch {
+                        return null;
+                      }
+                    })()
+                  )}
                 </div>
               </div>
               {/* Stats-Block */}

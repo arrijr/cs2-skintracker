@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
+import { X } from "lucide-react";
 
 // Chart.js Registration
 Chart.register(ArcElement, Tooltip, Legend);
@@ -21,6 +22,8 @@ type PortfolioEntry = {
 
 type Props = {
   portfolio: PortfolioEntry[];
+  onFilterChange?: (filter: { type: string; value: string } | null) => void;
+  activeFilter?: { type: string; value: string } | null;
 };
 
 type AllocationData = {
@@ -28,6 +31,7 @@ type AllocationData = {
   data: number[];
   backgroundColor: string[];
   borderColor: string[];
+  filterValues: string[]; // Store actual filter values for each segment
 };
 
 const WEAPON_COLORS = [
@@ -53,15 +57,19 @@ const WEAR_COLORS = [
   "#EF4444", // Battle-Scarred
 ];
 
-export default function PortfolioAllocation({ portfolio }: Props) {
+export default function PortfolioAllocation({ portfolio, onFilterChange, activeFilter }: Props) {
   const [allocationType, setAllocationType] = useState<"weaponType" | "rarity" | "wear">("weaponType");
+
+  // Feature flag for click-to-filter
+  const FILTER_ENABLED = process.env.NEXT_PUBLIC_PORTFOLIO_ALLOCATION_FILTER === 'true';
 
   const allocationData = useMemo((): AllocationData => {
     if (!portfolio || portfolio.length === 0) {
-      return { labels: [], data: [], backgroundColor: [], borderColor: [] };
+      return { labels: [], data: [], backgroundColor: [], borderColor: [], filterValues: [] };
     }
 
     const allocationMap = new Map<string, number>();
+    const filterValueMap = new Map<string, string[]>(); // Map segment labels to actual filter values
     let totalValue = 0;
 
     // Calculate total portfolio value
@@ -73,17 +81,27 @@ export default function PortfolioAllocation({ portfolio }: Props) {
     // Group by selected allocation type
     for (const entry of portfolio) {
       let key = "Unknown";
+      let filterValue = "Unknown";
       
       if (allocationType === "weaponType" && entry.skin.weaponType) {
         key = entry.skin.weaponType;
+        filterValue = entry.skin.weaponType;
       } else if (allocationType === "rarity" && entry.skin.rarity) {
         key = entry.skin.rarity;
+        filterValue = entry.skin.rarity;
       } else if (allocationType === "wear" && entry.skin.wear) {
         key = entry.skin.wear;
+        filterValue = entry.skin.wear;
       }
 
       const positionValue = entry.avgPrice * entry.amount;
       allocationMap.set(key, (allocationMap.get(key) || 0) + positionValue);
+      
+      // Store filter values for this segment
+      if (!filterValueMap.has(key)) {
+        filterValueMap.set(key, []);
+      }
+      filterValueMap.get(key)!.push(filterValue);
     }
 
     // Convert to chart data format
@@ -92,14 +110,19 @@ export default function PortfolioAllocation({ portfolio }: Props) {
 
     // Take top 5 + group others
     const topEntries = entries.slice(0, 5);
-    const otherValue = entries.slice(5).reduce((sum, [_, value]) => sum + value, 0);
+    const otherEntries = entries.slice(5);
+    const otherValue = otherEntries.reduce((sum, [_, value]) => sum + value, 0);
 
     const labels = topEntries.map(([key, _]) => key);
     const data = topEntries.map(([_, value]) => (value / totalValue) * 100);
+    const filterValues = topEntries.map(([key, _]) => key);
 
     if (otherValue > 0) {
       labels.push("Others");
       data.push((otherValue / totalValue) * 100);
+      // Collect all filter values for "Others" segment
+      const otherFilterValues = otherEntries.flatMap(([key, _]) => filterValueMap.get(key) || []);
+      filterValues.push("Others");
     }
 
     // Assign colors based on allocation type
@@ -115,7 +138,7 @@ export default function PortfolioAllocation({ portfolio }: Props) {
     const backgroundColor = labels.map((_, index) => colors[index % colors.length]);
     const borderColor = backgroundColor.map(color => color + "80"); // Add transparency
 
-    return { labels, data, backgroundColor, borderColor };
+    return { labels, data, backgroundColor, borderColor, filterValues };
   }, [portfolio, allocationType]);
 
   const chartData = {
@@ -160,6 +183,47 @@ export default function PortfolioAllocation({ portfolio }: Props) {
         },
       },
     },
+    onClick: (event: any, elements: any[]) => {
+      if (!FILTER_ENABLED || !onFilterChange) return;
+      
+      if (elements.length > 0) {
+        const index = elements[0].index;
+        const label = allocationData.labels[index];
+        const filterValue = allocationData.filterValues[index];
+        
+        if (label === "Others") {
+          // For "Others", we need to collect all the filter values that make up this segment
+          const otherFilterValues = portfolio
+            .filter(entry => {
+              let key = "Unknown";
+              if (allocationType === "weaponType" && entry.skin.weaponType) {
+                key = entry.skin.weaponType;
+              } else if (allocationType === "rarity" && entry.skin.rarity) {
+                key = entry.skin.rarity;
+              } else if (allocationType === "wear" && entry.skin.wear) {
+                key = entry.skin.wear;
+              }
+              return !allocationData.labels.slice(0, 5).includes(key);
+            })
+            .map(entry => {
+              if (allocationType === "weaponType") return entry.skin.weaponType || "Unknown";
+              if (allocationType === "rarity") return entry.skin.rarity || "Unknown";
+              if (allocationType === "wear") return entry.skin.wear || "Unknown";
+              return "Unknown";
+            });
+          
+          onFilterChange({ type: allocationType, value: "Others", values: otherFilterValues });
+        } else {
+          onFilterChange({ type: allocationType, value: filterValue });
+        }
+      }
+    },
+  };
+
+  const handleClearFilter = () => {
+    if (onFilterChange) {
+      onFilterChange(null);
+    }
   };
 
   if (!portfolio || portfolio.length === 0) {
@@ -213,6 +277,21 @@ export default function PortfolioAllocation({ portfolio }: Props) {
         </div>
       </div>
 
+      {/* Active Filter Chip */}
+      {FILTER_ENABLED && activeFilter && (
+        <div className="mb-4 flex items-center gap-2">
+          <div className="bg-emerald-600 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+            <span>{allocationType === "weaponType" ? "Weapon Type" : allocationType === "rarity" ? "Rarity" : "Wear"}: {activeFilter.value}</span>
+            <button
+              onClick={handleClearFilter}
+              className="hover:bg-emerald-700 rounded-full p-1"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Chart */}
       <div className="h-64 flex items-center justify-center">
         {allocationData.data.length > 0 ? (
@@ -229,6 +308,13 @@ export default function PortfolioAllocation({ portfolio }: Props) {
       {allocationData.data.length > 0 && (
         <div className="mt-4 text-center text-sm text-gray-400">
           Total: {allocationData.data.reduce((sum, value) => sum + value, 0).toFixed(1)}%
+        </div>
+      )}
+
+      {/* Click-to-Filter Info */}
+      {FILTER_ENABLED && (
+        <div className="mt-4 text-center text-xs text-gray-500">
+          💡 Click on segments to filter portfolio table
         </div>
       )}
     </div>

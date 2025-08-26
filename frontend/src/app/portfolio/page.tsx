@@ -8,6 +8,7 @@ import PortfolioChart from "./PortfolioChart";
 import PortfolioTable from "./PortfolioTable";
 import WatchlistTable from "./WatchlistTable";
 import PortfolioAllocation from "./PortfolioAllocation";
+import LastUpdatedChip from "./LastUpdatedChip";
 
 
 // {/* API helpers (zentral aus /src/lib/api.ts) */}
@@ -46,6 +47,7 @@ export default function PortfolioPage() {
   const [portfolioSkins, setPortfolioSkins] = useState<any[]>([]);
   const [watchlist, setWatchlist] = useState<WatchlistEntry[]>([]);
   const [kpiData, setKpiData] = useState<PortfolioKPIs | null>(null);
+  const [activeFilter, setActiveFilter] = useState<{ type: string; value: string; values?: string[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -182,11 +184,9 @@ export default function PortfolioPage() {
           </div>
 
           {/* Last Updated */}
-          {kpiData?.lastUpdated && (
-            <div className="text-center text-sm text-gray-500 mb-4">
-              Last updated: {new Date(kpiData.lastUpdated).toLocaleString()}
-            </div>
-          )}
+          <div className="text-center mb-4">
+            <LastUpdatedChip token={token} onRefresh={loadAll} />
+          </div>
         </section>
 
         {/* Portfolio Chart Section */}
@@ -195,7 +195,11 @@ export default function PortfolioPage() {
         </section>
 
         {/* Portfolio Allocation */}
-        <PortfolioAllocation portfolio={portfolioSkins} />
+        <PortfolioAllocation 
+          portfolio={portfolioSkins} 
+          onFilterChange={setActiveFilter}
+          activeFilter={activeFilter}
+        />
 
 
 
@@ -205,6 +209,7 @@ export default function PortfolioPage() {
             skins={portfolioSkins}
             watchlist={watchlist}
             onDataChange={loadAll}
+            activeFilter={activeFilter}
           />
         </section>
 
