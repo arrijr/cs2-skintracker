@@ -8,8 +8,7 @@ import PortfolioChart from "./PortfolioChart";
 import PortfolioTable from "./PortfolioTable";
 import WatchlistTable from "./WatchlistTable";
 import PortfolioAllocation from "./PortfolioAllocation";
-import TopMovers from "./TopMovers";
-import InsightCards from "./InsightCards";
+
 
 // {/* API helpers (zentral aus /src/lib/api.ts) */}
 import {
@@ -70,7 +69,7 @@ export default function PortfolioPage() {
         getWatchlist(),
         fetch("/api/v1/portfolio/kpis", {
           headers: { Authorization: `Bearer ${token}` }
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
       ]);
       setHistory(h || []);
       setPortfolioSkins(p || []);
@@ -127,7 +126,7 @@ export default function PortfolioPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
             <div className="bg-gray-800 rounded-lg p-4 text-center">
               <div className="text-lg font-bold text-yellow-400">
-                {kpiData?.portfolioCount || 0}
+                {kpiData?.portfolioCount || portfolioSkins.length}
               </div>
               <div className="text-xs text-gray-400">Portfolio Skins</div>
             </div>
@@ -169,7 +168,7 @@ export default function PortfolioPage() {
             
             <div className="bg-gray-800 rounded-lg p-4 text-center">
               <div className="text-lg font-bold text-blue-400">
-                {kpiData?.watchlistCount || 0}
+                {kpiData?.watchlistCount || watchlist.length}
               </div>
               <div className="text-xs text-gray-400">Watchlist</div>
             </div>
@@ -195,14 +194,10 @@ export default function PortfolioPage() {
           <PortfolioChart history={history} />
         </section>
 
-        {/* Portfolio Insights Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PortfolioAllocation portfolio={portfolioSkins} />
-          <TopMovers portfolio={portfolioSkins} />
-        </div>
+        {/* Portfolio Allocation */}
+        <PortfolioAllocation portfolio={portfolioSkins} />
 
-        {/* Insight Cards (Feature Flag) */}
-        <InsightCards portfolio={portfolioSkins} token={token} />
+
 
         {/* Portfolio Table Section */}
         <section className="card">
