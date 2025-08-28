@@ -1,10 +1,35 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from "react";
 import SkinSearchBar from "../components/SkinSearchBar";
 
 export default function NavBar() {
   const router = useRouter();
+  const { token } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    if (!token) {
+      setIsAdmin(false);
+      return;
+    }
+
+    const checkAdminStatus = async () => {
+      try {
+        const response = await fetch("/api/v1/admin/health", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setIsAdmin(response.ok);
+      } catch (err) {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [token]);
 
   return (
     <header className="bg-neutral-950 py-4 sticky top-0 shadow mb-8">
@@ -36,7 +61,9 @@ export default function NavBar() {
         {/* Profile-Link ganz rechts */}
         <div className="flex items-center gap-3">
           <Link href="/profile" className="text-blue-400 hover:text-blue-300 transition">Profile</Link>
-          <Link href="/admin" className="text-amber-400 hover:text-amber-300 transition">Admin</Link>
+          {isAdmin && (
+            <Link href="/admin" className="text-amber-400 hover:text-amber-300 transition">Admin</Link>
+          )}
         </div>
       </div>
     </header>
