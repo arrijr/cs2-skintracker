@@ -11,6 +11,7 @@ import portfolioRoutes from "./routes/portfolioRoutes.js";
 import portfolioHistoryRoutes from "./routes/portfolioHistoryRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import healthRoutes from "./routes/healthRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 
@@ -61,6 +62,7 @@ app.use("/api/v1/portfolio", portfolioRoutes);
 app.use("/api/v1/portfolio/history", portfolioHistoryRoutes);
 app.use("/api/v1/transactions", transactionRoutes);
 app.use("/api/v1/health", healthRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 // 404
 app.use((req, res) => {

@@ -18,11 +18,13 @@ model User {
   emailAlerts  Boolean    @default(true)  // Email notification preference
   pushAlerts   Boolean    @default(false) // Push notification preference
   isPremium    Boolean    @default(false)
+  role         String     @default("user") // user, admin
   createdAt    DateTime   @default(now())
   watchlist    Watchlist[]
   portfolio    Portfolio[]
   portfolioHistory PortfolioHistory[]
   transactions Transaction[]
+  auditLogs    AuditLog[]
 }
 
 model Skin {
@@ -90,6 +92,23 @@ model Skin {
   @@index([rarity])
   @@index([wear])
   @@index([priceAvg])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  action    String   // view, create, update, delete
+  resource  String   // admin, portfolio, watchlist, etc.
+  details   String?  // Additional context
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
 }
 
 
