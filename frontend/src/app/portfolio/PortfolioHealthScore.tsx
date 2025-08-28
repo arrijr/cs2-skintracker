@@ -78,16 +78,16 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
     const concentrationRatio = maxConcentration / totalValue;
     
     // Diversification score based on concentration
-    let diversificationScore = 100;
-    if (concentrationRatio > 0.5) diversificationScore = 20;
-    else if (concentrationRatio > 0.4) diversificationScore = 40;
-    else if (concentrationRatio > 0.3) diversificationScore = 60;
-    else if (concentrationRatio > 0.2) diversificationScore = 80;
+    let weaponTypeScore = 100;
+    if (concentrationRatio > 0.5) weaponTypeScore = 20;
+    else if (concentrationRatio > 0.4) weaponTypeScore = 40;
+    else if (concentrationRatio > 0.3) weaponTypeScore = 60;
+    else if (concentrationRatio > 0.2) weaponTypeScore = 80;
 
     metrics.push({
       name: "Weapon Type Diversification",
-      score: diversificationScore,
-      status: diversificationScore >= 80 ? "excellent" : diversificationScore >= 60 ? "good" : diversificationScore >= 40 ? "warning" : "critical",
+      score: weaponTypeScore,
+      status: weaponTypeScore >= 80 ? "excellent" : weaponTypeScore >= 60 ? "good" : weaponTypeScore >= 40 ? "warning" : "critical",
       description: `${(concentrationRatio * 100).toFixed(1)}% in single weapon type`,
       recommendation: concentrationRatio > 0.4 ? "Consider diversifying across weapon types" : "Good diversification maintained",
       weight: 0.3
