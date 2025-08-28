@@ -19,7 +19,9 @@ export default function NavBar() {
 
     const checkAdminStatus = async () => {
       try {
-        const response = await fetch("/api/v1/admin/health", {
+        // Use the correct backend URL
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const response = await fetch(`${backendUrl}/api/v1/admin/health`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setIsAdmin(response.ok);
@@ -53,7 +55,6 @@ export default function NavBar() {
           <div className="w-full max-w-lg">
             <SkinSearchBar
               onSelect={(skinId) => router.push(`/skins/${skinId}`)}
-              className="h-11 text-base px-5 rounded-xl w-full input-main"
             />
           </div>
         </div>
