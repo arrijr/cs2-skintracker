@@ -9,28 +9,54 @@ export default function NavBar() {
   const router = useRouter();
   const { token } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminCheckComplete, setAdminCheckComplete] = useState(false);
 
   // Check if user is admin
   useEffect(() => {
     if (!token) {
       setIsAdmin(false);
+      setAdminCheckComplete(true);
       return;
     }
 
     const checkAdminStatus = async () => {
       try {
+        console.log("🔍 Checking admin status...");
+        console.log("🔑 Token:", token.substring(0, 20) + "...");
+        
         // Use the correct backend URL
         const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        console.log("🌐 Backend URL:", backendUrl);
+        
         const response = await fetch(`${backendUrl}/api/v1/admin/health`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
-        setIsAdmin(response.ok);
+        
+        console.log("📡 Admin check response:", response.status, response.ok);
+        console.log("📋 Response headers:", Object.fromEntries(response.headers.entries()));
+        
+        if (response.ok) {
+          console.log("✅ User is admin - setting isAdmin = true");
+          setIsAdmin(true);
+        } else {
+          console.log("❌ User is not admin - setting isAdmin = false");
+          setIsAdmin(false);
+        }
       } catch (err) {
+        console.error("🚨 Admin check error:", err);
         setIsAdmin(false);
+      } finally {
+        setAdminCheckComplete(true);
+        console.log("🏁 Admin check complete, isAdmin:", isAdmin);
       }
     };
 
-    checkAdminStatus();
+    // Delay check slightly to ensure token is properly set
+    const timer = setTimeout(checkAdminStatus, 500);
+    return () => clearTimeout(timer);
   }, [token]);
 
   return (
@@ -62,8 +88,14 @@ export default function NavBar() {
         {/* Profile-Link ganz rechts */}
         <div className="flex items-center gap-3">
           <Link href="/profile" className="text-blue-400 hover:text-blue-300 transition">Profile</Link>
-          {isAdmin && (
+          {adminCheckComplete && isAdmin && (
             <Link href="/admin" className="text-amber-400 hover:text-amber-300 transition">Admin</Link>
+          )}
+          {/* Debug info - remove in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <span className="text-xs text-gray-500">
+              Admin: {isAdmin ? '✅' : '❌'} ({adminCheckComplete ? 'checked' : 'checking'})
+            </span>
           )}
         </div>
       </div>
