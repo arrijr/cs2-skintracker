@@ -21,50 +21,60 @@ export default function NavBar() {
 
     const checkAdminStatus = async () => {
       try {
-        console.log("🔍 Checking admin status...");
-        console.log("🔑 Token:", token.substring(0, 20) + "...");
+        console.log("🔍 Checking admin status from token...");
         
-        // Use the correct backend URL
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        console.log("🌐 Backend URL:", backendUrl);
-        
-        const response = await fetch(`${backendUrl}/api/v1/admin/health`, {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        console.log("📡 Admin check response:", response.status, response.ok);
-        console.log("📋 Response headers:", Object.fromEntries(response.headers.entries()));
-        
-        if (response.ok) {
-          console.log("✅ User is admin - setting isAdmin = true");
-          setIsAdmin(true);
-        } else if (response.status === 500) {
-          console.log("⚠️ Backend error (500) - trying fallback check...");
+        // Extract role directly from JWT token
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          console.log("🔍 Token payload:", payload);
           
-          // Fallback: Check if user has admin role in token or localStorage
-          try {
-            const tokenData = JSON.parse(atob(token.split('.')[1]));
-            console.log("🔍 Token data:", tokenData);
-            
-            // Check if user has admin role in token
-            if (tokenData.role === 'admin') {
-              console.log("✅ Admin role found in token - setting isAdmin = true");
-              setIsAdmin(true);
-            } else {
-              console.log("❌ No admin role in token - setting isAdmin = false");
-              setIsAdmin(false);
-            }
-          } catch (fallbackErr) {
-            console.error("🚨 Fallback check failed:", fallbackErr);
+          if (payload.role === 'admin') {
+            console.log("✅ Admin role found in token - setting isAdmin = true");
+            setIsAdmin(true);
+          } else {
+            console.log("❌ No admin role in token - setting isAdmin = false");
             setIsAdmin(false);
           }
         } else {
-          console.log("❌ User is not admin - setting isAdmin = false");
-          setIsAdmin(false);
+          console.log("⚠️ Invalid token format - trying API fallback...");
+          
+          // Fallback: Try API call
+          try {
+            const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const response = await fetch(`${backendUrl}/api/v1/admin/health`, {
+              headers: { 
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (response.ok) {
+              console.log("✅ API fallback successful - user is admin");
+              setIsAdmin(true);
+            } else {
+              console.log("❌ API fallback failed - user is not admin");
+              setIsAdmin(false);
+            }
+          } catch (apiError) {
+            console.error("🚨 API fallback error:", apiError);
+            setIsAdmin(false);
+          }
         }
+        
+        // Direct fallback for test user (remove in production)
+        if (process.env.NODE_ENV === 'development') {
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.email === 'test@test.de') {
+              console.log("🔧 Development fallback: test@test.de is admin");
+              setIsAdmin(true);
+            }
+          } catch (e) {
+            // Ignore fallback errors
+          }
+        }
+        
       } catch (err) {
         console.error("🚨 Admin check error:", err);
         setIsAdmin(false);
@@ -74,9 +84,8 @@ export default function NavBar() {
       }
     };
 
-    // Delay check slightly to ensure token is properly set
-    const timer = setTimeout(checkAdminStatus, 500);
-    return () => clearTimeout(timer);
+    // Check immediately without delay
+    checkAdminStatus();
   }, [token]);
 
   return (
