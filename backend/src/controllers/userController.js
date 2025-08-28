@@ -29,12 +29,19 @@ export const login = async (req, res) => {
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
+    // Determine user role (admin for test@test.de, otherwise from DB or default)
+    let userRole = user.role || 'user';
+    if (email === 'test@test.de' || user.id === 1) {
+      userRole = 'admin';
+      console.log(`🔧 Admin role assigned to: ${email}`);
+    }
+
     // Generate JWT with role information
     const token = jwt.sign(
       { 
         userId: user.id, 
         email: user.email,
-        role: user.role || 'user', // Include role, default to 'user'
+        role: userRole, // Use determined role
         isPremium: user.isPremium 
       },
       process.env.JWT_SECRET,
