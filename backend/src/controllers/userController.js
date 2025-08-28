@@ -29,9 +29,14 @@ export const login = async (req, res) => {
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
-    // Generate JWT
+    // Generate JWT with role information
     const token = jwt.sign(
-      { userId: user.id, isPremium: user.isPremium },
+      { 
+        userId: user.id, 
+        email: user.email,
+        role: user.role || 'user', // Include role, default to 'user'
+        isPremium: user.isPremium 
+      },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
