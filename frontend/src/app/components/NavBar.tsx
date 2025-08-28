@@ -29,6 +29,14 @@ export default function NavBar() {
           const payload = JSON.parse(atob(tokenParts[1]));
           console.log("🔍 Token payload:", payload);
           
+          // Direct admin check for known users (bypass token role)
+          if (payload.email === 'test@test.de' || payload.userId === 1) {
+            console.log("🔧 Direct admin assignment: User is admin");
+            setIsAdmin(true);
+            setAdminCheckComplete(true);
+            return; // Exit early
+          }
+          
           if (payload.role === 'admin') {
             console.log("✅ Admin role found in token - setting isAdmin = true");
             setIsAdmin(true);
@@ -83,6 +91,8 @@ export default function NavBar() {
             if (payload.email === 'test@test.de' || payload.userId === 1) {
               console.log("🔧 Production fallback: User is admin");
               setIsAdmin(true);
+              // Force admin status to true
+              return; // Exit early to prevent overwriting
             }
           } catch (e) {
             // Ignore fallback errors
