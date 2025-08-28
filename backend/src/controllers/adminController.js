@@ -196,26 +196,38 @@ export async function getAdminLogs(req, res) {
 // ADM-4: System Health Check
 export async function getAdminHealth(req, res) {
   try {
+    // Basic health check without database queries
     const health = {
-      database: 'healthy',
-      cronJobs: 'running',
-      lastCheck: new Date().toISOString(),
-      uptime: process.uptime()
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      version: '1.0.0'
     };
 
-    // Log admin view
-    await prisma.auditLog.create({
-      data: {
-        userId: req.user.id,
-        action: 'view',
-        resource: 'admin_health',
-        details: 'System health checked'
-      }
-    });
+    // Log admin view (with error handling)
+    try {
+      await prisma.auditLog.create({
+        data: {
+          userId: req.user.id,
+          action: 'view',
+          resource: 'admin_health',
+          details: 'System health checked'
+        }
+      });
+    } catch (auditError) {
+      console.warn('Audit log failed, but continuing:', auditError.message);
+      // Don't fail the entire request if audit logging fails
+    }
 
     res.json(health);
   } catch (error) {
     console.error('Admin health error:', error);
-    res.status(500).json({ error: 'Failed to check system health' });
+    
+    // Return a more graceful error response
+    res.status(500).json({ 
+      error: 'System health check failed',
+      details: process.env.NODE_ENV === 'development' ? error.message : 'Internal error',
+      timestamp: new Date().toISOString()
+    });
   }
 }

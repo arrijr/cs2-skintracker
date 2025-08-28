@@ -14,13 +14,30 @@ export default async function adminAuth(req, res, next) {
     const token = authHeader.substring(7);
     
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (jwtError) {
+      if (jwtError.name === 'JsonWebTokenError') {
+        return res.status(401).json({ error: 'Invalid token' });
+      }
+      if (jwtError.name === 'TokenExpiredError') {
+        return res.status(401).json({ error: 'Token expired' });
+      }
+      throw jwtError;
+    }
     
     // Get user with role
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, email: true, role: true }
-    });
+    let user;
+    try {
+      user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { id: true, email: true, role: true }
+      });
+    } catch (dbError) {
+      console.error('Database error in admin auth:', dbError);
+      return res.status(500).json({ error: 'Database connection failed' });
+    }
 
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
@@ -35,14 +52,12 @@ export default async function adminAuth(req, res, next) {
     req.user = user;
     next();
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Token expired' });
-    }
-    
     console.error('Admin auth error:', error);
-    return res.status(500).json({ error: 'Authentication failed' });
+    
+    // Return a more graceful error response
+    return res.status(500).json({ 
+      error: 'Authentication failed',
+      details: process.env.NODE_ENV === 'development' ? error.message : 'Internal error'
+    });
   }
 }

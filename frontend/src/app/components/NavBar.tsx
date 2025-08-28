@@ -41,6 +41,26 @@ export default function NavBar() {
         if (response.ok) {
           console.log("✅ User is admin - setting isAdmin = true");
           setIsAdmin(true);
+        } else if (response.status === 500) {
+          console.log("⚠️ Backend error (500) - trying fallback check...");
+          
+          // Fallback: Check if user has admin role in token or localStorage
+          try {
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            console.log("🔍 Token data:", tokenData);
+            
+            // Check if user has admin role in token
+            if (tokenData.role === 'admin') {
+              console.log("✅ Admin role found in token - setting isAdmin = true");
+              setIsAdmin(true);
+            } else {
+              console.log("❌ No admin role in token - setting isAdmin = false");
+              setIsAdmin(false);
+            }
+          } catch (fallbackErr) {
+            console.error("🚨 Fallback check failed:", fallbackErr);
+            setIsAdmin(false);
+          }
         } else {
           console.log("❌ User is not admin - setting isAdmin = false");
           setIsAdmin(false);
