@@ -11,51 +11,68 @@ export default function NavBar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminCheckComplete, setAdminCheckComplete] = useState(false);
 
-  // Direct admin check for known users (bypass token issues)
+  // Check if user is admin
   useEffect(() => {
-    // Check if we're in development or if user is known admin
-    const checkDirectAdmin = () => {
-      if (typeof window !== 'undefined') {
-        // Check localStorage for user info
-        const userEmail = localStorage.getItem('userEmail') || 
-                         localStorage.getItem('lastLoginEmail') ||
-                         sessionStorage.getItem('userEmail');
+    if (!token) {
+      setIsAdmin(false);
+      return;
+    }
+
+    const checkAdminStatus = async () => {
+      try {
+        console.log("🔍 Checking admin status from token...");
         
-        if (userEmail === 'test@test.de') {
-          console.log("🔧 Direct localStorage admin check: test@test.de is admin");
-          setIsAdmin(true);
-          setAdminCheckComplete(true);
-          return;
-        }
-        
-        // Check if we can extract email from current token
-        if (token) {
+        // Extract role directly from JWT token
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          console.log("🔍 Token payload:", payload);
+          
+          if (payload.role === 'admin') {
+            console.log("✅ Admin role found in token - setting isAdmin = true");
+            setIsAdmin(true);
+          } else {
+            console.log("❌ No admin role in token - setting isAdmin = false");
+            setIsAdmin(false);
+          }
+        } else {
+          console.log("⚠️ Invalid token format - trying API fallback...");
+          
+          // Fallback: Try API call
           try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            if (payload.email === 'test@test.de' || payload.userId === 1) {
-              console.log("🔧 Direct token admin check: User is admin");
+            const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const response = await fetch(`${backendUrl}/api/v1/admin/health`, {
+              headers: { 
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (response.ok) {
+              console.log("✅ API fallback successful - user is admin");
               setIsAdmin(true);
-              setAdminCheckComplete(true);
-              return;
+            } else {
+              console.log("❌ API fallback failed - user is not admin");
+              setIsAdmin(false);
             }
-          } catch (e) {
-            // Ignore token parsing errors
+          } catch (apiError) {
+            console.error("🚨 API fallback error:", apiError);
+            setIsAdmin(false);
           }
         }
         
-        // Hardcoded admin for test user (remove in production)
-        console.log("🔧 Hardcoded admin check: test@test.de is admin");
-        setIsAdmin(true);
+      } catch (err) {
+        console.error("🚨 Admin check error:", err);
+        setIsAdmin(false);
+      } finally {
         setAdminCheckComplete(true);
-        return;
+        console.log("🏁 Admin check complete, isAdmin:", isAdmin);
       }
-      
-      // If no direct admin found, proceed with normal check
-      setAdminCheckComplete(true);
     };
 
-    checkDirectAdmin();
-  }, []); // Run only once on mount
+    // Check immediately without delay
+    checkAdminStatus();
+  }, [token]);
 
   return (
     <header className="bg-neutral-950 py-4 sticky top-0 shadow mb-8">
