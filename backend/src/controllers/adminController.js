@@ -8,7 +8,7 @@ import { FeatureFlagsService } from "../services/featureFlagsService.js";
 import { BackfillService } from "../services/backfillService.js";
 
 // ADM-1: Overview KPIs
-export async function getAdminOverview(req, res) {
+export const getOverview = async (req, res) => {
   try {
     const [priceUpdateStats, portfolioSnapshotStats, alertStats] = await Promise.all([
       // Last Price Update & Counts
@@ -46,7 +46,7 @@ export async function getAdminOverview(req, res) {
     // Log admin view
     await prisma.auditLog.create({
       data: {
-        userId: req.user.id,
+        adminId: req.user.id,
         action: 'view',
         resource: 'admin_overview',
         details: 'Admin overview accessed'
@@ -58,10 +58,10 @@ export async function getAdminOverview(req, res) {
     console.error('Admin overview error:', error);
     res.status(500).json({ error: 'Failed to load admin overview' });
   }
-}
+};
 
 // ADM-2: Jobs Table
-export async function getAdminJobs(req, res) {
+export const getJobs = async (req, res) => {
   try {
     const { page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
@@ -97,10 +97,10 @@ export async function getAdminJobs(req, res) {
     // Log admin view
     await prisma.auditLog.create({
       data: {
-        userId: req.user.id,
+        adminId: req.user.id,
         action: 'view',
         resource: 'admin_jobs',
-        details: `Jobs accessed - page ${page}`
+        details: 'Admin jobs accessed'
       }
     });
 
@@ -110,132 +110,414 @@ export async function getAdminJobs(req, res) {
         page: parseInt(page),
         limit: parseInt(limit),
         total: totalJobs,
-        pages: Math.ceil(totalJobs / limit)
+        totalPages: Math.ceil(totalJobs / parseInt(limit))
       }
     });
   } catch (error) {
     console.error('Admin jobs error:', error);
     res.status(500).json({ error: 'Failed to load admin jobs' });
   }
-}
+};
 
 // ADM-3: Logs Table
-export async function getAdminLogs(req, res) {
+export const getLogs = async (req, res) => {
   try {
-    const { page = 1, limit = 50, jobName, level, timeframe = '24h' } = req.query;
+    const { page = 1, limit = 20, action, resource } = req.query;
     const offset = (page - 1) * limit;
 
-    // Calculate timeframe
-    const timeFilter = new Date();
-    switch (timeframe) {
-      case '1h': timeFilter.setHours(timeFilter.getHours() - 1); break;
-      case '6h': timeFilter.setHours(timeFilter.getHours() - 6); break;
-      case '24h': timeFilter.setHours(timeFilter.getHours() - 24); break;
-      case '7d': timeFilter.setDate(timeFilter.getDate() - 7); break;
-      default: timeFilter.setHours(timeFilter.getHours() - 24);
-    }
+    // Build where clause
+    const whereClause = {};
+    if (action) whereClause.action = action;
+    if (resource) whereClause.resource = resource;
 
-    // Get audit logs (safe, no secrets)
-    const whereClause = {
-      createdAt: { gte: timeFilter }
-    };
-
-    if (jobName) {
-      whereClause.resource = { contains: jobName, mode: 'insensitive' };
-    }
-
-    if (level) {
-      whereClause.action = level;
-    }
-
-    const [logs, totalLogs] = await Promise.all([
-      prisma.auditLog.findMany({
-        where: whereClause,
-        orderBy: { createdAt: 'desc' },
-        skip: offset,
-        take: parseInt(limit),
-        select: {
-          id: true,
-          action: true,
-          resource: true,
-          details: true,
-          createdAt: true,
-          user: {
-            select: {
-              email: true
-            }
-          }
+    // Get audit logs
+    const logs = await prisma.auditLog.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' },
+      skip: offset,
+      take: parseInt(limit),
+      include: {
+        admin: {
+          select: { email: true }
         }
-      }),
-      prisma.auditLog.count({ where: whereClause })
-    ]);
+      }
+    });
+
+    // Get total count
+    const total = await prisma.auditLog.count({ where: whereClause });
 
     // Log admin view
     await prisma.auditLog.create({
       data: {
-        userId: req.user.id,
+        adminId: req.user.id,
         action: 'view',
         resource: 'admin_logs',
-        details: `Logs accessed - page ${page}, filters: ${jobName || 'none'}, ${level || 'none'}, ${timeframe}`
+        details: 'Admin logs accessed'
       }
     });
 
     res.json({
-      logs: logs.map(log => ({
-        ...log,
-        details: log.details ? log.details.substring(0, 200) + (log.details.length > 200 ? '...' : '') : null
-      })),
+      logs,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total: totalLogs,
-        pages: Math.ceil(totalLogs / limit)
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
       }
     });
   } catch (error) {
     console.error('Admin logs error:', error);
     res.status(500).json({ error: 'Failed to load admin logs' });
   }
-}
+};
 
-// ADM-4: System Health Check
-export async function getAdminHealth(req, res) {
+// ADM-5: Job Management (safe controls) - Phase 2
+export const getJobStatus = async (req, res) => {
   try {
-    // Basic health check without database queries
-    const health = {
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      version: '1.0.0'
-    };
+    const adminId = req.user.id;
+    
+    // Check if any job is running
+    const isRunning = await JobService.isAnyJobRunning();
+    
+    // Get recent job runs for this admin
+    const recentRuns = await JobService.getRecentJobRuns(adminId, 10);
+    
+    res.json({
+      isRunning,
+      recentRuns,
+      rateLimitMinutes: 10
+    });
+  } catch (error) {
+    console.error('Error getting job status:', error);
+    res.status(500).json({ error: 'Failed to get job status' });
+  }
+};
 
-    // Log admin view (with error handling)
-    try {
+export const runSkinPriceUpdate = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const { take = 50, category, rarity, ids, dryRun = true } = req.body;
+    
+    // Check rate limiting
+    if (!await JobService.canRunJob('updateSkinPrices', adminId)) {
+      return res.status(429).json({ 
+        error: 'Rate limit exceeded. Please wait before running this job again.' 
+      });
+    }
+    
+    // Check if any job is running
+    if (await JobService.isAnyJobRunning()) {
+      return res.status(409).json({ 
+        error: 'Another job is currently running. Please wait.' 
+      });
+    }
+    
+    // Check production safety
+    if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_ADMIN_WRITES_IN_PROD) {
+      return res.status(403).json({ 
+        error: 'Manual job execution is disabled in production for safety.' 
+      });
+    }
+    
+    const parameters = { take, category, rarity, ids };
+    
+    if (dryRun) {
+      // Dry run - just count what would happen
+      const result = await SkinPriceUpdateJob.dryRun(parameters);
+      
+      // Create job run record for audit
+      const jobRun = await JobService.createJobRun(
+        'updateSkinPrices',
+        parameters,
+        true,
+        adminId,
+        result.message
+      );
+      
+      // Log admin action
       await prisma.auditLog.create({
         data: {
-          userId: req.user.id,
-          action: 'view',
-          resource: 'admin_health',
-          details: 'System health checked'
+          adminId,
+          action: 'job_dry_run',
+          resource: 'skin_prices',
+          details: `Dry run: ${result.message}`,
+          parameters: JSON.stringify(parameters)
         }
       });
-    } catch (auditError) {
-      console.warn('Audit log failed, but continuing:', auditError.message);
-      // Don't fail the entire request if audit logging fails
+      
+      res.json({
+        success: true,
+        dryRun: true,
+        jobRunId: jobRun.id,
+        ...result
+      });
+      
+    } else {
+      // Real execution
+      const estimatedImpact = await SkinPriceUpdateJob.dryRun(parameters);
+      
+      // Create job run record
+      const jobRun = await JobService.createJobRun(
+        'updateSkinPrices',
+        parameters,
+        false,
+        adminId,
+        estimatedImpact.message
+      );
+      
+      // Log admin action
+      await prisma.auditLog.create({
+        data: {
+          adminId,
+          action: 'job_execute',
+          resource: 'skin_prices',
+          details: `Started skin price update: ${estimatedImpact.message}`,
+          parameters: JSON.stringify(parameters)
+        }
+      });
+      
+      // Execute job asynchronously
+      SkinPriceUpdateJob.execute(jobRun.id, parameters).catch(async (error) => {
+        console.error('Skin price update job failed:', error);
+        await JobService.updateJobRun(jobRun.id, 'failed', null, error.message);
+      });
+      
+      res.json({
+        success: true,
+        dryRun: false,
+        jobRunId: jobRun.id,
+        message: 'Job started successfully',
+        estimatedImpact: estimatedImpact.message
+      });
     }
-
-    res.json(health);
-  } catch (error) {
-    console.error('Admin health error:', error);
     
-    // Return a more graceful error response
-    res.status(500).json({ 
-      error: 'System health check failed',
-      details: process.env.NODE_ENV === 'development' ? error.message : 'Internal error',
-      timestamp: new Date().toISOString()
-    });
+  } catch (error) {
+    console.error('Error running skin price update:', error);
+    res.status(500).json({ error: 'Failed to run skin price update' });
   }
-}
+};
+
+export const runPortfolioSnapshot = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const { userId, batchSize = 100, dryRun = true } = req.body;
+    
+    // Check rate limiting
+    if (!await JobService.canRunJob('rebuildSnapshots', adminId)) {
+      return res.status(429).json({ 
+        error: 'Rate limit exceeded. Please wait before running this job again.' 
+      });
+    }
+    
+    // Check if any job is running
+    if (await JobService.isAnyJobRunning()) {
+      return res.status(409).json({ 
+        error: 'Another job is currently running. Please wait.' 
+      });
+    }
+    
+    // Check production safety
+    if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_ADMIN_WRITES_IN_PROD) {
+      return res.status(403).json({ 
+        error: 'Manual job execution is disabled in production for safety.' 
+      });
+    }
+    
+    const parameters = { userId, batchSize };
+    
+    if (dryRun) {
+      // Dry run
+      const result = await PortfolioSnapshotJob.dryRun(parameters);
+      
+      const jobRun = await JobService.createJobRun(
+        'rebuildSnapshots',
+        parameters,
+        true,
+        adminId,
+        result.message
+      );
+      
+      await prisma.auditLog.create({
+        data: {
+          adminId,
+          action: 'job_dry_run',
+          resource: 'portfolio_snapshots',
+          details: `Dry run: ${result.message}`,
+          parameters: JSON.stringify(parameters)
+        }
+      });
+      
+      res.json({
+        success: true,
+        dryRun: true,
+        jobRunId: jobRun.id,
+        ...result
+      });
+      
+    } else {
+      // Real execution
+      const estimatedImpact = await PortfolioSnapshotJob.dryRun(parameters);
+      
+      const jobRun = await JobService.createJobRun(
+        'rebuildSnapshots',
+        parameters,
+        false,
+        adminId,
+        estimatedImpact.message
+      );
+      
+      await prisma.auditLog.create({
+        data: {
+          adminId,
+          action: 'job_execute',
+          resource: 'portfolio_snapshots',
+          details: `Started portfolio snapshot rebuild: ${estimatedImpact.message}`,
+          parameters: JSON.stringify(parameters)
+        }
+      });
+      
+      PortfolioSnapshotJob.execute(jobRun.id, parameters).catch(async (error) => {
+        console.error('Portfolio snapshot job failed:', error);
+        await JobService.updateJobRun(jobRun.id, 'failed', null, error.message);
+      });
+      
+      res.json({
+        success: true,
+        dryRun: false,
+        jobRunId: jobRun.id,
+        message: 'Job started successfully',
+        estimatedImpact: estimatedImpact.message
+      });
+    }
+    
+  } catch (error) {
+    console.error('Error running portfolio snapshot:', error);
+    res.status(500).json({ error: 'Failed to run portfolio snapshot' });
+  }
+};
+
+export const runAlertCheck = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const { limit = 100, optInOnly = true, dryRun = true } = req.body;
+    
+    // Check rate limiting
+    if (!await JobService.canRunJob('alertCheck', adminId)) {
+      return res.status(429).json({ 
+        error: 'Rate limit exceeded. Please wait before running this job again.' 
+      });
+    }
+    
+    // Check if any job is running
+    if (await JobService.isAnyJobRunning()) {
+      return res.status(409).json({ 
+        error: 'Another job is currently running. Please wait.' 
+      });
+    }
+    
+    // Check production safety
+    if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_ADMIN_WRITES_IN_PROD) {
+      return res.status(403).json({ 
+        error: 'Manual job execution is disabled in production for safety.' 
+      });
+    }
+    
+    const parameters = { limit, optInOnly };
+    
+    if (dryRun) {
+      // Dry run
+      const result = await AlertCheckJob.dryRun(parameters);
+      
+      const jobRun = await JobService.createJobRun(
+        'alertCheck',
+        parameters,
+        true,
+        adminId,
+        result.message
+      );
+      
+      await prisma.auditLog.create({
+        data: {
+          adminId,
+          action: 'job_dry_run',
+          resource: 'price_alerts',
+          details: `Dry run: ${result.message}`,
+          parameters: JSON.stringify(parameters)
+        }
+      });
+      
+      res.json({
+        success: true,
+        dryRun: true,
+        jobRunId: jobRun.id,
+        ...result
+      });
+      
+    } else {
+      // Real execution
+      const estimatedImpact = await AlertCheckJob.dryRun(parameters);
+      
+      const jobRun = await JobService.createJobRun(
+        'alertCheck',
+        parameters,
+        false,
+        adminId,
+        estimatedImpact.message
+      );
+      
+      await prisma.auditLog.create({
+        data: {
+          adminId,
+          action: 'job_execute',
+          resource: 'price_alerts',
+          details: `Started alert check: ${estimatedImpact.message}`,
+          parameters: JSON.stringify(parameters)
+        }
+      });
+      
+      AlertCheckJob.execute(jobRun.id, parameters).catch(async (error) => {
+        console.error('Alert check job failed:', error);
+        await JobService.updateJobRun(jobRun.id, 'failed', null, error.message);
+      });
+      
+      res.json({
+        success: true,
+        dryRun: false,
+        jobRunId: jobRun.id,
+        message: 'Job started successfully',
+        estimatedImpact: estimatedImpact.message
+      });
+    }
+    
+  } catch (error) {
+    console.error('Error running alert check:', error);
+    res.status(500).json({ error: 'Failed to run alert check' });
+  }
+};
+
+export const getJobRun = async (req, res) => {
+  try {
+    const { jobRunId } = req.params;
+    const adminId = req.user.id;
+    
+    const jobRun = await JobService.getJobRun(jobRunId);
+    
+    if (!jobRun) {
+      return res.status(404).json({ error: 'Job run not found' });
+    }
+    
+    // Only allow admins to see their own job runs
+    if (jobRun.adminId !== adminId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    res.json(jobRun);
+    
+  } catch (error) {
+    console.error('Error getting job run:', error);
+    res.status(500).json({ error: 'Failed to get job run' });
+  }
+};
 
 // ADM-9: Coverage Explorer
 export const getCoverageOverview = async (req, res) => {
