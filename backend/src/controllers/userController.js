@@ -41,7 +41,7 @@ export const login = async (req, res) => {
       { 
         userId: user.id, 
         email: user.email,
-        role: userRole, // Use determined role
+        role: user.role, // Use determined role
         isPremium: user.isPremium 
       },
       process.env.JWT_SECRET,
