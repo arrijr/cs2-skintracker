@@ -82,6 +82,15 @@ router.post('/data-quality/run-checks', runDataQualityChecks);
 // ADM-12: Metrics Definitions - Phase 3
 router.get('/metrics/definitions', getMetricsDefinitions);
 
+// ADM-4: System Health Check (Frontend compatibility)
+router.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    admin: true 
+  });
+});
+
 // ADM-13: User Management - Phase 4
 router.get('/users', getUsers);
 router.get('/users/search', searchUsers);
