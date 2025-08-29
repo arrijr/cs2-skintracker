@@ -1,6 +1,8 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../prisma/prismaClient.js";
+import { JobService, SkinPriceUpdateJob, PortfolioSnapshotJob, AlertCheckJob } from "../services/jobService.js";
+import { CoverageService } from "../services/coverageService.js";
+import { APIHealthService } from "../services/apiHealthService.js";
+import { DataQualityService } from "../services/dataQualityService.js";
 
 // ADM-1: Overview KPIs
 export async function getAdminOverview(req, res) {
@@ -231,3 +233,180 @@ export async function getAdminHealth(req, res) {
     });
   }
 }
+
+// ADM-9: Coverage Explorer
+export const getCoverageOverview = async (req, res) => {
+  try {
+    const overallCoverage = await CoverageService.getOverallCoverage();
+    res.json(overallCoverage);
+  } catch (error) {
+    console.error('Error getting coverage overview:', error);
+    res.status(500).json({ error: 'Failed to get coverage overview' });
+  }
+};
+
+export const getCoverageBySegment = async (req, res) => {
+  try {
+    const { segmentType = 'weaponType', page = 1, limit = 20 } = req.query;
+    const coverage = await CoverageService.getCoverageBySegment(
+      segmentType, 
+      parseInt(page), 
+      parseInt(limit)
+    );
+    res.json(coverage);
+  } catch (error) {
+    console.error('Error getting coverage by segment:', error);
+    res.status(500).json({ error: 'Failed to get coverage by segment' });
+  }
+};
+
+export const getTopMissingSkins = async (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
+    const missingSkins = await CoverageService.getTopMissingSkins(parseInt(limit));
+    res.json(missingSkins);
+  } catch (error) {
+    console.error('Error getting top missing skins:', error);
+    res.status(500).json({ error: 'Failed to get top missing skins' });
+  }
+};
+
+export const getSkinsForSegment = async (req, res) => {
+  try {
+    const { segmentType, segmentValue, page = 1, limit = 20 } = req.query;
+    const skins = await CoverageService.getSkinsForSegment(
+      segmentType,
+      segmentValue,
+      parseInt(page),
+      parseInt(limit)
+    );
+    res.json(skins);
+  } catch (error) {
+    console.error('Error getting skins for segment:', error);
+    res.status(500).json({ error: 'Failed to get skins for segment' });
+  }
+};
+
+// ADM-10: API Health
+export const getAPIHealth24h = async (req, res) => {
+  try {
+    const metrics = await APIHealthService.get24HourMetrics();
+    res.json(metrics);
+  } catch (error) {
+    console.error('Error getting 24h API health:', error);
+    res.status(500).json({ error: 'Failed to get 24h API health' });
+  }
+};
+
+export const getAPIHealth7d = async (req, res) => {
+  try {
+    const metrics = await APIHealthService.get7DayMetrics();
+    res.json(metrics);
+  } catch (error) {
+    console.error('Error getting 7d API health:', error);
+    res.status(500).json({ error: 'Failed to get 7d API health' });
+  }
+};
+
+export const getAPIHealthTimeSeries = async (req, res) => {
+  try {
+    const timeSeries = await APIHealthService.get24HourTimeSeries();
+    res.json(timeSeries);
+  } catch (error) {
+    console.error('Error getting API health time series:', error);
+    res.status(500).json({ error: 'Failed to get API health time series' });
+  }
+};
+
+export const getAPIHealthJobRuns = async (req, res) => {
+  try {
+    const { limit = 20 } = req.query;
+    const jobRuns = await APIHealthService.getLatestJobRuns(parseInt(limit));
+    res.json(jobRuns);
+  } catch (error) {
+    console.error('Error getting API health job runs:', error);
+    res.status(500).json({ error: 'Failed to get API health job runs' });
+  }
+};
+
+// ADM-11: Data Quality Alerts
+export const getDataQualityAlerts = async (req, res) => {
+  try {
+    const { rule, status, segment, priority, page = 1, limit = 20 } = req.query;
+    const filters = { rule, status, segment, priority };
+    
+    const alerts = await DataQualityService.getAlerts(filters, parseInt(page), parseInt(limit));
+    res.json(alerts);
+  } catch (error) {
+    console.error('Error getting data quality alerts:', error);
+    res.status(500).json({ error: 'Failed to get data quality alerts' });
+  }
+};
+
+export const runDataQualityChecks = async (req, res) => {
+  try {
+    const alerts = await DataQualityService.runAllChecks();
+    res.json({
+      success: true,
+      message: `Found ${alerts.length} data quality issues`,
+      alerts: alerts.slice(0, 10) // Return first 10 for preview
+    });
+  } catch (error) {
+    console.error('Error running data quality checks:', error);
+    res.status(500).json({ error: 'Failed to run data quality checks' });
+  }
+};
+
+// ADM-12: Metrics Definitions
+export const getMetricsDefinitions = async (req, res) => {
+  try {
+    const definitions = {
+      priceCoverage: {
+        name: 'Price Coverage %',
+        definition: 'Skins with a valid priceAvg updated in last 7 days / total Skins',
+        calculation: 'recent_prices / total_skins * 100',
+        unit: 'percentage'
+      },
+      stalePercentage: {
+        name: 'Stale %',
+        definition: 'Skins with last price update > 48 hours',
+        calculation: 'skins_older_than_48h / total_skins * 100',
+        unit: 'percentage'
+      },
+      successRate: {
+        name: 'Success Rate %',
+        definition: 'Successful API requests / total requests (excludes 429 rate limits)',
+        calculation: 'successful_requests / total_requests * 100',
+        unit: 'percentage'
+      },
+      p50Latency: {
+        name: 'P50 Latency',
+        definition: '50th percentile of API response times',
+        calculation: 'median(response_times)',
+        unit: 'milliseconds'
+      },
+      p95Latency: {
+        name: 'P95 Latency',
+        definition: '95th percentile of API response times',
+        calculation: '95th_percentile(response_times)',
+        unit: 'milliseconds'
+      },
+      alertThroughput: {
+        name: 'Alert Throughput',
+        definition: 'Number of price alerts checked/sent/skipped in timeframe',
+        calculation: 'alerts_processed / time_period',
+        unit: 'alerts per hour'
+      }
+    };
+    
+    res.json({
+      definitions,
+      lastUpdated: new Date().toISOString(),
+      version: '1.0.0'
+    });
+    
+  } catch (error) {
+    console.error('Error getting metrics definitions:', error);
+    res.status(500).json({ error: 'Failed to get metrics definitions' });
+  }
+};

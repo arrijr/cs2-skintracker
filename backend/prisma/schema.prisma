@@ -25,6 +25,7 @@ model User {
   portfolioHistory PortfolioHistory[]
   transactions Transaction[]
   auditLogs    AuditLog[]
+  jobRuns      JobRun[]
 }
 
 model Skin {
@@ -171,4 +172,29 @@ model Transaction {
 enum TransactionType {
   BUY
   SELL
+}
+
+model JobRun {
+  id          String   @id @default(cuid())
+  jobName     String   // e.g., "updateSkinPrices", "rebuildSnapshots"
+  status      String   // "queued", "running", "done", "failed"
+  parameters  Json     // job parameters as JSON
+  dryRun      Boolean  @default(true)
+  estimatedImpact String? // e.g., "~50 price writes"
+  actualCount Int?     // actual records processed
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  error       String?  // error message if failed
+  adminId     Int      // who triggered the job
+  admin       User     @relation(fields: [adminId], references: [id])
+  
+  // Rate limiting
+  rateLimitKey String  // for rate limiting (jobName + adminId)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([jobName, status])
+  @@index([adminId])
+  @@index([rateLimitKey])
 }
