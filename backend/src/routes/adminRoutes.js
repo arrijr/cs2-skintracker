@@ -21,7 +21,25 @@ import {
   getAPIHealthJobRuns,
   getDataQualityAlerts,
   runDataQualityChecks,
-  getMetricsDefinitions
+  getMetricsDefinitions,
+  // Phase 4: Advanced Features
+  getUsers,
+  getUserDetails,
+  getUserActivity,
+  updateUserStatus,
+  updateUserEmailAlerts,
+  getUserStatistics,
+  searchUsers,
+  getAllFeatureFlags,
+  getFeatureFlag,
+  updateFeatureFlag,
+  getFeatureFlagsSummary,
+  validateFeatureFlags,
+  getFeatureRolloutStatus,
+  getDataGapsAnalysis,
+  getPrioritizedBackfillTasks,
+  executeBackfillTask,
+  getBackfillHistory
 } from '../controllers/adminController.js';
 
 const router = express.Router();
@@ -63,5 +81,28 @@ router.post('/data-quality/run-checks', runDataQualityChecks);
 
 // ADM-12: Metrics Definitions - Phase 3
 router.get('/metrics/definitions', getMetricsDefinitions);
+
+// ADM-13: User Management - Phase 4
+router.get('/users', getUsers);
+router.get('/users/search', searchUsers);
+router.get('/users/:userId', getUserDetails);
+router.get('/users/:userId/activity', getUserActivity);
+router.put('/users/:userId/status', updateUserStatus);
+router.put('/users/:userId/email-alerts', updateUserEmailAlerts);
+router.get('/users/stats/overview', getUserStatistics);
+
+// ADM-14: Feature Flags Management - Phase 4
+router.get('/feature-flags', getAllFeatureFlags);
+router.get('/feature-flags/summary', getFeatureFlagsSummary);
+router.get('/feature-flags/validate', validateFeatureFlags);
+router.get('/feature-flags/rollout-status', getFeatureRolloutStatus);
+router.get('/feature-flags/:flagKey', getFeatureFlag);
+router.put('/feature-flags/:flagKey', updateFeatureFlag);
+
+// ADM-15: Backfill Tools - Phase 4
+router.get('/backfill/gaps-analysis', getDataGapsAnalysis);
+router.get('/backfill/prioritized-tasks', getPrioritizedBackfillTasks);
+router.post('/backfill/execute/:taskId', executeBackfillTask);
+router.get('/backfill/history', getBackfillHistory);
 
 export default router;
