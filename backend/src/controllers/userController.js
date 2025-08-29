@@ -36,12 +36,13 @@ export const login = async (req, res) => {
       console.log(`🔧 Admin role assigned to: ${email}`);
     }
 
+    // {/* FIX: ensure determined role goes into JWT and response */}
     // Generate JWT with role information
     const token = jwt.sign(
       { 
         userId: user.id, 
         email: user.email,
-        role: user.role, // Use determined role
+        role: userRole,          // <-- WICHTIG: die berechnete Rolle verwenden!
         isPremium: user.isPremium 
       },
       process.env.JWT_SECRET,
@@ -51,7 +52,14 @@ export const login = async (req, res) => {
     // Return user without passwordHash
     const { passwordHash, ...safeUser } = user;
 
-    res.json({ token, user: safeUser });
+    // {/* include effective role in response */}
+    res.json({ 
+      token, 
+      user: { 
+        ...safeUser, 
+        role: userRole          // <-- ebenfalls zurückgeben
+      } 
+    });
   } catch (err) {
     res.status(500).json({ error: 'Login failed' });
   }
@@ -74,6 +82,7 @@ export const getProfile = async (req, res) => {
     const userId = req.user.userId;
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      // {/* Include role (and isPremium) in profile response */}
       select: {
         id: true,
         email: true,
@@ -81,7 +90,9 @@ export const getProfile = async (req, res) => {
         timezone: true,
         emailAlerts: true,
         pushAlerts: true,
-        createdAt: true
+        createdAt: true,
+        role: true,        // <-- hinzugefügt
+        isPremium: true    // <-- optional hilfreich fürs FE
       }
     });
     
