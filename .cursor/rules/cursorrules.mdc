@@ -40,28 +40,87 @@ Logging
 
 ---
 
-# Documentation Workflow (immer anwenden)
-
+Documentation Workflow (immer anwenden)
 - Bei **jedem Feature/Refactor/Bugfix**:
-  1) Prüfe/aktualisiere **/docs/CHANGELOG.md** (Eintrag mit Datum, Scope, Files).
-  2) Aktualisiere **/docs/ARCHITECTURE.md** falls sich Flows/Schichten/Abhängigkeiten ändern (Mermaid-Diagramme nutzen).
-  3) Aktualisiere **/docs/API.md** wenn Endpoints, DTOs, Fehlercodes ändern.
-  4) Aktualisiere **/docs/DATA_MODEL.md** wenn Prisma/DB-Felder, Constraints oder Relations sich ändern.
-  5) Wenn eine wichtige Entscheidung getroffen wurde: **/docs/DECISIONS.md** (ADR-Format).
-  6) Falls ein wiederkehrender Fehler: **/docs/TROUBLESHOOTING.md** Abschnitt ergänzen (Symptom → Ursache → Fix → Prävention).
+  1) Prüfe/aktualisiere **/docs/CHANGELOG.md** (Datum, Scope, Files).
+  2) Aktualisiere **/docs/ARCHITECTURE.md**, wenn Flows/Schichten/Abhängigkeiten sich ändern (Mermaid nutzen).
+  3) Aktualisiere **/docs/API.md**, wenn Endpoints, DTOs, Fehlercodes ändern.
+  4) Aktualisiere **/docs/DATA_MODEL.md**, wenn Prisma/DB-Felder, Constraints oder Relationen sich ändern.
+  5) Wichtige Entscheidung? Ergänze **/docs/DECISIONS.md** (ADR).
+  6) Wiederkehrender Fehler? Ergänze **/docs/TROUBLESHOOTING.md** (Symptom → Ursache → Fix → Prävention).
 
-- **Problem-Solving-Modus (THINK Notes):**
-  - Wenn ein Thema knifflig ist: Erstelle eine Datei unter **/docs/think/YYYY-MM-DD-<slug>.md** mit:
-    - _Context_, _Logs/Symptome_, _Hypothesen_, _Analyse_, _Decision_, _Checklist_, _Follow-ups_.
-  - Denke schriftlich dort – Ergebnis kurz in PR zusammenfassen.
+- Problem-Solving-Modus (THINK Notes):
+  - Bei kniffligen Themen erstelle **/docs/think/YYYY-MM-DD-<slug>.md** mit:
+    _Context_, _Logs/Symptome_, _Hypothesen_, _Analyse_, _Decision_, _Checklist_, _Follow-ups_.
+  - Denke dort schriftlich. Ergebnis in der PR kurz zusammenfassen.
 
-- **Nach jedem Merge auf main:** Stelle sicher, dass Doku im Repo **aktuell & kohärent** ist. Keine „TODO“-Reste in Kern-Dokus.
+- Nach jedem Merge auf main: Doku **aktuell & kohärent** halten. Keine „TODO“-Reste in Kerndokumenten.
+- Keine Secrets in Doku. Neue ENV-Keys stets in README + /docs/API.md dokumentieren.
+- Commits/PRs:
+  - Nutze `docs:` Scope, wenn Doku geändert wurde.
+  - PR muss die Checkbox „Docs updated“ anhaken (PR-Template).
 
-- **Code-Kommentare:** Wie gehabt in TSX:
-  `{/* <kurzer Kontext-Kommentar> */}` vor jedem Snippet, das du ausgibst.
+---
 
-- **Keine Secrets** in Doku. Neue ENV-Keys stets in README + /docs/API.md dokumentieren.
+Documentation Style & Locations (strict)
+- **Markdown only**. **Keine** PDFs/DOCX im Repo.
+- **Style:** Setext headings + `*`-Listen.
+  - H1: `Title` + `====`
+  - H2: `Subtitle` + `----`
+  - Bullets: `* `; Nummern: `1. `
+  - Codeblocks: fenced ``` with language (e.g., ```ts, ```bash).
+- **Language:** English in docs; keep currency `$`.
+- **Links:** Relative repo links only.
+- **Line width:** Prefer <= 100 chars; wrap thoughtfully.
+- **No emojis** in core docs (allowed in README marketing sections).
+- **Files & places:**
+  - Main index: `/docs/README.md`
+  - Architecture: `/docs/ARCHITECTURE.md` (with Mermaid diagrams)
+  - API: `/docs/API.md`
+  - Data model: `/docs/DATA_MODEL.md`
+  - Decisions (ADR): `/docs/DECISIONS.md`
+  - Troubleshooting: `/docs/TROUBLESHOOTING.md`
+  - Feature docs: `/docs/features/<feature>.md` (e.g., `enhanced-skins-filters.md`, `skin-filtering-system.md`)
+  - Deep dives: `/docs/think/YYYY-MM-DD-<slug>.md`
+  - Archive (old drafts): `/docs/archive/`
 
-- **Commits/PRs**:
-  - Nutze Conventional Commits mit **docs:** Scope, wenn Doku geändert wurde.
-  - PR muss die Checkbox „Docs updated“ anhaken (siehe PR-Template).
+Documentation Triggers (what to update when)
+- **New/changed endpoint** → update `/docs/API.md`:
+  - Method, path, auth, params, request/response examples, error cases.
+- **Prisma/schema change** → update `/docs/DATA_MODEL.md` + `/docs/CHANGELOG.md`.
+- **New cron, background job, or data flow** → update `/docs/ARCHITECTURE.md` (include a Mermaid flow).
+- **New feature flag or ENV** → update `/docs/DECISIONS.md` (why), `/docs/API.md` (if public), and README env section.
+- **Recurring or notable bug** → add entry in `/docs/TROUBLESHOOTING.md`.
+- **New feature** → add/extend doc under `/docs/features/`.
+
+Mermaid Diagram Conventions
+- Use Mermaid fenced blocks:
+  ```mermaid
+  flowchart LR
+    User --> FE[Next.js App]
+    FE -->|REST| BE[Express API]
+    BE --> DB[(PostgreSQL)]
+    BE --> CRON[[Cron]]
+Keep diagrams minimal, one purpose per diagram.
+
+Docs Quality Checklist (apply before finishing a task)
+
+ CHANGELOG updated
+
+ Related docs updated (ARCHITECTURE/API/DATA_MODEL/DECISIONS/TROUBLESHOOTING)
+
+ Feature doc created/updated under /docs/features/ if applicable
+
+ New ENV documented in README + /docs/API.md
+
+ Examples compile (requests/responses), code fences use correct language
+
+ Setext headings + * bullets used consistently
+
+Cursor Output Rules (docs & code)
+
+For code output: include file path and [Frontend]/[Backend] tag; add a clear TSX block comment above UI snippets.
+
+For docs output: write in Markdown with Setext headings and * list style as above. If a doc is missing, create it in the specified path.
+
+After making code changes in a response, propose the necessary doc edits inline (as copy-pastable Markdown) and reference the correct /docs/... target file.

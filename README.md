@@ -1,44 +1,86 @@
-## Enhanced Skins Filters (Feature Flag)
+CS2 Skin Price Tracker
+Modern web app to monitor and analyze CS2 skin prices with Watchlist, Price Alerts, Portfolio, and price
+history.
+- **Frontend:** Next.js (App Router, TypeScript), Tailwind
+- **Backend:** Node.js, Express, Prisma (PostgreSQL), Cron jobs
+- **Auth:** JWT (email + password)
+- **App language:** English · **Currency:** $
 
-### Overview
-Additive UX improvements for the CS2 Skins Browse page, controlled by feature flag `SKINS_FILTERS_ENHANCED`.
+Features (MVP)
+- Email/password registration & login (JWT)
+- Skin search (Steam Market hash names, autocomplete)
+- Watchlist (free: up to 5 items)
+- One price alert per user (email/push prepared)
+- Skin detail with 30-day price chart (stored history)
+- Portfolio overview (positions, P/L, history)
+- Responsive UI (mobile & desktop)
+Planned (Premium / upcoming):
+- Larger watchlist & multiple alerts
+- Year charts, portfolio comparison, export (CSV/Excel)
+- Steam login & inventory import (later)
+- Multi-market support (later)
 
-### Features
-- **Debounced Search**: 300ms delay for search input (prevents excessive API calls)
-- **Race Condition Protection**: Aborts stale requests, prevents mixed results
-- **Filter Presets**: Quick access to common filter combinations
-- **Copy Link**: Share current filter state via URL
-- **Enhanced Empty State**: Helpful suggestions when no results found
-- **Request Tracking**: Debug counters for development (hidden in production)
+Repo Structure
+/frontend # Next.js app
+/backend # Express API, Prisma, Cron
+/docs # Architecture, API, data model, features, troubleshooting, ADRs
 
-### Configuration
-```bash
-# Enable enhanced filters
-NEXT_PUBLIC_SKINS_FILTERS_ENHANCED=true
+Quick Start
 
-# Disable (default)
-NEXT_PUBLIC_SKINS_FILTERS_ENHANCED=false
-```
+Backend
+cd backend
+npm install
+npx prisma migrate dev --name init
+npm run dev
+**Backend .env**
+DATABASE_URL="postgresql://postgres:@localhost:5432/cs2skindb?schema=public"
+JWT_SECRET="your_secret"
 
-### Backward Compatibility
-- All existing URLs work identically
-- No changes to API parameters or backend logic
-- Feature flag OFF = original behavior
-- Feature flag ON = enhanced UX
+Optional scheduler flags in staging:
+RUN_SCHEDULER=false
 
-### Testing Matrix
-- [ ] Search: `q=bayonet` → plausible results
-- [ ] Price filters: `min=100&max=200` → correct filtering
-- [ ] Boolean filters: `stattrak=true` → correct results
-- [ ] Sort options: all sort types work unchanged
-- [ ] Pagination: page 2/3 → filter change resets to page 1
-- [ ] URL reload: parameters restore exact UI state
-- [ ] No results: empty state + suggestion buttons
-- [ ] Edge cases: `min > max` → graceful handling
-- [ ] Performance: rapid input changes → no flickering
+Frontend
+cd frontend
+npm install
+npm run dev
+Access http://localhost:3000
 
-### Rollout
-1. **Preview**: Flag ON for testing
-2. **Production**: Flag OFF initially
-3. **Canary**: Gradual rollout with flag
-4. **Rollback**: Flag OFF → immediate fallback to original behavior
+**Frontend config**
+- Read API base from env (`NEXT_PUBLIC_API_URL`) or dev proxy.
+
+API (short overview)
+- POST /api/v1/users/register → register { email, password }
+- POST /api/v1/users/login → returns { token, user }
+- GET /api/v1/users/profile → current user (JWT)
+- GET /api/v1/skins / GET /api/v1/skins/search?query=...
+- GET|POST|PATCH|DELETE /api/v1/watchlist[/:skinId]
+- GET|POST|DELETE /api/v1/portfolio[/:id]
+- GET /api/v1/portfolio/history
+See /docs/API.md for complete contracts, errors and examples.
+
+Data Model (high level)
+- **User**: id, email (unique), passwordHash, role (`user|admin`), isPremium (bool), createdAt
+- **Skin**: id, name, marketHashName (unique), imageUrl, priceHistory[]
+- **Watchlist**: id, userId, skinId, priceAlert?
+- **Portfolio**: id, userId, skinId, amount, buyPrice, buyDate
+- **PriceHistory**: id, skinId, date, price
+Details: /docs/DATA_MODEL.md.
+
+Cron sanity checks (dev)
+node backend/scripts/checkPriceHistory.js
+node backend/scripts/checkPortfolioHistory.js
+
+Documentation
+- /docs/README.md – index
+- /docs/ARCHITECTURE.md – architecture & diagrams
+- /docs/API.md – endpoints, auth, request/response, errors
+- /docs/DATA_MODEL.md – Prisma schema & relations
+- /docs/DECISIONS.md – ADRs
+- /docs/TROUBLESHOOTING.md – known issues & fixes
+- /docs/features/ – feature docs (e.g. Filters)
+- /docs/think/ – deep-dive notes (debug/analysis)
+
+Contributing
+- Conventional Commits (`feat:`, `fix:`, `docs:`…)
+- On non-main branches set RUN_SCHEDULER=false.
+- Never commit secrets. Add new env keys to README + /docs/API.md.
