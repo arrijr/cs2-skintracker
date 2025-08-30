@@ -95,6 +95,70 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         getWatchlist().then((w) => !cancelled && setWatchlist(Array.isArray(w) ? w : []));
         getPortfolio().then((p) => !cancelled && setPortfolioSkins(Array.isArray(p) ? p : []));
       }
+
+      // Load enhanced skin details
+      if (!cancelled) {
+        try {
+          console.log('[DEBUG] 🔍 Loading enhanced skin details...');
+          
+          // Test API calls directly
+          console.log('[DEBUG] 📡 Testing API endpoints...');
+          
+          // Test market stats
+          try {
+            const statsResponse = await fetch(`/api/v1/skins/${skinId}/market-stats`);
+            console.log('[DEBUG] 📊 Market stats status:', statsResponse.status);
+            if (statsResponse.ok) {
+              const stats = await statsResponse.json();
+              console.log('[DEBUG] 📊 Market stats data:', stats);
+              setMarketStats(stats);
+            } else {
+              console.error('[DEBUG] ❌ Market stats failed:', statsResponse.status, statsResponse.statusText);
+            }
+          } catch (err) {
+            console.error('[DEBUG] ❌ Market stats error:', err);
+          }
+
+          // Test variants
+          try {
+            const variantsResponse = await fetch(`/api/v1/skins/${skinId}/variants`);
+            console.log('[DEBUG] 🔄 Variants status:', variantsResponse.status);
+            if (variantsResponse.ok) {
+              const variantsData = await variantsResponse.json();
+              console.log('[DEBUG] 🔄 Variants data:', variantsData);
+              setVariants(variantsData?.variants || []);
+            } else {
+              console.error('[DEBUG] ❌ Variants failed:', variantsResponse.status, variantsResponse.statusText);
+            }
+          } catch (err) {
+            console.error('[DEBUG] ❌ Variants error:', err);
+          }
+
+          // Test case info
+          try {
+            const caseResponse = await fetch(`/api/v1/skins/${skinId}/case`);
+            console.log('[DEBUG] 📦 Case info status:', caseResponse.status);
+            if (caseResponse.ok) {
+              const caseData = await caseResponse.json();
+              console.log('[DEBUG] 📦 Case info data:', caseData);
+              setCaseInfo(caseData);
+            } else {
+              console.error('[DEBUG] ❌ Case info failed:', caseResponse.status, caseResponse.statusText);
+            }
+          } catch (err) {
+            console.error('[DEBUG] ❌ Case info error:', err);
+          }
+
+          console.log('[DEBUG] ✅ Enhanced data loading attempts completed');
+        } catch (err) {
+          console.error('[DEBUG] 💥 Enhanced details loading failed:', err);
+        } finally {
+          if (!cancelled) {
+            setLoadingEnhanced(false);
+            console.log('[DEBUG] 🏁 Enhanced loading finished');
+          }
+        }
+      }
     }
 
     load();
