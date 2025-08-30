@@ -1,6 +1,12 @@
 import express from "express";
 import prisma from "../prisma/prismaClient.js";
-import { getPriceHistory } from "../controllers/skinController.js";
+import { 
+  getPriceHistory, 
+  getSkinById, 
+  getSkinVariants, 
+  getSkinCase, 
+  getSkinMarketStats 
+} from "../controllers/skinController.js";
 import { fetchSkinPrice } from "../services/steamService.js";
 
 const router = express.Router();
@@ -495,5 +501,18 @@ router.get("/:skinId", async (req, res) => {
 
 // Price history for skin
 router.get("/:skinId/history", getPriceHistory);
+
+// {/* New endpoints for enhanced skin details */}
+// Get skin by ID with full details
+router.get("/:skinId/details", getSkinById);
+
+// Get skin variants (same skin, different wear/quality)
+router.get("/:skinId/variants", getSkinVariants);
+
+// Get case information for a skin
+router.get("/:skinId/case", getSkinCase);
+
+// Get market statistics for a skin
+router.get("/:skinId/market-stats", getSkinMarketStats);
 
 export default router;

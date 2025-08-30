@@ -57,6 +57,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const [addingPortfolio, setAddingPortfolio] = useState(false);
   const [portfolioMsg, setPortfolioMsg] = useState("");
 
+  // Enhanced Skin Details
+  const [loadingEnhanced, setLoadingEnhanced] = useState(true);
+  const [marketStats, setMarketStats] = useState<any>(null);
+  const [variants, setVariants] = useState<any[]>([]);
+  const [caseInfo, setCaseInfo] = useState<any>(null);
+
   // *** ALLE useEffect HOOKS OBEN ***
   useEffect(() => {
     setMounted(true);
@@ -225,6 +231,19 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             <Line data={chartData} />
           </div>
 
+          {/* Enhanced Skin Details */}
+          {loadingEnhanced ? (
+            <div className="text-white py-8">Loading enhanced details...</div>
+          ) : (
+            <>
+              {marketStats && <MarketStatsCard stats={marketStats} />}
+              {variants && variants.length > 0 && (
+                <SkinVariantsCard variants={variants} currentSkinId={skin?.id || 0} />
+              )}
+              {caseInfo && <CaseInfoCard caseInfo={caseInfo} />}
+            </>
+          )}
+
           {/* Add Skin to Portfolio */}
           <button
             className="btn-main bg-red-600 hover:bg-red-700 mt-4"
@@ -350,7 +369,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           {portfolioPurchasesForSkin.length > 0 && (
             <PurchaseAccordion
               purchases={portfolioPurchasesForSkin}
-              total={totalAmount}
+              totalAmount={totalAmount}
               avgPrice={avgPrice}
               performance={performance}
             />
@@ -359,7 +378,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           {/* Steam-Link & Navigation */}
           <a
             href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(
-              skin.marketHashName
+              skin?.marketHashName || ""
             )}`}
             target="_blank"
             rel="noopener noreferrer"

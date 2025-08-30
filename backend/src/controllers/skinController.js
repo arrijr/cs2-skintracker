@@ -1,6 +1,155 @@
 import prisma from "../prisma/prismaClient.js";
 import { fetchSkinPrice } from "../services/steamService.js";
 
+// {/* Get skin by ID with full details */}
+export const getSkinById = async (req, res) => {
+  const { skinId } = req.params;
+  try {
+    const skin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) }
+    });
+    
+    if (!skin) {
+      return res.status(404).json({ error: 'Skin not found' });
+    }
+
+    res.json(skin);
+  } catch (err) {
+    res.status(500).json({ error: "Could not fetch skin" });
+  }
+};
+
+// {/* Get skin variants (same skin, different wear/quality) */}
+export const getSkinVariants = async (req, res) => {
+  const { skinId } = req.params;
+  try {
+    const currentSkin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      select: { name: true, weaponType: true, itemGroup: true }
+    });
+
+    if (!currentSkin) {
+      return res.status(404).json({ error: 'Skin not found' });
+    }
+
+    // Find variants with same base name but different wear/quality
+    const variants = await prisma.skin.findMany({
+      where: {
+        name: currentSkin.name,
+        weaponType: currentSkin.weaponType,
+        itemGroup: currentSkin.itemGroup,
+        id: { not: parseInt(skinId) } // Exclude current skin
+      },
+      select: {
+        id: true,
+        name: true,
+        wear: true,
+        quality: true,
+        isStattrak: true,
+        isStar: true,
+        priceLatest: true,
+        imageUrl: true
+      },
+      orderBy: [
+        { isStattrak: 'desc' },
+        { wear: 'asc' },
+        { priceLatest: 'asc' }
+      ]
+    });
+
+    res.json({ variants, currentSkin });
+  } catch (err) {
+    res.status(500).json({ error: "Could not fetch skin variants" });
+  }
+};
+
+// {/* Get case information for a skin */}
+export const getSkinCase = async (req, res) => {
+  const { skinId } = req.params;
+  try {
+    const skin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      select: { collection: true, name: true }
+    });
+
+    if (!skin || !skin.collection) {
+      return res.status(404).json({ error: 'Case information not available' });
+    }
+
+    // Find all skins from the same case/collection
+    const caseSkins = await prisma.skin.findMany({
+      where: { collection: skin.collection },
+      select: {
+        id: true,
+        name: true,
+        wear: true,
+        rarity: true,
+        quality: true,
+        isStattrak: true,
+        priceLatest: true,
+        imageUrl: true
+      },
+      orderBy: [
+        { rarity: 'desc' },
+        { priceLatest: 'desc' }
+      ]
+    });
+
+    res.json({ 
+      caseName: skin.collection,
+      skins: caseSkins,
+      totalSkins: caseSkins.length
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Could not fetch case information" });
+  }
+};
+
+// {/* Get market statistics for a skin */}
+export const getSkinMarketStats = async (req, res) => {
+  const { skinId } = req.params;
+  try {
+    const skin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      select: {
+        sold24h: true,
+        sold7d: true,
+        sold30d: true,
+        priceLatest: true,
+        priceMedian: true,
+        priceMin: true,
+        priceMax: true,
+        priceAvg: true,
+        buyOrderVolume: true,
+        offerVolume: true,
+        priceUpdatedAt: true
+      }
+    });
+
+    if (!skin) {
+      return res.status(404).json({ error: 'Skin not found' });
+    }
+
+    const stats = {
+      volume24h: skin.sold24h || 0,
+      volume7d: skin.sold7d || 0,
+      volume30d: skin.sold30d || 0,
+      currentPrice: skin.priceLatest,
+      medianPrice: skin.priceMedian,
+      minPrice: skin.priceMin,
+      maxPrice: skin.priceMax,
+      avgPrice: skin.priceAvg,
+      buyOrders: skin.buyOrderVolume || 0,
+      listings: skin.offerVolume || 0,
+      lastUpdated: skin.priceUpdatedAt
+    };
+
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ error: "Could not fetch market statistics" });
+  }
+};
+
 export const searchSkin = async (req, res) => {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: 'Missing search query.' });

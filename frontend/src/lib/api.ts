@@ -98,6 +98,26 @@ export async function deletePortfolioEntry(purchaseId: number) {
   return await apiFetch(`/api/v1/portfolio/${purchaseId}`, { method: "DELETE" });
 }
 
+// {/* Enhanced Skin Details: Market Stats */}
+export async function getSkinMarketStats(skinId: number | string) {
+  return await apiFetch(`/api/v1/skins/${skinId}/market-stats`);
+}
+
+// {/* Enhanced Skin Details: Variants */}
+export async function getSkinVariants(skinId: number | string) {
+  return await apiFetch(`/api/v1/skins/${skinId}/variants`);
+}
+
+// {/* Enhanced Skin Details: Case Information */}
+export async function getSkinCase(skinId: number | string) {
+  return await apiFetch(`/api/v1/skins/${skinId}/case`);
+}
+
+// {/* Enhanced Skin Details: Full Details */}
+export async function getSkinDetails(skinId: number | string) {
+  return await apiFetch(`/api/v1/skins/${skinId}/details`);
+}
+
 // {/* Auth: Login – speichert Token/User wie dein AuthContext es erwartet */}
 export async function login(email: string, password: string) {
   const data = await apiFetch(`/api/v1/users/login`, {
