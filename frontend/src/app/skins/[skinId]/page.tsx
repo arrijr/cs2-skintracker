@@ -369,7 +369,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           {portfolioPurchasesForSkin.length > 0 && (
             <PurchaseAccordion
               purchases={portfolioPurchasesForSkin}
-              totalAmount={totalAmount}
+              total={totalAmount}
               avgPrice={avgPrice}
               performance={performance}
             />
