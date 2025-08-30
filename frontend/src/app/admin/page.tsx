@@ -37,47 +37,28 @@ interface AdminLog {
 }
 
 export default function AdminPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   useRequireAuth(); // Redirect if not logged in
 
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const [overview, setOverview] = useState<AdminOverview | null>(null);
   const [jobs, setJobs] = useState<AdminJob[]>([]);
-  const [logs, setLogs] = useState<AdminLog[]>([]);
+  const [logs, setAdminLogs] = useState<AdminLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  
+  // {/* Check admin status directly from user context and token */}
+  const isAdmin = user?.role === 'admin' || (token && user?.role === 'admin');
 
-  // Check if user is admin
+  // Load admin data if user is admin
   useEffect(() => {
-    if (!token) return;
+    if (!isAdmin) {
+      setLoading(false);
+      return;
+    }
 
-    const checkAdminStatus = async () => {
-      try {
-        const response = await fetch("/api/v1/admin/health", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        if (response.ok) {
-          setIsAdmin(true);
-          loadAdminData();
-        } else if (response.status === 403) {
-          setIsAdmin(false);
-          setError("Access denied. Admin role required.");
-        } else {
-          setIsAdmin(false);
-          setError("Failed to verify admin status.");
-        }
-      } catch (err) {
-        setIsAdmin(false);
-        setError("Failed to check admin status.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAdminStatus();
-  }, [token]);
+    loadAdminData();
+  }, [isAdmin, token]);
 
   const loadAdminData = async () => {
     try {
@@ -105,10 +86,12 @@ export default function AdminPage() {
 
       if (logsRes.ok) {
         const logsData = await logsRes.json();
-        setLogs(logsData.logs);
+        setAdminLogs(logsData.logs);
       }
     } catch (err) {
       setError("Failed to load admin data");
+    } finally {
+      setLoading(false);
     }
   };
 

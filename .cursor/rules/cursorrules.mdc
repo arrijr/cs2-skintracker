@@ -37,3 +37,31 @@ Branch / CI
 
 Logging
 - Keep logs minimal in production. Use clear tags for cron start/end.
+
+---
+
+# Documentation Workflow (immer anwenden)
+
+- Bei **jedem Feature/Refactor/Bugfix**:
+  1) Prüfe/aktualisiere **/docs/CHANGELOG.md** (Eintrag mit Datum, Scope, Files).
+  2) Aktualisiere **/docs/ARCHITECTURE.md** falls sich Flows/Schichten/Abhängigkeiten ändern (Mermaid-Diagramme nutzen).
+  3) Aktualisiere **/docs/API.md** wenn Endpoints, DTOs, Fehlercodes ändern.
+  4) Aktualisiere **/docs/DATA_MODEL.md** wenn Prisma/DB-Felder, Constraints oder Relations sich ändern.
+  5) Wenn eine wichtige Entscheidung getroffen wurde: **/docs/DECISIONS.md** (ADR-Format).
+  6) Falls ein wiederkehrender Fehler: **/docs/TROUBLESHOOTING.md** Abschnitt ergänzen (Symptom → Ursache → Fix → Prävention).
+
+- **Problem-Solving-Modus (THINK Notes):**
+  - Wenn ein Thema knifflig ist: Erstelle eine Datei unter **/docs/think/YYYY-MM-DD-<slug>.md** mit:
+    - _Context_, _Logs/Symptome_, _Hypothesen_, _Analyse_, _Decision_, _Checklist_, _Follow-ups_.
+  - Denke schriftlich dort – Ergebnis kurz in PR zusammenfassen.
+
+- **Nach jedem Merge auf main:** Stelle sicher, dass Doku im Repo **aktuell & kohärent** ist. Keine „TODO“-Reste in Kern-Dokus.
+
+- **Code-Kommentare:** Wie gehabt in TSX:
+  `{/* <kurzer Kontext-Kommentar> */}` vor jedem Snippet, das du ausgibst.
+
+- **Keine Secrets** in Doku. Neue ENV-Keys stets in README + /docs/API.md dokumentieren.
+
+- **Commits/PRs**:
+  - Nutze Conventional Commits mit **docs:** Scope, wenn Doku geändert wurde.
+  - PR muss die Checkbox „Docs updated“ anhaken (siehe PR-Template).
