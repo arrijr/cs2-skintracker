@@ -124,3 +124,7 @@ For code output: include file path and [Frontend]/[Backend] tag; add a clear TSX
 For docs output: write in Markdown with Setext headings and * list style as above. If a doc is missing, create it in the specified path.
 
 After making code changes in a response, propose the necessary doc edits inline (as copy-pastable Markdown) and reference the correct /docs/... target file.
+
+- API Calls dürfen **nur** über den zentralen Helper `apiFetch(path)` erfolgen.
+- `NEXT_PUBLIC_API_URL` ist die **einzige** Quelle für die API-Base (Render-Host). Keine Frontend-Domain verwenden.
+- Bei neuen Endpoints: `/docs/API.md` aktualisieren und **curl-Beispiel** hinzufügen.
