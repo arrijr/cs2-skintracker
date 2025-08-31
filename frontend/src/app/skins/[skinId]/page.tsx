@@ -14,6 +14,9 @@ import {
 import { apiFetch } from "@/lib/http"; // for skin detail/history
 import PurchaseAccordion from "../../components/PurchaseAccordion";
 import SkinPortfolioCard from "../../components/SkinPortfolioCard";
+import MarketStatsCard from "../../components/skins/MarketStatsCard";
+import SkinVariantsCard from "../../components/skins/SkinVariantsCard";
+import CaseInfoCard from "../../components/skins/CaseInfoCard";
 
 // Chart.js Registration
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
@@ -106,7 +109,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           
           // Test market stats
           try {
-            const statsResponse = await fetch(`/api/v1/skins/${skinId}/market-stats`);
+            const statsResponse = await apiFetch(`/api/v1/skins/${skinId}/market-stats`);
             console.log('[DEBUG] 📊 Market stats status:', statsResponse.status);
             if (statsResponse.ok) {
               const stats = await statsResponse.json();
@@ -121,7 +124,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
           // Test variants
           try {
-            const variantsResponse = await fetch(`/api/v1/skins/${skinId}/variants`);
+            const variantsResponse = await apiFetch(`/api/v1/skins/${skinId}/variants`);
             console.log('[DEBUG] 🔄 Variants status:', variantsResponse.status);
             if (variantsResponse.ok) {
               const variantsData = await variantsResponse.json();
@@ -136,7 +139,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
           // Test case info
           try {
-            const caseResponse = await fetch(`/api/v1/skins/${skinId}/case`);
+            const caseResponse = await apiFetch(`/api/v1/skins/${skinId}/case`);
             console.log('[DEBUG] 📦 Case info status:', caseResponse.status);
             if (caseResponse.ok) {
               const caseData = await caseResponse.json();
