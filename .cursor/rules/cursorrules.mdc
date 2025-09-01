@@ -135,3 +135,11 @@ Rendering & Numbers
 - Pflicht: `formatUSD(value)` oder `safeToFixed(value)` aus `src/lib/num.ts` verwenden.
 - API-Responses können `number|string|null` enthalten; vor Nutzung über `numberOrNull()` normalisieren.
 - Bei neuen Endpoints: in `/docs/API.md` explizit angeben, welche Felder nullable sind.
+
+Skin Detail — UI Rules
+---------------------
+- Preise/Zahlen immer über helpers `formatUSD`, `safeToFixed`, `numberOrNull`.
+- Bei fehlenden Daten (204/null) Panels mit klarer „No data available"-Hinweis rendern, nicht stumm ausblenden.
+- Market-Stats: Bei vorhandenem History-Punkt T-1 eine Price-Delta-Badge anzeigen.
+- Variants/Case Links mit `prefetch` für snappy UX.
+- Debug-Logs in Production minimieren (Guard auf NODE_ENV).

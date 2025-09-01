@@ -1,5 +1,6 @@
 // {/* Enhanced Market Statistics Card */}
 import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
+import { Tip } from "../ui/Tooltip";
 
 interface MarketStats {
   volume24h?: number | null;
@@ -26,24 +27,28 @@ export default function MarketStatsCard({ stats }: MarketStatsCardProps) {
     <div className="w-full bg-neutral-800 rounded-xl shadow-md p-4 mb-4">
       <h3 className="text-lg font-semibold mb-3 text-emerald-400">📊 Market Statistics</h3>
       
-      <div className="grid grid-cols-2 gap-4">
-        {stats.volume24h !== null && (
-          <div className="text-center">
-            <div className="text-sm text-gray-400">24h Volume</div>
-            <div className="text-lg font-bold text-purple-400">
-              {stats.volume24h?.toLocaleString() || "—"}
-            </div>
-          </div>
-        )}
-        
-        {stats.volume7d !== null && (
-          <div className="text-center">
-            <div className="text-sm text-gray-400">7d Volume</div>
-            <div className="text-lg font-bold text-blue-400">
-              {stats.volume7d?.toLocaleString() || "—"}
-            </div>
-          </div>
-        )}
+             <div className="grid grid-cols-2 gap-4">
+         {stats.volume24h !== null && (
+           <div className="text-center">
+             <Tip label="Estimated trades on Steam during last 24h">
+               <div className="text-sm text-gray-400">24h Volume</div>
+             </Tip>
+             <div className="text-lg font-bold text-purple-400">
+               {stats.volume24h?.toLocaleString() || "—"}
+             </div>
+           </div>
+         )}
+         
+         {stats.volume7d !== null && (
+           <div className="text-center">
+             <Tip label="Estimated trades on Steam during last 7 days">
+               <div className="text-sm text-gray-400">7d Volume</div>
+             </Tip>
+             <div className="text-lg font-bold text-blue-400">
+               {stats.volume7d?.toLocaleString() || "—"}
+             </div>
+           </div>
+         )}
         
         {stats.lowestPrice !== null && (
           <div className="text-center">
@@ -74,14 +79,16 @@ export default function MarketStatsCard({ stats }: MarketStatsCardProps) {
           </div>
         )}
         
-        {stats.listings !== null && (
-          <div className="text-center">
-            <div className="text-sm text-gray-400">Active Listings</div>
-            <div className="text-lg font-bold text-orange-400">
-              {stats.listings?.toLocaleString() || "—"}
-            </div>
-          </div>
-        )}
+                 {stats.listings !== null && (
+           <div className="text-center">
+             <Tip label="Currently available items on Steam Market">
+               <div className="text-sm text-gray-400">Active Listings</div>
+             </Tip>
+             <div className="text-lg font-bold text-orange-400">
+               {stats.listings?.toLocaleString() || "—"}
+             </div>
+           </div>
+         )}
       </div>
     </div>
   );

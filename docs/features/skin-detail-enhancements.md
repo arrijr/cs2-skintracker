@@ -1,98 +1,82 @@
-# Skin Detail Enhancements
+Skin Detail Enhancements
+========================
 
-## Overview
-Enhanced skin detail page with additional market statistics, case information, and skin variants.
+Overview
+--------
 
-## Features
+Enhanced skin detail page with improved UX components and data visualization.
 
-### Market Statistics
-* Display 24h, 7d, and 30d sales volume
-* Show current price vs median price with percentage change
-* Display price range (min, avg, max)
-* Show market activity (buy orders, listings)
-* Last updated timestamp
+Components
+----------
 
-### Case Information
-* Display which case the skin belongs to
-* Show all skins from the same case
-* Navigate between case skins
-* Display rarity and wear information
+### Price Delta Badge
+* Shows 24h price change with visual indicators (▲/▼)
+* Displays absolute change and percentage
+* Color-coded: green for gains, red for losses
+* Only shows when yesterday's data is available
 
-### Skin Variants
-* Show all variants of the same skin
-* Different wear levels and qualities
-* StatTrak and special indicators
-* Navigate between variants
-* Current skin highlighted
+### Chart Range Tabs
+* Interactive time range selector (7d/30d/90d)
+* Client-side filtering of price history data
+* Smooth transitions between ranges
+* Default: 30 days
 
-## Components
+### Tag Badges
+* Visual indicators for special skin properties
+* ★ Star items (yellow)
+* StatTrak items (orange)
+* Souvenir items (green)
+* Compact design with colored borders
 
-### MarketStatsCard
-* Displays comprehensive market data
-* Color-coded price changes
-* Responsive grid layout
-* Hover effects and transitions
+### Skeleton Loaders
+* Animated loading placeholders
+* Replaces generic "Loading..." text
+* Provides visual structure during data fetch
+* Smooth pulse animation
 
-### CaseInfoCard
-* Shows case collection overview
-* Grid of case skins with images
-* Rarity and wear color coding
-* Navigation to case overview
+### Tooltips
+* Hover-based information tooltips
+* No external dependencies
+* Contextual help for market statistics
+* Examples: "Estimated trades on Steam during last 24h"
 
-### SkinVariantsCard
-* Displays skin variants in grid
-* Wear level color coding
-* Special feature indicators
-* Current skin highlighting
+### Enhanced Market Stats
+* Volume data with tooltips
+* Price statistics (lowest, median, etc.)
+* Buy orders and active listings
+* Robust null handling with "—" fallbacks
 
-## API Endpoints
+Implementation Notes
+-------------------
 
-### GET `/api/v1/skins/:skinId/market-stats`
-Returns market statistics including volume, prices, and activity.
+* All price formatting uses `formatUSD()` helper
+* Number parsing via `numberOrNull()` for safety
+* Chart data filtered client-side for performance
+* Skeleton loaders show during enhanced data fetch
+* Tooltips provide context without cluttering UI
 
-### GET `/api/v1/skins/:skinId/variants`
-Returns all variants of the same skin.
+Usage Examples
+-------------
 
-### GET `/api/v1/skins/:skinId/case`
-Returns case information and all skins in the case.
+```tsx
+// Price delta badge
+<PriceDeltaBadge 
+  current={skin.marketPrice} 
+  yesterday={history?.[history.length-2]?.price ?? null} 
+/>
 
-## Data Flow
+// Chart range tabs
+<ChartRangeTabs value={chartRange} onChange={setChartRange} />
 
-1. **Skin Detail Page Load**
-   * Load basic skin information
-   * Load price history
-   * Load enhanced details in parallel
+// Tag badges
+<TagBadges 
+  isStattrak={skin.isStattrak} 
+  isSouvenir={skin.isSouvenir} 
+  isStar={skin.isStar} 
+/>
 
-2. **Enhanced Data Loading**
-   * Market statistics
-   * Skin variants
-   * Case information
-
-3. **Component Rendering**
-   * Show loading states
-   * Render components when data available
-   * Handle missing data gracefully
-
-## UI/UX Features
-
-* **Responsive Design**: Works on all screen sizes
-* **Loading States**: Clear feedback during data loading
-* **Error Handling**: Graceful fallbacks for missing data
-* **Navigation**: Seamless navigation between related skins
-* **Visual Hierarchy**: Clear information organization
-
-## Future Enhancements
-
-* **Price Alerts**: Set alerts for specific variants
-* **Market Analysis**: Trend analysis and predictions
-* **Comparison Tool**: Compare multiple variants side-by-side
-* **Case Opening Simulator**: Interactive case opening experience
-* **Price History Charts**: Enhanced charting for variants
-
-## Technical Implementation
-
-* **Frontend**: React components with TypeScript
-* **Backend**: Express.js with Prisma ORM
-* **Database**: PostgreSQL with optimized queries
-* **Caching**: Redis for frequently accessed data
-* **API**: RESTful endpoints with JWT authentication
+// Tooltips
+<Tip label="Estimated trades on Steam during last 24h">
+  <div>24h Volume</div>
+</Tip>
+```

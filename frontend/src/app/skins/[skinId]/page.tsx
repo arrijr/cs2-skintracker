@@ -18,6 +18,11 @@ import SkinPortfolioCard from "../../components/SkinPortfolioCard";
 import MarketStatsCard from "../../components/skins/MarketStatsCard";
 import SkinVariantsCard from "../../components/skins/SkinVariantsCard";
 import CaseInfoCard from "../../components/skins/CaseInfoCard";
+import PriceDeltaBadge from "../../components/skins/PriceDeltaBadge";
+import ChartRangeTabs, { Range } from "../../components/skins/ChartRangeTabs";
+import Skeleton from "../../components/ui/Skeleton";
+import { Tip } from "../../components/ui/Tooltip";
+import TagBadges from "../../components/skins/TagBadges";
 
 // Chart.js Registration
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
@@ -66,6 +71,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const [marketStats, setMarketStats] = useState<any>(null);
   const [variants, setVariants] = useState<any[]>([]);
   const [caseInfo, setCaseInfo] = useState<any>(null);
+  
+  // Chart Range
+  const [chartRange, setChartRange] = useState<Range>("30d");
 
   // *** ALLE useEffect HOOKS OBEN ***
   useEffect(() => {
@@ -196,13 +204,24 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const performance =
     skin?.marketPrice && avgPrice ? ((skin.marketPrice - avgPrice) / avgPrice) * 100 : null;
 
-  // {/* Chart data */}
+  // {/* Chart data with range filtering */}
+  const getDaysAgo = (days: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return date.toISOString().split('T')[0];
+  };
+  
+  const filteredHistory = history?.filter(h => {
+    const daysAgo = chartRange === "7d" ? 7 : chartRange === "30d" ? 30 : 90;
+    return h.date >= getDaysAgo(daysAgo);
+  }) || [];
+  
   const chartData = {
-    labels: history?.map((h) => h.date) || [],
+    labels: filteredHistory.map((h) => h.date) || [],
     datasets: [
       {
         label: "Price ($)",
-        data: history?.map((h) => numberOrNull(h.price))
+        data: filteredHistory.map((h) => numberOrNull(h.price))
           .filter((n): n is number => n !== null) || [],
         borderColor: "rgb(59,130,246)",
         tension: 0.2,
@@ -292,33 +311,54 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             alt={skin.name}
             className="w-36 h-36 md:w-48 md:h-48 object-contain rounded-xl mb-4 shadow-lg bg-neutral-800"
           />
-          <h1 className="text-2xl md:text-3xl font-extrabold mb-2 text-center">
-            {skin.name}
-          </h1>
-          <div className="text-gray-400 mb-2 text-sm text-center">
-            {skin.marketHashName}
-          </div>
-                     <div className="mb-4 text-lg font-semibold text-emerald-400">
-             Current Price: {formatUSD(skin.marketPrice)}
+                     <h1 className="text-2xl md:text-3xl font-extrabold mb-2 text-center">
+             {skin.name}
+           </h1>
+           <div className="text-gray-400 mb-2 text-sm text-center">
+             {skin.marketHashName}
+           </div>
+           
+           {/* Tag Badges */}
+           <TagBadges 
+             isStattrak={skin.isStattrak} 
+             isSouvenir={skin.isSouvenir} 
+             isStar={skin.isStar} 
+           />
+           
+           <div className="mb-4 text-lg font-semibold text-emerald-400 flex items-center gap-2 justify-center">
+             <span>Current Price: {formatUSD(skin.marketPrice)}</span>
+             {/* Price delta vs. yesterday */}
+             <PriceDeltaBadge 
+               current={skin.marketPrice} 
+               yesterday={history?.[history.length-2]?.price ?? null} 
+             />
            </div>
 
-          {/* Chart */}
-          <div className="w-full bg-neutral-800 rounded-xl shadow-md p-4 mb-6">
-            <Line data={chartData} />
-          </div>
+                     {/* Chart */}
+           <div className="w-full bg-neutral-800 rounded-xl shadow-md p-4 mb-6">
+             <div className="flex justify-between items-center mb-4">
+               <h3 className="text-lg font-semibold text-blue-400">Price History</h3>
+               <ChartRangeTabs value={chartRange} onChange={setChartRange} />
+             </div>
+             <Line data={chartData} />
+           </div>
 
-          {/* Enhanced Skin Details */}
-          {loadingEnhanced ? (
-            <div className="text-white py-8">Loading enhanced details...</div>
-          ) : (
-            <>
-              {marketStats && <MarketStatsCard stats={marketStats} />}
-              {variants && variants.length > 0 && (
-                <SkinVariantsCard variants={variants} currentSkinId={skin?.id || 0} />
-              )}
-              {caseInfo && <CaseInfoCard caseInfo={caseInfo} />}
-            </>
-          )}
+                     {/* Enhanced Skin Details */}
+           {loadingEnhanced ? (
+             <div className="space-y-4">
+               <Skeleton className="h-32 w-full" />
+               <Skeleton className="h-48 w-full" />
+               <Skeleton className="h-64 w-full" />
+             </div>
+           ) : (
+             <>
+               {marketStats && <MarketStatsCard stats={marketStats} />}
+               {variants && variants.length > 0 && (
+                 <SkinVariantsCard variants={variants} currentSkinId={skin?.id || 0} />
+               )}
+               {caseInfo && <CaseInfoCard caseInfo={caseInfo} />}
+             </>
+           )}
 
           {/* Add Skin to Portfolio */}
           <button
