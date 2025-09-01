@@ -1,11 +1,16 @@
 // {/* Skin Variants Comparison Card */}
+import { formatUSD, numberOrNull } from "@/lib/num";
+
 interface SkinVariant {
   id: number;
   name: string;
-  wear: string;
-  rarity: string;
-  price: number;
-  imageUrl?: string;
+  wear: string | null;
+  quality: string | null;
+  isStattrak: boolean | null;
+  isStar: boolean | null;
+  priceLatest: number | string | null;
+  imageUrl: string | null;
+  isActive?: boolean;
 }
 
 interface SkinVariantsCardProps {
@@ -17,7 +22,11 @@ export default function SkinVariantsCard({ variants, currentSkinId }: SkinVarian
   if (!variants || variants.length === 0) return null;
 
   // Sort variants by price (lowest to highest)
-  const sortedVariants = [...variants].sort((a, b) => a.price - b.price);
+  const sortedVariants = [...variants].sort((a, b) => {
+    const priceA = numberOrNull(a.priceLatest) || 0;
+    const priceB = numberOrNull(b.priceLatest) || 0;
+    return priceA - priceB;
+  });
 
   return (
     <div className="w-full bg-neutral-800 rounded-xl shadow-md p-4 mb-4">
@@ -42,16 +51,16 @@ export default function SkinVariantsCard({ variants, currentSkinId }: SkinVarian
                 />
               )}
               <div>
-                <div className="font-medium text-white">{variant.wear}</div>
-                <div className="text-sm text-gray-400">{variant.rarity}</div>
+                <div className="font-medium text-white">{variant.wear || "Unknown"}</div>
+                <div className="text-sm text-gray-400">{variant.quality || "Unknown"}</div>
               </div>
             </div>
             
             <div className="text-right">
               <div className="text-lg font-bold text-emerald-400">
-                ${variant.price.toFixed(2)}
+                {formatUSD(variant.priceLatest)}
               </div>
-              {variant.id === currentSkinId && (
+              {(variant.id === currentSkinId || variant.isActive) && (
                 <div className="text-xs text-emerald-400 font-medium">Current</div>
               )}
             </div>

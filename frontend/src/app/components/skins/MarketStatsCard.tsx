@@ -1,10 +1,18 @@
 // {/* Enhanced Market Statistics Card */}
+import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
+
 interface MarketStats {
-  priceChange24h?: number;
-  priceChange7d?: number;
-  volatility?: number;
-  volume24h?: number;
-  marketCap?: number;
+  volume24h?: number | null;
+  volume7d?: number | null;
+  volume30d?: number | null;
+  currentPrice?: number | string | null;
+  medianPrice?: number | string | null;
+  lowestPrice?: number | string | null;
+  maxPrice?: number | string | null;
+  avgPrice?: number | string | null;
+  buyOrders?: number | null;
+  listings?: number | null;
+  lastUpdated?: string | null;
 }
 
 interface MarketStatsCardProps {
@@ -19,51 +27,62 @@ export default function MarketStatsCard({ stats }: MarketStatsCardProps) {
       <h3 className="text-lg font-semibold mb-3 text-emerald-400">📊 Market Statistics</h3>
       
       <div className="grid grid-cols-2 gap-4">
-        {stats.priceChange24h !== undefined && (
-          <div className="text-center">
-            <div className="text-sm text-gray-400">24h Change</div>
-            <div className={`text-lg font-bold ${stats.priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {stats.priceChange24h >= 0 ? '+' : ''}{stats.priceChange24h.toFixed(2)}%
-            </div>
-          </div>
-        )}
-        
-        {stats.priceChange7d !== undefined && (
-          <div className="text-center">
-            <div className="text-sm text-gray-400">7d Change</div>
-            <div className={`text-lg font-bold ${stats.priceChange7d >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {stats.priceChange7d >= 0 ? '+' : ''}{stats.priceChange7d.toFixed(2)}%
-            </div>
-          </div>
-        )}
-        
-        {stats.volatility !== undefined && (
-          <div className="text-center">
-            <div className="text-sm text-gray-400">Volatility</div>
-            <div className="text-lg font-bold text-blue-400">
-              {stats.volatility.toFixed(2)}%
-            </div>
-          </div>
-        )}
-        
-        {stats.volume24h !== undefined && (
+        {stats.volume24h !== null && (
           <div className="text-center">
             <div className="text-sm text-gray-400">24h Volume</div>
             <div className="text-lg font-bold text-purple-400">
-              {stats.volume24h.toLocaleString()}
+              {stats.volume24h?.toLocaleString() || "—"}
+            </div>
+          </div>
+        )}
+        
+        {stats.volume7d !== null && (
+          <div className="text-center">
+            <div className="text-sm text-gray-400">7d Volume</div>
+            <div className="text-lg font-bold text-blue-400">
+              {stats.volume7d?.toLocaleString() || "—"}
+            </div>
+          </div>
+        )}
+        
+        {stats.lowestPrice !== null && (
+          <div className="text-center">
+            <div className="text-sm text-gray-400">Lowest Price</div>
+            <div className="text-lg font-bold text-green-400">
+              {formatUSD(stats.lowestPrice)}
+            </div>
+          </div>
+        )}
+        
+        {stats.medianPrice !== null && (
+          <div className="text-center">
+            <div className="text-sm text-gray-400">Median Price</div>
+            <div className="text-lg font-bold text-yellow-400">
+              {formatUSD(stats.medianPrice)}
             </div>
           </div>
         )}
       </div>
       
-      {stats.marketCap !== undefined && (
-        <div className="mt-4 text-center">
-          <div className="text-sm text-gray-400">Market Cap</div>
-          <div className="text-xl font-bold text-yellow-400">
-            ${stats.marketCap.toLocaleString()}
+      <div className="grid grid-cols-2 gap-4 mt-4">
+        {stats.buyOrders !== null && (
+          <div className="text-center">
+            <div className="text-sm text-gray-400">Buy Orders</div>
+            <div className="text-lg font-bold text-emerald-400">
+              {stats.buyOrders?.toLocaleString() || "—"}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+        
+        {stats.listings !== null && (
+          <div className="text-center">
+            <div className="text-sm text-gray-400">Active Listings</div>
+            <div className="text-lg font-bold text-orange-400">
+              {stats.listings?.toLocaleString() || "—"}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

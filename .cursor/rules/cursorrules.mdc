@@ -128,3 +128,10 @@ After making code changes in a response, propose the necessary doc edits inline 
 - API Calls dürfen **nur** über den zentralen Helper `apiFetch(path)` erfolgen.
 - `NEXT_PUBLIC_API_URL` ist die **einzige** Quelle für die API-Base (Render-Host). Keine Frontend-Domain verwenden.
 - Bei neuen Endpoints: `/docs/API.md` aktualisieren und **curl-Beispiel** hinzufügen.
+
+Rendering & Numbers
+-------------------
+- Preise/Zahlen im UI NIE direkt mit `.toFixed` formatieren.
+- Pflicht: `formatUSD(value)` oder `safeToFixed(value)` aus `src/lib/num.ts` verwenden.
+- API-Responses können `number|string|null` enthalten; vor Nutzung über `numberOrNull()` normalisieren.
+- Bei neuen Endpoints: in `/docs/API.md` explizit angeben, welche Felder nullable sind.

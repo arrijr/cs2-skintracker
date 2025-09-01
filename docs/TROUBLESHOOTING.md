@@ -15,3 +15,20 @@ Fix
 Prevention
 * Lint-/Code-Review-Regel: kein direkter `fetch` mit kompletter URL; nur `apiFetch`.
 * Docs: Base-URL in `/docs/API.md` klar beschrieben.
+
+TypeError: Cannot read properties of undefined (reading 'toFixed')
+-----------------------------------------------------------------
+
+Symptom
+- Skin-Detailseite crasht im Rendern.
+
+Cause
+- Ein Preisfeld (z. B. priceLatest, currentPrice) ist undefined/null/string.
+
+Fix
+- Nie `.toFixed` direkt aufrufen; stattdessen `formatUSD()` / `safeToFixed()`.
+- Alle Preisfelder mit `numberOrNull()` normalisieren, Beispielfunktionen in `src/lib/num.ts`.
+
+Prevention
+- Code-Review-Regel: keine direkten `.toFixed` im UI.
+- Doku: API-Felder können `null`/`string` sein (siehe `/docs/API.md`).

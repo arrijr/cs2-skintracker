@@ -12,6 +12,7 @@ import {
   getWatchlist,
 } from "@/lib/api";
 import { apiFetch } from "@/lib/http"; // for skin detail/history
+import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
 import PurchaseAccordion from "../../components/PurchaseAccordion";
 import SkinPortfolioCard from "../../components/SkinPortfolioCard";
 import MarketStatsCard from "../../components/skins/MarketStatsCard";
@@ -201,7 +202,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     datasets: [
       {
         label: "Price ($)",
-        data: history?.map((h) => Number(h.price) || 0) || [],
+        data: history?.map((h) => numberOrNull(h.price))
+          .filter((n): n is number => n !== null) || [],
         borderColor: "rgb(59,130,246)",
         tension: 0.2,
         fill: false,
@@ -296,9 +298,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           <div className="text-gray-400 mb-2 text-sm text-center">
             {skin.marketHashName}
           </div>
-          <div className="mb-4 text-lg font-semibold text-emerald-400">
-            Current Price: {skin.marketPrice} $
-          </div>
+                     <div className="mb-4 text-lg font-semibold text-emerald-400">
+             Current Price: {formatUSD(skin.marketPrice)}
+           </div>
 
           {/* Chart */}
           <div className="w-full bg-neutral-800 rounded-xl shadow-md p-4 mb-6">

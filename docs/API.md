@@ -91,13 +91,122 @@ Code kopieren
 [
   { "id": 1, "name": "AK-47 | Redline", "marketHashName": "AK-47 | Redline (Field-Tested)" }
 ]
-GET /skins/:skinId
+#### GET `/skins/:skinId`
 Get skin details by ID.
 
-Response
+**Response**
+```json
+{
+  "id": 20,
+  "name": "★ StatTrak™ Gut Knife | Urban Masked (Minimal Wear)",
+  "marketHashName": "★ StatTrak™ Gut Knife | Urban Masked (Minimal Wear)",
+  "marketPrice": 190.4,
+  "imageUrl": "https://community.akamai.steamstatic.com/...",
+  "weaponType": "gut knife",
+  "itemGroup": "knife"
+}
+```
 
-json
-Code kopieren
+#### GET `/skins/:skinId/history`
+Get price history for a skin.
+
+**Response**
+```json
+[
+  { "date": "2025-01-01", "price": 185.50 },
+  { "date": "2025-01-02", "price": 190.40 }
+]
+```
+
+#### GET `/skins/:skinId/market-stats`
+Get market statistics for a skin.
+
+**Response**
+```json
+{
+  "volume24h": 150,
+  "volume7d": 1200,
+  "volume30d": 5000,
+  "currentPrice": 25.50,
+  "medianPrice": 24.00,
+  "lowestPrice": 20.00,
+  "maxPrice": 30.00,
+  "avgPrice": 24.50,
+  "buyOrders": 45,
+  "listings": 120,
+  "lastUpdated": "2025-09-01T13:14:51.825Z"
+}
+```
+
+**Notes**
+* Preise können als `string` (z.B. "10,13€") oder `number` kommen → **Client MUSS normalisieren** (siehe `numberOrNull()`).
+* Felder dürfen `null` sein, wenn Quelle fehlt.
+
+#### GET `/skins/:skinId/variants`
+Get skin variants (same skin, different wear/quality).
+
+**Response**
+```json
+{
+  "variants": [
+    {
+      "id": 19122,
+      "name": "★ StatTrak™ Gut Knife | Urban Masked",
+      "wear": "Factory New",
+      "quality": "Covert",
+      "isStattrak": true,
+      "isStar": true,
+      "priceLatest": 250.00,
+      "imageUrl": "https://example.com/skin1.jpg"
+    },
+    {
+      "id": 19123,
+      "name": "★ StatTrak™ Gut Knife | Urban Masked",
+      "wear": "Minimal Wear",
+      "quality": "Covert",
+      "isStattrak": true,
+      "isStar": true,
+      "priceLatest": 190.40,
+      "imageUrl": "https://example.com/skin2.jpg",
+      "isActive": true
+    }
+  ],
+  "currentSkin": {
+    "name": "★ StatTrak™ Gut Knife | Urban Masked",
+    "weaponType": "gut knife",
+    "itemGroup": "knife"
+  }
+}
+```
+
+**Notes**
+* `priceLatest` kann fehlen → Client zeigt "—".
+* `isActive` markiert die aktuelle Skin-Variante.
+
+#### GET `/skins/:skinId/case`
+Get case information for a skin.
+
+**200 Response**
+```json
+{
+  "caseName": "Revolution Case",
+  "skins": [
+    {
+      "id": 19125,
+      "name": "AK-47 | Redline",
+      "wear": "Field-Tested",
+      "rarity": "Classified",
+      "quality": "Classified",
+      "isStattrak": false,
+      "priceLatest": 15.50,
+      "imageUrl": "https://example.com/ak47.jpg"
+    }
+  ],
+  "totalSkins": 3
+}
+```
+
+**204 No Content** → keine Case-Daten; Client blendet Panel aus.
 {
   "id": 1,
   "name": "AK-47 | Redline",
