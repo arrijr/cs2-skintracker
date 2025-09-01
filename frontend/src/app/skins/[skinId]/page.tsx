@@ -197,17 +197,20 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
   // {/* Chart data */}
   const chartData = {
-    labels: history.map((h) => h.date),
+    labels: history?.map((h) => h.date) || [],
     datasets: [
       {
         label: "Price ($)",
-        data: history.map((h) => h.price),
+        data: history?.map((h) => h.price || 0) || [],
         borderColor: "rgb(59,130,246)",
         tension: 0.2,
         fill: false,
       },
     ],
   };
+
+  console.log(`[DEBUG] History data:`, history);
+  console.log(`[DEBUG] Chart data:`, chartData);
 
   // {/* Add to Watchlist */}
   async function addToWatchlist() {
