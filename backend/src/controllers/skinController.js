@@ -109,6 +109,8 @@ export const getSkinCase = async (req, res) => {
 export const getSkinMarketStats = async (req, res) => {
   const { skinId } = req.params;
   try {
+    console.log(`[DEBUG] Fetching market stats for skin ID: ${skinId}`);
+    
     const skin = await prisma.skin.findUnique({
       where: { id: parseInt(skinId) },
       select: {
@@ -126,7 +128,10 @@ export const getSkinMarketStats = async (req, res) => {
       }
     });
 
+    console.log(`[DEBUG] Skin data:`, skin);
+
     if (!skin) {
+      console.log(`[DEBUG] Skin not found for ID: ${skinId}`);
       return res.status(404).json({ error: 'Skin not found' });
     }
 
@@ -134,19 +139,21 @@ export const getSkinMarketStats = async (req, res) => {
       volume24h: skin.sold24h || 0,
       volume7d: skin.sold7d || 0,
       volume30d: skin.sold30d || 0,
-      currentPrice: skin.priceLatest,
-      medianPrice: skin.priceMedian,
-      minPrice: skin.priceMin,
-      maxPrice: skin.priceMax,
-      avgPrice: skin.priceAvg,
+      currentPrice: skin.priceLatest || 0,
+      medianPrice: skin.priceMedian || 0,
+      minPrice: skin.priceMin || 0,
+      maxPrice: skin.priceMax || 0,
+      avgPrice: skin.priceAvg || 0,
       buyOrders: skin.buyOrderVolume || 0,
       listings: skin.offerVolume || 0,
-      lastUpdated: skin.priceUpdatedAt
+      lastUpdated: skin.priceUpdatedAt || new Date()
     };
 
+    console.log(`[DEBUG] Returning stats:`, stats);
     res.json(stats);
   } catch (err) {
-    res.status(500).json({ error: "Could not fetch market statistics" });
+    console.error(`[ERROR] getSkinMarketStats error:`, err);
+    res.status(500).json({ error: "Could not fetch market statistics", details: err.message });
   }
 };
 
