@@ -1,5 +1,5 @@
-{/* Tiny Tooltip (no lib) */}
 "use client";
+{/* Tiny Tooltip (no lib) */}
 import { useState } from "react";
 export function Tip({ label, children }:{label:string;children:React.ReactNode}) {
   const [open,setOpen]=useState(false);

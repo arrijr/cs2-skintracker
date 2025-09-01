@@ -1,5 +1,5 @@
-{/* Price Delta Badge (24h) */}
 "use client";
+{/* Price Delta Badge (24h) */}
 import { formatUSD, numberOrNull } from "@/lib/num";
 
 export default function PriceDeltaBadge({ current, yesterday }:{

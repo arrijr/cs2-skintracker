@@ -1,5 +1,5 @@
-{/* Chart Range Tabs */}
 "use client";
+{/* Chart Range Tabs */}
 export type Range = "7d"|"30d"|"90d";
 export default function ChartRangeTabs({ value, onChange }:{
   value: Range; onChange: (r:Range)=>void;
