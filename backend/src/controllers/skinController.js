@@ -25,49 +25,67 @@ export const getSkinVariants = async (req, res) => {
   try {
     console.log(`[DEBUG] Fetching variants for skin ID: ${skinId}`);
     
-    // Simple test response first
-    const testVariants = {
-      variants: [
-        {
-          id: 19122,
-          name: "'Blueberries' Buckshot | NSWC SEAL",
-          wear: "Factory New",
-          quality: "Covert",
-          isStattrak: false,
-          isStar: false,
-          priceLatest: 25.50,
-          imageUrl: "https://example.com/skin1.jpg"
-        },
-        {
-          id: 19123,
-          name: "'Blueberries' Buckshot | NSWC SEAL",
-          wear: "Minimal Wear",
-          quality: "Covert",
-          isStattrak: false,
-          isStar: false,
-          priceLatest: 18.75,
-          imageUrl: "https://example.com/skin2.jpg"
-        },
-        {
-          id: 19124,
-          name: "'Blueberries' Buckshot | NSWC SEAL",
-          wear: "Field-Tested",
-          quality: "Covert",
-          isStattrak: true,
-          isStar: false,
-          priceLatest: 45.00,
-          imageUrl: "https://example.com/skin3.jpg"
-        }
-      ],
+    const currentSkin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      select: { name: true, weaponType: true, itemGroup: true }
+    });
+
+    if (!currentSkin) {
+      return res.status(404).json({ error: 'Skin not found' });
+    }
+
+    // Find variants with same base name but different wear/quality
+    const variants = await prisma.skin.findMany({
+      where: {
+        name: currentSkin.name,
+        weaponType: currentSkin.weaponType,
+        itemGroup: currentSkin.itemGroup,
+        id: { not: parseInt(skinId) } // Exclude current skin
+      },
+      select: {
+        id: true,
+        name: true,
+        wear: true,
+        quality: true,
+        isStattrak: true,
+        isStar: true,
+        priceLatest: true,
+        imageUrl: true
+      },
+      orderBy: [
+        { isStattrak: 'desc' },
+        { wear: 'asc' },
+        { priceLatest: 'asc' }
+      ]
+    });
+
+    // Add current skin to the list and mark it as active
+    const allVariants = [
+      ...variants,
+      {
+        id: parseInt(skinId),
+        name: currentSkin.name,
+        wear: null, // Will be filled from current skin data
+        quality: null,
+        isStattrak: null,
+        isStar: null,
+        priceLatest: null,
+        imageUrl: null,
+        isActive: true // Mark current skin as active
+      }
+    ];
+
+    const result = {
+      variants: allVariants,
       currentSkin: {
-        name: "'Blueberries' Buckshot | NSWC SEAL",
-        weaponType: "shotgun",
-        itemGroup: "shotgun"
+        name: currentSkin.name,
+        weaponType: currentSkin.weaponType,
+        itemGroup: currentSkin.itemGroup
       }
     };
 
-    console.log(`[DEBUG] Returning test variants:`, testVariants);
-    res.json(testVariants);
+    console.log(`[DEBUG] Returning variants:`, result);
+    res.json(result);
   } catch (err) {
     console.error(`[ERROR] getSkinVariants error:`, err);
     res.status(500).json({ error: "Could not fetch skin variants", details: err.message });
@@ -80,46 +98,49 @@ export const getSkinCase = async (req, res) => {
   try {
     console.log(`[DEBUG] Fetching case info for skin ID: ${skinId}`);
     
-    // Simple test response first
-    const testCaseInfo = {
-      caseName: "Revolution Case",
-      skins: [
-        {
-          id: 19125,
-          name: "AK-47 | Redline",
-          wear: "Field-Tested",
-          rarity: "Classified",
-          quality: "Classified",
-          isStattrak: false,
-          priceLatest: 15.50,
-          imageUrl: "https://example.com/ak47.jpg"
-        },
-        {
-          id: 19126,
-          name: "M4A4 | Desolate Space",
-          wear: "Minimal Wear",
-          rarity: "Covert",
-          quality: "Covert",
-          isStattrak: true,
-          priceLatest: 85.00,
-          imageUrl: "https://example.com/m4a4.jpg"
-        },
-        {
-          id: 19127,
-          name: "AWP | Hyper Beast",
-          wear: "Factory New",
-          rarity: "Covert",
-          quality: "Covert",
-          isStattrak: false,
-          priceLatest: 120.00,
-          imageUrl: "https://example.com/awp.jpg"
-        }
-      ],
-      totalSkins: 3
+    // Get skin data to check if it has case information
+    const skin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      select: { collection: true, name: true }
+    });
+
+    if (!skin) {
+      return res.status(404).json({ error: 'Skin not found' });
+    }
+
+    // If no case/collection data, return 204 No Content
+    if (!skin.collection) {
+      console.log(`[DEBUG] No case data for skin ${skinId}, returning 204`);
+      return res.status(204).send();
+    }
+
+    // Find all skins from the same case/collection
+    const caseSkins = await prisma.skin.findMany({
+      where: { collection: skin.collection },
+      select: {
+        id: true,
+        name: true,
+        wear: true,
+        rarity: true,
+        quality: true,
+        isStattrak: true,
+        priceLatest: true,
+        imageUrl: true
+      },
+      orderBy: [
+        { rarity: 'desc' },
+        { priceLatest: 'desc' }
+      ]
+    });
+
+    const caseInfo = {
+      caseName: skin.collection,
+      skins: caseSkins,
+      totalSkins: caseSkins.length
     };
 
-    console.log(`[DEBUG] Returning test case info:`, testCaseInfo);
-    res.json(testCaseInfo);
+    console.log(`[DEBUG] Returning case info:`, caseInfo);
+    res.json(caseInfo);
   } catch (err) {
     console.error(`[ERROR] getSkinCase error:`, err);
     res.status(500).json({ error: "Could not fetch case information", details: err.message });

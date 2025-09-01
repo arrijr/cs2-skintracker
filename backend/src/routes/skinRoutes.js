@@ -512,7 +512,8 @@ router.get("/:skinId/variants", getSkinVariants);
 // Get case information for a skin
 router.get("/:skinId/case", getSkinCase);
 
-// Get market statistics for a skin
+// Get market statistics for a skin (with alias)
 router.get("/:skinId/market-stats", getSkinMarketStats);
+router.get("/:skinId/market", getSkinMarketStats); // Alias for compatibility
 
 export default router;
