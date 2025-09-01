@@ -201,7 +201,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     datasets: [
       {
         label: "Price ($)",
-        data: history?.map((h) => h.price || 0) || [],
+        data: history?.map((h) => Number(h.price) || 0) || [],
         borderColor: "rgb(59,130,246)",
         tension: 0.2,
         fill: false,
