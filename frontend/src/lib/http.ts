@@ -14,10 +14,13 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
     "Content-Type": "application/json",
     ...(init.headers || {}),
   };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (token) (headers as Record<string, string>).Authorization = `Bearer ${token}`;
 
   const url = `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+  console.log(`[DEBUG] apiFetch calling: ${url}`);
+  
   const res = await fetch(url, { ...init, headers });
+  console.log(`[DEBUG] apiFetch response status: ${res.status}`);
 
   // {/* Auto-Logout bei abgelaufenem Token */}
   if (res.status === 401) {
@@ -31,18 +34,6 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
     throw new Error("Unauthorized"); // This will still be thrown if window is undefined (e.g. SSR)
   }
 
-  if (!res.ok) {
-    let msg = `Request failed (${res.status})`;
-    try {
-      const j = await res.json();
-      msg = j?.message || j?.error || msg;
-    } catch {}
-    throw new Error(msg);
-  }
-
-  try {
-    return await res.json();
-  } catch {
-    return { ok: false, error: "Failed to parse response" };
-  }
+  // Return the raw response instead of trying to parse JSON
+  return res;
 }
