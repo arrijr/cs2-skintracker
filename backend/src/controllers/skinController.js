@@ -111,46 +111,23 @@ export const getSkinMarketStats = async (req, res) => {
   try {
     console.log(`[DEBUG] Fetching market stats for skin ID: ${skinId}`);
     
-    const skin = await prisma.skin.findUnique({
-      where: { id: parseInt(skinId) },
-      select: {
-        sold24h: true,
-        sold7d: true,
-        sold30d: true,
-        priceLatest: true,
-        priceMedian: true,
-        priceMin: true,
-        priceMax: true,
-        priceAvg: true,
-        buyOrderVolume: true,
-        offerVolume: true,
-        priceUpdatedAt: true
-      }
-    });
-
-    console.log(`[DEBUG] Skin data:`, skin);
-
-    if (!skin) {
-      console.log(`[DEBUG] Skin not found for ID: ${skinId}`);
-      return res.status(404).json({ error: 'Skin not found' });
-    }
-
-    const stats = {
-      volume24h: skin.sold24h || 0,
-      volume7d: skin.sold7d || 0,
-      volume30d: skin.sold30d || 0,
-      currentPrice: skin.priceLatest || 0,
-      medianPrice: skin.priceMedian || 0,
-      minPrice: skin.priceMin || 0,
-      maxPrice: skin.priceMax || 0,
-      avgPrice: skin.priceAvg || 0,
-      buyOrders: skin.buyOrderVolume || 0,
-      listings: skin.offerVolume || 0,
-      lastUpdated: skin.priceUpdatedAt || new Date()
+    // Simple test response first
+    const testStats = {
+      volume24h: 150,
+      volume7d: 1200,
+      volume30d: 5000,
+      currentPrice: 25.50,
+      medianPrice: 24.00,
+      minPrice: 20.00,
+      maxPrice: 30.00,
+      avgPrice: 24.50,
+      buyOrders: 45,
+      listings: 120,
+      lastUpdated: new Date()
     };
 
-    console.log(`[DEBUG] Returning stats:`, stats);
-    res.json(stats);
+    console.log(`[DEBUG] Returning test stats:`, testStats);
+    res.json(testStats);
   } catch (err) {
     console.error(`[ERROR] getSkinMarketStats error:`, err);
     res.status(500).json({ error: "Could not fetch market statistics", details: err.message });
