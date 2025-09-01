@@ -87,8 +87,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         console.log(`[DEBUG] API response - history:`, h);
         
         if (!cancelled) {
-          setSkin(s || null);
-          setHistory(Array.isArray(h) ? h : []);
+          // Parse the Response objects to JSON
+          const skinData = s.ok ? await s.json() : null;
+          const historyData = h.ok ? await h.json() : [];
+          
+          setSkin(skinData);
+          setHistory(Array.isArray(historyData) ? historyData : []);
         }
       } finally {
         if (!cancelled) setLoading(false);
