@@ -27,10 +27,14 @@ export function getToken(): string | null {
     const token = localStorage.getItem("token");
     if (!token) return null;
     
+    // Debug: Log token for debugging
+    console.log("🔍 Token from localStorage:", token.substring(0, 50) + "...");
+    
     // Basic token format validation
     const parts = token.split('.');
     if (parts.length !== 3) {
-      console.warn("⚠️ Invalid token format detected");
+      console.warn("⚠️ Invalid token format detected - parts:", parts.length);
+      console.warn("⚠️ Token:", token);
       clearAuth();
       return null;
     }

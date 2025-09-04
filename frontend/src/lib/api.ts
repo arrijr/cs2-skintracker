@@ -124,10 +124,8 @@ export async function login(email: string, password: string) {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-  if (typeof window !== "undefined") {
-    localStorage.setItem("token", data?.token);
-    localStorage.setItem("user", JSON.stringify(data?.user));
-  }
+  
+  // Return the data for AuthContext to handle
   return data;
 }
 

@@ -62,31 +62,23 @@ export default function AdminPage() {
 
   const loadAdminData = async () => {
     try {
+      const { apiFetch } = await import("@/lib/http");
       const [overviewRes, jobsRes, logsRes] = await Promise.all([
-        fetch("/api/v1/admin/overview", {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        fetch("/api/v1/admin/jobs", {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        fetch("/api/v1/admin/logs", {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        apiFetch("/api/v1/admin/overview"),
+        apiFetch("/api/v1/admin/jobs"),
+        apiFetch("/api/v1/admin/logs")
       ]);
 
       if (overviewRes.ok) {
-        const overviewData = await overviewRes.json();
-        setOverview(overviewData);
+        setOverview(overviewRes);
       }
 
       if (jobsRes.ok) {
-        const jobsData = await jobsRes.json();
-        setJobs(jobsData.jobs);
+        setJobs(jobsRes.jobs);
       }
 
       if (logsRes.ok) {
-        const logsData = await logsRes.json();
-        setAdminLogs(logsData.logs);
+        setAdminLogs(logsRes.logs);
       }
     } catch (err) {
       setError("Failed to load admin data");

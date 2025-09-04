@@ -29,6 +29,11 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
     throw new Error("Unauthorized"); // This will still be thrown if window is undefined (e.g. SSR)
   }
 
-  // Return the raw response instead of trying to parse JSON
-  return res;
+  // Parse JSON and return data
+  try {
+    const data = await res.json();
+    return { ok: res.ok, status: res.status, ...data };
+  } catch (error) {
+    return { ok: res.ok, status: res.status, error: "Failed to parse response" };
+  }
 }
