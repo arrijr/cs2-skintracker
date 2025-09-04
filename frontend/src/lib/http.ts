@@ -1,10 +1,6 @@
-export const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
+import { getToken, clearAuth } from "./auth";
 
-// {/* Safe token getter */}
-function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
-}
+export const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 
 // {/* Core fetch: JWT + 401 Auto-Logout + Fehler-Handling */}
 export async function apiFetch(path: string, init: RequestInit = {}) {
@@ -25,8 +21,7 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
   // {/* Auto-Logout bei abgelaufenem Token */}
   if (res.status === 401) {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      clearAuth();
       window.location.href = "/login";
       // Return a promise that never resolves to prevent further execution
       return new Promise(() => {});

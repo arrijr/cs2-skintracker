@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
 import SkinSearchBar from "../components/SkinSearchBar";
+import { isAdmin as checkIsAdmin, getCurrentUser } from "@/lib/auth";
 
 export default function NavBar() {
   const router = useRouter();
@@ -11,67 +12,30 @@ export default function NavBar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminCheckComplete, setAdminCheckComplete] = useState(false);
 
-  // Check if user is admin
+  // Check if user is admin using hardened auth utilities
   useEffect(() => {
     if (!token) {
       setIsAdmin(false);
+      setAdminCheckComplete(true);
       return;
     }
 
-    const checkAdminStatus = async () => {
-      try {
-        console.log("🔍 Checking admin status from token...");
-        
-        // Extract role directly from JWT token
-        const tokenParts = token.split('.');
-        if (tokenParts.length === 3) {
-          const payload = JSON.parse(atob(tokenParts[1]));
-          console.log("🔍 Token payload:", payload);
-          
-          if (payload.role === 'admin') {
-            console.log("✅ Admin role found in token - setting isAdmin = true");
-            setIsAdmin(true);
-          } else {
-            console.log("❌ No admin role in token - setting isAdmin = false");
-            setIsAdmin(false);
-          }
-        } else {
-          console.log("⚠️ Invalid token format - trying API fallback...");
-          
-          // Fallback: Try API call
-          try {
-            const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const response = await fetch(`${backendUrl}/api/v1/admin/health`, {
-              headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              }
-            });
-            
-            if (response.ok) {
-              console.log("✅ API fallback successful - user is admin");
-              setIsAdmin(true);
-            } else {
-              console.log("❌ API fallback failed - user is not admin");
-              setIsAdmin(false);
-            }
-          } catch (apiError) {
-            console.error("🚨 API fallback error:", apiError);
-            setIsAdmin(false);
-          }
-        }
-        
-      } catch (err) {
-        console.error("🚨 Admin check error:", err);
-        setIsAdmin(false);
-      } finally {
-        setAdminCheckComplete(true);
-        console.log("🏁 Admin check complete, isAdmin:", isAdmin);
-      }
-    };
-
-    // Check immediately without delay
-    checkAdminStatus();
+    try {
+      console.log("🔍 Checking admin status using auth utilities...");
+      
+      // Use centralized auth function
+      const adminStatus = checkIsAdmin();
+      console.log("🔍 Admin status:", adminStatus);
+      
+      setIsAdmin(adminStatus);
+      setAdminCheckComplete(true);
+      
+      console.log("🏁 Admin check complete, isAdmin:", adminStatus);
+    } catch (err) {
+      console.error("🚨 Admin check error:", err);
+      setIsAdmin(false);
+      setAdminCheckComplete(true);
+    }
   }, [token]);
 
   return (

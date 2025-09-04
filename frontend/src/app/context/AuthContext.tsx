@@ -1,11 +1,12 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { setAuth, clearAuth, getCurrentUser, isAuthenticated, AuthUser } from "@/lib/auth";
 
 type AuthContextType = {
-  user: any;
+  user: AuthUser | null;
   token: string | null | undefined;
   loading: boolean;
-  login: (token: string, user: any) => void;
+  login: (token: string, user: AuthUser) => void;
   logout: () => void;
 };
 
@@ -19,46 +20,56 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null | undefined>(undefined);
-  const [user, setUser] = useState<any>(undefined);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Token & User aus LocalStorage holen (nur einmalig nach Mount)
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-
-    if (storedToken) {
-      setToken(storedToken);
-    } else {
-      setToken(null);
-    }
-
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
+    // Use hardened auth utilities to load user state
+    try {
+      if (isAuthenticated()) {
+        const currentUser = getCurrentUser();
+        const storedToken = localStorage.getItem("token");
+        
+        if (currentUser && storedToken) {
+          setUser(currentUser);
+          setToken(storedToken);
+        } else {
+          // Invalid state, clear everything
+          clearAuth();
+          setUser(null);
+          setToken(null);
+        }
+      } else {
         setUser(null);
-        localStorage.removeItem("user");
+        setToken(null);
       }
-    } else {
+    } catch (error) {
+      console.error("🚨 Error loading auth state:", error);
+      clearAuth();
       setUser(null);
+      setToken(null);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false); // Nach erstem Check: Laden beendet!
   }, []);
 
-  const login = (token: string, user: any) => {
-    setToken(token);
-    setUser(user);
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+  const login = (token: string, user: AuthUser) => {
+    try {
+      setAuth(token, user);
+      setToken(token);
+      setUser(user);
+    } catch (error) {
+      console.error("🚨 Error during login:", error);
+      clearAuth();
+      setToken(null);
+      setUser(null);
+    }
   };
 
   const logout = () => {
+    clearAuth();
     setToken(null);
     setUser(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
   };
 
   return (
