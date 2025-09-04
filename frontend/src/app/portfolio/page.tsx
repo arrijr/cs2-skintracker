@@ -79,6 +79,7 @@ export default function PortfolioPage() {
         getWatchlist(),
         apiFetch("/api/v1/portfolio/kpis").catch(() => null)
       ]);
+      console.log('[DEBUG] Portfolio data received:', { h, p, w, kpis });
       setHistory(Array.isArray(h) ? h : []);
       setPortfolioSkins(Array.isArray(p) ? p : []);
       setWatchlist(Array.isArray(w) ? w : []);

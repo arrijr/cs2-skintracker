@@ -62,6 +62,7 @@ export async function getSkinHistory(id: number | string) {
 // {/* Watchlist: lesen */}
 export async function getWatchlist() {
   const response = await apiFetch(`/api/v1/watchlist`);
+  console.log('[DEBUG] getWatchlist response:', response);
   return response.ok ? response : [];
 }
 
@@ -89,6 +90,7 @@ export async function updatePriceAlert(skinId: number, priceAlert: number | null
 // {/* Portfolio: lesen */}
 export async function getPortfolio() {
   const response = await apiFetch(`/api/v1/portfolio`);
+  console.log('[DEBUG] getPortfolio response:', response);
   return response.ok ? response : [];
 }
 
