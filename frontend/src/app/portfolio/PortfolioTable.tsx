@@ -61,8 +61,8 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
     localStorage.setItem('portfolio-sort', newSort);
   };
 
-  // Filtered & Sorted Skins
-  let filteredSkins = skins;
+  // Filtered & Sorted Skins - ensure skins is an array
+  let filteredSkins = Array.isArray(skins) ? skins : [];
 
   // Apply allocation filter
   if (activeFilter && activeFilter.value !== "Others") {

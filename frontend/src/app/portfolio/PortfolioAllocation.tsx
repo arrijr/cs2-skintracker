@@ -193,7 +193,7 @@ export default function PortfolioAllocation({ portfolio, onFilterChange, activeF
         
         if (label === "Others") {
           // For "Others", we need to collect all the filter values that make up this segment
-          const otherFilterValues = portfolio
+          const otherFilterValues = (Array.isArray(portfolio) ? portfolio : [])
             .filter(entry => {
               let key = "Unknown";
               if (allocationType === "weaponType" && entry.skin.weaponType) {
@@ -226,7 +226,7 @@ export default function PortfolioAllocation({ portfolio, onFilterChange, activeF
     }
   };
 
-  if (!portfolio || portfolio.length === 0) {
+  if (!portfolio || !Array.isArray(portfolio) || portfolio.length === 0) {
     return (
       <div className="bg-gray-900 rounded-xl p-6 shadow-md">
         <h3 className="text-xl font-semibold mb-4">Portfolio Allocation</h3>

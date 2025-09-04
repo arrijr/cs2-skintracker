@@ -28,10 +28,8 @@ export default function LastUpdatedChip({ token, onRefresh }: Props) {
     setError(null);
 
     try {
-      // Try health endpoint first
-      const healthResponse = await fetch("/api/v1/health/cron-status", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Try health endpoint first (no auth required)
+      const healthResponse = await fetch("/api/v1/health/cron-status");
 
       if (healthResponse.ok) {
         const healthData = await healthResponse.json();

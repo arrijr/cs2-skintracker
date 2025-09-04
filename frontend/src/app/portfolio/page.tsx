@@ -72,17 +72,16 @@ export default function PortfolioPage() {
     setLoading(true);
     setError(null);
     try {
+      const { apiFetch } = await import("@/lib/http");
       const [h, p, w, kpis] = await Promise.all([
         getPortfolioHistory(),
         getPortfolio(),
         getWatchlist(),
-        fetch("/api/v1/portfolio/kpis", {
-          headers: { Authorization: `Bearer ${token}` }
-        }).then(res => res.json()).catch(() => null)
+        apiFetch("/api/v1/portfolio/kpis").catch(() => null)
       ]);
-      setHistory(h || []);
-      setPortfolioSkins(p || []);
-      setWatchlist(w || []);
+      setHistory(Array.isArray(h) ? h : []);
+      setPortfolioSkins(Array.isArray(p) ? p : []);
+      setWatchlist(Array.isArray(w) ? w : []);
       setKpiData(kpis);
     } catch (e: any) {
       setError(e?.message || "Failed to load portfolio data");
