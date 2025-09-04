@@ -82,7 +82,7 @@ export default function PortfolioPage() {
       setHistory(Array.isArray(h) ? h : []);
       setPortfolioSkins(Array.isArray(p) ? p : []);
       setWatchlist(Array.isArray(w) ? w : []);
-      setKpiData(kpis);
+      setKpiData(kpis && kpis.ok ? kpis : null);
     } catch (e: any) {
       setError(e?.message || "Failed to load portfolio data");
     } finally {

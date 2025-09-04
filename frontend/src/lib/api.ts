@@ -4,7 +4,8 @@ import { apiFetch } from "@/lib/http";
 // {/* Skins: Suche */}
 export async function searchSkins(query: string) {
   const q = encodeURIComponent(query || "");
-  return await apiFetch(`/api/v1/skins/search?query=${q}`);
+  const response = await apiFetch(`/api/v1/skins/search?query=${q}`);
+  return response.ok ? response : { skins: [] };
 }
 
 // {/* Browse all skins with filters and pagination */}
@@ -40,7 +41,7 @@ export async function browseSkins(params: {
     const response = await apiFetch(url);
     console.log('[DEBUG] 📥 API response:', response);
     
-    return response;
+    return response.ok ? response : { skins: [], total: 0, page: 1, limit: 20 };
   } catch (error) {
     console.error('[DEBUG] 💥 browseSkins error:', error);
     return { ok: false, error: String(error) };
@@ -49,7 +50,8 @@ export async function browseSkins(params: {
 
 // {/* Get filter options */}
 export async function getFilterOptions() {
-  return await apiFetch('/api/v1/skins/filters');
+  const response = await apiFetch('/api/v1/skins/filters');
+  return response.ok ? response : { weaponTypes: [], wears: [], rarities: [], qualities: [] };
 }
 
 // {/* Skins: History */}
@@ -59,7 +61,8 @@ export async function getSkinHistory(id: number | string) {
 
 // {/* Watchlist: lesen */}
 export async function getWatchlist() {
-  return await apiFetch(`/api/v1/watchlist`);
+  const response = await apiFetch(`/api/v1/watchlist`);
+  return response.ok ? response : [];
 }
 
 // {/* Watchlist: hinzufügen */}
@@ -85,12 +88,14 @@ export async function updatePriceAlert(skinId: number, priceAlert: number | null
 
 // {/* Portfolio: lesen */}
 export async function getPortfolio() {
-  return await apiFetch(`/api/v1/portfolio`);
+  const response = await apiFetch(`/api/v1/portfolio`);
+  return response.ok ? response : [];
 }
 
 // {/* Portfolio: History */}
 export async function getPortfolioHistory() {
-  return await apiFetch(`/api/v1/portfolio/history`);
+  const response = await apiFetch(`/api/v1/portfolio/history`);
+  return response.ok ? response : [];
 }
 
 // {/* Portfolio: löschen */}
