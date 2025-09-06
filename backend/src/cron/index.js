@@ -5,6 +5,7 @@ import cron from "node-cron";
 import { spawn } from "node:child_process";
 import checkPriceAlerts from "./priceAlertJob.js";
 import { calculateAndStorePortfolioValues } from "../services/portfolioHistoryService.js";
+import runPortfolioHistoryCron from "./portfolioHistoryCron.js";
 
 // {/* 02:00 UTC → z.B. 04:00 Berlin im Sommer */}
 // Preise updaten über dein robustes Script (separater Prozess = stabiler)
@@ -33,11 +34,18 @@ cron.schedule("0 2 * * *", () => {
   p.on("close", (code) => console.log(`[CRON] updateSkinPrices.js exited with ${code}`));
 });
 
-// {/* 02:10 UTC */} Portfolio-Historie schreiben
+// {/* 02:10 UTC */} Portfolio-Historie schreiben (legacy daily)
 cron.schedule("10 2 * * *", async () => {
   console.log("[CRON] Starting daily portfolio history...");
   await calculateAndStorePortfolioValues();
   console.log("[CRON] Portfolio history done.");
+});
+
+// {/* 12-stündlich */} Portfolio-Historie mit 12h Sampling
+cron.schedule("0 0,12 * * *", async () => {
+  console.log("[CRON] Starting 12-hourly portfolio history...");
+  await runPortfolioHistoryCron();
+  console.log("[CRON] 12-hourly portfolio history done.");
 });
 
 // {/* alle 30 Minuten */} Price Alerts prüfen

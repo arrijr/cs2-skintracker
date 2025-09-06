@@ -1,102 +1,138 @@
 import express from "express";
 import prisma from "../prisma/prismaClient.js";
-import authMiddleware from "../middleware/auth.js";
+import clerkAuth from "../middleware/clerkAuth.js";
 
 const router = express.Router();
 
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', clerkAuth, async (req, res) => {
   try {
-    const userId = req.user.userId;
-    console.log(`[DEBUG] Starting portfolio history for userId: ${userId}`);
+    const userId = req.user.id;
+    const days = parseInt(req.query.days) || 30; // Default to 30 days
+    const endDate = new Date();
+    const startDate = new Date(endDate.getTime() - (days * 24 * 60 * 60 * 1000));
+    
+    console.log(`[PORTFOLIO-HISTORY] Fetching ${days} days of history for user ${userId}`);
 
-    // 1. Get all user's transactions
-    const transactions = await prisma.portfolio.findMany({
-      where: { userId },
-      include: { skin: true },
-      orderBy: { buyDate: 'asc' },
+    // Try to get from PortfolioHistory table first (faster)
+    const portfolioHistory = await prisma.portfolioHistory.findMany({
+      where: {
+        userId: userId,
+        date: {
+          gte: startDate,
+          lte: endDate
+        }
+      },
+      orderBy: { date: 'asc' }
     });
-    console.log(`[DEBUG] Found ${transactions.length} transactions.`);
 
-    if (transactions.length === 0) {
-      console.log("[DEBUG] No transactions, returning empty history.");
+    if (portfolioHistory.length > 0) {
+      console.log(`[PORTFOLIO-HISTORY] Found ${portfolioHistory.length} cached entries`);
+      
+      // Fill in missing days with carry-forward logic
+      const history = [];
+      let lastValue = 0;
+      let lastInvested = 0;
+      
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        const entry = portfolioHistory.find(e => e.date.toISOString().split('T')[0] === dateStr);
+        
+        if (entry) {
+          lastValue = entry.value;
+          lastInvested = entry.invested || 0;
+        }
+        
+        history.push({
+          date: dateStr,
+          value: lastValue,
+          invested: lastInvested,
+          unrealizedPL: lastValue - lastInvested
+        });
+      }
+      
+      return res.json(history);
+    }
+
+    // Fallback: Calculate on-the-fly (slower but more accurate)
+    console.log(`[PORTFOLIO-HISTORY] No cached data, calculating on-the-fly`);
+    
+    // Get user's current portfolio
+    const portfolio = await prisma.portfolio.findMany({
+      where: { userId },
+      include: { skin: true }
+    });
+
+    if (portfolio.length === 0) {
+      console.log("[PORTFOLIO-HISTORY] No portfolio found, returning empty history");
       return res.json([]);
     }
 
-    // 2. Get all relevant price histories
-    const skinIds = [...new Set(transactions.map(t => t.skinId))];
+    // Get price history for all skins in portfolio
+    const skinIds = [...new Set(portfolio.map(p => p.skinId))];
     const priceHistories = await prisma.priceHistory.findMany({
       where: {
         skinId: { in: skinIds },
-      },
-      orderBy: { date: 'asc' },
-    });
-    console.log(`[DEBUG] Found ${priceHistories.length} total price history records for ${skinIds.length} unique skins.`);
-
-    // 3. Create a map for easy price lookups: { skinId: { 'YYYY-MM-DD': price } }
-    const priceMap = {};
-    for (const ph of priceHistories) {
-      if (!priceMap[ph.skinId]) {
-        priceMap[ph.skinId] = {};
-      }
-      const dateStr = ph.date.toISOString().split('T')[0];
-      priceMap[ph.skinId][dateStr] = ph.price;
-    }
-    console.log(`[DEBUG] Built priceMap for ${Object.keys(priceMap).length} skins.`);
-
-    // 4. Generate portfolio value for each day
-    const history = [];
-    const today = new Date();
-    const startDate = new Date(transactions[0].buyDate);
-    console.log(`[DEBUG] Calculating history from ${startDate.toISOString().split('T')[0]} to ${today.toISOString().split('T')[0]}`);
-
-    // Fill in missing prices with the last known price
-    for (const skinId of skinIds) {
-        if (!priceMap[skinId]) continue;
-        let lastPrice = null;
-        for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
-            const dateStr = d.toISOString().split('T')[0];
-            if (priceMap[skinId][dateStr]) {
-                lastPrice = priceMap[skinId][dateStr];
-            } else if (lastPrice !== null) {
-                priceMap[skinId][dateStr] = lastPrice;
-            }
+        date: {
+          gte: startDate,
+          lte: endDate
         }
+      },
+      orderBy: { date: 'asc' }
+    });
+
+    // Build price map with carry-forward logic
+    const priceMap = {};
+    for (const skinId of skinIds) {
+      priceMap[skinId] = {};
+      const skinPrices = priceHistories.filter(ph => ph.skinId === skinId);
+      
+      let lastPrice = null;
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        const dayPrice = skinPrices.find(sp => sp.date.toISOString().split('T')[0] === dateStr);
+        
+        if (dayPrice) {
+          lastPrice = dayPrice.price;
+        }
+        
+        if (lastPrice !== null) {
+          priceMap[skinId][dateStr] = lastPrice;
+        }
+      }
     }
 
-    let loopCount = 0;
-    for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
-      loopCount++;
+    // Calculate portfolio value for each day
+    const history = [];
+    let totalInvested = portfolio.reduce((sum, p) => sum + (p.amount * p.buyPrice), 0);
+    
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       const dateStr = d.toISOString().split('T')[0];
       let dailyValue = 0;
-
-      const ownedSkins = transactions.filter(t => new Date(t.buyDate) <= d);
-
-      const holdings = {};
-      for (const t of ownedSkins) {
-          if (!holdings[t.skinId]) holdings[t.skinId] = 0;
-          holdings[t.skinId] += t.amount;
-      }
-
-      for (const skinId in holdings) {
-        const amount = holdings[skinId];
-        const price = priceMap[skinId]?.[dateStr];
+      
+      for (const entry of portfolio) {
+        const price = priceMap[entry.skinId]?.[dateStr];
         if (typeof price === 'number') {
-          dailyValue += amount * price;
+          dailyValue += entry.amount * price;
         }
       }
-
-      if(loopCount < 5 || loopCount > 360) { // Log first few and last few days
-        console.log(`[DEBUG] Day ${dateStr}: Total Value = ${dailyValue.toFixed(2)}`);
-      }
-
-      history.push({ date: dateStr, value: dailyValue });
+      
+      history.push({
+        date: dateStr,
+        value: Math.round(dailyValue * 100) / 100,
+        invested: Math.round(totalInvested * 100) / 100,
+        unrealizedPL: Math.round((dailyValue - totalInvested) * 100) / 100
+      });
     }
 
-    console.log(`[DEBUG] Finished calculation. Total history points: ${history.length}. Final value: ${history[history.length - 1]?.value}`);
+    console.log(`[PORTFOLIO-HISTORY] Calculated ${history.length} days of history`);
     res.json(history);
+    
   } catch (error) {
-    console.error("Failed to generate portfolio history:", error);
-    res.status(500).json({ error: "Could not generate portfolio history." });
+    console.error("[PORTFOLIO-HISTORY] Failed to generate portfolio history:", error);
+    res.status(500).json({ 
+      error: "Could not generate portfolio history.",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
