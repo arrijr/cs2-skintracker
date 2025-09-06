@@ -1,5 +1,6 @@
 // /backend/src/middleware/clerkAdminAuth.js (Backend)
 import { verifyToken } from '@clerk/backend';
+import { getUserRoleFromDB } from '../utils/roleHelpers.js';
 
 export default async function clerkAdminAuth(req, res, next) {
   try {
@@ -22,34 +23,24 @@ export default async function clerkAdminAuth(req, res, next) {
       return res.status(401).json({ error: 'Invalid token' });
     }
     
-    // Check if user exists in our database
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
+    // Get user role from database using centralized helper
+    const userRole = await getUserRoleFromDB(payload.sub);
     
-    let user;
-    try {
-      user = await prisma.user.findUnique({
-        where: { email: payload.email },
-        select: { id: true, email: true, role: true }
-      });
-    } catch (dbError) {
-      console.error('Database error in admin auth:', dbError);
-      return res.status(500).json({ error: 'Database connection failed' });
-    } finally {
-      await prisma.$disconnect();
-    }
-
-    if (!user) {
+    if (!userRole.isUser) {
       return res.status(401).json({ error: 'User not found' });
     }
 
-    // Check admin role
-    if (user.role !== 'admin') {
+    // Check admin role using centralized helper
+    if (!userRole.isAdmin) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
     // Add user info to request
-    req.user = user;
+    req.user = {
+      id: userRole.userId,
+      email: userRole.email,
+      role: userRole.role
+    };
     req.clerkUserId = payload.sub; // Clerk user ID
     next();
   } catch (error) {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
+import { useUserRole } from "@/utils/roles";
 import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 
 type AdminTab = "overview" | "jobs" | "logs";
@@ -45,10 +46,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // {/* Check admin status from Clerk user metadata */}
-  const isAdmin = user?.publicMetadata?.role === 'admin' || 
-                  user?.emailAddresses?.[0]?.emailAddress === 'admin@example.com' ||
-                  user?.emailAddresses?.[0]?.emailAddress === 'test@test.de';
+  // Use centralized role hook
+  const { isAdmin } = useUserRole();
 
   // Load admin data if user is admin
   useEffect(() => {

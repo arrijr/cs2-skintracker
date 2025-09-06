@@ -8,15 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import SkinSearchBar from "./SkinSearchBar";
+import { useUserRole } from "@/utils/roles";
 
 export default function AppHeader() {
   const { isSignedIn, user, isLoaded } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Check if user is admin
-  const isAdmin = user?.publicMetadata?.role === 'admin' || 
-                  user?.emailAddresses?.[0]?.emailAddress === 'admin@example.com' ||
-                  user?.emailAddresses?.[0]?.emailAddress === 'test@test.de';
+  // Use centralized role hook
+  const { isAdmin } = useUserRole();
 
   const navigation = [
     { name: 'Home', href: '/' },
