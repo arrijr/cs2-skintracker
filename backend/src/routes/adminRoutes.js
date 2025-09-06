@@ -100,6 +100,63 @@ router.get('/ping', (req, res) => {
   });
 });
 
+// ADM-6: Steam Price Cache Management
+router.get('/cache/steam/stats', async (req, res) => {
+  try {
+    const { getCacheStats } = await import('../services/steamService.js');
+    const stats = getCacheStats();
+    res.json({
+      success: true,
+      cache: stats,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error getting cache stats:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to get cache stats' 
+    });
+  }
+});
+
+router.get('/cache/steam/items', async (req, res) => {
+  try {
+    const { getCachedItems } = await import('../services/steamService.js');
+    const items = getCachedItems();
+    res.json({
+      success: true,
+      items,
+      count: items.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error getting cached items:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to get cached items' 
+    });
+  }
+});
+
+router.post('/cache/steam/clear', async (req, res) => {
+  try {
+    const { clearCache } = await import('../services/steamService.js');
+    const clearedCount = clearCache();
+    res.json({
+      success: true,
+      message: `Cleared ${clearedCount} cache entries`,
+      clearedCount,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to clear cache' 
+    });
+  }
+});
+
 // ADM-13: User Management - Phase 4
 router.get('/users', getUsers);
 router.get('/users/search', searchUsers);

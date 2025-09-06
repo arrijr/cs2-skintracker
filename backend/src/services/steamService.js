@@ -1,6 +1,43 @@
 import axios from "axios";
 
+// Simple in-memory cache with 5-minute TTL
+const priceCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+// Cache helper functions
+function getCachedPrice(marketHashName) {
+  const cached = priceCache.get(marketHashName);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log(`[CACHE] Hit for ${marketHashName}`);
+    return cached.data;
+  }
+  return null;
+}
+
+function setCachedPrice(marketHashName, data) {
+  priceCache.set(marketHashName, {
+    data,
+    timestamp: Date.now()
+  });
+  console.log(`[CACHE] Set for ${marketHashName}`);
+}
+
+// Clean up expired cache entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of priceCache.entries()) {
+    if (now - value.timestamp >= CACHE_TTL) {
+      priceCache.delete(key);
+    }
+  }
+}, 60000); // Clean up every minute
+
 export async function fetchSkinPrice(marketHashName) {
+  // Check cache first
+  const cached = getCachedPrice(marketHashName);
+  if (cached) {
+    return cached;
+  }
   // Try Steam Web API first (more reliable and comprehensive)
   const apiKey = process.env.STEAM_API_KEY;
   if (apiKey) {
@@ -95,14 +132,19 @@ export async function fetchSkinPrice(marketHashName) {
         if (price) {
           const numeric = parseFloat(String(price).replace(/[^\d.,-]/g, "").replace(",", "."));
           if (Number.isFinite(numeric)) {
-            return {
+            const result = {
               ...priceData,
               lowest_price: numeric.toString(),
               median_price: numeric.toString()
             };
+            // Cache the result
+            setCachedPrice(marketHashName, result);
+            return result;
           }
         }
 
+        // Cache the result
+        setCachedPrice(marketHashName, priceData);
         return priceData;
       }
     } catch (err) {
@@ -122,7 +164,7 @@ export async function fetchSkinPrice(marketHashName) {
     
     if (res.data && res.data.success && (res.data.lowest_price || res.data.median_price)) {
       console.log(`[DEBUG] Steam Community API fallback for ${marketHashName}:`, res.data);
-      return {
+      const result = {
         ...res.data,
         source: "steamcommunity",
         // Limited data available from fallback
@@ -135,10 +177,60 @@ export async function fetchSkinPrice(marketHashName) {
         rarity: null,
         quality: null
       };
+      // Cache the result
+      setCachedPrice(marketHashName, result);
+      return result;
     }
   } catch (err) {
     console.log(`[DEBUG] Steam Community API failed for ${marketHashName}:`, err.message);
   }
 
   return null;
+}
+
+// Cache management functions
+export function getCacheStats() {
+  const now = Date.now();
+  let validEntries = 0;
+  let expiredEntries = 0;
+  
+  for (const [key, value] of priceCache.entries()) {
+    if (now - value.timestamp < CACHE_TTL) {
+      validEntries++;
+    } else {
+      expiredEntries++;
+    }
+  }
+  
+  return {
+    totalEntries: priceCache.size,
+    validEntries,
+    expiredEntries,
+    cacheTTL: CACHE_TTL,
+    cacheTTLMinutes: CACHE_TTL / (1000 * 60)
+  };
+}
+
+export function clearCache() {
+  const size = priceCache.size;
+  priceCache.clear();
+  console.log(`[CACHE] Cleared ${size} entries`);
+  return size;
+}
+
+export function getCachedItems() {
+  const now = Date.now();
+  const items = [];
+  
+  for (const [key, value] of priceCache.entries()) {
+    items.push({
+      marketHashName: key,
+      timestamp: value.timestamp,
+      age: now - value.timestamp,
+      ageMinutes: Math.round((now - value.timestamp) / (1000 * 60)),
+      isExpired: now - value.timestamp >= CACHE_TTL
+    });
+  }
+  
+  return items.sort((a, b) => b.timestamp - a.timestamp);
 }
