@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useUserRole } from "@/utils/roles";
 import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import BuildInfo from "../components/BuildInfo";
+import AdminMiniMetrics from "../components/AdminMiniMetrics";
 
 type AdminTab = "overview" | "jobs" | "logs";
 
@@ -224,6 +226,36 @@ export default function AdminPage() {
         {activeTab === "overview" && (
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold">System Overview</h2>
+            
+            {/* Build Info */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <BuildInfo showDetails={true} />
+              <div className="card-brand">
+                <div className="p-4">
+                  <h3 className="text-sm font-medium mb-3 flex items-center space-x-2">
+                    <Shield className="h-4 w-4" />
+                    <span>System Status</span>
+                  </h3>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-400">API Status:</span>
+                      <span className="text-brand-green">Online</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-400">Database:</span>
+                      <span className="text-brand-green">Connected</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-400">Clerk Auth:</span>
+                      <span className="text-brand-green">Active</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Admin Mini Metrics */}
+            <AdminMiniMetrics showDetails={true} />
             
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

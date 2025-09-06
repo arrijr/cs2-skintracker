@@ -5,7 +5,8 @@
   "proxy": "http://localhost:5000",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/generate-build-info.js && next build",
+    "build:info": "node scripts/generate-build-info.js",
     "start": "next start",
     "lint": "next lint"
   },
