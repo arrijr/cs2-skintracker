@@ -3,11 +3,11 @@ Modern web app to monitor and analyze CS2 skin prices with Watchlist, Price Aler
 history.
 - **Frontend:** Next.js (App Router, TypeScript), Tailwind
 - **Backend:** Node.js, Express, Prisma (PostgreSQL), Cron jobs
-- **Auth:** JWT (email + password)
+- **Auth:** Clerk (OAuth + email/password)
 - **App language:** English · **Currency:** $
 
 Features (MVP)
-- Email/password registration & login (JWT)
+- Authentication via Clerk (OAuth + email/password)
 - Skin search (Steam Market hash names, autocomplete)
 - Watchlist (free: up to 5 items)
 - One price alert per user (email/push prepared)
@@ -34,7 +34,7 @@ npx prisma migrate dev --name init
 npm run dev
 **Backend .env**
 DATABASE_URL="postgresql://postgres:@localhost:5432/cs2skindb?schema=public"
-JWT_SECRET="your_secret"
+CLERK_SECRET_KEY="your_clerk_secret_key"
 
 Optional scheduler flags in staging:
 RUN_SCHEDULER=false
@@ -45,13 +45,15 @@ npm install
 npm run dev
 Access http://localhost:3000
 
-**Frontend config**
-- Read API base from env (`NEXT_PUBLIC_API_URL`) or dev proxy.
+**Frontend .env.local**
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your_clerk_publishable_key"
+NEXT_PUBLIC_API_URL="http://localhost:5000"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL="/"
 
 API (short overview)
-- POST /api/v1/users/register → register { email, password }
-- POST /api/v1/users/login → returns { token, user }
-- GET /api/v1/users/profile → current user (JWT)
+- Authentication handled by Clerk middleware
+- GET /api/v1/users/profile → current user (Clerk token)
 - GET /api/v1/skins / GET /api/v1/skins/search?query=...
 - GET|POST|PATCH|DELETE /api/v1/watchlist[/:skinId]
 - GET|POST|DELETE /api/v1/portfolio[/:id]
@@ -59,7 +61,8 @@ API (short overview)
 See /docs/API.md for complete contracts, errors and examples.
 
 Data Model (high level)
-- **User**: id, email (unique), passwordHash, role (`user|admin`), isPremium (bool), createdAt
+- **User**: id, email (unique), role (`user|admin`), isPremium (bool), createdAt
+- **Authentication**: Handled by Clerk (OAuth + email/password)
 - **Skin**: id, name, marketHashName (unique), imageUrl, priceHistory[]
 - **Watchlist**: id, userId, skinId, priceAlert?
 - **Portfolio**: id, userId, skinId, amount, buyPrice, buyDate

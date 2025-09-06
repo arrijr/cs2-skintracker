@@ -1,6 +1,8 @@
 // /backend/src/app.js
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import "./cron/index.js";
 
@@ -16,7 +18,38 @@ import adminRoutes from "./routes/adminRoutes.js";
 dotenv.config();
 
 const app = express();
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  crossOriginEmbedderPolicy: false
+}));
+
 app.use(express.json());
+
+// Rate limiting for sensitive endpoints
+const sensitiveLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { error: 'Too many requests from this IP, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50, // limit each IP to 50 requests per windowMs for admin
+  message: { error: 'Too many admin requests from this IP, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // {/* Build CORS whitelist from ENV */}
 const parseCSV = (v) => (v || "").split(",").map(s => s.trim()).filter(Boolean);
@@ -55,14 +88,14 @@ app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
 
 // Routes (nur Pfade, keine URLs!)
-app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/users", sensitiveLimiter, userRoutes);
 app.use("/api/v1/skins", skinRoutes);
 app.use("/api/v1/watchlist", watchlistRoutes);
 app.use("/api/v1/portfolio", portfolioRoutes);
 app.use("/api/v1/portfolio/history", portfolioHistoryRoutes);
 app.use("/api/v1/transactions", transactionRoutes);
 app.use("/api/v1/health", healthRoutes);
-app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/admin", adminLimiter, adminRoutes);
 
 // 404
 app.use((req, res) => {

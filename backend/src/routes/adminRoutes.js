@@ -1,5 +1,5 @@
 import express from 'express';
-import adminAuth from '../middleware/adminAuth.js';
+import clerkAdminAuth from '../middleware/clerkAdminAuth.js';
 import { 
   getOverview, 
   getJobs, 
@@ -45,7 +45,7 @@ import {
 const router = express.Router();
 
 // All routes require admin authentication
-router.use(adminAuth);
+router.use(clerkAdminAuth);
 
 // ADM-1: Overview
 router.get('/overview', getOverview);
@@ -88,6 +88,15 @@ router.get('/health', (req, res) => {
     status: 'healthy', 
     timestamp: new Date().toISOString(),
     admin: true 
+  });
+});
+
+// ADM-5: Admin Ping Test
+router.get('/ping', (req, res) => {
+  res.json({ 
+    message: 'admin ok',
+    user: req.user?.email,
+    timestamp: new Date().toISOString()
   });
 });
 

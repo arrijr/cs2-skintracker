@@ -6,6 +6,15 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 const router = Router();
 
+// General health check
+router.get("/", (_req, res) => {
+  res.json({
+    ok: true,
+    ts: new Date().toISOString(),
+    service: "CS2 Skin Tracker API"
+  });
+});
+
 router.get("/cron-status", async (_req, res) => {
   try {
     const [lastPriceHistory] = await prisma.$queryRaw`
