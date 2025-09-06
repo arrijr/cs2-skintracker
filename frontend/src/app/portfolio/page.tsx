@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "../context/AuthContext";
-import { useRequireAuth } from "../hooks/useRequireAuth";
+import { useUser } from "@clerk/nextjs";
 import PortfolioChart from "./PortfolioChart";
 import PortfolioTable from "./PortfolioTable";
 import WatchlistTable from "./WatchlistTable";
@@ -47,8 +46,7 @@ interface PortfolioKPIs {
 }
 
 export default function PortfolioPage() {
-  const { token } = useAuth();
-  useRequireAuth(); // Redirect if not logged in
+  const { isSignedIn, isLoaded } = useUser();
 
   const [history, setHistory] = useState<any[]>([]);
   const [portfolioSkins, setPortfolioSkins] = useState<any[]>([]);
@@ -59,8 +57,8 @@ export default function PortfolioPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function loadAll() {
-    // No need for isCancelled check if we get a fresh token dependency
-    if (!token) {
+    // No need for isCancelled check if we get a fresh auth dependency
+    if (!isSignedIn) {
       setHistory([]);
       setPortfolioSkins([]);
       setWatchlist([]);
@@ -91,10 +89,12 @@ export default function PortfolioPage() {
     }
   }
 
-  // Load data on initial mount and when token changes
+  // Load data on initial mount and when auth changes
   useEffect(() => {
-    loadAll();
-  }, [token]);
+    if (isLoaded) {
+      loadAll();
+    }
+  }, [isLoaded, isSignedIn]);
 
 
   // {/* Remove from Watchlist */}
@@ -108,9 +108,13 @@ export default function PortfolioPage() {
   }
 
   // While loading auth state or data, show a loading message.
-  // The redirect will happen via the hook if auth fails.
-  if (token === undefined || loading) {
+  if (!isLoaded || loading) {
     return <div className="text-white p-6">Loading portfolio…</div>;
+  }
+
+  // Redirect if not signed in
+  if (!isSignedIn) {
+    return <div className="text-white p-6">Please sign in to view your portfolio.</div>;
   }
 
   return (
@@ -192,7 +196,7 @@ export default function PortfolioPage() {
 
           {/* Last Updated */}
           <div className="text-center mb-4">
-            <LastUpdatedChip token={token} onRefresh={loadAll} />
+            <LastUpdatedChip onRefresh={loadAll} />
           </div>
         </section>
 

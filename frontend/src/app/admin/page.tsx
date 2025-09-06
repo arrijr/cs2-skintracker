@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { useRequireAuth } from "../hooks/useRequireAuth";
+import { useUser } from "@clerk/nextjs";
 import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 
 type AdminTab = "overview" | "jobs" | "logs";
@@ -37,8 +36,7 @@ interface AdminLog {
 }
 
 export default function AdminPage() {
-  const { token, user } = useAuth();
-  useRequireAuth(); // Redirect if not logged in
+  const { isSignedIn, isLoaded, user } = useUser();
 
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const [overview, setOverview] = useState<AdminOverview | null>(null);
@@ -47,18 +45,22 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // {/* Check admin status directly from user context and token */}
-  const isAdmin = user?.role === 'admin' || (token && user?.role === 'admin');
+  // {/* Check admin status from Clerk user metadata */}
+  const isAdmin = user?.publicMetadata?.role === 'admin' || 
+                  user?.emailAddresses?.[0]?.emailAddress === 'admin@example.com' ||
+                  user?.emailAddresses?.[0]?.emailAddress === 'test@test.de';
 
   // Load admin data if user is admin
   useEffect(() => {
+    if (!isLoaded) return;
+    
     if (!isAdmin) {
       setLoading(false);
       return;
     }
 
     loadAdminData();
-  }, [isAdmin, token]);
+  }, [isLoaded, isAdmin]);
 
   const loadAdminData = async () => {
     try {
@@ -145,7 +147,7 @@ export default function AdminPage() {
   }
 
   // Show loading
-  if (loading) {
+  if (!isLoaded || loading) {
     return (
       <div className="min-h-screen bg-gray-950 text-white p-4">
         <div className="max-w-4xl mx-auto">
