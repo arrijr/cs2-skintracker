@@ -2,7 +2,8 @@
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Providers from "./providers";
-import ClerkNavBar from "./components/ClerkNavBar";
+import AppHeader from "./components/AppHeader";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata = {
   title: "CS2 Skin Price Tracker",
@@ -12,21 +13,18 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body className="bg-gray-950 text-white min-h-screen">
+      <html lang="en" className="dark">
+        <body className="bg-neutral-950 text-white min-h-screen">
           <Providers>
             {/* App Shell */}
-            <header className="border-b border-zinc-800">
-              <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                <div className="font-bold">CS2 Skin Price Tracker</div>
-                <nav className="text-sm text-zinc-400">
-                  <ClerkNavBar />
-                  {/* add nav links if you like */}
-                </nav>
-              </div>
-            </header>
-
-            <main className="max-w-6xl mx-auto px-4 py-6">{children}</main>
+            <AppHeader />
+            
+            <main className="min-h-screen">
+              {children}
+            </main>
+            
+            {/* Toast Notifications */}
+            <Toaster />
           </Providers>
         </body>
       </html>

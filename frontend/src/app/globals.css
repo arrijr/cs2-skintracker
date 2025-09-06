@@ -3,28 +3,72 @@
 @tailwind utilities;
 
 @layer components {
+  /* CS2 Skin Tracker Brand Components */
   .btn-main {
-    @apply bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl shadow font-semibold transition;
+    @apply bg-brand-blue hover:bg-brand-blue-dark text-white px-4 py-2 rounded-2xl shadow font-semibold transition-all duration-200;
+  }
+  .btn-brand-green {
+    @apply bg-brand-green hover:bg-brand-green-dark text-white px-4 py-2 rounded-2xl shadow font-semibold transition-all duration-200;
   }
   .btn-danger {
-    @apply bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-xl shadow font-semibold transition;
+    @apply bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-2xl shadow font-semibold transition-all duration-200;
   }
   .card {
-    @apply bg-neutral-900 rounded-2xl shadow-lg p-6;
+    @apply bg-neutral-900 rounded-3xl shadow-lg p-6 border border-neutral-800;
+  }
+  .card-brand {
+    @apply bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-3xl shadow-xl p-6 border border-brand-green/20;
   }
   .input-main {
-    @apply border border-neutral-700 bg-neutral-800 text-white rounded-xl p-2 shadow focus:outline-none focus:ring-2 focus:ring-blue-500 transition;
+    @apply border border-neutral-700 bg-neutral-800 text-white rounded-2xl p-3 shadow focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all duration-200;
   }
-}
-
-:root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  
+  /* CS2 Skin Tracker Container & Layout */
+  .container-cs2 {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  .section-cs2 {
+    @apply py-8 sm:py-12 lg:py-16;
+  }
+  
+  /* CS2 Skin Tracker Text Colors */
+  .text-brand-green {
+    @apply text-brand-green;
+  }
+  .text-brand-blue {
+    @apply text-brand-blue;
+  }
+  .text-brand-orange {
+    @apply text-brand-orange;
+  }
+  
+  /* CS2 Skin Tracker Badges */
+  .badge-cs2 {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-brand-green {
+    @apply bg-brand-green/10 text-brand-green border border-brand-green/20;
+  }
+  .badge-brand-blue {
+    @apply bg-brand-blue/10 text-brand-blue border border-brand-blue/20;
+  }
+  .badge-brand-orange {
+    @apply bg-brand-orange/10 text-brand-orange border border-brand-orange/20;
+  }
+  
+  /* CS2 Skin Tracker Animations */
+  .animate-fade-in {
+    @apply animate-in fade-in duration-300;
+  }
+  .animate-slide-up {
+    @apply animate-in slide-in-from-bottom-4 duration-300;
+  }
+  .animate-scale-in {
+    @apply animate-in zoom-in-95 duration-200;
+  }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: 'Inter', Arial, Helvetica, sans-serif;
 }
 
@@ -32,3 +76,72 @@ body {
 ::-webkit-scrollbar-thumb  { background:#313131; border-radius:4px; }
 
 a,button,input,.transition { transition:all .15s cubic-bezier(.4,0,.2,1); }
+
+
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 220.9 39.3% 11%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 224 71.4% 4.1%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 210 20% 98%;
+    --primary-foreground: 220.9 39.3% 11%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 216 12.2% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
