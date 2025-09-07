@@ -1,113 +1,94 @@
 // /backend/src/middleware/clerkAuth.js (Backend)
 // Clerk authentication middleware for Express.js backend
 
-import { verifyToken } from '@clerk/nextjs/server';
+import { ClerkExpressRequireAuth, ClerkExpressWithAuth } from '@clerk/express';
 
 /**
- * Clerk authentication middleware
+ * Clerk authentication middleware using @clerk/express
  * Verifies JWT tokens from Clerk and adds user info to request
  */
-export const clerkAuth = async (req, res, next) => {
-  try {
-    // Skip auth for public routes
-    const publicRoutes = [
-      '/api/v1/health',
-      '/api/v1/skins',
-      '/api/v1/skins/search',
-      '/api/v1/skins/browse'
-    ];
-    
-    if (publicRoutes.some(route => req.path.startsWith(route))) {
-      return next();
-    }
+export const clerkAuth = (req, res, next) => {
+  // Skip auth for public routes
+  const publicRoutes = [
+    '/api/v1/health',
+    '/api/v1/skins',
+    '/api/v1/skins/search',
+    '/api/v1/skins/browse'
+  ];
+  
+  if (publicRoutes.some(route => req.path.startsWith(route))) {
+    return next();
+  }
 
-    // Get token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  // Use Clerk's Express middleware
+  return ClerkExpressRequireAuth({
+    onError: (error) => {
+      console.error('Clerk auth error:', error);
       return res.status(401).json({ 
-        error: 'Missing or invalid authorization header',
-        code: 'MISSING_TOKEN'
+        error: 'Authentication required',
+        code: 'AUTH_REQUIRED'
       });
     }
-
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-
-    try {
-      // Verify the token with Clerk
-      const payload = await verifyToken(token, {
-        secretKey: process.env.CLERK_SECRET_KEY
-      });
-
-      // Add user info to request
-      req.user = {
-        id: payload.sub,
-        email: payload.email,
-        role: payload.publicMetadata?.role || 'user',
-        tier: payload.publicMetadata?.tier || 'free'
-      };
-
-      // Add user ID to request for easy access
-      req.userId = payload.sub;
-
-      next();
-    } catch (tokenError) {
-      console.error('Token verification failed:', tokenError);
+  })(req, res, (err) => {
+    if (err) {
+      console.error('Clerk auth middleware error:', err);
       return res.status(401).json({ 
         error: 'Invalid or expired token',
         code: 'INVALID_TOKEN'
       });
     }
-  } catch (error) {
-    console.error('Clerk auth middleware error:', error);
-    return res.status(500).json({ 
-      error: 'Authentication service error',
-      code: 'AUTH_SERVICE_ERROR'
-    });
-  }
+
+    // Add user info to request after successful auth
+    if (req.auth && req.auth.userId) {
+      req.user = {
+        id: req.auth.userId,
+        email: req.auth.sessionClaims?.email,
+        role: req.auth.publicMetadata?.role || 'user',
+        tier: req.auth.publicMetadata?.tier || 'free'
+      };
+      req.userId = req.auth.userId;
+    }
+
+    next();
+  });
 };
 
 /**
- * Optional authentication middleware
+ * Optional authentication middleware using @clerk/express
  * Adds user info if token is present, but doesn't require it
  */
-export const optionalClerkAuth = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+export const optionalClerkAuth = (req, res, next) => {
+  return ClerkExpressWithAuth({
+    onError: (error) => {
+      console.warn('Optional Clerk auth error:', error);
+      req.user = null;
+      req.userId = null;
+      return next();
+    }
+  })(req, res, (err) => {
+    if (err) {
+      console.warn('Optional Clerk auth middleware error:', err);
       req.user = null;
       req.userId = null;
       return next();
     }
 
-    const token = authHeader.substring(7);
-
-    try {
-      const payload = await verifyToken(token, {
-        secretKey: process.env.CLERK_SECRET_KEY
-      });
-
+    // Add user info to request if authenticated
+    if (req.auth && req.auth.userId) {
       req.user = {
-        id: payload.sub,
-        email: payload.email,
-        role: payload.publicMetadata?.role || 'user',
-        tier: payload.publicMetadata?.tier || 'free'
+        id: req.auth.userId,
+        email: req.auth.sessionClaims?.email,
+        role: req.auth.publicMetadata?.role || 'user',
+        tier: req.auth.publicMetadata?.tier || 'free'
       };
-
-      req.userId = payload.sub;
-    } catch (tokenError) {
-      console.warn('Optional auth token verification failed:', tokenError);
+      req.userId = req.auth.userId;
+    } else {
       req.user = null;
       req.userId = null;
     }
 
     next();
-  } catch (error) {
-    console.error('Optional clerk auth middleware error:', error);
-    req.user = null;
-    req.userId = null;
-    next();
-  }
+  });
 };
 
 /**
