@@ -8,16 +8,37 @@ import {
   getSkinMarketStats 
 } from "../controllers/skinController.js";
 import { fetchSkinPrice } from "../services/steamService.js";
+import { optionalClerkAuth } from "../middleware/clerkAuth.js";
 
 const router = express.Router();
 
+// Simple in-memory cache for skins data
+const skinsCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 // Get skins with enhanced filters, sort & pagination
-router.get("/", async (req, res) => {
+router.get("/", optionalClerkAuth, async (req, res) => {
   try {
     const {
       q, min, max, rarity, wear, quality, stattrak, special, category,
       sort = "name_asc", page = 1, pageSize = 24,
     } = req.query;
+
+    // Create cache key from query parameters
+    const cacheKey = JSON.stringify({
+      q, min, max, rarity, wear, quality, stattrak, special, category,
+      sort, page, pageSize
+    });
+
+    // Debug: Log auth status
+    console.log('🔍 [DEBUG] Skins endpoint - req.userId:', req.userId, 'req.auth:', !!req.auth);
+
+    // Check cache first
+    const cached = skinsCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log('✅ [CACHE] Returning cached skins data');
+      return res.json(cached.data);
+    }
 
     const take = Math.min(Math.max(Number(pageSize) || 24, 1), 60);
     const skip = (Math.max(Number(page) || 1, 1) - 1) * take;
@@ -246,12 +267,28 @@ router.get("/", async (req, res) => {
       console.log(`[DEBUG] Found ${items.length} skins for category: ${category}`);
       console.log(`[DEBUG] Total count: ${total}`);
 
-      res.json({ 
+      const responseData = { 
         items, 
         total, 
         page: Number(page) || 1, 
         pageSize: take 
+      };
+
+      // Cache the response
+      skinsCache.set(cacheKey, {
+        data: responseData,
+        timestamp: Date.now()
       });
+
+      // Clean old cache entries (keep only last 100)
+      if (skinsCache.size > 100) {
+        const entries = Array.from(skinsCache.entries());
+        entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+        const toDelete = entries.slice(0, entries.length - 100);
+        toDelete.forEach(([key]) => skinsCache.delete(key));
+      }
+
+      res.json(responseData);
     } catch (dbError) {
       console.error("[DEBUG] Database error:", dbError);
       console.error("[DEBUG] Error details:", {
@@ -267,7 +304,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/search", async (req, res) => {
+router.get("/search", optionalClerkAuth, async (req, res) => {
   const { query } = req.query;
   if (!query || query.length < 2) {
     return res.status(200).json([]);
@@ -300,7 +337,7 @@ router.get("/search", async (req, res) => {
 });
 
 // {/* Get filter options for UI */}
-router.get("/filters", async (req, res) => {
+router.get("/filters", optionalClerkAuth, async (req, res) => {
   try {
     const [weaponTypes, wears, rarities, qualities] = await Promise.all([
       prisma.skin.findMany({
@@ -341,7 +378,7 @@ router.get("/filters", async (req, res) => {
 });
 
 // Get skin categories (like skinbid.com)
-router.get("/categories", async (_req, res) => {
+router.get("/categories", optionalClerkAuth, async (_req, res) => {
   try {
     const categories = {
       knives: ["★", "knife", "bayonet", "karambit", "m9", "talon", "huntsman", "falchion", "navaja", "ursus", "paracord", "skeleton", "classic", "flip", "gut", "bowie", "stiletto", "shadow", "nomad"],
@@ -400,7 +437,7 @@ router.get("/categories", async (_req, res) => {
 });
 
 // Get preset values for UI (wear, rarity, etc.)
-router.get("/presets", async (_req, res) => {
+router.get("/presets", optionalClerkAuth, async (_req, res) => {
   try {
     const [wears, rarities] = await Promise.all([
       prisma.skin.findMany({
@@ -430,7 +467,7 @@ router.get("/presets", async (_req, res) => {
   }
 });
 
-router.get("/:skinId", async (req, res) => {
+router.get("/:skinId", optionalClerkAuth, async (req, res) => {
   const skinId = parseInt(req.params.skinId, 10);
   if (isNaN(skinId)) {
     return res.status(400).json({ message: "Invalid skinId" });
