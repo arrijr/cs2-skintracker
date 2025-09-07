@@ -6,7 +6,7 @@
  * Handles both client-side and server-side requests safely
  */
 export async function apiFetch(path: string, init: RequestInit = {}) {
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
   const url = `${baseURL}${path.startsWith('/') ? path : `/${path}`}`;
 
   // Prepare headers
@@ -72,7 +72,7 @@ export class HttpClient {
   private baseURL: string;
 
   constructor(baseURL?: string) {
-    this.baseURL = baseURL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    this.baseURL = baseURL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
   }
 
   private async getHeaders(): Promise<HeadersInit> {

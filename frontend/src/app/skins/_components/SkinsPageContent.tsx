@@ -242,7 +242,7 @@ export function SkinsPageContent() {
     
     setLoading(true);
     try {
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/skins?${queryString}`;
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/skins?${queryString}`;
       console.log("🚀 Calling API:", apiUrl);
       
       const res = await fetch(apiUrl, {
@@ -296,7 +296,7 @@ export function SkinsPageContent() {
   useEffect(() => {
     async function loadPresetValues() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/skins/presets`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/skins/presets`);
         if (res.ok) {
           const data = await res.json();
           setPresetValues(data);
