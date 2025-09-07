@@ -1,16 +1,37 @@
 import express from "express";
 import prisma from "../prisma/prismaClient.js";
-import clerkAuth from "../middleware/clerkAuth.js";
+import { clerkAuth } from "../middleware/clerkAuth.js";
 
 const router = express.Router();
 
 router.get('/', clerkAuth, async (req, res) => {
   try {
-    const userId = req.user.id;
+    // Debug: Log request types and auth info
+    console.log('🔍 [DEBUG] Portfolio History endpoint called');
+    console.log('🔍 [DEBUG] req.auth type:', typeof req.auth);
+    console.log('🔍 [DEBUG] req.user type:', typeof req.user);
+    console.log('🔍 [DEBUG] req.userId type:', typeof req.userId);
+    
+    const userId = req.userId || req.user?.id;
+    
+    if (!userId) {
+      console.log('❌ [DEBUG] No userId found');
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        debug: {
+          hasAuth: !!req.auth,
+          hasUser: !!req.user,
+          hasUserId: !!req.userId,
+          authKeys: req.auth ? Object.keys(req.auth) : null
+        }
+      });
+    }
+    
     const days = parseInt(req.query.days) || 30; // Default to 30 days
     const endDate = new Date();
     const startDate = new Date(endDate.getTime() - (days * 24 * 60 * 60 * 1000));
     
+    console.log(`✅ [DEBUG] Portfolio History - userId: ${userId}, days: ${days}`);
     console.log(`[PORTFOLIO-HISTORY] Fetching ${days} days of history for user ${userId}`);
 
     // Try to get from PortfolioHistory table first (faster)
@@ -128,10 +149,16 @@ router.get('/', clerkAuth, async (req, res) => {
     res.json(history);
     
   } catch (error) {
+    console.error("❌ [DEBUG] Portfolio History error:", error);
     console.error("[PORTFOLIO-HISTORY] Failed to generate portfolio history:", error);
     res.status(500).json({ 
       error: "Could not generate portfolio history.",
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      debug: {
+        errorType: typeof error,
+        errorMessage: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      }
     });
   }
 });
