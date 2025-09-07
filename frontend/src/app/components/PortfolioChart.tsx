@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useUser } from "@clerk/nextjs";
 // {/* Central API client (no axios) */}
 import { getPortfolioHistory } from "@/lib/api";
 import { Line } from "react-chartjs-2";
@@ -9,12 +9,12 @@ import { Line } from "react-chartjs-2";
 type Point = { date: string; value: number };
 
 export default function PortfolioChart() {
-  const { token } = useAuth();
+  const { user, isLoaded } = useUser();
   const [data, setData] = useState<Point[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!token) return;
+    if (!isLoaded || !user) return;
     let cancelled = false;
     (async () => {
       setLoading(true);
@@ -26,9 +26,9 @@ export default function PortfolioChart() {
       }
     })();
     return () => { cancelled = true; };
-  }, [token]);
+  }, [isLoaded, user]);
 
-  if (!token) return <div>Please log in to see your chart.</div>;
+  if (!isLoaded || !user) return <div>Please log in to see your chart.</div>;
   if (loading || !data.length) return <div>Loading chart...</div>;
 
   const chartData = {

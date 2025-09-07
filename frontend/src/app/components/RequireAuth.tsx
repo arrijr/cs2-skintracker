@@ -1,26 +1,26 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../context/AuthContext";
+import { useUser } from "@clerk/nextjs";
 
 export default function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { token, loading } = useAuth();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
 
   // {/* Redirect when unauthenticated */}
   useEffect(() => {
-    if (!loading && !token) {
-      router.replace("/login");
+    if (isLoaded && !user) {
+      router.replace("/sign-in");
     }
-  }, [loading, token, router]);
+  }, [isLoaded, user, router]);
 
   // {/* Gate while auth is initializing */}
-  if (loading) {
+  if (!isLoaded) {
     return <div className="text-center text-zinc-400 py-10">Loading…</div>;
   }
 
   // {/* Block render while redirecting */}
-  if (!token) return null;
+  if (!user) return null;
 
   return <>{children}</>;
 }

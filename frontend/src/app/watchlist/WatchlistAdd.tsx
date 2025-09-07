@@ -2,12 +2,12 @@
 import { useState } from "react";
 import SkinSearchBar from "../components/SkinSearchBar";
 import { http } from "@/lib/http";
-import { useAuth } from "../context/AuthContext";
+import { useUser } from "@clerk/nextjs";
 
 type Props = { onAdded?: () => void };
 
 export default function WatchlistAdd({ onAdded }: Props) {
-  const { token } = useAuth();
+  const { user, isLoaded } = useUser();
   const [newSkin, setNewSkin] = useState<any>(null);
   const [priceAlert, setPriceAlert] = useState<number | "">("");
   const [loading, setLoading] = useState(false);
@@ -15,14 +15,14 @@ export default function WatchlistAdd({ onAdded }: Props) {
   
 
   async function handleAdd() {
-    if (!newSkin || !token) return;
+    if (!newSkin || !user) return;
     setLoading(true);
     setError(null);
     try {
       await http.post(
         "/watchlist",
         { skinId: newSkin.id, priceAlert: priceAlert === "" ? undefined : Number(priceAlert) },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: {} }
       );
       setNewSkin(null);
       setPriceAlert("");

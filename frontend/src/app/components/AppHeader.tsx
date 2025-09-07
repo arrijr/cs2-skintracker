@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import SkinSearchBar from "./SkinSearchBar";
-import { useUserRole } from "@/utils/roles";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function AppHeader() {
   const { isSignedIn, user, isLoaded } = useUser();

@@ -1,5 +1,5 @@
 "use client";
-import { useAuth } from "../context/AuthContext";
+import { useUser } from "@clerk/nextjs";
 import { useRequireAuth } from "../hooks/useRequireAuth";
 import Link from "next/link";
 import { LogOut, User2, Star, Eye, Trash2, Settings, Shield, AlertTriangle } from "lucide-react";
@@ -35,7 +35,7 @@ interface KPIData {
 }
 
 export default function ProfilePage() {
-  const { user, token, loading, logout } = useAuth();
+  const { user, isLoaded } = useUser();
   useRequireAuth();
 
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -71,11 +71,11 @@ export default function ProfilePage() {
 
   // Load profile data
   useEffect(() => {
-    if (token) {
+    if (isLoaded && user) {
       loadProfileData();
       loadKPIData();
     }
-  }, [token]);
+  }, [isLoaded, user]);
 
   const loadProfileData = async () => {
     try {
@@ -198,7 +198,7 @@ export default function ProfilePage() {
     setIsDeleting(true);
     try {
       await apiFetch("/api/v1/users/me", { method: "DELETE" });
-      logout();
+      // Clerk will handle the logout and redirect
       window.location.href = "/";
     } catch (error) {
       setPwError("Failed to delete account");
@@ -207,7 +207,7 @@ export default function ProfilePage() {
   };
 
   // Show loading state while auth is being checked
-  if (token === undefined || !user) {
+  if (!isLoaded || !user) {
     return <div className="text-white p-6">Loading...</div>;
   }
 
@@ -237,9 +237,9 @@ export default function ProfilePage() {
           </span>
           <div>
             <div className="text-xl font-bold">
-              {profileData?.displayName || user.username || "User"}
+              {profileData?.displayName || user.firstName || "User"}
             </div>
-            <div className="text-zinc-400">{profileData?.email}</div>
+            <div className="text-zinc-400">{profileData?.email || user.primaryEmailAddress?.emailAddress}</div>
             <div className="text-sm text-zinc-500">
               Member since {profileData?.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : "Unknown"}
             </div>
@@ -425,13 +425,13 @@ export default function ProfilePage() {
           My Portfolio
         </Link>
         
-        <button
-          onClick={logout}
+        <Link
+          href="/sign-in"
           className="btn-main bg-red-700 hover:bg-red-800 flex items-center gap-2"
         >
           <LogOut className="w-5 h-5" />
-          Logout
-        </button>
+          Sign Out
+        </Link>
       </div>
 
       {/* Danger Zone */}

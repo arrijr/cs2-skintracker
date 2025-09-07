@@ -125,14 +125,14 @@ export async function getSkinDetails(skinId: number | string) {
   return await apiFetch(`/api/v1/skins/${skinId}/details`);
 }
 
-// {/* Auth: Login – speichert Token/User wie dein AuthContext es erwartet */}
+// {/* Auth: Login – legacy function for compatibility */}
 export async function login(email: string, password: string) {
   const data = await apiFetch(`/api/v1/users/login`, {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
   
-  // Return the data for AuthContext to handle
+  // Return the data for legacy compatibility
   return data;
 }
 

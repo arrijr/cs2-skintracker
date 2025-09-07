@@ -3,12 +3,12 @@ import { useState } from "react";
 import SkinCard from "./SkinCard";
 import SkinDetailModal from "./SkinDetailModal";
 import { dummySkins } from "./dummySkins";
-import { useAuth } from "../context/AuthContext";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/http";
 
 export default function SkinGrid({ filter }: { filter?: string | null }) {
-  const { user, token } = useAuth();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const [selected, setSelected] = useState<number | null>(null);
 
@@ -28,7 +28,7 @@ fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/portfolio`, {
 
   // {/* Add to Portfolio from grid */}
   async function handleAdd(skin: typeof dummySkins[0]) {
-    if (!user) { router.push("/login"); return; }
+    if (!user) { router.push("/sign-in"); return; }
     try {
       await apiFetch(`/api/v1/portfolio`, {
         method: "POST",

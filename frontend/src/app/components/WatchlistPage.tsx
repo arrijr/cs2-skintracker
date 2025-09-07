@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useAuth } from "../context/AuthContext";
-import { useRequireAuth } from "../hooks/useRequireAuth";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import {
   getWatchlist,
   updatePriceAlert as apiUpdatePriceAlert,
@@ -28,17 +28,24 @@ type WatchlistItem = {
 };
 
 export default function WatchlistPage() {
-  const { token } = useAuth();
-  useRequireAuth();
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
 
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
+  // {/* Redirect to sign-in if not authenticated */}
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/sign-in");
+    }
+  }, [isLoaded, user, router]);
+
   // {/* Load Watchlist */}
   async function load() {
-    if (!token) return;
+    if (!user) return;
     setLoading(true);
     setError(null);
     try {
@@ -52,13 +59,15 @@ export default function WatchlistPage() {
   }
 
   useEffect(() => {
-    load();
+    if (isLoaded && user) {
+      load();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [isLoaded, user]);
 
   // {/* Update Price Alert (onBlur oder Clear) */}
   async function handleUpdateAlert(skinId: number, value: string) {
-    if (!token) return;
+    if (!user) return;
     const priceAlert = value === "" ? null : Number(value);
     setUpdatingId(skinId);
     try {
@@ -75,7 +84,7 @@ export default function WatchlistPage() {
 
   // {/* Remove Skin from Watchlist */}
   async function handleRemove(skinId: number) {
-    if (!token) return;
+    if (!user) return;
     setUpdatingId(skinId);
     try {
       await apiRemoveFromWatchlist(skinId);
@@ -88,10 +97,14 @@ export default function WatchlistPage() {
   }
 
   // {/* UI */}
-  // The useRequireAuth hook will handle redirection if the user is not logged in.
-  // We can show a loading state until the auth status is confirmed and data is loaded.
-  if (token === undefined || loading) {
+  // Show loading state until Clerk auth is loaded and data is loaded
+  if (!isLoaded || loading) {
     return <div className="text-center text-zinc-400 py-10">Loading…</div>;
+  }
+
+  // If not authenticated, the redirect will happen in useEffect
+  if (!user) {
+    return <div className="text-center text-zinc-400 py-10">Redirecting…</div>;
   }
 
   return (

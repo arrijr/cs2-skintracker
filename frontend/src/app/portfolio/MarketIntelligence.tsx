@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { Brain, TrendingUp, TrendingDown, News, Calendar, Target, BarChart3, Zap } from "lucide-react";
+import { Brain, TrendingUp, TrendingDown, Newspaper, Calendar, Target, BarChart3, Zap } from "lucide-react";
 import Tooltip from "../components/Tooltip";
 
 type PortfolioEntry = {
@@ -386,7 +386,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
               : "bg-gray-800 text-gray-300 hover:bg-gray-700"
           }`}
         >
-          <News className="inline w-4 h-4 mr-1" />
+          <Newspaper className="inline w-4 h-4 mr-1" />
           Market News
         </button>
         <button

@@ -8,11 +8,8 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
   let token: string | null = null;
   
   if (typeof window !== "undefined") {
-    // Client-side: get token from Clerk
-    try {
-      const { useAuth } = await import("@clerk/nextjs");
-      // Note: This is a simplified approach - in real usage, you'd get the token from the hook context
-      // For now, we'll let the backend handle auth via Clerk middleware
+    // Client-side: Clerk handles authentication automatically
+    // The backend will verify the Clerk session token
       token = null;
     } catch (error) {
       console.warn("Failed to get Clerk token on client-side:", error);

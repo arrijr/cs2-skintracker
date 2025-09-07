@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Line } from "react-chartjs-2";
 import type { ChartData, ChartOptions } from "chart.js";
 import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
-import { useAuth } from "../../context/AuthContext";
+import { useUser } from "@clerk/nextjs";
 // {/* Central API helpers */}
 import {
   getPortfolio,
@@ -43,7 +43,7 @@ type PriceHistory = { date: string; price: number };
 export default function SkinDetailPage({ params }: { params: { skinId: string } }) {
   // *** ALLE STATES GANZ OBEN ***
   const router = useRouter();
-  const { token } = useAuth();
+  const { user, isLoaded } = useUser();
   const skinId = String(params.skinId ?? params.id ?? "");
 
   const [mounted, setMounted] = useState(false);
@@ -107,7 +107,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         if (!cancelled) setLoading(false);
       }
 
-      if (token) {
+      if (isLoaded && user) {
         getWatchlist().then((w) => !cancelled && setWatchlist(Array.isArray(w) ? w : []));
         getPortfolio().then((p) => !cancelled && setPortfolioSkins(Array.isArray(p) ? p : []));
       }
@@ -179,7 +179,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
     load();
     return () => { cancelled = true; };
-  }, [skinId, token]);
+  }, [skinId, isLoaded, user]);
 
   if (!mounted) return null;
   if (loading) return <div className="text-white py-8">Loading…</div>;
@@ -235,7 +235,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
   // {/* Add to Watchlist */}
   async function addToWatchlist() {
-    if (!token) return router.push("/login");
+    if (!user) return router.push("/sign-in");
     setAddingAlert(true);
     setMsg("");
     try {
@@ -258,8 +258,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
   // Handler: Add to Portfolio
   const addToPortfolio = async () => {
-    if (!token) {
-      router.push("/login");
+    if (!user) {
+      router.push("/sign-in");
       return;
     }
     setAddingPortfolio(true);

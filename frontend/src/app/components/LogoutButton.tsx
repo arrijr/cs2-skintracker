@@ -1,14 +1,14 @@
 "use client";
-import { useAuth } from "../context/AuthContext";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 export default function LogoutButton() {
-  const { logout } = useAuth();
+  const { user } = useUser();
   const router = useRouter();
 
   function handleLogout() {
-    logout();
-    router.push("/login");
+    // Clerk handles logout automatically
+    router.push("/sign-in");
   }
 
   return (

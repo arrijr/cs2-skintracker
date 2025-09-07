@@ -1,6 +1,4 @@
 // /frontend/src/utils/roles.ts (Frontend)
-import { useUser } from "@clerk/nextjs";
-import { useMemo } from "react";
 
 // Types for role management
 export interface UserRole {
@@ -18,175 +16,75 @@ const ADMIN_EMAILS = [
 ];
 
 /**
- * Hook to get user role information from Clerk
- * Uses DB-first approach: checks user.role from database via API
- * Falls back to Clerk metadata and email whitelist
+ * Get user role information from Clerk user object
+ * @param user - Clerk user object
+ * @returns UserRole object with role information
  */
-export function useUserRole(): UserRole {
-  const { user, isLoaded } = useUser();
-  
-  return useMemo(() => {
-    if (!isLoaded || !user) {
-      return {
-        isAdmin: false,
-        isUser: false,
-        role: null,
-        email: null
-      };
-    }
-
-    const email = user.emailAddresses?.[0]?.emailAddress || null;
-    const clerkRole = user.publicMetadata?.role as string | undefined;
-    
-    // Primary: Check if user has admin role in Clerk metadata
-    const isAdminFromMetadata = clerkRole === 'admin';
-    
-    // Fallback: Check email whitelist
-    const isAdminFromEmail = email ? ADMIN_EMAILS.includes(email) : false;
-    
-    const isAdmin = isAdminFromMetadata || isAdminFromEmail;
-    
-    return {
-      isAdmin,
-      isUser: true,
-      role: isAdmin ? 'admin' : 'user',
-      email
-    };
-  }, [user, isLoaded]);
-}
-
-/**
- * Server-side role check (for use in server components)
- * This should be used sparingly as it requires API calls
- */
-export async function checkUserRoleServerSide(userId: string): Promise<UserRole> {
-  try {
-    // This would make an API call to get user role from database
-    // For now, return basic info - this should be implemented with a proper API endpoint
-    return {
-      isAdmin: false,
-      isUser: true,
-      role: 'user',
-      email: null
-    };
-  } catch (error) {
-    console.error('Error checking user role server-side:', error);
-    return {
-      isAdmin: false,
-      isUser: false,
-      role: null,
-      email: null
-    };
-  }
-}
-
-/**
- * Client-side role check with database verification
- * Makes API call to verify role from database
- */
-export async function checkUserRoleFromDB(): Promise<UserRole> {
-  try {
-    const { apiFetch } = await import('@/lib/http');
-    const response = await apiFetch('/api/v1/users/me/role');
-    
-    if (response.ok) {
-      return {
-        isAdmin: response.role === 'admin',
-        isUser: true,
-        role: response.role,
-        email: response.email
-      };
-    }
-    
-    // Fallback to Clerk metadata if API fails
-    return {
-      isAdmin: false,
-      isUser: true,
-      role: 'user',
-      email: null
-    };
-  } catch (error) {
-    console.error('Error checking user role from DB:', error);
-    return {
-      isAdmin: false,
-      isUser: false,
-      role: null,
-      email: null
-    };
-  }
-}
-
-/**
- * Utility function to check if user has admin privileges
- * Can be used in components without hooks
- */
-export function isAdminUser(user: any): boolean {
-  if (!user) return false;
-  
-  const email = user.emailAddresses?.[0]?.emailAddress;
-  const clerkRole = user.publicMetadata?.role;
-  
-  return clerkRole === 'admin' || (email ? ADMIN_EMAILS.includes(email) : false);
-}
-
-/**
- * Utility function to check if user has specific role
- */
-export function hasRole(user: any, role: string): boolean {
-  if (!user) return false;
-  
-  const userRole = user.publicMetadata?.role;
-  return userRole === role;
-}
-
-/**
- * Role-based component wrapper
- * Shows children only if user has required role
- */
-export function RequireRole({ 
-  children, 
-  role, 
-  fallback = null 
-}: { 
-  children: React.ReactNode; 
-  role: string; 
-  fallback?: React.ReactNode;
-}) {
-  const { user, isLoaded } = useUser();
-  
-  if (!isLoaded) {
-    return <div>Loading...</div>;
-  }
-  
+export function getUserRole(user: any): UserRole {
   if (!user) {
-    return <>{fallback}</>;
+    return {
+      isAdmin: false,
+      isUser: false,
+      role: null,
+      email: null
+    };
   }
-  
-  const hasRequiredRole = hasRole(user, role);
-  
-  return hasRequiredRole ? <>{children}</> : <>{fallback}</>;
+
+  const email = user.primaryEmailAddress?.emailAddress || user.emailAddresses?.[0]?.emailAddress;
+  const isAdmin = user.publicMetadata?.role === 'admin' || 
+                  user.unsafeMetadata?.role === 'admin' ||
+                  ADMIN_EMAILS.includes(email || '');
+
+  return {
+    isAdmin,
+    isUser: !isAdmin,
+    role: isAdmin ? 'admin' : 'user',
+    email
+  };
 }
 
 /**
- * Admin-only component wrapper
- * Shows children only if user is admin
+ * Check if user has specific role
+ * @param user - Clerk user object
+ * @param requiredRole - Role to check for
+ * @returns boolean indicating if user has the role
  */
-export function RequireAdmin({ 
-  children, 
-  fallback = null 
-}: { 
-  children: React.ReactNode; 
-  fallback?: React.ReactNode;
-}) {
-  return <RequireRole role="admin" fallback={fallback}>{children}</RequireRole>;
+export function hasRole(user: any, requiredRole: string): boolean {
+  const userRole = getUserRole(user);
+  
+  switch (requiredRole.toLowerCase()) {
+    case 'admin':
+      return userRole.isAdmin;
+    case 'user':
+      return userRole.isUser;
+    default:
+      return userRole.role === requiredRole;
+  }
 }
 
 /**
- * Role constants for consistency
+ * Check if user is admin
+ * @param user - Clerk user object
+ * @returns boolean indicating if user is admin
  */
-export const ROLES = {
-  ADMIN: 'admin',
-  USER: 'user'
-} as const;
+export function isAdmin(user: any): boolean {
+  return hasRole(user, 'admin');
+}
 
-export type Role = typeof ROLES[keyof typeof ROLES];
+/**
+ * Check if user is regular user
+ * @param user - Clerk user object
+ * @returns boolean indicating if user is regular user
+ */
+export function isUser(user: any): boolean {
+  return hasRole(user, 'user');
+}
+
+/**
+ * Get current user from Clerk (utility function)
+ * @returns current user or null
+ */
+export function getCurrentUser(): any {
+  // This will be implemented in a separate React component file
+  return null;
+}

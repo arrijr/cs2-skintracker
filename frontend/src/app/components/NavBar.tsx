@@ -1,20 +1,20 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../context/AuthContext";
+import { useUser } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import SkinSearchBar from "../components/SkinSearchBar";
 import { isAdmin as checkIsAdmin, getCurrentUser } from "@/lib/auth";
 
 export default function NavBar() {
   const router = useRouter();
-  const { token } = useAuth();
+  const { user, isLoaded } = useUser();
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminCheckComplete, setAdminCheckComplete] = useState(false);
 
   // Check if user is admin using hardened auth utilities
   useEffect(() => {
-    if (!token) {
+    if (!isLoaded || !user) {
       setIsAdmin(false);
       setAdminCheckComplete(true);
       return;
@@ -36,7 +36,7 @@ export default function NavBar() {
       setIsAdmin(false);
       setAdminCheckComplete(true);
     }
-  }, [token]);
+  }, [isLoaded, user]);
 
   return (
     <header className="bg-neutral-950 py-4 sticky top-0 shadow mb-8">

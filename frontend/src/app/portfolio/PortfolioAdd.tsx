@@ -1,13 +1,13 @@
 "use client";
 import { useState } from "react";
 import SkinSearchBar from "../components/SkinSearchBar";
-import { useAuth } from "../context/AuthContext";
+import { useUser } from "@clerk/nextjs";
 import { addToWatchlist } from "@/lib/api";
 
 type Props = { onAdded?: () => void };
 
 export default function WatchlistAdd({ onAdded }: Props) {
-  const { token } = useAuth();
+  const { user, isLoaded } = useUser();
   const [selectedSkin, setSelectedSkin] = useState<any>(null);
   const [priceAlert, setPriceAlert] = useState<number | "">("");
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,7 @@ export default function WatchlistAdd({ onAdded }: Props) {
 
   // {/* Add Skin to Watchlist */}
   async function handleAdd() {
-    if (!selectedSkin || !token) return;
+    if (!selectedSkin || !user) return;
     setLoading(true);
     setError(null);
     try {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { useUserRole } from "@/utils/roles";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import BuildInfo from "../components/BuildInfo";
 import AdminMiniMetrics from "../components/AdminMiniMetrics";

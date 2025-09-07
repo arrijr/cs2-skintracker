@@ -33,13 +33,13 @@
   
   /* CS2 Skin Tracker Text Colors */
   .text-brand-green {
-    @apply text-brand-green;
+    color: #10b981;
   }
   .text-brand-blue {
-    @apply text-brand-blue;
+    color: #3b82f6;
   }
   .text-brand-orange {
-    @apply text-brand-orange;
+    color: #f97316;
   }
   
   /* CS2 Skin Tracker Badges */

@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "buildTime": "2025-09-07T14:25:08.307Z",
+  "gitCommit": "2ec387e9f77debf24ed26ff7dffbb21e8646fbae",
+  "gitBranch": "feature/cursor-workflow",
+  "nodeVersion": "v22.14.0",
+  "environment": "development",
+  "lastDeploy": "2025-09-07T14:25:08.307Z"
+}

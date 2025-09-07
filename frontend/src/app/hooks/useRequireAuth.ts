@@ -3,22 +3,22 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/context/AuthContext";
+import { useUser } from "@clerk/nextjs";
 
 /**
  * A hook to protect a page from unauthenticated access.
- * It redirects to the /login page if the user is not logged in.
+ * It redirects to the /sign-in page if the user is not logged in.
  */
 export function useRequireAuth() {
-  const { token } = useAuth();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    // token === undefined: initial loading state from AuthContext, do nothing.
-    // token === '...': user is logged in, do nothing.
-    // token === null: user is confirmed to be not logged in, redirect.
-    if (token === null) {
-      router.push("/login");
+    // isLoaded === false: Clerk is still loading, do nothing.
+    // user exists: user is logged in, do nothing.
+    // isLoaded === true && !user: user is confirmed to be not logged in, redirect.
+    if (isLoaded && !user) {
+      router.push("/sign-in");
     }
-  }, [token, router]);
+  }, [isLoaded, user, router]);
 }
