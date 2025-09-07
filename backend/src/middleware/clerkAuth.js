@@ -1,7 +1,7 @@
 // /backend/src/middleware/clerkAuth.js (Backend)
 // Clerk authentication middleware for Express.js backend
 
-import { ClerkExpressRequireAuth, ClerkExpressWithAuth } from '@clerk/express';
+import { clerkMiddleware, requireAuth } from '@clerk/express';
 
 /**
  * Clerk authentication middleware using @clerk/express
@@ -20,21 +20,13 @@ export const clerkAuth = (req, res, next) => {
     return next();
   }
 
-  // Use Clerk's Express middleware
-  return ClerkExpressRequireAuth({
-    onError: (error) => {
-      console.error('Clerk auth error:', error);
-      return res.status(401).json({ 
-        error: 'Authentication required',
-        code: 'AUTH_REQUIRED'
-      });
-    }
-  })(req, res, (err) => {
+  // Use Clerk's requireAuth middleware
+  return requireAuth()(req, res, (err) => {
     if (err) {
       console.error('Clerk auth middleware error:', err);
       return res.status(401).json({ 
-        error: 'Invalid or expired token',
-        code: 'INVALID_TOKEN'
+        error: 'Authentication required',
+        code: 'AUTH_REQUIRED'
       });
     }
 
@@ -58,14 +50,8 @@ export const clerkAuth = (req, res, next) => {
  * Adds user info if token is present, but doesn't require it
  */
 export const optionalClerkAuth = (req, res, next) => {
-  return ClerkExpressWithAuth({
-    onError: (error) => {
-      console.warn('Optional Clerk auth error:', error);
-      req.user = null;
-      req.userId = null;
-      return next();
-    }
-  })(req, res, (err) => {
+  // Use clerkMiddleware for optional auth
+  return clerkMiddleware()(req, res, (err) => {
     if (err) {
       console.warn('Optional Clerk auth middleware error:', err);
       req.user = null;
