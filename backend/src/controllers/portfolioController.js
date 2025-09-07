@@ -23,7 +23,7 @@ async function getCurrentSteamPrice(marketHashName) {
 
 export const getPortfolio = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
 
     // 1) Einträge inkl. Skin laden
     const entries = await prisma.portfolio.findMany({
@@ -110,7 +110,7 @@ export const getPortfolio = async (req, res) => {
 
 export const addToPortfolio = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     const { skinId, amount, buyPrice, buyDate } = req.body;
 
     // Validation
@@ -150,7 +150,7 @@ export const addToPortfolio = async (req, res) => {
 
 export const removeFromPortfolio = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     const id = parseInt(req.params.id);
 
     // Check if entry exists and belongs to user
@@ -169,7 +169,7 @@ export const removeFromPortfolio = async (req, res) => {
 
 export const updatePortfolio = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     const id = parseInt(req.params.id);
     const { amount, buyPrice, buyDate } = req.body;
 
@@ -204,7 +204,7 @@ export const updatePortfolio = async (req, res) => {
 // GET PORTFOLIO KPIs
 export const getPortfolioKPIs = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
 
     // Get portfolio data
     const portfolio = await prisma.portfolio.findMany({
@@ -305,7 +305,7 @@ export const getPortfolioKPIs = async (req, res) => {
 // GET PORTFOLIO CONTRIBUTION
 export const getPortfolioContribution = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     const { range = 'week' } = req.query; // week, month, quarter
     
     const contributionData = await getPortfolioContributionRanges(userId);

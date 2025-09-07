@@ -1,14 +1,15 @@
 import express from "express";
 import { getPortfolio, addToPortfolio, removeFromPortfolio, updatePortfolio, getPortfolioKPIs, getPortfolioContribution } from "../controllers/portfolioController.js";
-import authenticateToken from "../middleware/auth.js";
+import { clerkAuth } from "../middleware/clerkAuth.js";
 
 const router = express.Router();
 
-router.get('/', authenticateToken, getPortfolio);
-router.get('/kpis', authenticateToken, getPortfolioKPIs);
-router.get('/contribution', authenticateToken, getPortfolioContribution);
-router.post('/', authenticateToken, addToPortfolio);
-router.delete('/:id', authenticateToken, removeFromPortfolio);
-router.patch('/:id', authenticateToken, updatePortfolio);
+// All portfolio routes require authentication
+router.get('/', clerkAuth, getPortfolio);
+router.get('/kpis', clerkAuth, getPortfolioKPIs);
+router.get('/contribution', clerkAuth, getPortfolioContribution);
+router.post('/', clerkAuth, addToPortfolio);
+router.delete('/:id', clerkAuth, removeFromPortfolio);
+router.patch('/:id', clerkAuth, updatePortfolio);
 
 export default router;
