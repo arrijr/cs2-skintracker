@@ -2,7 +2,7 @@ import prisma from "../prisma/prismaClient.js";
 
 // GET /api/v1/watchlist
 export const getWatchlist = async (req, res) => {
-  const userId = req.user.userId;
+  const userId = req.userId; // From Clerk middleware
   const list = await prisma.watchlist.findMany({
     where: { userId },
     include: { skin: true }
@@ -13,7 +13,7 @@ export const getWatchlist = async (req, res) => {
 // POST /api/v1/watchlist
 export const addToWatchlist = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     const { skinId, priceAlert } = req.body;
 
     if (!skinId) {
@@ -55,7 +55,7 @@ export const addToWatchlist = async (req, res) => {
 // PATCH /api/v1/watchlist/:skinId
 export const updatePriceAlert = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     const skinId = parseInt(req.params.skinId);
     const { priceAlert } = req.body;
 
@@ -87,7 +87,7 @@ export const updatePriceAlert = async (req, res) => {
 // DELETE /api/v1/watchlist/:skinId
 export const removeFromWatchlist = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     const skinId = parseInt(req.params.skinId);
 
     const entry = await prisma.watchlist.findFirst({ where: { userId, skinId } });
@@ -106,7 +106,7 @@ export const removeFromWatchlist = async (req, res) => {
 // (Optional) Additional price alert setter
 export const setPriceAlert = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     const { skinId, priceAlert } = req.body;
 
     if (!skinId || priceAlert === undefined) {

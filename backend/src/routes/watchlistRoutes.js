@@ -5,13 +5,14 @@ import {
   removeFromWatchlist,
   updatePriceAlert
 } from "../controllers/watchlistController.js";
-import authenticateToken from "../middleware/auth.js";
+import { clerkAuth } from "../middleware/clerkAuth.js";
 
 const router = express.Router();
 
-router.get("/", authenticateToken, getWatchlist);
-router.post("/", authenticateToken, addToWatchlist);
-router.delete("/:skinId", authenticateToken, removeFromWatchlist);
-router.patch("/:skinId", authenticateToken, updatePriceAlert);
+// All watchlist routes require authentication
+router.get("/", clerkAuth, getWatchlist);
+router.post("/", clerkAuth, addToWatchlist);
+router.delete("/:skinId", clerkAuth, removeFromWatchlist);
+router.patch("/:skinId", clerkAuth, updatePriceAlert);
 
 export default router;
