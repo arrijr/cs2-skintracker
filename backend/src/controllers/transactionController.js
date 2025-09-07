@@ -3,7 +3,7 @@ import prisma from "../prisma/prismaClient.js";
 // GET USER TRANSACTIONS
 export const getUserTransactions = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     
     const transactions = await prisma.transaction.findMany({
       where: { userId },
@@ -21,7 +21,7 @@ export const getUserTransactions = async (req, res) => {
 // ADD TRANSACTION (BUY/SELL)
 export const addTransaction = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     const { skinId, type, amount, price, notes } = req.body;
     
     if (!skinId || !type || !amount || !price) {
@@ -66,7 +66,7 @@ export const addTransaction = async (req, res) => {
 // UPDATE TRANSACTION
 export const updateTransaction = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     const { id } = req.params;
     const { amount, price, notes } = req.body;
     
@@ -110,7 +110,7 @@ export const updateTransaction = async (req, res) => {
 // DELETE TRANSACTION
 export const deleteTransaction = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId; // From Clerk middleware
     const { id } = req.params;
     
     const transaction = await prisma.transaction.findFirst({

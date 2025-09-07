@@ -1,12 +1,13 @@
 import express from "express";
 import { getUserTransactions, addTransaction, updateTransaction, deleteTransaction } from "../controllers/transactionController.js";
-import authenticateToken from "../middleware/auth.js";
+import { clerkAuth } from "../middleware/clerkAuth.js";
 
 const router = express.Router();
 
-router.get('/', authenticateToken, getUserTransactions);
-router.post('/', authenticateToken, addTransaction);
-router.patch('/:id', authenticateToken, updateTransaction);
-router.delete('/:id', authenticateToken, deleteTransaction);
+// All transaction routes require authentication
+router.get('/', clerkAuth, getUserTransactions);
+router.post('/', clerkAuth, addTransaction);
+router.patch('/:id', clerkAuth, updateTransaction);
+router.delete('/:id', clerkAuth, deleteTransaction);
 
 export default router;
