@@ -6,8 +6,17 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "build": "echo 'No build step required for Node.js'",
+    "postinstall": "npx prisma generate",
+    "migrate": "npx prisma migrate deploy",
+    "migrate:dev": "npx prisma migrate dev",
+    "migrate:reset": "npx prisma migrate reset --force",
+    "db:push": "npx prisma db push",
+    "db:seed": "node scripts/seed.js",
+    "render:deploy": "node scripts/render-deploy.js",
+    "render:start": "node scripts/render-start.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
