@@ -57,3 +57,4 @@ NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
 - Verify `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set
 - Check if key matches environment (test vs live)
 - Ensure key is scoped to correct environment
+

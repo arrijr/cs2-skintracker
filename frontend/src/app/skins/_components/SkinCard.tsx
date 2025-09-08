@@ -7,9 +7,14 @@ import Image from "next/image";
 type Skin = {
   id: number;
   name: string;
+  marketHashName: string;
   imageUrl?: string;
-  rarity?: string | null;
+  weaponType?: string;
   wear?: string | null;
+  rarity?: string | null;
+  quality?: string;
+  isStattrak?: boolean;
+  isStar?: boolean;
   priceAvg?: number | null;
   priceMedian?: number | null;
   offerVolume?: number | null;
@@ -92,7 +97,7 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
         {/* Price / Actions */}
         <div className="flex items-center justify-between">
           <span className="font-bold text-green-400">
-            ${price?.toFixed(2) ?? "--"}
+            {price ? `$${price.toFixed(2)}` : "--"}
           </span>
           
           {/* Quick Add to Watchlist */}

@@ -1,84 +1,151 @@
+// frontend/src/app/skins/SkinGrid.tsx — [Frontend]
+// {/* Reusable Skin Grid with Loading/Error/Empty States */}
 "use client";
 import { useState } from "react";
-import SkinCard from "./SkinCard";
-import SkinDetailModal from "./SkinDetailModal";
-import { dummySkins } from "./dummySkins";
+import { SkinCard } from "./_components/SkinCard";
+import { useSkins, type SkinsFilters } from "@/hooks/useSkins";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/http";
 
-export default function SkinGrid({ filter }: { filter?: string | null }) {
+interface SkinGridProps {
+  filters?: SkinsFilters;
+  onSkinClick?: (skinId: number) => void;
+  onSkinAdd?: (skinId: number) => void;
+  className?: string;
+  showSkeleton?: boolean;
+  skeletonCount?: number;
+}
+
+export default function SkinGrid({ 
+  filters = {}, 
+  onSkinClick,
+  onSkinAdd,
+  className = "",
+  showSkeleton = true,
+  skeletonCount = 12
+}: SkinGridProps) {
   const { user, isLoaded } = useUser();
   const router = useRouter();
-  const [selected, setSelected] = useState<number | null>(null);
+  
+  // Use the skins hook with provided filters
+  const { 
+    skins, 
+    isLoading, 
+    isEmpty, 
+    hasError, 
+    error,
+    pagination 
+  } = useSkins({ 
+    filters,
+    enabled: true 
+  });
 
-fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/portfolio`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  },
-  body: JSON.stringify({
-    skinId: skin.id,
-    amount: 1,
-    buyPrice: skin.price,
-    buyDate: new Date().toISOString().slice(0,10),
-  }),
-});
-
-  // {/* Add to Portfolio from grid */}
-  async function handleAdd(skin: typeof dummySkins[0]) {
-    if (!user) { router.push("/sign-in"); return; }
-    try {
-      await apiFetch(`/api/v1/portfolio`, {
-        method: "POST",
-        body: JSON.stringify({
-          skinId: skin.id,
-          amount: 1,
-          buyPrice: skin.price,
-          buyDate: new Date().toISOString().slice(0, 10),
-        }),
-      });
-      alert(`Skin "${skin.name}" added to your portfolio!`);
-    } catch {
-      alert("Failed to add to portfolio!");
+  // Handle skin click
+  const handleSkinClick = (skinId: number) => {
+    if (onSkinClick) {
+      onSkinClick(skinId);
+    } else {
+      // Default behavior: navigate to skin detail
+      router.push(`/skins/${skinId}`);
     }
+  };
+
+  // Handle skin add to portfolio
+  const handleSkinAdd = async (skinId: number) => {
+    if (!user) { 
+      router.push("/sign-in"); 
+      return; 
+    }
+    
+    if (onSkinAdd) {
+      onSkinAdd(skinId);
+    } else {
+      // Default behavior: add to portfolio
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/portfolio`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({
+            skinId,
+            amount: 1,
+            buyPrice: skins.find(s => s.id === skinId)?.priceAvg || 0,
+            buyDate: new Date().toISOString().slice(0, 10),
+          }),
+        });
+        
+        if (response.ok) {
+          console.log("Skin added to portfolio");
+        } else {
+          console.error("Failed to add skin to portfolio");
+        }
+      } catch (error) {
+        console.error("Error adding skin to portfolio:", error);
+      }
+    }
+  };
+
+  // Loading skeleton
+  const SkeletonCard = () => (
+    <div className="h-48 rounded-2xl bg-gray-800 animate-pulse" />
+  );
+
+  // Error state
+  if (hasError) {
+    return (
+      <div className={`text-center py-12 ${className}`}>
+        <div className="text-red-400 text-lg mb-4">
+          Error loading skins
+        </div>
+        <div className="text-gray-500 text-sm mb-6">
+          {error?.message || "Something went wrong"}
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    );
   }
 
-  const skins = !filter
-    ? dummySkins
-    : dummySkins.filter((skin) => skin.name === filter);
-
-  const selectedSkin = skins.find((skin) => skin.id === selected) || null;
+  // Empty state
+  if (isEmpty && !isLoading) {
+    return (
+      <div className={`text-center py-12 ${className}`}>
+        <div className="text-gray-400 text-lg mb-4">
+          No skins found
+        </div>
+        <div className="text-gray-500 text-sm">
+          Try adjusting your filters or search terms
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {/* Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 py-8">
-        {skins.map((skin) => (
-          <SkinCard
-            key={skin.id}
-            name={skin.name}
-            imageUrl={skin.imageUrl}
-            price={skin.price}
-            onAdd={() => handleAdd(skin)}
-            onClick={() => setSelected(skin.id)}
+    <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 ${className}`}>
+      {/* Loading skeletons */}
+      {isLoading && showSkeleton && (
+        <>
+          {Array.from({ length: skeletonCount }).map((_, i) => (
+            <SkeletonCard key={`skeleton-${i}`} />
+          ))}
+        </>
+      )}
+      
+      {/* Actual skin cards */}
+      {!isLoading && skins.map((skin) => (
+        <div key={skin.id} onClick={() => handleSkinClick(skin.id)}>
+          <SkinCard 
+            skin={skin} 
+            onAdded={() => handleSkinAdd(skin.id)}
           />
-        ))}
-        {skins.length === 0 && (
-          <div className="col-span-full text-center text-gray-400 mt-8">
-            Kein Skin gefunden.
-          </div>
-        )}
-      </div>
-
-      {/* Modal */}
-      <SkinDetailModal
-        open={selected !== null}
-        onClose={() => setSelected(null)}
-        skin={selectedSkin}
-        onAdd={() => { if (selectedSkin) handleAdd(selectedSkin); }}
-      />
-    </>
+        </div>
+      ))}
+    </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import useSWR from 'swr';
-import { apiFetch } from '@/lib/api';
+import { apiFetch } from '@/lib/http';
 
 // Types
 export interface Skin {
@@ -103,7 +103,7 @@ export function useSkins(options: UseSkinsOptions = {}) {
 
   // Build API URL
   const queryString = buildQueryString(config.filters);
-  const apiUrl = `/skins${queryString ? `?${queryString}` : ''}`;
+  const apiUrl = `/api/v1/skins${queryString ? `?${queryString}` : ''}`;
 
   // Create fetcher with timeout
   const fetcher = useMemo(() => createFetcher(config.timeout), [config.timeout]);
@@ -303,19 +303,19 @@ export function useSkins(options: UseSkinsOptions = {}) {
 
 // Preset hook for common use cases
 export function useSkinsPresets() {
-  const { data: wears } = useSWR<string[]>('/skins/presets', (url) => 
+  const { data: wears } = useSWR<string[]>('/api/v1/skins/presets', (url) => 
     apiFetch(url).then(res => res.wears || [])
   );
   
-  const { data: rarities } = useSWR<string[]>('/skins/presets', (url) => 
+  const { data: rarities } = useSWR<string[]>('/api/v1/skins/presets', (url) => 
     apiFetch(url).then(res => res.rarities || [])
   );
 
-  const { data: categories } = useSWR('/skins/categories', (url) => 
+  const { data: categories } = useSWR('/api/v1/skins/categories', (url) => 
     apiFetch(url).then(res => res.categories || {})
   );
 
-  const { data: filters } = useSWR('/skins/filters', (url) => 
+  const { data: filters } = useSWR('/api/v1/skins/filters', (url) => 
     apiFetch(url)
   );
 
@@ -331,7 +331,7 @@ export function useSkinsPresets() {
 // Search hook for autocomplete
 export function useSkinsSearch(query: string, enabled: boolean = true) {
   const { data, error, isLoading } = useSWR<Skin[]>(
-    enabled && query.length >= 2 ? `/skins/search?query=${encodeURIComponent(query)}` : null,
+    enabled && query.length >= 2 ? `/api/v1/skins/search?query=${encodeURIComponent(query)}` : null,
     (url) => apiFetch(url),
     {
       dedupingInterval: 1000,
@@ -348,3 +348,4 @@ export function useSkinsSearch(query: string, enabled: boolean = true) {
 }
 
 export default useSkins;
+

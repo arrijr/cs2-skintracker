@@ -1,9 +1,9 @@
 // frontend/src/app/skins/_components/SkinsPageContent.tsx — [Frontend]
 // {/* Main content component with useSearchParams and filters */}
 "use client";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SkinCard } from "./SkinCard";
+import SkinGrid from "../SkinGrid";
 
 // Feature flag for enhanced filters
 const SKINS_FILTERS_ENHANCED = process.env.NEXT_PUBLIC_SKINS_FILTERS_ENHANCED === 'true';
@@ -149,18 +149,10 @@ export function SkinsPageContent() {
   const [category, setCategory] = useState(sp.get("category") ?? undefined);
 
   // Data state
-  const [items, setItems] = useState<Skin[]>([]);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   // Enhanced features state
   const [debouncedQ, setDebouncedQ] = useState(q);
-  const [searchAbortController, setSearchAbortController] = useState<AbortController | null>(null);
-  const [requestId, setRequestId] = useState(0);
-  const [abortedRequests, setAbortedRequests] = useState(0);
-  const [successfulRequests, setSuccessfulRequests] = useState(0);
 
   // Preset values from backend
   const [presetValues, setPresetValues] = useState<{
@@ -202,91 +194,9 @@ export function SkinsPageContent() {
     router.replace(`/skins?${p.toString()}`, { scroll: false });
   }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, router]);
 
-  const queryString = useMemo(() => {
-    const p = new URLSearchParams();
-    if (debouncedQ) p.set("q", debouncedQ);
-    if (min) p.set("min", min);
-    if (max) p.set("max", max);
-    if (rarity) p.set("rarity", rarity);
-    if (wear) p.set("wear", wear);
-    if (quality) p.set("quality", quality);
-    if (stattrak) p.set("stattrak", "true");
-    if (special) p.set("special", "true");
-    if (sort) p.set("sort", sort);
-    if (category) p.set("category", category);
-    p.set("page", String(page));
-    p.set("pageSize", String(PAGE_SIZE));
-    
-    const result = p.toString();
-    console.log("🔄 Generated queryString:", result);
-    return result;
-  }, [debouncedQ, min, max, rarity, wear, quality, stattrak, special, sort, category, page]);
 
-  async function load() {
-    console.log("🚀 load() called with queryString:", queryString);
-    console.log("🚀 Current filters:", { q: debouncedQ, min, max, rarity, wear, quality, stattrak, special, sort, category });
-    
-    // Abort previous request if still running
-    if (searchAbortController) {
-      searchAbortController.abort();
-      setAbortedRequests(prev => prev + 1);
-    }
 
-    // Create new abort controller for this request
-    const abortController = new AbortController();
-    setSearchAbortController(abortController);
-    
-    // Generate unique request ID for race condition protection
-    const currentRequestId = requestId + 1;
-    setRequestId(currentRequestId);
-    
-    setLoading(true);
-    try {
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/skins?${queryString}`;
-      console.log("🚀 Calling API:", apiUrl);
-      
-      const res = await fetch(apiUrl, {
-        signal: abortController.signal
-      });
-      
-      // Check if this request was superseded
-      if (currentRequestId !== requestId + 1) {
-        console.log("🚀 Request superseded, ignoring response");
-        return;
-      }
-      
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      
-      const data = await res.json();
-      
-      console.log("🚀 API Response:", data);
-      console.log("🚀 Items count:", data.items?.length || 0);
-      
-      // Ensure data.items is always an array
-      const items = Array.isArray(data.items) ? data.items : [];
-      const total = data.total || 0;
-      
-      setItems(prev => page === 1 ? items : [...prev, ...items]);
-      setTotal(total);
-      setSuccessfulRequests(prev => prev + 1);
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.log("🚀 Request aborted");
-        return;
-      }
-      console.error("💥 Error loading skins:", error);
-      // Set empty state on error
-      setItems(prev => page === 1 ? [] : prev);
-      setTotal(prev => page === 1 ? 0 : prev);
-    } finally {
-      setLoading(false);
-      setSearchAbortController(null);
-    }
-  }
-
-  // Initial load & when filters change → reset to page 1 and load
+  // Initial load & when filters change → reset to page 1
   useEffect(() => { 
     console.log("🔄 Filters changed, resetting to page 1");
     setPage(1); 
@@ -319,27 +229,6 @@ export function SkinsPageContent() {
     
     loadPresetValues();
   }, []);
-  
-  useEffect(() => { 
-    console.log("🔄 queryString changed, calling load()");
-    load(); 
-  }, [queryString]);
-
-  // Intersection observer for infinite scroll
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !loading && items.length < total) {
-        console.log("🔄 Loading next page:", page + 1);
-        setPage(p => p + 1);
-      }
-    }, { rootMargin: "200px" });
-    
-    io.observe(el);
-    return () => io.disconnect();
-  }, [items.length, total, loading, page]);
 
   function updateCategory(newCategory: string | undefined) {
     console.log("🔄 updateCategory called with:", newCategory);
@@ -787,69 +676,36 @@ export function SkinsPageContent() {
             <div className="mb-6">
               <div className="text-center space-y-2">
                 <p className="text-gray-400">
-                  Showing {Array.isArray(items) ? items.length : 0} of {total || 0} skins
+                  Browse CS2 skins with advanced filtering
                 </p>
                 {SKINS_FILTERS_ENHANCED && (
-                  <div className="text-xs text-gray-600 space-x-4">
-                    <span>Successful: {successfulRequests}</span>
-                    <span>Aborted: {abortedRequests}</span>
-                    <span>Current: {requestId}</span>
+                  <div className="text-xs text-gray-600">
+                    Enhanced filters enabled
                   </div>
                 )}
               </div>
             </div>
 
             {/* Enhanced Skin Grid with Better Empty State */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array.isArray(items) && items.length > 0 ? (
-                items.map(skin => (
-                  <SkinCard key={skin.id} skin={skin} onAdded={() => {}} />
-                ))
-              ) : !loading ? (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-gray-400 text-lg mb-4">No skins found</p>
-                  <p className="text-gray-500 text-sm mb-6">Try adjusting your filters</p>
-                  
-                  {/* Enhanced Empty State Suggestions */}
-                  {SKINS_FILTERS_ENHANCED && (
-                    <div className="flex flex-wrap justify-center gap-2">
-                      <button
-                        onClick={() => setMin("")}
-                        className="px-3 py-1 text-xs bg-gray-700 text-gray-300 rounded hover:bg-gray-600"
-                      >
-                        Remove min price
-                      </button>
-                      <button
-                        onClick={() => setMax("")}
-                        className="px-3 py-1 text-xs bg-gray-700 text-gray-300 rounded hover:bg-gray-600"
-                      >
-                        Remove max price
-                      </button>
-                      <button
-                        onClick={() => setStattrak(false)}
-                        className="px-3 py-1 text-xs bg-gray-700 text-gray-300 rounded hover:bg-gray-600"
-                      >
-                        Remove StatTrak
-                      </button>
-                      <button
-                        onClick={() => setSpecial(false)}
-                        className="px-3 py-1 text-xs bg-gray-700 text-gray-300 rounded hover:bg-gray-600"
-                      >
-                        Remove Special
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : null}
-              
-              {/* Enhanced Skeleton Loaders */}
-              {loading && Array.from({ length: 6 }).map((_, i) => (
-                <div key={`skeleton-${i}`} className="h-48 rounded-2xl bg-gray-800 animate-pulse" />
-              ))}
-            </div>
+            <SkinGrid 
+              filters={{
+                q: debouncedQ,
+                min: min ? Number(min) : undefined,
+                max: max ? Number(max) : undefined,
+                rarity,
+                wear,
+                quality,
+                stattrak: stattrak || undefined,
+                special: special || undefined,
+                sort,
+                category,
+                page,
+                pageSize: PAGE_SIZE
+              }}
+              showSkeleton={true}
+              skeletonCount={6}
+            />
 
-            {/* Infinite Scroll Sentinel */}
-            <div ref={sentinelRef} className="h-4" />
           </div>
         </div>
       </div>
