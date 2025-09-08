@@ -2,6 +2,21 @@
 // {/* Centralized HTTP client with Error Tracking & Logging */}
 import { logger } from './logger';
 
+// Error context integration (will be set by the app)
+let errorContext: {
+  showError: (message: string, type?: "error" | "warning" | "info" | "success", persistent?: boolean) => void;
+  showSuccess: (message: string) => void;
+  showWarning: (message: string) => void;
+  showInfo: (message: string) => void;
+  clearError: () => void;
+  showToast: (message: string, type?: "success" | "error" | "loading") => void;
+} | null = null;
+
+// Function to set error context (called by the app)
+export function setErrorContext(context: typeof errorContext) {
+  errorContext = context;
+}
+
 /**
  * Centralized API fetch function with Clerk authentication and error tracking
  * Handles both client-side and server-side requests safely
@@ -85,6 +100,12 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
         },
       });
 
+      // Show error in UI if context is available
+      if (errorContext) {
+        const errorMessage = error.message || `Request failed (${response.status})`;
+        errorContext.showError(errorMessage, "error", response.status >= 500);
+      }
+
       throw error;
     }
 
@@ -108,6 +129,12 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
         errorType: error instanceof Error ? error.constructor.name : 'Unknown',
       },
     });
+
+    // Show network error in UI if context is available
+    if (errorContext) {
+      const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
+      errorContext.showError(errorMessage, "error", true); // Network errors are persistent
+    }
 
     throw error;
   }

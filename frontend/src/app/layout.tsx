@@ -5,6 +5,9 @@ import Providers from "./providers";
 import AppHeader from "./components/AppHeader";
 import BuildInfo from "./components/BuildInfo";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as HotToaster } from "react-hot-toast";
+import ErrorBanner from "@/components/ErrorBanner";
+import { ErrorProvider } from "@/context/ErrorContext";
 
 export const metadata = {
   title: "CS2 Skin Price Tracker",
@@ -51,29 +54,59 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <ClerkWrapper>
       <html lang="en" className="dark">
         <body className="bg-neutral-950 text-white min-h-screen">
-          <Providers>
-            {/* App Shell */}
-            <AppHeader />
-            
-            <main className="min-h-screen">
-              {children}
-            </main>
+          <ErrorProvider>
+            <Providers>
+              {/* Global Error Banner */}
+              <ErrorBanner />
+              
+              {/* App Shell */}
+              <AppHeader />
+              
+              <main className="min-h-screen">
+                {children}
+              </main>
 
-            {/* Footer with Build Info */}
-            <footer className="border-t border-neutral-800 bg-neutral-950/50 backdrop-blur">
-              <div className="container-cs2 py-6">
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-                  <div className="text-sm text-neutral-400">
-                    © 2024 CS2 Skin Price Tracker. Built with Next.js & Clerk.
+              {/* Footer with Build Info */}
+              <footer className="border-t border-neutral-800 bg-neutral-950/50 backdrop-blur">
+                <div className="container-cs2 py-6">
+                  <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+                    <div className="text-sm text-neutral-400">
+                      © 2024 CS2 Skin Price Tracker. Built with Next.js & Clerk.
+                    </div>
+                    <BuildInfo className="max-w-md" />
                   </div>
-                  <BuildInfo className="max-w-md" />
                 </div>
-              </div>
-            </footer>
+              </footer>
 
-            {/* Toast Notifications */}
-            <Toaster />
-          </Providers>
+              {/* Toast Notifications */}
+              <Toaster />
+              <HotToaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: "#1f2937",
+                    color: "#f9fafb",
+                    border: "1px solid #374151",
+                  },
+                  success: {
+                    style: {
+                      background: "#065f46",
+                      color: "#f0fdf4",
+                      border: "1px solid #10b981",
+                    },
+                  },
+                  error: {
+                    style: {
+                      background: "#7f1d1d",
+                      color: "#fef2f2",
+                      border: "1px solid #ef4444",
+                    },
+                  },
+                }}
+              />
+            </Providers>
+          </ErrorProvider>
         </body>
       </html>
     </ClerkWrapper>
