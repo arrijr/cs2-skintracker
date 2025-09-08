@@ -1,8 +1,9 @@
-// backend/src/routes/healthRoutes.js
-// --------------------------------------------------
+// backend/src/routes/healthRoutes.js — [Backend]
 // {/* Health: exposes last timestamps for PriceHistory & PortfolioHistory */}
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
+import logger from "../utils/logger.js";
+
 const prisma = new PrismaClient();
 const router = Router();
 
@@ -53,7 +54,9 @@ router.get("/build-info", (_req, res) => {
   }
 });
 
-router.get("/cron-status", async (_req, res) => {
+router.get("/cron-status", async (req, res) => {
+  const startTime = Date.now();
+  
   try {
     const [lastPriceHistory] = await prisma.$queryRaw`
       SELECT MAX(date) AS last_date FROM "PriceHistory"
@@ -62,15 +65,52 @@ router.get("/cron-status", async (_req, res) => {
       SELECT MAX(date) AS last_date FROM "PortfolioHistory"
     `;
 
+    const duration = Date.now() - startTime;
+    
+    logger.apiRequest(req, res, duration);
+    logger.debug('Cron status check', {
+      priceHistoryLastRun: lastPriceHistory?.last_date,
+      portfolioHistoryLastRun: lastPortfolioHistory?.last_date,
+      duration,
+    });
+
     res.json({
       ok: true,
       priceHistoryLastRun: lastPriceHistory?.last_date ?? null,
       portfolioHistoryLastRun: lastPortfolioHistory?.last_date ?? null,
       now: new Date().toISOString(),
     });
-  } catch (e) {
-    console.error("[/cron-status] error:", e);
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    
+    logger.apiError(req, error, 500);
+    logger.error('Cron status check failed', error, {
+      duration,
+    });
+    
     res.status(500).json({ ok: false, error: "health-error" });
+  }
+});
+
+// Log system health and statistics
+router.get("/logs", (req, res) => {
+  try {
+    const logStats = logger.getLogStats();
+    
+    res.json({
+      ok: true,
+      logs: logStats,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Failed to get log stats', error, {
+      ip: req.ip,
+    });
+    
+    res.status(500).json({ 
+      ok: false, 
+      error: "Failed to get log statistics" 
+    });
   }
 });
 

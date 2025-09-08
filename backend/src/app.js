@@ -15,6 +15,7 @@ import transactionRoutes from "./routes/transactionRoutes.js";
 import healthRoutes from "./routes/healthRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import adminMetricsRoutes from "./routes/adminMetricsRoutes.js";
+import logsRoutes from "./routes/logsRoutes.js";
 
 dotenv.config();
 
@@ -96,6 +97,7 @@ app.use("/api/v1/portfolio", portfolioRoutes);
 app.use("/api/v1/portfolio/history", portfolioHistoryRoutes);
 app.use("/api/v1/transactions", transactionRoutes);
 app.use("/api/v1/health", healthRoutes);
+app.use("/api/v1/logs", logsRoutes);
 app.use("/api/v1/admin", adminLimiter, adminRoutes);
 app.use("/api/v1/admin/metrics", adminLimiter, adminMetricsRoutes);
 
@@ -108,7 +110,19 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error("UNCAUGHT ERROR:", err?.message || err);
+  // Import logger here to avoid circular dependencies
+  import("./utils/logger.js").then(({ default: logger }) => {
+    logger.error("Uncaught error in Express", err, {
+      method: req.method,
+      url: req.url,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      userId: req.userId,
+    });
+  }).catch(() => {
+    console.error("UNCAUGHT ERROR:", err?.message || err);
+  });
+  
   if (!res.headersSent) {
     res.status(500).json({ error: "Internal server error" });
   }

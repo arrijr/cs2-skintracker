@@ -1,13 +1,16 @@
-// /frontend/src/lib/http.ts (Frontend)
-// Centralized HTTP client with Clerk authentication and SSR safety
+// frontend/src/lib/http.ts — [Frontend]
+// {/* Centralized HTTP client with Error Tracking & Logging */}
+import { logger } from './logger';
 
 /**
- * Centralized API fetch function with Clerk authentication
+ * Centralized API fetch function with Clerk authentication and error tracking
  * Handles both client-side and server-side requests safely
  */
 export async function apiFetch(path: string, init: RequestInit = {}) {
   const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
   const url = `${baseURL}${path.startsWith('/') ? path : `/${path}`}`;
+  const method = init.method || 'GET';
+  const startTime = Date.now();
 
   // Prepare headers
   const headers: HeadersInit = {
@@ -23,9 +26,22 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
       // Note: In a real app, you'd get the token from the auth context
       // For now, we'll let the backend handle auth via Clerk middleware
     } catch (error) {
-      console.warn('Failed to get Clerk token:', error);
+      logger.warn('Failed to get Clerk token', {
+        action: 'auth_token_fetch',
+        metadata: { error: error instanceof Error ? error.message : String(error) },
+      });
     }
   }
+
+  // Log API call start
+  logger.debug(`API ${method} ${path}`, {
+    action: 'api_call_start',
+    metadata: {
+      url,
+      method,
+      headers: Object.keys(headers),
+    },
+  });
 
   // Make the request
   try {
@@ -33,6 +49,11 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
       ...init,
       headers,
     });
+
+    const duration = Date.now() - startTime;
+
+    // Log successful API call
+    logger.apiCall(path, method, response.status, duration);
 
     // Handle non-OK responses
     if (!response.ok) {
@@ -45,11 +66,26 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
         errorData = { message: errorText };
       }
 
-      throw new Error(
+      const error = new Error(
         errorData.message || 
         errorData.error || 
         `HTTP ${response.status}: ${response.statusText}`
       );
+
+      // Log API error
+      logger.error(`API ${method} ${path} failed`, error, {
+        action: 'api_call_error',
+        metadata: {
+          url,
+          method,
+          status: response.status,
+          statusText: response.statusText,
+          duration,
+          errorData,
+        },
+      });
+
+      throw error;
     }
 
     // Parse response
@@ -60,13 +96,25 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
     
     return await response.text();
   } catch (error) {
-    console.error('API request failed:', error);
+    const duration = Date.now() - startTime;
+    
+    // Log network/parsing errors
+    logger.error(`API ${method} ${path} network error`, error as Error, {
+      action: 'api_call_network_error',
+      metadata: {
+        url,
+        method,
+        duration,
+        errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+      },
+    });
+
     throw error;
   }
 }
 
 /**
- * HTTP client class for more advanced usage
+ * HTTP client class for more advanced usage with error tracking
  */
 export class HttpClient {
   private baseURL: string;
@@ -87,59 +135,50 @@ export class HttpClient {
         // Note: In a real app, you'd get the token from the auth context
         // For now, we'll let the backend handle auth via Clerk middleware
       } catch (error) {
-        console.warn('Failed to get Clerk token:', error);
+        logger.warn('Failed to get Clerk token in HttpClient', {
+          action: 'http_client_auth_token_fetch',
+          metadata: { error: error instanceof Error ? error.message : String(error) },
+        });
       }
     }
 
     return headers;
   }
 
-  async get<T = any>(path: string, options?: RequestInit): Promise<T> {
+  private async makeRequest<T = any>(
+    method: string,
+    path: string,
+    data?: any,
+    options?: RequestInit
+  ): Promise<T> {
     const headers = await this.getHeaders();
+    
     return apiFetch(path, {
-      method: 'GET',
+      method,
       headers: { ...headers, ...options?.headers },
+      body: data ? JSON.stringify(data) : undefined,
       ...options,
     });
+  }
+
+  async get<T = any>(path: string, options?: RequestInit): Promise<T> {
+    return this.makeRequest<T>('GET', path, undefined, options);
   }
 
   async post<T = any>(path: string, data?: any, options?: RequestInit): Promise<T> {
-    const headers = await this.getHeaders();
-    return apiFetch(path, {
-      method: 'POST',
-      headers: { ...headers, ...options?.headers },
-      body: data ? JSON.stringify(data) : undefined,
-      ...options,
-    });
+    return this.makeRequest<T>('POST', path, data, options);
   }
 
   async put<T = any>(path: string, data?: any, options?: RequestInit): Promise<T> {
-    const headers = await this.getHeaders();
-    return apiFetch(path, {
-      method: 'PUT',
-      headers: { ...headers, ...options?.headers },
-      body: data ? JSON.stringify(data) : undefined,
-      ...options,
-    });
+    return this.makeRequest<T>('PUT', path, data, options);
   }
 
   async patch<T = any>(path: string, data?: any, options?: RequestInit): Promise<T> {
-    const headers = await this.getHeaders();
-    return apiFetch(path, {
-      method: 'PATCH',
-      headers: { ...headers, ...options?.headers },
-      body: data ? JSON.stringify(data) : undefined,
-      ...options,
-    });
+    return this.makeRequest<T>('PATCH', path, data, options);
   }
 
   async delete<T = any>(path: string, options?: RequestInit): Promise<T> {
-    const headers = await this.getHeaders();
-    return apiFetch(path, {
-      method: 'DELETE',
-      headers: { ...headers, ...options?.headers },
-      ...options,
-    });
+    return this.makeRequest<T>('DELETE', path, undefined, options);
   }
 }
 

@@ -3,6 +3,7 @@
 import express from "express";
 import prisma from "../prisma/prismaClient.js";
 import { clerkAuth } from "../middleware/clerkAuth.js";
+import logger from "../utils/logger.js";
 
 const router = express.Router();
 
@@ -16,7 +17,10 @@ router.get('/', clerkAuth, async (req, res) => {
     const userId = req.userId || req.user?.id;
     
     if (!userId) {
-      console.log('❌ [PORTFOLIO-HISTORY] No userId found');
+      logger.warn('Portfolio history request without userId', {
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
       return res.status(401).json({ 
         error: 'Authentication required',
         code: 'AUTH_REQUIRED'
@@ -30,7 +34,12 @@ router.get('/', clerkAuth, async (req, res) => {
     const endDate = new Date();
     const startDate = new Date(endDate.getTime() - (days * 24 * 60 * 60 * 1000));
     
-    console.log(`[PORTFOLIO-HISTORY] 🚀 Fetching ${days} days of history for user ${userId}`);
+    logger.info('Portfolio history request', {
+      userId,
+      days,
+      requestedDays,
+      ip: req.ip,
+    });
 
     // Get portfolio history with optimized query
     const portfolioHistory = await prisma.portfolioHistory.findMany({
@@ -54,12 +63,26 @@ router.get('/', clerkAuth, async (req, res) => {
     const history = generateGuaranteedHistory(startDate, endDate, portfolioHistory);
     
     const duration = Date.now() - startTime;
-    console.log(`[PORTFOLIO-HISTORY] ✅ Returned ${history.length} days in ${duration}ms`);
+    
+    logger.apiRequest(req, res, duration);
+    logger.info('Portfolio history response', {
+      userId,
+      days,
+      historyLength: history.length,
+      duration,
+    });
     
     res.json(history);
     
   } catch (error) {
-    console.error("❌ [PORTFOLIO-HISTORY] Error:", error);
+    const duration = Date.now() - startTime;
+    
+    logger.apiError(req, error, 500);
+    logger.error('Portfolio history error', error, {
+      userId: req.userId,
+      days: req.query.days,
+      duration,
+    });
     
     // Return empty history on error to prevent frontend crashes
     const fallbackHistory = generateEmptyHistory(req.query.days || DEFAULT_DAYS);
