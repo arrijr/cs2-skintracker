@@ -12,7 +12,8 @@ generator client {
 model User {
   id           Int        @id @default(autoincrement())
   email        String     @unique
-  passwordHash String
+  passwordHash String?    // Optional for Clerk users
+  clerkId      String?    @unique // Clerk user ID
   displayName  String?    // Optional display name
   timezone     String?    // IANA timezone string
   emailAlerts  Boolean    @default(true)  // Email notification preference
@@ -147,11 +148,18 @@ model PriceHistory {
 }
 
 model PortfolioHistory {
-  id      Int      @id @default(autoincrement())
-  user    User     @relation(fields: [userId], references: [id])
-  userId  Int
-  date    DateTime
-  value   Float
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  date        DateTime
+  value       Float
+  invested    Float?   @default(0)
+  unrealizedPL Float?  @default(0)
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
+  
+  @@index([userId, date])
+  @@index([date])
 }
 
 model Transaction {
