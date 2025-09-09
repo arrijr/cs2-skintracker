@@ -1,20 +1,9 @@
 // frontend/src/lib/http.ts — [Frontend]
-// {/* HTTP Layer Re-Export Wrapper */}
-// {/* Automatically chooses client or server implementation based on environment */}
+// {/* Central HTTP Layer Re-Export */}
+// {/* Re-exports from the clean index file */}
 
-// Import and re-export to ensure proper function binding
-import { 
-  apiFetch as clientApiFetch, 
-  setErrorContext as clientSetErrorContext, 
-  HttpClient as ClientHttpClient, 
-  http as clientHttp
-} from './http/client';
+// Re-export everything from the clean index
+export * from './http/index';
 
-// Re-export with explicit function references
-export const apiFetch = clientApiFetch;
-export const setErrorContext = clientSetErrorContext;
-export const HttpClient = ClientHttpClient;
-export const http = clientHttp;
-
-// For server components, import from './http/server' explicitly
-// Example: import { apiFetch } from '@/lib/http/server'
+// No default exports, no ambiguity
+// Use named imports: import { apiFetch } from '@/lib/http'
