@@ -1,6 +1,5 @@
 // frontend/src/lib/http.ts — [Frontend]
 // {/* Centralized HTTP client with Clerk Authentication & Error Tracking */}
-import { auth } from '@clerk/nextjs';
 
 // Error context integration (will be set by the app)
 let errorContext: {
@@ -30,9 +29,9 @@ async function getClerkToken(): Promise<string | null> {
       return await getToken();
     } else {
       // Server-side: Use Clerk's auth() function
-      const { auth: serverAuth } = await import('@clerk/nextjs');
-      const { getToken } = serverAuth();
-      return await getToken();
+      const { auth } = await import('@clerk/nextjs/server');
+      const session = await auth();
+      return await session?.getToken();
     }
   } catch (error) {
     console.warn('Failed to get Clerk token:', error);
@@ -43,8 +42,12 @@ async function getClerkToken(): Promise<string | null> {
 /**
  * Centralized API fetch function with Clerk authentication and error tracking
  * Handles both client-side and server-side requests safely
+ * 
+ * @param path - API endpoint path (e.g., '/skins' or 'skins')
+ * @param init - Optional fetch configuration
+ * @returns Promise with API response data
  */
-export async function apiFetch(path: string, init: RequestInit = {}) {
+export async function apiFetch<T = any>(path: string, init: RequestInit = {}): Promise<T> {
   const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
   const url = `${baseURL}${path.startsWith('/') ? path : `/${path}`}`;
   const method = init.method || 'GET';
@@ -54,9 +57,9 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
   const token = await getClerkToken();
 
   // Prepare headers
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...init.headers,
+    ...(init.headers as Record<string, string>),
   };
 
   // Add Clerk authentication token if available
@@ -129,10 +132,10 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
     // Parse response
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
-      return await response.json();
+      return await response.json() as T;
     }
     
-    return await response.text();
+    return await response.text() as T;
   } catch (error) {
     const duration = Date.now() - startTime;
     
