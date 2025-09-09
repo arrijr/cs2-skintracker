@@ -30,6 +30,45 @@ const getLogLevel = () => {
   return isProduction ? 'warn' : 'info';
 };
 
+// Winston v3 compatible Database Transport
+class DatabaseTransport extends winston.Transport {
+  constructor(options = {}) {
+    super(options);
+    this.name = 'database';
+  }
+
+  log(info, callback) {
+    setImmediate(() => {
+      this.emit('logged', info);
+    });
+
+    // Store critical logs in database
+    if (['error', 'fatal'].includes(info.level)) {
+      this.storeInDatabase(info).catch(console.error);
+    }
+
+    callback();
+  }
+
+  async storeInDatabase(logInfo) {
+    try {
+      await prisma.auditLog.create({
+        data: {
+          level: logInfo.level,
+          message: logInfo.message,
+          metadata: logInfo,
+          userId: logInfo.userId || null,
+          ipAddress: logInfo.ipAddress || null,
+          userAgent: logInfo.userAgent || null,
+          createdAt: new Date(logInfo.timestamp),
+        },
+      });
+    } catch (error) {
+      console.error('Failed to store log in database:', error);
+    }
+  }
+}
+
 // Create logger instance
 const logger = winston.createLogger({
   level: getLogLevel(),
@@ -72,40 +111,6 @@ const logger = winston.createLogger({
 
 // Add database transport for production
 if (process.env.NODE_ENV === 'production') {
-  // Custom database transport
-  const DatabaseTransport = winston.Transport.extend({
-    log(info, callback) {
-      setImmediate(() => {
-        this.emit('logged', info);
-      });
-
-      // Store critical logs in database
-      if (['error', 'fatal'].includes(info.level)) {
-        this.storeInDatabase(info).catch(console.error);
-      }
-
-      callback();
-    },
-
-    async storeInDatabase(logInfo) {
-      try {
-        await prisma.auditLog.create({
-          data: {
-            level: logInfo.level,
-            message: logInfo.message,
-            metadata: logInfo,
-            userId: logInfo.userId || null,
-            ipAddress: logInfo.ipAddress || null,
-            userAgent: logInfo.userAgent || null,
-            createdAt: new Date(logInfo.timestamp),
-          },
-        });
-      } catch (error) {
-        console.error('Failed to store log in database:', error);
-      }
-    },
-  });
-
   logger.add(new DatabaseTransport());
 }
 
