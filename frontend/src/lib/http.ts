@@ -8,8 +8,7 @@ export {
   apiFetch, 
   setErrorContext, 
   HttpClient, 
-  http,
-  default 
+  http
 } from './http/client';
 
 // For server components, import from './http/server' explicitly
