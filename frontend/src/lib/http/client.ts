@@ -64,13 +64,18 @@ async function getClerkToken(): Promise<string | null> {
  * @returns Promise with API response data
  */
 export async function apiFetch<T = any>(path: string, init: RequestInit = {}): Promise<T> {
+  console.log('🔧 [DEBUG] apiFetch called with:', { path, init });
+  
   const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
   const url = `${baseURL}${path.startsWith('/') ? path : `/${path}`}`;
   const method = init.method || 'GET';
   const startTime = Date.now();
 
+  console.log('🔧 [DEBUG] Request config:', { baseURL, url, method });
+
   // Get Clerk token (only in browser)
   const token = await getClerkToken();
+  console.log('🔧 [DEBUG] Clerk token:', token ? 'present' : 'missing');
 
   // Prepare headers
   const headers: Record<string, string> = {
@@ -98,12 +103,14 @@ export async function apiFetch<T = any>(path: string, init: RequestInit = {}): P
 
   // Make the request
   try {
+    console.log('🔧 [DEBUG] Making fetch request to:', url);
     const response = await fetch(url, {
       ...init,
       headers,
     });
 
     const duration = Date.now() - startTime;
+    console.log('🔧 [DEBUG] Response received:', { status: response.status, duration });
 
     // Log successful API call (only in development)
     if (process.env.NODE_ENV === 'development') {
@@ -151,13 +158,25 @@ export async function apiFetch<T = any>(path: string, init: RequestInit = {}): P
 
     // Parse response
     const contentType = response.headers.get('content-type');
+    console.log('🔧 [DEBUG] Response content-type:', contentType);
+    
     if (contentType && contentType.includes('application/json')) {
-      return await response.json() as T;
+      const jsonData = await response.json();
+      console.log('🔧 [DEBUG] Parsed JSON response:', jsonData);
+      return jsonData as T;
     }
     
-    return await response.text() as T;
+    const textData = await response.text();
+    console.log('🔧 [DEBUG] Parsed text response:', textData);
+    return textData as T;
   } catch (error) {
     const duration = Date.now() - startTime;
+    
+    console.log('🔧 [DEBUG] Error caught in apiFetch:', {
+      error: error instanceof Error ? error.message : String(error),
+      errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+      duration
+    });
     
     // Log network/parsing errors
     console.error(`API ${method} ${path} network error`, {
