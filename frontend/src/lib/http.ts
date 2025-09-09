@@ -1,5 +1,17 @@
 // frontend/src/lib/http.ts — [Frontend]
-// {/* Centralized HTTP client with Clerk Authentication & Error Tracking */}
+// {/* Client-Safe HTTP client with Clerk Authentication & Error Tracking */}
+// {/* No server-only imports - works in both client and server components */}
+
+// Extend Window interface for Clerk
+declare global {
+  interface Window {
+    Clerk?: {
+      session?: {
+        getToken(): Promise<string | null>;
+      };
+    };
+  }
+}
 
 // Error context integration (will be set by the app)
 let errorContext: {
@@ -18,21 +30,24 @@ export function setErrorContext(context: typeof errorContext) {
 
 /**
  * Get Clerk authentication token for API requests
- * Works in both client and server components
+ * Client-safe implementation using window.Clerk
  */
 async function getClerkToken(): Promise<string | null> {
   try {
-    if (typeof window !== 'undefined') {
-      // Client-side: Use Clerk's useAuth hook
-      const { useAuth } = await import('@clerk/nextjs');
-      const { getToken } = useAuth();
-      return await getToken();
-    } else {
-      // Server-side: Use Clerk's auth() function
-      const { auth } = await import('@clerk/nextjs/server');
-      const session = await auth();
-      return await session?.getToken();
+    // Only try to get token in browser environment
+    if (typeof window === 'undefined') {
+      return null;
     }
+
+    // Check if Clerk is available on window
+    if (!window.Clerk || !window.Clerk.session) {
+      console.debug('Clerk not available on window object');
+      return null;
+    }
+
+    // Get token from Clerk session
+    const token = await window.Clerk.session.getToken();
+    return token;
   } catch (error) {
     console.warn('Failed to get Clerk token:', error);
     return null;
@@ -41,7 +56,7 @@ async function getClerkToken(): Promise<string | null> {
 
 /**
  * Centralized API fetch function with Clerk authentication and error tracking
- * Handles both client-side and server-side requests safely
+ * Client-safe implementation - works in both client and server components
  * 
  * @param path - API endpoint path (e.g., '/skins' or 'skins')
  * @param init - Optional fetch configuration
@@ -53,7 +68,7 @@ export async function apiFetch<T = any>(path: string, init: RequestInit = {}): P
   const method = init.method || 'GET';
   const startTime = Date.now();
 
-  // Get Clerk token
+  // Get Clerk token (only in browser)
   const token = await getClerkToken();
 
   // Prepare headers
@@ -67,16 +82,18 @@ export async function apiFetch<T = any>(path: string, init: RequestInit = {}): P
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  // Log API call start
-  console.debug(`API ${method} ${path}`, {
-    action: 'api_call_start',
-    metadata: {
-      url,
-      method,
-      hasToken: !!token,
-      headers: Object.keys(headers),
-    },
-  });
+  // Log API call start (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    console.debug(`API ${method} ${path}`, {
+      action: 'api_call_start',
+      metadata: {
+        url,
+        method,
+        hasToken: !!token,
+        headers: Object.keys(headers),
+      },
+    });
+  }
 
   // Make the request
   try {
@@ -87,8 +104,10 @@ export async function apiFetch<T = any>(path: string, init: RequestInit = {}): P
 
     const duration = Date.now() - startTime;
 
-    // Log successful API call
-    console.log(`API ${method} ${path} - ${response.status} (${duration}ms)`);
+    // Log successful API call (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`API ${method} ${path} - ${response.status} (${duration}ms)`);
+    }
 
     // Handle non-OK responses
     if (!response.ok) {
@@ -163,6 +182,7 @@ export async function apiFetch<T = any>(path: string, init: RequestInit = {}): P
 
 /**
  * HTTP client class for more advanced usage with error tracking
+ * Client-safe implementation
  */
 export class HttpClient {
   private baseURL: string;
@@ -171,12 +191,12 @@ export class HttpClient {
     this.baseURL = baseURL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
   }
 
-  private async getHeaders(): Promise<HeadersInit> {
+  private async getHeaders(): Promise<Record<string, string>> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
 
-    // Add Clerk authentication token
+    // Add Clerk authentication token (only in browser)
     const token = await getClerkToken();
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -193,9 +213,9 @@ export class HttpClient {
   ): Promise<T> {
     const headers = await this.getHeaders();
     
-    return apiFetch(path, {
+    return apiFetch<T>(path, {
       method,
-      headers: { ...headers, ...options?.headers },
+      headers: { ...headers, ...(options?.headers as Record<string, string>) },
       body: data ? JSON.stringify(data) : undefined,
       ...options,
     });
