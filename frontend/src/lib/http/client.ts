@@ -33,24 +33,32 @@ export function setErrorContext(context: typeof errorContext) {
  * Client-only implementation using window.Clerk
  */
 async function getClerkToken(): Promise<string | null> {
+  console.log('🔧 [DEBUG] getClerkToken called');
+  
   try {
     // Only work in browser environment
     if (typeof window === 'undefined') {
-      console.warn('getClerkToken called on server side - returning null');
+      console.warn('🔧 [DEBUG] getClerkToken called on server side - returning null');
       return null;
     }
 
+    console.log('🔧 [DEBUG] Window object available, checking Clerk...');
+    console.log('🔧 [DEBUG] window.Clerk:', !!window.Clerk);
+    console.log('🔧 [DEBUG] window.Clerk.session:', !!window.Clerk?.session);
+
     // Check if Clerk is available on window
     if (!window.Clerk || !window.Clerk.session) {
-      console.debug('Clerk not available on window object');
+      console.debug('🔧 [DEBUG] Clerk not available on window object');
       return null;
     }
 
     // Get token from Clerk session
+    console.log('🔧 [DEBUG] Getting token from Clerk session...');
     const token = await window.Clerk.session.getToken();
+    console.log('🔧 [DEBUG] Token received:', token ? 'present' : 'null');
     return token;
   } catch (error) {
-    console.warn('Failed to get Clerk token:', error);
+    console.warn('🔧 [DEBUG] Failed to get Clerk token:', error);
     return null;
   }
 }
