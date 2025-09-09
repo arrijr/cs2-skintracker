@@ -1,6 +1,6 @@
 // frontend/src/lib/http.ts — [Frontend]
-// {/* Centralized HTTP client with Error Tracking & Logging */}
-import { logger } from './logger';
+// {/* Centralized HTTP client with Clerk Authentication & Error Tracking */}
+import { auth } from '@clerk/nextjs';
 
 // Error context integration (will be set by the app)
 let errorContext: {
@@ -18,6 +18,29 @@ export function setErrorContext(context: typeof errorContext) {
 }
 
 /**
+ * Get Clerk authentication token for API requests
+ * Works in both client and server components
+ */
+async function getClerkToken(): Promise<string | null> {
+  try {
+    if (typeof window !== 'undefined') {
+      // Client-side: Use Clerk's useAuth hook
+      const { useAuth } = await import('@clerk/nextjs');
+      const { getToken } = useAuth();
+      return await getToken();
+    } else {
+      // Server-side: Use Clerk's auth() function
+      const { auth: serverAuth } = await import('@clerk/nextjs');
+      const { getToken } = serverAuth();
+      return await getToken();
+    }
+  } catch (error) {
+    console.warn('Failed to get Clerk token:', error);
+    return null;
+  }
+}
+
+/**
  * Centralized API fetch function with Clerk authentication and error tracking
  * Handles both client-side and server-side requests safely
  */
@@ -27,33 +50,27 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
   const method = init.method || 'GET';
   const startTime = Date.now();
 
+  // Get Clerk token
+  const token = await getClerkToken();
+
   // Prepare headers
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...init.headers,
   };
 
-  // Add Clerk authentication for client-side requests
-  if (typeof window !== 'undefined') {
-    try {
-      // Client-side: Get token from Clerk
-      const { useAuth } = await import('@clerk/nextjs');
-      // Note: In a real app, you'd get the token from the auth context
-      // For now, we'll let the backend handle auth via Clerk middleware
-    } catch (error) {
-      logger.warn('Failed to get Clerk token', {
-        action: 'auth_token_fetch',
-        metadata: { error: error instanceof Error ? error.message : String(error) },
-      });
-    }
+  // Add Clerk authentication token if available
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   // Log API call start
-  logger.debug(`API ${method} ${path}`, {
+  console.debug(`API ${method} ${path}`, {
     action: 'api_call_start',
     metadata: {
       url,
       method,
+      hasToken: !!token,
       headers: Object.keys(headers),
     },
   });
@@ -68,7 +85,7 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
     const duration = Date.now() - startTime;
 
     // Log successful API call
-    logger.apiCall(path, method, response.status, duration);
+    console.log(`API ${method} ${path} - ${response.status} (${duration}ms)`);
 
     // Handle non-OK responses
     if (!response.ok) {
@@ -88,7 +105,7 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
       );
 
       // Log API error
-      logger.error(`API ${method} ${path} failed`, error, {
+      console.error(`API ${method} ${path} failed`, {
         action: 'api_call_error',
         metadata: {
           url,
@@ -120,13 +137,14 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
     const duration = Date.now() - startTime;
     
     // Log network/parsing errors
-    logger.error(`API ${method} ${path} network error`, error as Error, {
+    console.error(`API ${method} ${path} network error`, {
       action: 'api_call_network_error',
       metadata: {
         url,
         method,
         duration,
         errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+        error: error instanceof Error ? error.message : String(error),
       },
     });
 
@@ -155,18 +173,10 @@ export class HttpClient {
       'Content-Type': 'application/json',
     };
 
-    // Add Clerk authentication for client-side requests
-    if (typeof window !== 'undefined') {
-      try {
-        const { useAuth } = await import('@clerk/nextjs');
-        // Note: In a real app, you'd get the token from the auth context
-        // For now, we'll let the backend handle auth via Clerk middleware
-      } catch (error) {
-        logger.warn('Failed to get Clerk token in HttpClient', {
-          action: 'http_client_auth_token_fetch',
-          metadata: { error: error instanceof Error ? error.message : String(error) },
-        });
-      }
+    // Add Clerk authentication token
+    const token = await getClerkToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
     return headers;
