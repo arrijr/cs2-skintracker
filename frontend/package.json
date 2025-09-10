@@ -2,6 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "proxy": "http://localhost:5000",
   "scripts": {
     "dev": "next dev",
@@ -16,6 +17,7 @@
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
+    "@clerk/clerk-js": "^5",
     "@clerk/nextjs": "^6.31.8",
     "@fontsource/inter": "^5.2.6",
     "@radix-ui/react-dialog": "^1.1.15",
