@@ -1,3 +1,4 @@
-// frontend/src/lib/http/index.ts — [Frontend]
-// {/* Central HTTP Layer Index - Client-only exports */}
-export { apiFetch } from './client';
+// frontend/src/lib/http/index.ts
+export { apiFetch, setErrorContext } from './client';
+// Falls du serverseitige Helpers hast, hier zusätzlich re-exportieren:
+// export { serverFetch } from './server';

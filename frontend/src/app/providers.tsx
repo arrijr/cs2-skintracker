@@ -2,7 +2,7 @@
 
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
-import { apiFetch } from '@/lib/api';
+import { apiFetch } from '@/lib/http';
 
 // Clerk→DB Sync Component
 function ClerkDBSync() {
