@@ -60,6 +60,23 @@ async function getClerkToken(): Promise<string | null> {
   const token = await window.Clerk.session.getToken();
   console.log('🔧 [DEBUG] Token received:', token ? 'present' : 'null');
   console.log('🔧 [DEBUG] Token value (first 20 chars):', token ? token.substring(0, 20) + '...' : 'null');
+  
+  // Debug: JWT Claims quick peek (client)
+  if (token) {
+    try {
+      const headPayload = token.split('.')[1];
+      const json = JSON.parse(atob(headPayload.replace(/-/g, '+').replace(/_/g, '/')));
+      console.debug('[AUTH][client] claims:', {
+        aud: json.aud,
+        iss: json.iss,
+        sub: json.sub,
+        azp: json.azp,
+        exp: json.exp
+      });
+    } catch (e) {
+      console.debug('[AUTH][client] claim-parse-failed');
+    }
+  }
     return token;
   } catch (error) {
     console.warn('🔧 [DEBUG] Failed to get Clerk token:', error);

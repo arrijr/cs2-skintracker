@@ -1,6 +1,7 @@
 // frontend/src/lib/http/server.ts — [Frontend]
 // {/* Server-Safe HTTP client with Clerk Authentication & Error Tracking */}
 // {/* Server-only implementation for server components and API routes */}
+import 'server-only';
 
 /**
  * Get Clerk authentication token for API requests
@@ -44,6 +45,21 @@ export async function apiFetch<T = any>(path: string, init: RequestInit = {}): P
   // Add Clerk authentication token if available
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+    
+    // Debug: JWT Claims quick peek (server)
+    try {
+      const payload = token.split('.')[1];
+      const json = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
+      console.debug('[AUTH][server] claims:', {
+        aud: json.aud,
+        iss: json.iss,
+        sub: json.sub,
+        azp: json.azp,
+        exp: json.exp
+      });
+    } catch {
+      console.debug('[AUTH][server] claim-parse-failed');
+    }
   }
 
   // Log API call start (only in development)
