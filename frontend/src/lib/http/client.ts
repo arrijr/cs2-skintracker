@@ -52,10 +52,14 @@ async function getClerkToken(): Promise<string | null> {
       return null;
     }
 
-    // Get token from Clerk session
-    console.log('🔧 [DEBUG] Getting token from Clerk session...');
-    const token = await window.Clerk.session.getToken();
-    console.log('🔧 [DEBUG] Token received:', token ? 'present' : 'null');
+  // Get token from Clerk session
+  console.log('🔧 [DEBUG] Getting token from Clerk session...');
+  console.log('🔧 [DEBUG] Clerk session object:', window.Clerk.session);
+  console.log('🔧 [DEBUG] Clerk session methods:', Object.getOwnPropertyNames(window.Clerk.session));
+  
+  const token = await window.Clerk.session.getToken();
+  console.log('🔧 [DEBUG] Token received:', token ? 'present' : 'null');
+  console.log('🔧 [DEBUG] Token value (first 20 chars):', token ? token.substring(0, 20) + '...' : 'null');
     return token;
   } catch (error) {
     console.warn('🔧 [DEBUG] Failed to get Clerk token:', error);
@@ -94,7 +98,16 @@ export async function apiFetch<T = any>(path: string, init: RequestInit = {}): P
   // Add Clerk authentication token if available
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+    console.log('🔧 [DEBUG] Authorization header set:', `Bearer ${token.substring(0, 20)}...`);
+  } else {
+    console.log('🔧 [DEBUG] No token available, skipping Authorization header');
   }
+  
+  console.log('🔧 [DEBUG] Final headers being sent:', {
+    'Content-Type': headers['Content-Type'],
+    'Authorization': headers['Authorization'] ? 'Bearer [TOKEN]' : 'Not set',
+    'Other headers': Object.keys(headers).filter(key => !['Content-Type', 'Authorization'].includes(key))
+  });
 
   // Log API call start (only in development)
   if (process.env.NODE_ENV === 'development') {
@@ -127,13 +140,22 @@ export async function apiFetch<T = any>(path: string, init: RequestInit = {}): P
 
     // Handle non-OK responses
     if (!response.ok) {
-      const errorText = await response.text();
-      let errorData;
+      console.log('🔧 [DEBUG] Non-OK response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
       
+      const errorText = await response.text();
+      console.log('🔧 [DEBUG] Error response body:', errorText);
+      
+      let errorData;
       try {
         errorData = JSON.parse(errorText);
+        console.log('🔧 [DEBUG] Parsed error data:', errorData);
       } catch {
         errorData = { message: errorText };
+        console.log('🔧 [DEBUG] Could not parse error as JSON, using raw text');
       }
 
       const error = new Error(
