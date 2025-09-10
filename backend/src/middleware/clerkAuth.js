@@ -1,31 +1,68 @@
-// backend/src/middleware/clerkAuth.js — [Backend]
-// {/* Clerk JWT Authentication Middleware */}
-import { createVerifier } from '@clerk/backend';
-
-// ENV:
-// CLERK_ISSUER=https://clerk.skintrackr.io
-// CLERK_JWKS_URL=https://clerk.skintrackr.io/.well-known/jwks.json
-// (Optional) CLERK_ALLOWED_AUD=skintrackr-backend
-
-const verify = createVerifier({
-  issuer: process.env.CLERK_ISSUER,
-  jwksUrl: process.env.CLERK_JWKS_URL,
-  audience: process.env.CLERK_ALLOWED_AUD ? [process.env.CLERK_ALLOWED_AUD] : undefined,
-  clockSkewInMs: 5000,
-});
+// backend/src/middleware/clerkAuth.js
+import { verifyToken } from '@clerk/backend';
 
 export async function clerkAuth(req, res, next) {
   try {
-    const authz = req.headers.authorization ?? '';
-    const token = authz.startsWith('Bearer ') ? authz.slice(7) : null;
-    if (!token) throw new Error('missing token');
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice('Bearer '.length)
+      : null;
 
-    const payload = await verify(token); // wirft bei Ungültigkeit
-    // Claims verfügbar: sub (userId), email, etc.
-    req.auth = { userId: payload.sub, email: payload.email };
+    if (!token) {
+      return res.status(401).json({ error: 'Missing bearer token' });
+    }
+
+    const payload = await verifyToken(token, {
+      issuer: process.env.CLERK_ISSUER,           // z.B. https://clerk.skintrackr.io
+      jwksUrl: process.env.CLERK_JWKS_URL,        // z.B. https://clerk.skintrackr.io/.well-known/jwks.json
+      audience: process.env.CLERK_ALLOWED_AUD,    // MUSS mit deinem JWT-Template-Audience matchen
+      clockSkewInMs: 5000,
+    });
+
+    req.auth = {
+      userId: payload.sub,
+      email: payload.email,
+      sid: payload.sid,
+    };
+
     return next();
-  } catch (e) {
-    console.error('Clerk JWT verification failed:', e);
-    return res.status(401).json({ error: 'Authentication required', code: 'AUTH_REQUIRED' });
+  } catch (err) {
+    console.error('[clerkAuth] verify failed:', err?.message || err);
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+}
+
+export async function optionalClerkAuth(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice('Bearer '.length)
+      : null;
+
+    if (!token) {
+      // No token provided, continue without auth
+      req.auth = null;
+      return next();
+    }
+
+    const payload = await verifyToken(token, {
+      issuer: process.env.CLERK_ISSUER,
+      jwksUrl: process.env.CLERK_JWKS_URL,
+      audience: process.env.CLERK_ALLOWED_AUD,
+      clockSkewInMs: 5000,
+    });
+
+    req.auth = {
+      userId: payload.sub,
+      email: payload.email,
+      sid: payload.sid,
+    };
+
+    return next();
+  } catch (err) {
+    console.error('[optionalClerkAuth] verify failed:', err?.message || err);
+    // Optional auth failed, continue without auth
+    req.auth = null;
+    return next();
   }
 }
