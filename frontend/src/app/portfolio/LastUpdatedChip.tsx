@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { RefreshCw, Clock } from "lucide-react";
+import { apiUrl, fetchJson } from "@/lib/api";
 
 type Props = {
   token: string | null;
@@ -29,17 +30,14 @@ export default function LastUpdatedChip({ token, onRefresh }: Props) {
 
     try {
       // Try health endpoint first (no auth required)
-      const healthResponse = await fetch("/api/v1/health/cron-status");
+      const healthData = await fetchJson(apiUrl("/api/v1/health/cron-status"));
 
-      if (healthResponse.ok) {
-        const healthData = await healthResponse.json();
-        if (healthData.priceHistoryLastRun) {
-          setLastUpdated({
-            timestamp: healthData.priceHistoryLastRun,
-            source: 'health'
-          });
-          return;
-        }
+      if (healthData.priceHistoryLastRun) {
+        setLastUpdated({
+          timestamp: healthData.priceHistoryLastRun,
+          source: 'health'
+        });
+        return;
       }
 
       // Fallback: use current time as portfolio data timestamp

@@ -2,7 +2,7 @@
 
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
-import { apiFetch } from '@/lib/http';
+import { apiUrl, fetchJson } from '@/lib/api';
 
 // Clerk→DB Sync Component
 function ClerkDBSync() {
@@ -29,7 +29,7 @@ function ClerkDBSync() {
           lastName: user.lastName
         });
 
-        const response = await apiFetch('/api/v1/users/sync', {
+        const response = await fetchJson(apiUrl('/api/v1/users/sync'), {
           method: 'POST',
           body: JSON.stringify({
             clerkUserId: user.id,

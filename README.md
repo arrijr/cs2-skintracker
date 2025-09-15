@@ -47,9 +47,45 @@ Access http://localhost:3000
 
 **Frontend .env.local**
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your_clerk_publishable_key"
-NEXT_PUBLIC_API_URL="http://localhost:5000"
+NEXT_PUBLIC_API_ORIGIN="http://localhost:5000"
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
 NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL="/"
+
+## Environments
+
+### FRONTEND (Vercel)
+- **DEV Preview:**
+  ```
+  NEXT_PUBLIC_API_ORIGIN=https://cs2-skintracker-dev.onrender.com
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<dev publishable key>
+  NEXT_PUBLIC_SITE_URL=<vercel-preview-url>
+  ```
+- **PROD:**
+  ```
+  NEXT_PUBLIC_API_ORIGIN=https://cs2-skintracker.onrender.com
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<prod publishable key>
+  NEXT_PUBLIC_SITE_URL=https://cs2-skintracker.vercel.app
+  ```
+
+### BACKEND (Render)
+- **DEV Service:**
+  ```
+  CLERK_ISSUER=https://leading-bug-60.clerk.accounts.dev
+  CLERK_JWKS_URL=https://leading-bug-60.clerk.accounts.dev/.well-known/jwks.json
+  CLERK_ALLOWED_AUD=cs2-skintracker-api-dev
+  JWT_SECRET=<dev jwt secret>
+  DATABASE_URL=<dev db url>
+  ```
+- **PROD Service:**
+  ```
+  CLERK_ISSUER=https://<PROD-Slug>.clerk.accounts.dev
+  CLERK_JWKS_URL=https://<PROD-Slug>.clerk.accounts.dev/.well-known/jwks.json
+  CLERK_ALLOWED_AUD=cs2-skintracker-api
+  JWT_SECRET=<prod jwt secret>
+  DATABASE_URL=<prod db url>
+  ```
+
+**Note:** `CLERK_ISSUER` & `JWKS_URL` come directly from Clerk. Ensure `aud` in Clerk JWT template matches `CLERK_ALLOWED_AUD`.
 
 API (short overview)
 - Authentication handled by Clerk middleware
@@ -59,6 +95,20 @@ API (short overview)
 - GET|POST|DELETE /api/v1/portfolio[/:id]
 - GET /api/v1/portfolio/history
 See /docs/API.md for complete contracts, errors and examples.
+
+## API Conventions
+
+### Frontend API Calls
+- **All API calls** use `apiUrl('/api/v1/...')` from `@/lib/api`
+- **No relative URLs** like `/api/v1/...` in frontend code
+- **Environment-based**: `NEXT_PUBLIC_API_ORIGIN` determines backend URL
+- **Error handling**: Use `fetchJson()` for structured error responses
+
+### Adding New Endpoints
+1. **Backend**: Add route with `optionalClerkAuth` middleware for public endpoints
+2. **Frontend**: Use `apiUrl('/api/v1/endpoint')` and `fetchJson()` or `swrFetcher`
+3. **Documentation**: Update `/docs/API.md` with request/response examples
+4. **Error format**: Return `{ message: string, error?: string }` for consistency
 
 Data Model (high level)
 - **User**: id, email (unique), role (`user|admin`), isPremium (bool), createdAt

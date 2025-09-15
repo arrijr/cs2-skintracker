@@ -4,15 +4,16 @@ API Documentation
 Base URL
 --------
 
-* **Backend Host (Render):** wird über `NEXT_PUBLIC_API_URL` konfiguriert.
+* **Backend Host (Render):** wird über `NEXT_PUBLIC_API_ORIGIN` konfiguriert.
 * **Frontend (Vercel)** hostet **keine** API-Routen — alle Requests müssen an den Render-Host gehen.
 * Basispräfix: `/api/v1`
 
 Examples
 --------
 
-* Local: `NEXT_PUBLIC_API_URL=http://localhost:4000`
-* Render: `NEXT_PUBLIC_API_URL=https://<your-render-backend>.onrender.com`
+* Local: `NEXT_PUBLIC_API_ORIGIN=http://localhost:5000`
+* DEV: `NEXT_PUBLIC_API_ORIGIN=https://cs2-skintracker-dev.onrender.com`
+* PROD: `NEXT_PUBLIC_API_ORIGIN=https://cs2-skintracker.onrender.com`
 
 Authentication
 --------------
@@ -36,9 +37,10 @@ Error Format
 Client Rules
 ------------
 
-* Alle Fetches **nur** über `${NEXT_PUBLIC_API_URL}` (kein Frontend-Host).
-* Zentralen Helper verwenden: `apiFetch(path)` (fügt Token hinzu, baut URL, handelt 401).
-* Keine Hardcoded-URLs; keine trailing slashes in `NEXT_PUBLIC_API_URL`.
+* Alle Fetches **nur** über `apiUrl('/api/v1/...')` aus `@/lib/api`.
+* Zentralen Helper verwenden: `fetchJson()` oder `swrFetcher` für SWR.
+* Keine relativen URLs wie `/api/v1/...` im Frontend-Code.
+* Keine Hardcoded-URLs; `NEXT_PUBLIC_API_ORIGIN` ohne trailing slash.
 
 Caching
 -------
@@ -349,16 +351,21 @@ Login
 
 makefile
 Code kopieren
-curl -X POST "$NEXT_PUBLIC_API_URL/api/v1/users/login" \
+curl -X POST "$NEXT_PUBLIC_API_ORIGIN/api/v1/users/login" \
   -H "Content-Type: application/json" \
   -d '{"email":"test@test.de","password":"pass"}'
 Market Stats
 
 nginx
 Code kopieren
-curl "$NEXT_PUBLIC_API_URL/api/v1/skins/14621/market-stats"
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/skins/14621/market-stats"
+Presets
+
+nginx
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/skins/presets"
 Notes
-Alle Beispiele verwenden ${NEXT_PUBLIC_API_URL} als Host.
+Alle Beispiele verwenden ${NEXT_PUBLIC_API_ORIGIN} als Host.
 
 Frontend darf keine eigenen (Vercel-)Routen für die API verwenden.
 

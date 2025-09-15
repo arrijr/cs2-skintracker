@@ -3,7 +3,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { apiUrl } from "@/lib/api";
+import { apiUrl, fetchJson } from "@/lib/api";
 
 type Skin = {
   id: number;
@@ -28,16 +28,14 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
     e.stopPropagation(); // Stop event bubbling
     
     try {
-      const res = await fetch(apiUrl('/api/v1/watchlist'), {
+      await fetchJson(apiUrl('/api/v1/watchlist'), {
         method: "POST",
         headers: { 
-          "Content-Type": "application/json", 
           "Authorization": `Bearer ${localStorage.getItem("token")}` 
         },
         body: JSON.stringify({ skinId: skin.id }),
       });
       
-      if (!res.ok) throw new Error();
       onAdded?.();
       // replace with your toast system
       console.log("Added to Watchlist");
@@ -48,6 +46,11 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
 
   const price = skin.priceAvg || skin.priceMedian;
   const rarityColor = getRarityColor(skin.rarity);
+  
+  // Safe string handling
+  const safeName = skin.name || 'Unknown Skin';
+  const safeRarity = skin.rarity || '';
+  const safeWear = skin.wear || '';
 
   return (
     <Link href={`/skins/${skin.id}`} className="block">
@@ -78,19 +81,19 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
 
         {/* Title */}
         <div className="text-sm font-semibold line-clamp-2 mb-2 group-hover:text-blue-400 transition-colors">
-          {skin.name}
+          {safeName}
         </div>
         
         {/* Rarity & Wear */}
         <div className="text-xs text-gray-400 mb-3">
-          {skin.rarity && (
+          {safeRarity && (
             <span className={`${rarityColor} mr-2`}>
-              {skin.rarity}
+              {safeRarity}
             </span>
           )}
-          {skin.wear && (
+          {safeWear && (
             <span className="text-gray-500">
-              {skin.wear}
+              {safeWear}
             </span>
           )}
         </div>

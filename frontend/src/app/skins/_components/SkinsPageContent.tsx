@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SkinGrid from "../SkinGrid";
-import { apiUrl } from "@/lib/api";
+import { apiUrl, fetchJson } from "@/lib/api";
 
 // Feature flag for enhanced filters
 const SKINS_FILTERS_ENHANCED = process.env.NEXT_PUBLIC_SKINS_FILTERS_ENHANCED === 'true';
@@ -207,24 +207,26 @@ export function SkinsPageContent() {
   useEffect(() => {
     async function loadPresetValues() {
       try {
-        const res = await fetch(apiUrl('/api/v1/skins/presets'));
-        if (res.ok) {
-          const data = await res.json();
-          setPresetValues(data);
-          
-          // Populate wear and rarity presets with DB values
-          ENHANCED_FILTER_PRESETS.wear = data.wears.map((wear: string) => ({
-            name: wear,
-            params: { wear }
-          }));
-          
-          ENHANCED_FILTER_PRESETS.rarity = data.rarities.map((rarity: string) => ({
-            name: rarity,
-            params: { rarity }
-          }));
-        }
+        const data = await fetchJson<{wears: string[], rarities: string[]}>(apiUrl('/api/v1/skins/presets'));
+        setPresetValues(data);
+        
+        // Populate wear and rarity presets with DB values
+        ENHANCED_FILTER_PRESETS.wear = data.wears.map((wear: string) => ({
+          name: wear,
+          params: { wear }
+        }));
+        
+        ENHANCED_FILTER_PRESETS.rarity = data.rarities.map((rarity: string) => ({
+          name: rarity,
+          params: { rarity }
+        }));
       } catch (error) {
         console.error("Failed to load preset values:", error);
+        // Set fallback values to prevent UI crashes
+        setPresetValues({
+          wears: ['fn', 'mw', 'ft', 'ww', 'bs'],
+          rarities: ['Consumer Grade', 'Industrial Grade', 'Mil-Spec', 'Restricted', 'Classified', 'Covert']
+        });
       }
     }
     

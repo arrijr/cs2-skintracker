@@ -6,7 +6,7 @@ import { SkinCard } from "./_components/SkinCard";
 import { useSkins, type SkinsFilters } from "@/hooks/useSkins";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { apiUrl } from "@/lib/api";
+import { apiUrl, fetchJson } from "@/lib/api";
 
 interface SkinGridProps {
   filters?: SkinsFilters;
@@ -63,10 +63,9 @@ export default function SkinGrid({
     } else {
       // Default behavior: add to portfolio
       try {
-        const response = await fetch(apiUrl('/api/v1/portfolio'), {
+        await fetchJson(apiUrl('/api/v1/portfolio'), {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
             "Authorization": `Bearer ${localStorage.getItem("token")}`
           },
           body: JSON.stringify({
@@ -77,11 +76,7 @@ export default function SkinGrid({
           }),
         });
         
-        if (response.ok) {
-          console.log("Skin added to portfolio");
-        } else {
-          console.error("Failed to add skin to portfolio");
-        }
+        console.log("Skin added to portfolio");
       } catch (error) {
         console.error("Error adding skin to portfolio:", error);
       }
@@ -103,12 +98,20 @@ export default function SkinGrid({
         <div className="text-gray-500 text-sm mb-6">
           {error?.message || "Something went wrong"}
         </div>
-        <button 
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
-        >
-          Try Again
-        </button>
+        <div className="flex gap-2 justify-center">
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
+          >
+            Reload Page
+          </button>
+          <button 
+            onClick={() => mutate()}
+            className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg transition-colors"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }

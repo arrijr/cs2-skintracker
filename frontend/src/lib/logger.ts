@@ -138,6 +138,7 @@ class Logger {
     if (!this.isProduction) return;
 
     try {
+      // Use relative URL for Next.js API route
       await fetch('/api/logs', {
         method: 'POST',
         headers: {

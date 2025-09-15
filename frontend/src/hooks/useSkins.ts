@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import useSWR from 'swr';
-import { apiFetch } from '@/lib/http';
+import { apiUrl, swrFetcher } from '@/lib/api';
 
 // Types
 export interface Skin {
@@ -68,9 +68,7 @@ const createFetcher = (timeout: number) => {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const response = await apiFetch(url, {
-        signal: controller.signal,
-      });
+      const response = await swrFetcher<SkinsResponse>(url);
       clearTimeout(timeoutId);
       return response;
     } catch (error) {
@@ -103,32 +101,29 @@ export function useSkins(options: UseSkinsOptions = {}) {
 
   // Build API URL
   const queryString = buildQueryString(config.filters);
-  const apiUrl = `/api/v1/skins${queryString ? `?${queryString}` : ''}`;
+  const fullApiUrl = apiUrl(`/api/v1/skins${queryString ? `?${queryString}` : ''}`);
 
   // Create fetcher with timeout
   const fetcher = useMemo(() => createFetcher(config.timeout), [config.timeout]);
 
-  // SWR configuration
-  const swrConfig = {
-    fetcher,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: true,
-    dedupingInterval: 5000, // 5 seconds
-    errorRetryCount: config.retryCount,
-    errorRetryInterval: config.retryDelay,
-    onError: (error: Error) => {
-      console.error('❌ [useSkins] SWR Error:', error);
-      setRetryCount(prev => prev + 1);
-    },
-    onSuccess: () => {
-      setRetryCount(0);
-    },
-  };
-
   // SWR hook
   const { data, error, isLoading, isValidating, mutate } = useSWR<SkinsResponse>(
-    config.enabled ? apiUrl : null,
-    swrConfig
+    config.enabled ? fullApiUrl : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      dedupingInterval: 5000, // 5 seconds
+      errorRetryCount: config.retryCount,
+      errorRetryInterval: config.retryDelay,
+      onError: (error: Error) => {
+        console.error('❌ [useSkins] SWR Error:', error);
+        setRetryCount(prev => prev + 1);
+      },
+      onSuccess: () => {
+        setRetryCount(0);
+      },
+    }
   );
 
   // Pagination helpers
@@ -294,29 +289,29 @@ export function useSkins(options: UseSkinsOptions = {}) {
     
     // Debug info
     debug: {
-      apiUrl,
+      apiUrl: fullApiUrl,
       retryCount,
-      swrKey: config.enabled ? apiUrl : null,
+      swrKey: config.enabled ? fullApiUrl : null,
     },
   };
 }
 
 // Preset hook for common use cases
 export function useSkinsPresets() {
-  const { data: wears } = useSWR<string[]>('/api/v1/skins/presets', (url) => 
-    apiFetch(url).then(res => res.wears || [])
+  const { data: wears } = useSWR<string[]>(apiUrl('/api/v1/skins/presets'), (url) => 
+    swrFetcher<{wears: string[]}>(url).then(res => res.wears || [])
   );
   
-  const { data: rarities } = useSWR<string[]>('/api/v1/skins/presets', (url) => 
-    apiFetch(url).then(res => res.rarities || [])
+  const { data: rarities } = useSWR<string[]>(apiUrl('/api/v1/skins/presets'), (url) => 
+    swrFetcher<{rarities: string[]}>(url).then(res => res.rarities || [])
   );
 
-  const { data: categories } = useSWR('/api/v1/skins/categories', (url) => 
-    apiFetch(url).then(res => res.categories || {})
+  const { data: categories } = useSWR(apiUrl('/api/v1/skins/categories'), (url) => 
+    swrFetcher<{categories: any}>(url).then(res => res.categories || {})
   );
 
-  const { data: filters } = useSWR('/api/v1/skins/filters', (url) => 
-    apiFetch(url)
+  const { data: filters } = useSWR(apiUrl('/api/v1/skins/filters'), (url) => 
+    swrFetcher(url)
   );
 
   return {
@@ -331,8 +326,8 @@ export function useSkinsPresets() {
 // Search hook for autocomplete
 export function useSkinsSearch(query: string, enabled: boolean = true) {
   const { data, error, isLoading } = useSWR<Skin[]>(
-    enabled && query.length >= 2 ? `/api/v1/skins/search?query=${encodeURIComponent(query)}` : null,
-    (url) => apiFetch(url),
+    enabled && query.length >= 2 ? apiUrl(`/api/v1/skins/search?query=${encodeURIComponent(query)}`) : null,
+    (url) => swrFetcher<Skin[]>(url),
     {
       dedupingInterval: 1000,
       revalidateOnFocus: false,

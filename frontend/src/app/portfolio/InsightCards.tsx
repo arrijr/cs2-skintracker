@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { TrendingUp, TrendingDown, BarChart3, AlertTriangle } from "lucide-react";
+import { apiUrl, fetchJson } from "@/lib/api";
 
 type Props = {
   portfolio: any[];
@@ -36,12 +37,12 @@ export default function InsightCards({ portfolio, token }: Props) {
       try {
         // Load risk metrics and contribution data
         const [riskResponse, contributionResponse] = await Promise.all([
-          fetch("/api/v1/portfolio/kpis", {
+          fetchJson(apiUrl("/api/v1/portfolio/kpis"), {
             headers: { Authorization: `Bearer ${token}` }
-          }).then(res => res.json()),
-          fetch("/api/v1/portfolio/contribution?range=week", {
+          }),
+          fetchJson(apiUrl("/api/v1/portfolio/contribution?range=week"), {
             headers: { Authorization: `Bearer ${token}` }
-          }).then(res => res.json())
+          })
         ]);
 
         setInsights({
