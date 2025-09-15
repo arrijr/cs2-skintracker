@@ -94,7 +94,7 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
   // Name-Filter
   if (search.trim() !== "") {
     filteredSkins = filteredSkins.filter((entry) =>
-      entry.skin.name.toLowerCase().includes(search.trim().toLowerCase())
+      entry.skin.name?.toLowerCase().includes(search.trim().toLowerCase()) || false
     );
   }
 
