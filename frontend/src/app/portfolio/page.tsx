@@ -23,6 +23,8 @@ import {
   getPortfolioHistory,
   getWatchlist,
   removeFromWatchlist,
+  apiUrl,
+  fetchJson,
 } from "@/lib/api";
 
 // {/* Types kept minimal; UI components do stricter typing */}
@@ -70,12 +72,11 @@ export default function PortfolioPage() {
     setLoading(true);
     setError(null);
     try {
-      const { apiFetch } = await import("@/lib/http");
       const [h, p, w, kpis] = await Promise.all([
         getPortfolioHistory(),
         getPortfolio(),
         getWatchlist(),
-        apiFetch("/api/v1/portfolio/kpis").catch(() => null)
+        fetchJson(apiUrl("/api/v1/portfolio/kpis")).catch(() => null)
       ]);
       console.log('[DEBUG] Portfolio data received:', { h, p, w, kpis });
       setHistory(Array.isArray(h) ? h : []);

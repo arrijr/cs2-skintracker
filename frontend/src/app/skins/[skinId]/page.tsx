@@ -10,8 +10,9 @@ import { useUser } from "@clerk/nextjs";
 import {
   getPortfolio,
   getWatchlist,
+  apiUrl,
+  fetchJson,
 } from "@/lib/api";
-import { apiFetch } from "@/lib/http"; // for skin detail/history
 import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
 import PurchaseAccordion from "../../components/PurchaseAccordion";
 import SkinPortfolioCard from "../../components/SkinPortfolioCard";
@@ -89,19 +90,15 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
       try {
         console.log(`[DEBUG] Loading skin ${skinId}...`);
         const [s, h] = await Promise.all([
-          apiFetch(`/api/v1/skins/${skinId}`),
-          apiFetch(`/api/v1/skins/${skinId}/history`).catch(() => []),
+          fetchJson(apiUrl(`/api/v1/skins/${skinId}`)),
+          fetchJson(apiUrl(`/api/v1/skins/${skinId}/history`)).catch(() => []),
         ]);
         console.log(`[DEBUG] API response - skin:`, s);
         console.log(`[DEBUG] API response - history:`, h);
         
         if (!cancelled) {
-          // Parse the Response objects to JSON
-          const skinData = s.ok ? await s.json() : null;
-          const historyData = h.ok ? await h.json() : [];
-          
-          setSkin(skinData);
-          setHistory(Array.isArray(historyData) ? historyData : []);
+          setSkin(s);
+          setHistory(Array.isArray(h) ? h : []);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -122,45 +119,27 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           
           // Test market stats
           try {
-            const statsResponse = await apiFetch(`/api/v1/skins/${skinId}/market-stats`);
-            console.log('[DEBUG] 📊 Market stats status:', statsResponse.status);
-            if (statsResponse.ok) {
-              const stats = await statsResponse.json();
-              console.log('[DEBUG] 📊 Market stats data:', stats);
-              setMarketStats(stats);
-            } else {
-              console.error('[DEBUG] ❌ Market stats failed:', statsResponse.status, statsResponse.statusText);
-            }
+            const stats = await fetchJson(apiUrl(`/api/v1/skins/${skinId}/market-stats`));
+            console.log('[DEBUG] 📊 Market stats data:', stats);
+            setMarketStats(stats);
           } catch (err) {
             console.error('[DEBUG] ❌ Market stats error:', err);
           }
 
           // Test variants
           try {
-            const variantsResponse = await apiFetch(`/api/v1/skins/${skinId}/variants`);
-            console.log('[DEBUG] 🔄 Variants status:', variantsResponse.status);
-            if (variantsResponse.ok) {
-              const variantsData = await variantsResponse.json();
-              console.log('[DEBUG] 🔄 Variants data:', variantsData);
-              setVariants(variantsData?.variants || []);
-            } else {
-              console.error('[DEBUG] ❌ Variants failed:', variantsResponse.status, variantsResponse.statusText);
-            }
+            const variantsData = await fetchJson(apiUrl(`/api/v1/skins/${skinId}/variants`));
+            console.log('[DEBUG] 🔄 Variants data:', variantsData);
+            setVariants(variantsData?.variants || []);
           } catch (err) {
             console.error('[DEBUG] ❌ Variants error:', err);
           }
 
           // Test case info
           try {
-            const caseResponse = await apiFetch(`/api/v1/skins/${skinId}/case`);
-            console.log('[DEBUG] 📦 Case info status:', caseResponse.status);
-            if (caseResponse.ok) {
-              const caseData = await caseResponse.json();
-              console.log('[DEBUG] 📦 Case info data:', caseData);
-              setCaseInfo(caseData);
-            } else {
-              console.error('[DEBUG] ❌ Case info failed:', caseResponse.status, caseResponse.statusText);
-            }
+            const caseData = await fetchJson(apiUrl(`/api/v1/skins/${skinId}/case`));
+            console.log('[DEBUG] 📦 Case info data:', caseData);
+            setCaseInfo(caseData);
           } catch (err) {
             console.error('[DEBUG] ❌ Case info error:', err);
           }
@@ -239,7 +218,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     setAddingAlert(true);
     setMsg("");
     try {
-      await apiFetch(`/api/v1/watchlist`, {
+      await fetchJson(apiUrl(`/api/v1/watchlist`), {
         method: "POST",
         body: JSON.stringify({
           skinId: skin.id,
@@ -266,7 +245,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     setPortfolioMsg("");
 
     try {
-      await apiFetch("/api/v1/portfolio", {
+      await fetchJson(apiUrl("/api/v1/portfolio"), {
         method: "POST",
         body: JSON.stringify({
           skinId: skin!.id,

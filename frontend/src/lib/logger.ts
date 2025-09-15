@@ -1,5 +1,7 @@
 // frontend/src/lib/logger.ts — [Frontend]
-// {/* Centralized Logging & Error Tracking System */}
+// {/* Centralized Logging & Error Tracking System */
+import { apiUrl, fetchJson } from './api';
+
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
 export interface LogContext {
@@ -139,7 +141,7 @@ class Logger {
 
     try {
       // Use relative URL for Next.js API route
-      await fetch('/api/logs', {
+      await fetchJson(apiUrl('/api/logs'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -18,6 +18,7 @@ import {
   CheckCircle,
   XCircle
 } from "lucide-react";
+import { apiUrl, fetchJson } from "@/lib/api";
 
 interface AdminMetrics {
   users: {
@@ -111,8 +112,7 @@ export default function AdminMiniMetrics({ className = "", showDetails = false }
       setLoading(true);
       setError(null);
       
-      const { apiFetch } = await import('@/lib/http');
-      const response = await apiFetch('/api/v1/admin/metrics/overview');
+      const response = await fetchJson(apiUrl('/api/v1/admin/metrics/overview'));
       
       if (response.success) {
         setMetrics(response.metrics);

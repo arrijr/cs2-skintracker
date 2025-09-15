@@ -51,18 +51,38 @@ NEXT_PUBLIC_API_ORIGIN="http://localhost:5000"
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
 NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL="/"
 
-## Environments
+## Environments & API
+
+### Frontend → Backend Routing
+
+Alle API-Calls gehen **direkt** an Render (kein Next.js API-Proxy):
+
+- DEV/Preview → `${NEXT_PUBLIC_API_ORIGIN_DEV}`
+- PROD → `${NEXT_PUBLIC_API_ORIGIN_PROD}`
+
+Konfiguration (Vercel Project → Settings → Environment Variables):
+
+- `NEXT_PUBLIC_API_ORIGIN_DEV=https://cs2-skintracker-dev.onrender.com`
+- `NEXT_PUBLIC_API_ORIGIN_PROD=https://cs2-skintracker.onrender.com`
+
+Im Code **immer**:
+```ts
+import { apiUrl, fetchJson } from "@/lib/api";
+await fetchJson(apiUrl("/api/v1/skins"));
+```
+
+Niemals relative Pfade wie `fetch("/api/...")`, sonst landen Requests auf der Vercel-Domain und führen zu 502 Bad Gateway.
 
 ### FRONTEND (Vercel)
 - **DEV Preview:**
   ```
-  NEXT_PUBLIC_API_ORIGIN=https://cs2-skintracker-dev.onrender.com
+  NEXT_PUBLIC_API_ORIGIN_DEV=https://cs2-skintracker-dev.onrender.com
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<dev publishable key>
   NEXT_PUBLIC_SITE_URL=<vercel-preview-url>
   ```
 - **PROD:**
   ```
-  NEXT_PUBLIC_API_ORIGIN=https://cs2-skintracker.onrender.com
+  NEXT_PUBLIC_API_ORIGIN_PROD=https://cs2-skintracker.onrender.com
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<prod publishable key>
   NEXT_PUBLIC_SITE_URL=https://cs2-skintracker.vercel.app
   ```

@@ -4,7 +4,7 @@ import { useRequireAuth } from "../hooks/useRequireAuth";
 import Link from "next/link";
 import { LogOut, User2, Star, Eye, Trash2, Settings, Shield, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from "react";
-import { apiFetch } from "@/lib/http";
+import { apiUrl, fetchJson } from "@/lib/api";
 
 interface ProfileData {
   id: number;
@@ -79,7 +79,7 @@ export default function ProfilePage() {
 
   const loadProfileData = async () => {
     try {
-      const data = await apiFetch("/api/v1/users/me");
+      const data = await fetchJson(apiUrl("/api/v1/users/me"));
       setProfileData(data);
       setSettings({
         displayName: data.displayName || "",
@@ -97,7 +97,7 @@ export default function ProfilePage() {
   const loadKPIData = async () => {
     try {
       // Use new KPI endpoint for better performance
-      const kpiResponse = await apiFetch("/api/v1/portfolio/kpis");
+      const kpiResponse = await fetchJson(apiUrl("/api/v1/portfolio/kpis"));
       
       setKpiData({
         portfolioCount: kpiResponse.portfolioCount || 0,
@@ -133,7 +133,7 @@ export default function ProfilePage() {
     setSettingsMessage(null);
     
     try {
-      const updatedProfile = await apiFetch("/api/v1/users/me", {
+      const updatedProfile = await fetchJson(apiUrl("/api/v1/users/me"), {
         method: "PATCH",
         body: JSON.stringify(settings)
       });
@@ -169,7 +169,7 @@ export default function ProfilePage() {
     setPwSuccess("");
     
     try {
-      await apiFetch("/api/v1/users/me/password", {
+      await fetchJson(apiUrl("/api/v1/users/me/password"), {
         method: "PATCH",
         body: JSON.stringify({
           currentPassword: passwordData.currentPassword,
@@ -197,7 +197,7 @@ export default function ProfilePage() {
     
     setIsDeleting(true);
     try {
-      await apiFetch("/api/v1/users/me", { method: "DELETE" });
+      await fetchJson(apiUrl("/api/v1/users/me"), { method: "DELETE" });
       // Clerk will handle the logout and redirect
       window.location.href = "/";
     } catch (error) {

@@ -17,6 +17,7 @@ import {
   ChevronUp
 } from "lucide-react";
 import { safeLower } from "@/lib/strings";
+import { apiUrl, fetchJson, apiOrigin } from "@/lib/api";
 
 interface BuildInfo {
   version: string;
@@ -46,15 +47,16 @@ export default function BuildInfo({ showDetails = false, className = "" }: Build
       setLoading(true);
       setError(null);
       
-      const { apiFetch } = await import('@/lib/http');
-      const response = await apiFetch('/api/v1/health/build-info');
-      
-      if (response.ok) {
-        setBuildInfo(response);
-        setLastRefresh(new Date());
-      } else {
-        throw new Error(response.error || 'Failed to fetch build info');
+      const url = apiUrl('/api/v1/health/build-info');
+      // Debug-Log einmalig lassen, um künftige Fehlrouten zu erkennen
+      if (typeof window !== "undefined") {
+        // eslint-disable-next-line no-console
+        console.log("[BuildInfo] origin:", apiOrigin(), "url:", url);
       }
+      
+      const response = await fetchJson<BuildInfo>(url);
+      setBuildInfo(response);
+      setLastRefresh(new Date());
     } catch (err) {
       console.error('Error fetching build info:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');

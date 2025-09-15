@@ -1,67 +1,65 @@
-// frontend/src/lib/api.ts — [Frontend]
-// {/* Centralized API URL Helper & Fetcher */}
+// frontend/src/lib/api.ts
+// Einheitliche URL- und Fetch-Utilities. Nur diese in der App verwenden.
 
-const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN!;
+type Env = "production" | "preview" | "development";
+const VERCEL_ENV = (process.env.NEXT_PUBLIC_VERCEL_ENV ||
+  process.env.VERCEL_ENV ||
+  "development") as Env;
 
-if (!API_ORIGIN) {
-  throw new Error('NEXT_PUBLIC_API_ORIGIN environment variable is required');
+// Erlaube explizite DEV/PROD-Origins, fallback auf gemeinsame Variable:
+const ORIGIN_DEV =
+  process.env.NEXT_PUBLIC_API_ORIGIN_DEV || process.env.NEXT_PUBLIC_API_ORIGIN;
+const ORIGIN_PROD =
+  process.env.NEXT_PUBLIC_API_ORIGIN_PROD || process.env.NEXT_PUBLIC_API_ORIGIN;
+
+// Auswahl je nach Umgebung: Preview -> DEV-Backend verwenden (falls PROD nicht gewünscht)
+export function apiOrigin() {
+  if (VERCEL_ENV === "production") return ORIGIN_PROD!;
+  return ORIGIN_DEV!; // preview + development
 }
 
-export const apiUrl = (path: string): string => {
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${API_ORIGIN}${cleanPath}`;
-};
+// Baut immer eine absolute URL zum Render-Backend
+export function apiUrl(path: string) {
+  const base = apiOrigin();
+  // tolerantes Joinen ("/api..." vs "api...")
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return new URL(p, base).toString();
+}
 
-// Enhanced fetchJson with better error handling
-export async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
-  try {
-    const response = await fetch(url, {
-      ...init,
-      headers: {
-        'Content-Type': 'application/json',
-        ...init?.headers,
-      },
-    });
+// Einheitlicher JSON-Fetcher mit Fehlerobjekt
+export async function fetchJson<T = unknown>(
+  input: string,
+  init: RequestInit = {}
+): Promise<T> {
+  const res = await fetch(input, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init.headers || {}),
+    },
+    // Keine Cookies zum Next.js-Host schicken; wir rufen direkt das Render-Backend
+    credentials: "omit",
+  });
 
-    if (!response.ok) {
-      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-      
-      try {
-        const errorText = await response.text();
-        if (errorText) {
-          // Try to parse as JSON for structured error
-          try {
-            const errorJson = JSON.parse(errorText);
-            errorMessage = errorJson.message || errorJson.error || errorMessage;
-          } catch {
-            // If not JSON, use the text as is
-            errorMessage = errorText;
-          }
-        }
-      } catch {
-        // If we can't read the response body, use the status text
-      }
-
-      throw new Error(errorMessage);
+  if (!res.ok) {
+    // Versuch, JSON-Fehler zu lesen
+    let detail: unknown = null;
+    try {
+      detail = await res.json();
+    } catch {
+      // noop
     }
-
-    // Handle empty responses
-    const text = await response.text();
-    if (!text) {
-      return {} as T;
-    }
-
-    return JSON.parse(text);
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Network error occurred');
+    const err = new Error(
+      `HTTP ${res.status} ${res.statusText} for ${input}`
+    ) as Error & { detail?: unknown; status?: number };
+    err.detail = detail;
+    err.status = res.status;
+    throw err;
   }
+  // 204?
+  if (res.status === 204) return undefined as T;
+  return (await res.json()) as T;
 }
 
-// SWR fetcher for use with useSWR
-export const swrFetcher = <T>(url: string): Promise<T> => fetchJson<T>(url);
-
-// Re-export existing apiFetch for backward compatibility
-export { apiFetch } from './http';
+// SWR-kompatibler Fetcher
+export const swrFetcher = (key: string) => fetchJson(key);

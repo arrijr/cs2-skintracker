@@ -27,3 +27,6 @@ export const safeLocaleCompare = (a: unknown, b: unknown): number => {
   const safeB = safeString(b);
   return safeA.localeCompare(safeB);
 };
+
+// Generic safe function for any string operation
+export const safe = (v: unknown): string => (typeof v === 'string' ? v : v == null ? "" : String(v));

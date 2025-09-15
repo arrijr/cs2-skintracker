@@ -7,6 +7,7 @@ import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle 
 import BuildInfo from "../components/BuildInfo";
 import AdminMiniMetrics from "../components/AdminMiniMetrics";
 import { safeLower } from "@/lib/strings";
+import { apiUrl, fetchJson } from "@/lib/api";
 
 type AdminTab = "overview" | "jobs" | "logs";
 
@@ -66,24 +67,15 @@ export default function AdminPage() {
 
   const loadAdminData = async () => {
     try {
-      const { apiFetch } = await import("@/lib/http");
       const [overviewRes, jobsRes, logsRes] = await Promise.all([
-        apiFetch("/api/v1/admin/overview"),
-        apiFetch("/api/v1/admin/jobs"),
-        apiFetch("/api/v1/admin/logs")
+        fetchJson(apiUrl("/api/v1/admin/overview")),
+        fetchJson(apiUrl("/api/v1/admin/jobs")),
+        fetchJson(apiUrl("/api/v1/admin/logs"))
       ]);
 
-      if (overviewRes.ok) {
-        setOverview(overviewRes);
-      }
-
-      if (jobsRes.ok) {
-        setJobs(jobsRes.jobs);
-      }
-
-      if (logsRes.ok) {
-        setAdminLogs(logsRes.logs);
-      }
+      setOverview(overviewRes);
+      setJobs(jobsRes.jobs);
+      setAdminLogs(logsRes.logs);
     } catch (err) {
       setError("Failed to load admin data");
     } finally {
