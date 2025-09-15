@@ -7,6 +7,10 @@ const nextConfig = {
   // {/* Keep builds unblocked (you already had this) */}
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+  
+  // {/* Enable source maps for debugging */}
+  productionBrowserSourceMaps: true,
+  reactStrictMode: true,
 
   // {/* API proxy: all /api/* calls go to backend */}
   async rewrites() {

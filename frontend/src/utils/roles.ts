@@ -1,5 +1,7 @@
 // /frontend/src/utils/roles.ts (Frontend)
 
+import { safeLower } from "@/lib/strings";
+
 // Types for role management
 export interface UserRole {
   isAdmin: boolean;
@@ -52,7 +54,7 @@ export function getUserRole(user: any): UserRole {
 export function hasRole(user: any, requiredRole: string): boolean {
   const userRole = getUserRole(user);
   
-  switch (requiredRole.toLowerCase()) {
+  switch (safeLower(requiredRole)) {
     case 'admin':
       return userRole.isAdmin;
     case 'user':

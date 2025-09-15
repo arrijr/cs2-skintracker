@@ -298,21 +298,22 @@ export function useSkins(options: UseSkinsOptions = {}) {
 
 // Preset hook for common use cases
 export function useSkinsPresets() {
-  const { data: wears } = useSWR<string[]>(apiUrl('/api/v1/skins/presets'), (url) => 
-    swrFetcher<{wears: string[]}>(url).then(res => res.wears || [])
-  );
+  const { data: wears } = useSWR<string[]>(apiUrl('/api/v1/skins/presets'), async (url) => {
+    const res = await swrFetcher<{wears: string[]}>(url);
+    return res.wears || [];
+  });
   
-  const { data: rarities } = useSWR<string[]>(apiUrl('/api/v1/skins/presets'), (url) => 
-    swrFetcher<{rarities: string[]}>(url).then(res => res.rarities || [])
-  );
+  const { data: rarities } = useSWR<string[]>(apiUrl('/api/v1/skins/presets'), async (url) => {
+    const res = await swrFetcher<{rarities: string[]}>(url);
+    return res.rarities || [];
+  });
 
-  const { data: categories } = useSWR(apiUrl('/api/v1/skins/categories'), (url) => 
-    swrFetcher<{categories: any}>(url).then(res => res.categories || {})
-  );
+  const { data: categories } = useSWR(apiUrl('/api/v1/skins/categories'), async (url) => {
+    const res = await swrFetcher<{categories: any}>(url);
+    return res.categories || {};
+  });
 
-  const { data: filters } = useSWR(apiUrl('/api/v1/skins/filters'), (url) => 
-    swrFetcher(url)
-  );
+  const { data: filters } = useSWR(apiUrl('/api/v1/skins/filters'), swrFetcher);
 
   return {
     wears: wears || [],

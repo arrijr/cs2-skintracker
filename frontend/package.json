@@ -10,6 +10,7 @@
     "build:info": "node scripts/generate-build-info.js",
     "start": "next start",
     "lint": "next lint",
+    "smoke": "tsx scripts/smoke.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",

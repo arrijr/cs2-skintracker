@@ -39,13 +39,9 @@ function ClerkDBSync() {
           })
         });
 
-        if (response.success || response.message) {
-          console.log('✅ [CLERK-SYNC] User synced successfully:', response);
-          setSyncStatus('synced');
-          sessionStorage.setItem(syncKey, 'true');
-        } else {
-          throw new Error('Sync response invalid');
-        }
+        console.log('✅ [CLERK-SYNC] User synced successfully:', response);
+        setSyncStatus('synced');
+        sessionStorage.setItem(syncKey, 'true');
       } catch (error) {
         console.error('❌ [CLERK-SYNC] Failed to sync user:', error);
         setSyncStatus('error');

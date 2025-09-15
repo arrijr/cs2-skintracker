@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, Bell, AlertTriangle } from "lucide-react";
 import PurchaseAccordion from "../components/PurchaseAccordion";
 import clsx from "clsx";
 import Tooltip from "../components/Tooltip";
+import { safeLower, safeIncludes, safeLocaleCompare } from "@/lib/strings";
 
 type Skin = {
   id: number;
@@ -94,7 +95,7 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
   // Name-Filter
   if (search.trim() !== "") {
     filteredSkins = filteredSkins.filter((entry) =>
-      entry.skin.name?.toLowerCase().includes(search.trim().toLowerCase()) || false
+      safeIncludes(entry.skin.name, search.trim())
     );
   }
 
@@ -137,7 +138,7 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
   } else if (sortBy === "name") {
     // Sort alphabetically by name
     filteredSkins = [...filteredSkins].sort((a, b) => 
-      a.skin.name.localeCompare(b.skin.name)
+      safeLocaleCompare(a.skin.name, b.skin.name)
     );
   }
 

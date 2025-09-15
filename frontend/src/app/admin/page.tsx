@@ -6,6 +6,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import BuildInfo from "../components/BuildInfo";
 import AdminMiniMetrics from "../components/AdminMiniMetrics";
+import { safeLower } from "@/lib/strings";
 
 type AdminTab = "overview" | "jobs" | "logs";
 
@@ -96,7 +97,7 @@ export default function AdminPage() {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (safeLower(status)) {
       case "completed":
       case "success":
         return <CheckCircle className="w-4 h-4 text-green-400" />;
@@ -111,7 +112,7 @@ export default function AdminPage() {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (safeLower(status)) {
       case "completed":
       case "success":
         return "text-green-400";
