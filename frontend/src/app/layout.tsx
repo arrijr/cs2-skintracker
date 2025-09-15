@@ -9,6 +9,11 @@ import { Toaster as HotToaster } from "react-hot-toast";
 import ErrorBanner from "@/components/ErrorBanner";
 import { ErrorProvider } from "@/context/ErrorContext";
 
+// {/* Debug logging for ENV variables */}
+if (typeof window !== 'undefined') {
+  console.log('[ENV] NEXT_PUBLIC_API_ORIGIN =', process.env.NEXT_PUBLIC_API_ORIGIN);
+}
+
 export const metadata = {
   title: "CS2 Skin Price Tracker",
   description: "Track and analyze CS2 skin prices",

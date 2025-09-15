@@ -8,14 +8,14 @@ Set these in Vercel Dashboard → Project → Settings → Environment Variables
 ```
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_your_production_key
 CLERK_SECRET_KEY=sk_live_your_production_secret
-NEXT_PUBLIC_API_URL=https://your-backend-app.onrender.com/api/v1
+NEXT_PUBLIC_API_ORIGIN=https://your-backend-app.onrender.com
 ```
 
 ### Preview Environment
 ```
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_preview_key
 CLERK_SECRET_KEY=sk_test_your_preview_secret
-NEXT_PUBLIC_API_URL=https://your-backend-app.onrender.com/api/v1
+NEXT_PUBLIC_API_ORIGIN=https://your-backend-app.onrender.com
 ```
 
 ## Important Notes
@@ -43,13 +43,13 @@ Then edit `.env.local`:
 ```
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_key
 CLERK_SECRET_KEY=sk_test_your_secret
-NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+NEXT_PUBLIC_API_ORIGIN=http://localhost:5000
 ```
 
 ## Troubleshooting
 
 ### Frontend hangs on API calls
-- Check if `NEXT_PUBLIC_API_URL` includes `/api/v1`
+- Check if `NEXT_PUBLIC_API_ORIGIN` is set correctly (without `/api/v1`)
 - Verify Render backend is running
 - Check browser console for CORS errors
 

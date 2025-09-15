@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SkinGrid from "../SkinGrid";
+import { apiUrl } from "@/lib/api";
 
 // Feature flag for enhanced filters
 const SKINS_FILTERS_ENHANCED = process.env.NEXT_PUBLIC_SKINS_FILTERS_ENHANCED === 'true';
@@ -206,7 +207,7 @@ export function SkinsPageContent() {
   useEffect(() => {
     async function loadPresetValues() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/skins/presets`);
+        const res = await fetch(apiUrl('/api/v1/skins/presets'));
         if (res.ok) {
           const data = await res.json();
           setPresetValues(data);

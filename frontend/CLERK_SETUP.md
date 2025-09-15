@@ -18,7 +18,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
 CLERK_SECRET_KEY=sk_test_your_secret_key_here
 
 # Existing API Configuration
-NEXT_PUBLIC_API_URL=https://cs2-skintracker.onrender.com
+NEXT_PUBLIC_API_ORIGIN=https://cs2-skintracker.onrender.com
 ```
 
 ## 4. Configure Clerk Dashboard

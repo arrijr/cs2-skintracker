@@ -3,6 +3,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import { apiUrl } from "@/lib/api";
 
 type Skin = {
   id: number;
@@ -27,7 +28,7 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
     e.stopPropagation(); // Stop event bubbling
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/watchlist`, {
+      const res = await fetch(apiUrl('/api/v1/watchlist'), {
         method: "POST",
         headers: { 
           "Content-Type": "application/json", 

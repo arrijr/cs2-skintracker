@@ -4,7 +4,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { auth } from '@clerk/nextjs/server';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'https://cs2-skintracker.onrender.com';
+const BASE_URL = process.env.NEXT_PUBLIC_API_ORIGIN ?? 'https://cs2-skintracker.onrender.com';
 
 export async function apiFetch<T>(
   path: string,
