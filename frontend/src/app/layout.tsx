@@ -6,6 +6,7 @@ import AppHeader from "./components/AppHeader";
 import BuildInfo from "./components/BuildInfo";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as HotToaster } from "react-hot-toast";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import ErrorBanner from "@/components/ErrorBanner";
 import { ErrorProvider } from "@/context/ErrorContext";
 
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               {/* Toast Notifications */}
               <Toaster />
+              <SonnerToaster richColors />
               <HotToaster
                 position="top-right"
                 toastOptions={{

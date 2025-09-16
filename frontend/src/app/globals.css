@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Brand Theme Tokens (primary = greenish) */
+:root {
+  --primary: 142 71% 45%;
+  --primary-foreground: 144 70% 96%;
+}
+.dark {
+  --primary: 142 71% 45%;
+  --primary-foreground: 144 70% 96%;
+}
+
 @layer components {
   /* CS2 Skin Tracker Brand Components */
   .btn-main {
