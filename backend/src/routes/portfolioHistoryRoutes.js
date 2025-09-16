@@ -59,6 +59,14 @@ router.get('/', verifyClerkJwt, async (req, res) => {
         unrealizedPL: true
       }
     });
+    
+    console.log("[PORTFOLIO-HISTORY] Query result:", {
+      userId,
+      startDate,
+      endDate,
+      historyCount: portfolioHistory.length,
+      historyData: portfolioHistory
+    });
 
     // Generate guaranteed data form with carry-forward logic
     const history = generateGuaranteedHistory(startDate, endDate, portfolioHistory);

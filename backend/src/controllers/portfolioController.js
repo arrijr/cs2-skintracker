@@ -189,6 +189,14 @@ export const addToPortfolio = async (req, res) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
+      console.log("[PORTFOLIO-HISTORY] Creating history entry:", {
+        userId,
+        date: today,
+        value: totalValue,
+        invested: totalInvested,
+        unrealizedPL: totalValue - totalInvested
+      });
+      
       await prisma.portfolioHistory.upsert({
         where: {
           userId_date: {
@@ -209,6 +217,8 @@ export const addToPortfolio = async (req, res) => {
           unrealizedPL: totalValue - totalInvested
         }
       });
+      
+      console.log("[PORTFOLIO-HISTORY] History entry created/updated successfully");
     } catch (historyErr) {
       console.error("Failed to update portfolio history:", historyErr);
       // Don't fail the main operation if history update fails
