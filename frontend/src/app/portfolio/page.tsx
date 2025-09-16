@@ -226,7 +226,7 @@ export default function PortfolioPage() {
           <PortfolioTable
             skins={portfolioSkins}
             watchlist={watchlist}
-            onDataChange={loadAll}
+            onDataChange={() => mutate()}
             activeFilter={activeFilter}
           />
         </section>
