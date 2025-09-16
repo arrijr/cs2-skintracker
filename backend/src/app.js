@@ -65,7 +65,12 @@ const whitelist = [
 
 const corsOptions = {
   origin(origin, cb) {
-    if (!origin) return cb(null, true); // server-to-server/no-origin
+    console.log(`[CORS] Request from origin: ${origin}`);
+    
+    if (!origin) {
+      console.log(`[CORS] No origin (server-to-server): ${origin}`);
+      return cb(null, true); // server-to-server/no-origin
+    }
     
     // Check whitelist first
     if (whitelist.includes(origin)) {
