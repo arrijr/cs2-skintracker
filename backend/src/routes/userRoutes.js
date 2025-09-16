@@ -12,9 +12,9 @@ router.post('/login', login);
 
 // Clerk sync endpoint (for webhook integration) - temporarily disabled auth
 router.post('/sync', (req, res, next) => {
-  // Mock user for testing
-  req.userId = "test-user-123";
-  req.auth = { userId: "test-user-123" };
+  // Mock user for testing - use integer ID
+  req.userId = 1;
+  req.auth = { userId: 1 };
   next();
 }, syncUser);
 

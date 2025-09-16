@@ -56,8 +56,10 @@ class DatabaseTransport extends winston.Transport {
         data: {
           level: logInfo.level,
           message: logInfo.message,
-          metadata: logInfo,
-          userId: logInfo.userId || null,
+          action: "log", // Required field
+          resource: "system", // Required field
+          details: JSON.stringify(logInfo),
+          userId: logInfo.userId || 1, // Use mock user ID
           ipAddress: logInfo.ipAddress || null,
           userAgent: logInfo.userAgent || null,
           createdAt: new Date(logInfo.timestamp),

@@ -11,8 +11,8 @@ const MAX_DAYS = 90; // Maximum 90 days as requested
 const DEFAULT_DAYS = 30; // Default to 30 days
 
 router.get('/', (req, res, next) => {
-  req.userId = "test-user-123";
-  req.auth = { userId: "test-user-123" };
+  req.userId = 1;
+  req.auth = { userId: 1 };
   next();
 }, async (req, res) => {
   const startTime = Date.now();

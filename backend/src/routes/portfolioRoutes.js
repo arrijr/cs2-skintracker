@@ -6,33 +6,33 @@ const router = express.Router();
 
 // Portfolio routes - temporarily disabled auth for testing
 router.get('/', (req, res, next) => {
-  req.userId = "test-user-123";
-  req.auth = { userId: "test-user-123" };
+  req.userId = 1;
+  req.auth = { userId: 1 };
   next();
 }, getPortfolio);
 router.get('/kpis', (req, res, next) => {
-  req.userId = "test-user-123";
-  req.auth = { userId: "test-user-123" };
+  req.userId = 1;
+  req.auth = { userId: 1 };
   next();
 }, getPortfolioKPIs);
 router.get('/contribution', (req, res, next) => {
-  req.userId = "test-user-123";
-  req.auth = { userId: "test-user-123" };
+  req.userId = 1;
+  req.auth = { userId: 1 };
   next();
 }, getPortfolioContribution);
 router.post('/', (req, res, next) => {
-  req.userId = "test-user-123";
-  req.auth = { userId: "test-user-123" };
+  req.userId = 1;
+  req.auth = { userId: 1 };
   next();
 }, addToPortfolio);
 router.delete('/:id', (req, res, next) => {
-  req.userId = "test-user-123";
-  req.auth = { userId: "test-user-123" };
+  req.userId = 1;
+  req.auth = { userId: 1 };
   next();
 }, removeFromPortfolio);
 router.patch('/:id', (req, res, next) => {
-  req.userId = "test-user-123";
-  req.auth = { userId: "test-user-123" };
+  req.userId = 1;
+  req.auth = { userId: 1 };
   next();
 }, updatePortfolio);
 
