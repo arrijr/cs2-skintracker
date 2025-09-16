@@ -170,7 +170,17 @@ export const addToPortfolio = async (req, res) => {
       
       for (const item of portfolio) {
         const marketHashName = item.skin.market_hash_name || item.skin.marketHashName || item.skin.name;
-        const currentPrice = priceMap[marketHashName] || 0;
+        let currentPrice = priceMap[marketHashName] || 0;
+        
+        // Use same price priority as in KPIs
+        if (currentPrice === 0 && item.skin.priceLatest) {
+          currentPrice = item.skin.priceLatest;
+        } else if (currentPrice === 0 && item.skin.marketPrice) {
+          currentPrice = item.skin.marketPrice;
+        } else if (currentPrice === 0) {
+          currentPrice = item.buyPrice;
+        }
+        
         totalValue += currentPrice * item.amount;
         totalInvested += item.buyPrice * item.amount;
       }
@@ -351,14 +361,22 @@ export const getPortfolioKPIs = async (req, res) => {
       const marketHashName = item.skin.market_hash_name || item.skin.marketHashName || item.skin.name;
       let currentPrice = priceMap[marketHashName] || 0;
       
-      // Fallback: Use stored price if Steam API failed
-      if (currentPrice === 0 && item.skin.priceLatest) {
-        currentPrice = item.skin.priceLatest;
-        console.log(`[PORTFOLIO-KPIS] Using stored price for ${item.skin.name}:`, currentPrice);
+      // Priority 1: Use Steam API price if available
+      if (currentPrice > 0) {
+        console.log(`[PORTFOLIO-KPIS] Using Steam API price for ${item.skin.name}:`, currentPrice);
       }
-      
-      // Fallback: Use buyPrice if no other price available (temporary solution)
-      if (currentPrice === 0) {
+      // Priority 2: Use stored priceLatest from database
+      else if (item.skin.priceLatest) {
+        currentPrice = item.skin.priceLatest;
+        console.log(`[PORTFOLIO-KPIS] Using stored priceLatest for ${item.skin.name}:`, currentPrice);
+      }
+      // Priority 3: Use marketPrice from database (if available)
+      else if (item.skin.marketPrice) {
+        currentPrice = item.skin.marketPrice;
+        console.log(`[PORTFOLIO-KPIS] Using stored marketPrice for ${item.skin.name}:`, currentPrice);
+      }
+      // Priority 4: Use buyPrice as last resort
+      else {
         currentPrice = item.buyPrice;
         console.log(`[PORTFOLIO-KPIS] Using buyPrice as fallback for ${item.skin.name}:`, currentPrice);
       }
