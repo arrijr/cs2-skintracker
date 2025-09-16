@@ -8,8 +8,8 @@ const router = express.Router();
 router.get('/', optionalClerkAuth, getPortfolio);
 router.get('/kpis', optionalClerkAuth, getPortfolioKPIs);
 router.get('/contribution', optionalClerkAuth, getPortfolioContribution);
-router.post('/', clerkAuth, addToPortfolio);
-router.delete('/:id', clerkAuth, removeFromPortfolio);
-router.patch('/:id', clerkAuth, updatePortfolio);
+router.post('/', optionalClerkAuth, addToPortfolio);
+router.delete('/:id', optionalClerkAuth, removeFromPortfolio);
+router.patch('/:id', optionalClerkAuth, updatePortfolio);
 
 export default router;

@@ -114,7 +114,11 @@ export const getPortfolio = async (req, res) => {
 
 export const addToPortfolio = async (req, res) => {
   try {
-    const userId = req.userId; // From Clerk middleware
+    const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
+    
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required to add to portfolio" });
+    }
     const { skinId, amount, buyPrice, buyDate } = req.body;
 
     // Validation
@@ -154,7 +158,11 @@ export const addToPortfolio = async (req, res) => {
 
 export const removeFromPortfolio = async (req, res) => {
   try {
-    const userId = req.userId; // From Clerk middleware
+    const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
+    
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required to remove from portfolio" });
+    }
     const id = parseInt(req.params.id);
 
     // Check if entry exists and belongs to user
@@ -173,7 +181,11 @@ export const removeFromPortfolio = async (req, res) => {
 
 export const updatePortfolio = async (req, res) => {
   try {
-    const userId = req.userId; // From Clerk middleware
+    const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
+    
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required to update portfolio" });
+    }
     const id = parseInt(req.params.id);
     const { amount, buyPrice, buyDate } = req.body;
 

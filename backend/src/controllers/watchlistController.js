@@ -18,7 +18,11 @@ export const getWatchlist = async (req, res) => {
 // POST /api/v1/watchlist
 export const addToWatchlist = async (req, res) => {
   try {
-    const userId = req.userId; // From Clerk middleware
+    const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
+    
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required to add to watchlist" });
+    }
     const { skinId, priceAlert } = req.body;
 
     if (!skinId) {
@@ -60,7 +64,11 @@ export const addToWatchlist = async (req, res) => {
 // PATCH /api/v1/watchlist/:skinId
 export const updatePriceAlert = async (req, res) => {
   try {
-    const userId = req.userId; // From Clerk middleware
+    const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
+    
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required to update price alert" });
+    }
     const skinId = parseInt(req.params.skinId);
     const { priceAlert } = req.body;
 
@@ -92,7 +100,11 @@ export const updatePriceAlert = async (req, res) => {
 // DELETE /api/v1/watchlist/:skinId
 export const removeFromWatchlist = async (req, res) => {
   try {
-    const userId = req.userId; // From Clerk middleware
+    const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
+    
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required to remove from watchlist" });
+    }
     const skinId = parseInt(req.params.skinId);
 
     const entry = await prisma.watchlist.findFirst({ where: { userId, skinId } });

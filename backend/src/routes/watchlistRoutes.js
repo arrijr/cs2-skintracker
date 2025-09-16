@@ -11,8 +11,8 @@ const router = express.Router();
 
 // Watchlist routes - temporarily using optional auth for testing
 router.get("/", optionalClerkAuth, getWatchlist);
-router.post("/", clerkAuth, addToWatchlist);
-router.delete("/:skinId", clerkAuth, removeFromWatchlist);
-router.patch("/:skinId", clerkAuth, updatePriceAlert);
+router.post("/", optionalClerkAuth, addToWatchlist);
+router.delete("/:skinId", optionalClerkAuth, removeFromWatchlist);
+router.patch("/:skinId", optionalClerkAuth, updatePriceAlert);
 
 export default router;
