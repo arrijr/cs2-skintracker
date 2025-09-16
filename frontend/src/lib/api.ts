@@ -63,3 +63,50 @@ export async function fetchJson<T = unknown>(
 
 // SWR-kompatibler Fetcher
 export const swrFetcher = (key: string) => fetchJson(key);
+
+// API-Funktionen für verschiedene Endpoints
+export async function searchSkins(query: string) {
+  return fetchJson(apiUrl(`/api/v1/skins/search?query=${encodeURIComponent(query)}`));
+}
+
+export async function getWatchlist() {
+  return fetchJson(apiUrl('/api/v1/watchlist'));
+}
+
+export async function addToWatchlist(skinId: number) {
+  return fetchJson(apiUrl('/api/v1/watchlist'), {
+    method: 'POST',
+    body: JSON.stringify({ skinId })
+  });
+}
+
+export async function removeFromWatchlist(skinId: number) {
+  return fetchJson(apiUrl(`/api/v1/watchlist/${skinId}`), {
+    method: 'DELETE'
+  });
+}
+
+export async function updatePriceAlert(skinId: number, priceAlert: number) {
+  return fetchJson(apiUrl(`/api/v1/watchlist/${skinId}`), {
+    method: 'PATCH',
+    body: JSON.stringify({ priceAlert })
+  });
+}
+
+export async function getPortfolio() {
+  return fetchJson(apiUrl('/api/v1/portfolio'));
+}
+
+export async function getPortfolioHistory() {
+  return fetchJson(apiUrl('/api/v1/portfolio/history'));
+}
+
+export async function deletePortfolioEntry(entryId: number) {
+  return fetchJson(apiUrl(`/api/v1/portfolio/${entryId}`), {
+    method: 'DELETE'
+  });
+}
+
+// Alias für bessere Kompatibilität
+export const apiUpdatePriceAlert = updatePriceAlert;
+export const apiRemoveFromWatchlist = removeFromWatchlist;

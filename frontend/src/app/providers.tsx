@@ -43,3 +43,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+
+// Default export für layout.tsx
+export default Providers;
