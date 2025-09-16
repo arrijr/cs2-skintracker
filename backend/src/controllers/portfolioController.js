@@ -280,7 +280,10 @@ export const getPortfolioKPIs = async (req, res) => {
   try {
     const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
     
+    console.log("[PORTFOLIO-KPIS] Debug info:", { userId, hasUserId: !!userId });
+    
     if (!userId) {
+      console.log("[PORTFOLIO-KPIS] No userId, returning empty KPIs");
       return res.json({
         portfolioCount: 0,
         portfolioValue: 0,
@@ -301,6 +304,16 @@ export const getPortfolioKPIs = async (req, res) => {
       orderBy: { buyDate: 'asc' }
     });
 
+    console.log("[PORTFOLIO-KPIS] Portfolio entries found:", portfolio.length);
+    console.log("[PORTFOLIO-KPIS] Portfolio data:", portfolio.map(p => ({
+      id: p.id,
+      skinId: p.skinId,
+      amount: p.amount,
+      buyPrice: p.buyPrice,
+      skinName: p.skin.name,
+      marketHashName: p.skin.market_hash_name || p.skin.marketHashName
+    })));
+
     // Get watchlist count
     const watchlistCount = await prisma.watchlist.count({
       where: { userId }
@@ -320,21 +333,44 @@ export const getPortfolioKPIs = async (req, res) => {
     
     // Get current market prices for all skins
     const uniqueSkins = [...new Set(portfolio.map(p => p.skin.market_hash_name || p.skin.marketHashName || p.skin.name))];
+    console.log("[PORTFOLIO-KPIS] Unique skins to fetch prices for:", uniqueSkins);
+    
     const priceMap = {};
     await Promise.all(
       uniqueSkins.map(async (mhn) => {
         if (!mhn) return;
         const p = await getCurrentSteamPrice(mhn);
         priceMap[mhn] = typeof p === 'number' ? p : 0;
+        console.log(`[PORTFOLIO-KPIS] Price for ${mhn}:`, p);
       })
     );
+    
+    console.log("[PORTFOLIO-KPIS] Price map:", priceMap);
     
     for (const item of portfolio) {
       const marketHashName = item.skin.market_hash_name || item.skin.marketHashName || item.skin.name;
       const currentPrice = priceMap[marketHashName] || 0;
-      totalValue += currentPrice * item.amount;
-      totalInvested += item.buyPrice * item.amount;
+      const itemValue = currentPrice * item.amount;
+      const itemInvested = item.buyPrice * item.amount;
+      
+      console.log(`[PORTFOLIO-KPIS] Item ${item.skin.name}:`, {
+        marketHashName,
+        currentPrice,
+        amount: item.amount,
+        buyPrice: item.buyPrice,
+        itemValue,
+        itemInvested
+      });
+      
+      totalValue += itemValue;
+      totalInvested += itemInvested;
     }
+    
+    console.log("[PORTFOLIO-KPIS] Final calculations:", {
+      totalValue,
+      totalInvested,
+      unrealizedPL: totalValue - totalInvested
+    });
 
     // Get last updated from portfolio history
     const lastHistory = await prisma.portfolioHistory.findFirst({
