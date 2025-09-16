@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import {
   getWatchlist,
   updatePriceAlert as apiUpdatePriceAlert,
   removeFromWatchlist as apiRemoveFromWatchlist,
+  fetchJson,
+  apiUrl,
 } from "@/lib/api";
 
 type WatchlistItem = {
@@ -29,6 +31,7 @@ type WatchlistItem = {
 
 export default function WatchlistPage() {
   const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
 
   const [items, setItems] = useState<WatchlistItem[]>([]);
@@ -49,7 +52,14 @@ export default function WatchlistPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await getWatchlist();
+      // Get JWT token for authentication
+      const token = await getToken({ template: "backend" });
+      
+      const data = await fetchJson(apiUrl("/api/v1/watchlist"), {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
       setItems(Array.isArray(data) ? (data as WatchlistItem[]) : []);
     } catch (err: any) {
       setError(err?.message || "Failed to load watchlist");
@@ -71,7 +81,16 @@ export default function WatchlistPage() {
     const priceAlert = value === "" ? null : Number(value);
     setUpdatingId(skinId);
     try {
-      await apiUpdatePriceAlert(skinId, priceAlert);
+      // Get JWT token for authentication
+      const token = await getToken({ template: "backend" });
+      
+      await fetchJson(apiUrl(`/api/v1/watchlist/${skinId}`), {
+        method: "PATCH",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ priceAlert }),
+      });
       setItems((prev) =>
         prev.map((it) => (it.skinId === skinId ? { ...it, priceAlert } : it))
       );
@@ -87,7 +106,15 @@ export default function WatchlistPage() {
     if (!user) return;
     setUpdatingId(skinId);
     try {
-      await apiRemoveFromWatchlist(skinId);
+      // Get JWT token for authentication
+      const token = await getToken({ template: "backend" });
+      
+      await fetchJson(apiUrl(`/api/v1/watchlist/${skinId}`), {
+        method: "DELETE",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
       setItems((prev) => prev.filter((it) => it.skinId !== skinId));
     } catch (err: any) {
       setError(err?.message || "Failed to remove item");
