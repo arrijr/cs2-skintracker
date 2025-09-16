@@ -77,6 +77,8 @@ export function verifyClerkJwt(req, res, next) {
       console.warn("[JWT VERIFY] Skipping JWT verification - JWKS not configured");
       // Create a mock payload for testing
       req.clerkJwt = { sub: "test-user", aud: audience, iss: issuer };
+      req.userId = 1;
+      req.auth = { userId: 1 };
       return next();
     }
 

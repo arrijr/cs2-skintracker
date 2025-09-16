@@ -6,6 +6,7 @@ export const syncUser = async (req, res) => {
   try {
     // Check if user is authenticated
     const userId = req.userId || req.auth?.userId;
+    const clerkJwt = req.clerkJwt;
     
     if (!userId) {
       return res.status(401).json({ 
@@ -15,10 +16,51 @@ export const syncUser = async (req, res) => {
       });
     }
 
-    // For now, just return success - we'll implement proper sync later
+    // Extract user info from JWT
+    const clerkUserId = clerkJwt?.sub;
+    const email = clerkJwt?.email;
+    
+    console.log("[USERS/SYNC] Syncing user:", { userId, clerkUserId, email });
+
+    // Check if user already exists in database
+    let user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      // Create new user in database
+      user = await prisma.user.create({
+        data: {
+          id: userId,
+          email: email || `user_${userId}@example.com`,
+          clerkId: clerkUserId,
+          displayName: email?.split('@')[0] || `User ${userId}`,
+          timezone: 'UTC',
+          emailAlerts: true,
+          pushAlerts: false,
+          isPremium: false,
+          role: 'user'
+        }
+      });
+      console.log("[USERS/SYNC] Created new user:", user.id);
+    } else {
+      // Update existing user with latest Clerk info
+      user = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          email: email || user.email,
+          clerkId: clerkUserId || user.clerkId,
+          displayName: email?.split('@')[0] || user.displayName
+        }
+      });
+      console.log("[USERS/SYNC] Updated existing user:", user.id);
+    }
+
     return res.json({ 
       ok: true, 
       id: userId,
+      clerkId: clerkUserId,
+      email: user.email,
       message: 'User sync successful'
     });
   } catch (e) {

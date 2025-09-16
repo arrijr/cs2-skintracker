@@ -28,19 +28,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
                  return;
                }
 
-               const body = { userId, email: undefined, firstName: undefined, lastName: undefined };
                console.debug("[CLERK-SYNC] Syncing user to database...", { userId });
 
-               await fetchJson(apiUrl("/api/v1/users/sync"), {
+               const response = await fetchJson(apiUrl("/api/v1/users/sync"), {
                  method: "POST",
                  headers: {
                    "Content-Type": "application/json",
                    "Authorization": `Bearer ${token}`,
                  },
-                 body: JSON.stringify(body),
+                 body: JSON.stringify({}), // Empty body - user info comes from JWT
                });
 
-               console.debug("[CLERK-SYNC] OK");
+               console.log("[CLERK-SYNC] Success:", response);
              } catch (err) {
                console.error("[CLERK-SYNC] Failed to sync user:", err);
                // bewusst kein throw – UI soll weiter laufen
