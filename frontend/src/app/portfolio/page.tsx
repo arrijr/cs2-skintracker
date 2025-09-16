@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PortfolioChart from "./PortfolioChart";
 import PortfolioTable from "./PortfolioTable";
 import WatchlistTable from "./WatchlistTable";
@@ -204,66 +205,142 @@ export default function PortfolioPage() {
 
         {/* Smart Alerts */}
         <PremiumFeatureFlag feature="smart-alerts">
-          <SmartAlerts 
-            portfolio={portfolioSkins} 
-            history={history}
-            isPremium={true}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Smart Alerts</CardTitle>
+              <CardDescription>
+                Intelligent price alerts and notifications
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SmartAlerts 
+                portfolio={portfolioSkins} 
+                history={history}
+                isPremium={true}
+              />
+            </CardContent>
+          </Card>
         </PremiumFeatureFlag>
 
         {/* Transaction Analytics */}
         <PremiumFeatureFlag feature="transaction-analytics">
-          <TransactionAnalytics 
-            portfolio={portfolioSkins} 
-            history={history}
-            isPremium={true}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Transaction Analytics</CardTitle>
+              <CardDescription>
+                Detailed analysis of your trading activity
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TransactionAnalytics 
+                portfolio={portfolioSkins} 
+                history={history}
+                isPremium={true}
+              />
+            </CardContent>
+          </Card>
         </PremiumFeatureFlag>
 
         {/* Portfolio Health Score */}
         <PremiumFeatureFlag feature="portfolio-health-score">
-          <PortfolioHealthScore 
-            portfolio={portfolioSkins} 
-            history={history}
-            isPremium={true}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Portfolio Health Score</CardTitle>
+              <CardDescription>
+                Assess the health and risk of your portfolio
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PortfolioHealthScore 
+                portfolio={portfolioSkins} 
+                history={history}
+                isPremium={true}
+              />
+            </CardContent>
+          </Card>
         </PremiumFeatureFlag>
 
         {/* Market Intelligence */}
         <PremiumFeatureFlag feature="market-intelligence">
-          <MarketIntelligence 
-            portfolio={portfolioSkins} 
-            history={history}
-            isPremium={true}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Market Intelligence</CardTitle>
+              <CardDescription>
+                Market insights and trends analysis
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MarketIntelligence 
+                portfolio={portfolioSkins} 
+                history={history}
+                isPremium={true}
+              />
+            </CardContent>
+          </Card>
         </PremiumFeatureFlag>
 
         {/* Portfolio Allocation */}
-        <PortfolioAllocation 
-          portfolio={portfolioSkins} 
-          onFilterChange={setActiveFilter}
-          activeFilter={activeFilter}
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle>Portfolio Allocation</CardTitle>
+            <CardDescription>
+              See how your skins are distributed
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PortfolioAllocation 
+              portfolio={portfolioSkins} 
+              onFilterChange={setActiveFilter}
+              activeFilter={activeFilter}
+            />
+          </CardContent>
+        </Card>
 
 
 
-        {/* Portfolio Table Section */}
-        <section className="card">
-          <PortfolioTable
-            skins={portfolioSkins}
-            watchlist={watchlist}
-            onDataChange={() => mutate()}
-            activeFilter={activeFilter}
-          />
-        </section>
-
-        {/* Watchlist Table Section */}
-        <section className="card">
-          <WatchlistTable
-            watchlist={watchlist}
-            onRemove={handleRemoveWatchlist}
-          />
-        </section>
+        {/* Portfolio and Watchlist Tabs */}
+        <Tabs defaultValue="portfolio" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
+            <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="portfolio" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Skins</CardTitle>
+                <CardDescription>
+                  Manage your skin collection and track performance
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PortfolioTable
+                  skins={portfolioSkins}
+                  watchlist={watchlist}
+                  onDataChange={() => mutate()}
+                  activeFilter={activeFilter}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="watchlist" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Watchlist</CardTitle>
+                <CardDescription>
+                  Track skins you're interested in
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <WatchlistTable
+                  watchlist={watchlist}
+                  onRemove={handleRemoveWatchlist}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
