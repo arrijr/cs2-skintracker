@@ -1,6 +1,7 @@
 import express from "express";
 import { register, login, getProfile, updateProfile, deleteAccount, changePassword, syncUser } from "../controllers/userController.js";
 import { clerkAuth, optionalClerkAuth } from "../middleware/clerkAuth.js";
+import { verifyClerkJwt } from "../middleware/verifyClerkJwt.js";
 import { getUserRoleFromDB } from "../utils/roleHelpers.js";
 
 const router = express.Router();
@@ -10,7 +11,7 @@ router.post('/register', register);
 router.post('/login', login);
 
 // Clerk sync endpoint (for webhook integration)
-router.post('/sync', optionalClerkAuth, syncUser);
+router.post('/sync', verifyClerkJwt, syncUser);
 
 // Profile endpoints (auth required)
 router.get("/me", clerkAuth, (req, res, next) => {

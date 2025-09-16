@@ -3,6 +3,7 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import logger from "../utils/logger.js";
+import { verifyClerkJwt } from "../middleware/verifyClerkJwt.js";
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -112,6 +113,16 @@ router.get("/logs", (req, res) => {
       error: "Failed to get log statistics" 
     });
   }
+});
+
+// Clerk JWT verification health check
+router.get("/clerk", verifyClerkJwt, (req, res) => {
+  // Wenn verifyClerkJwt passiert → OK
+  res.json({ 
+    ok: true, 
+    sub: req.clerkJwt?.sub || null,
+    message: "Clerk JWT verification successful"
+  });
 });
 
 export default router;

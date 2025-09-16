@@ -4,44 +4,50 @@ import prisma from "../prisma/prismaClient.js";
 // CLERK USER SYNC - Called when user signs up/logs in via Clerk
 export const syncUser = async (req, res) => {
   try {
-    const { clerkUserId, email, firstName, lastName } = req.body;
-    
-    if (!clerkUserId || !email) {
-      return res.status(400).json({ error: 'Missing required fields: clerkUserId, email' });
-    }
+    const jwt = req.clerkJwt || {};
+    // typische Clerk Claims – ggf. an euer Template anpassen
+    const externalId = jwt.sub;
+    const email = jwt.email || jwt.primary_email || jwt?.claims?.email || null;
+    const firstName = jwt.given_name || jwt.first_name || null;
+    const lastName = jwt.family_name || jwt.last_name || null;
 
-    // Check if user already exists
-    const existing = await prisma.user.findUnique({ 
-      where: { clerkUserId } 
-    });
-    
-    if (existing) {
-      // Update existing user
-      const updated = await prisma.user.update({
-        where: { clerkUserId },
-        data: {
-          email,
-          displayName: firstName && lastName ? `${firstName} ${lastName}` : firstName || email,
-          lastLoginAt: new Date()
-        }
+    if (!externalId) {
+      return res.status(422).json({ 
+        ok: false, 
+        code: "MISSING_SUB",
+        message: "JWT token missing 'sub' claim"
       });
-      return res.json({ message: 'User updated', user: updated });
     }
 
-    // Create new user
-    const user = await prisma.user.create({
-      data: {
-        clerkUserId,
-        email,
-        displayName: firstName && lastName ? `${firstName} ${lastName}` : firstName || email,
+    const user = await prisma.user.upsert({
+      where: { externalId },
+      update: { 
+        email, 
+        firstName, 
+        lastName,
         lastLoginAt: new Date()
-      }
+      },
+      create: { 
+        externalId, 
+        email, 
+        firstName, 
+        lastName,
+        lastLoginAt: new Date()
+      },
     });
 
-    res.status(201).json({ message: 'User created', user });
-  } catch (err) {
-    console.error('User sync error:', err);
-    res.status(500).json({ error: 'User sync failed' });
+    return res.json({ 
+      ok: true, 
+      id: user.id,
+      message: 'User synced successfully'
+    });
+  } catch (e) {
+    console.error("[USERS/SYNC] error", e);
+    return res.status(500).json({ 
+      ok: false, 
+      code: "SYNC_ERROR",
+      message: "User sync failed"
+    });
   }
 };
 

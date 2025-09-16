@@ -36,6 +36,11 @@ npm run dev
 DATABASE_URL="postgresql://postgres:@localhost:5432/cs2skindb?schema=public"
 CLERK_SECRET_KEY="your_clerk_secret_key"
 
+# Clerk JWT verification (DEV)
+CLERK_ISSUER=https://<your-dev-subdomain>.clerk.accounts.dev
+CLERK_JWKS_URL=https://<your-dev-subdomain>.clerk.accounts.dev/.well-known/jwks.json
+CLERK_AUDIENCE=cs2-skintracker-api-dev
+
 Optional scheduler flags in staging:
 RUN_SCHEDULER=false
 
@@ -92,20 +97,23 @@ Niemals relative Pfade wie `fetch("/api/...")`, sonst landen Requests auf der Ve
   ```
   CLERK_ISSUER=https://leading-bug-60.clerk.accounts.dev
   CLERK_JWKS_URL=https://leading-bug-60.clerk.accounts.dev/.well-known/jwks.json
-  CLERK_ALLOWED_AUD=cs2-skintracker-api-dev
-  JWT_SECRET=<dev jwt secret>
+  CLERK_AUDIENCE=cs2-skintracker-api-dev
   DATABASE_URL=<dev db url>
+  NODE_ENV=development
   ```
 - **PROD Service:**
   ```
   CLERK_ISSUER=https://<PROD-Slug>.clerk.accounts.dev
   CLERK_JWKS_URL=https://<PROD-Slug>.clerk.accounts.dev/.well-known/jwks.json
-  CLERK_ALLOWED_AUD=cs2-skintracker-api
-  JWT_SECRET=<prod jwt secret>
+  CLERK_AUDIENCE=cs2-skintracker-api
   DATABASE_URL=<prod db url>
+  NODE_ENV=production
   ```
 
-**Note:** `CLERK_ISSUER` & `JWKS_URL` come directly from Clerk. Ensure `aud` in Clerk JWT template matches `CLERK_ALLOWED_AUD`.
+**Note:** 
+- `CLERK_ISSUER` & `JWKS_URL` come directly from Clerk
+- Ensure `aud` in Clerk JWT template matches `CLERK_AUDIENCE`
+- `NODE_ENV` determines logging level (development = verbose, production = minimal)
 
 API (short overview)
 - Authentication handled by Clerk middleware
@@ -114,6 +122,7 @@ API (short overview)
 - GET|POST|PATCH|DELETE /api/v1/watchlist[/:skinId]
 - GET|POST|DELETE /api/v1/portfolio[/:id]
 - GET /api/v1/portfolio/history
+- GET /api/v1/health/clerk → Clerk JWT verification test (requires auth)
 See /docs/API.md for complete contracts, errors and examples.
 
 ## API Conventions

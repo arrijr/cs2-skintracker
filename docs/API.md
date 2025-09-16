@@ -22,6 +22,18 @@ Most endpoints require a JWT token in the `Authorization` header:
 
     Authorization: Bearer <token>
 
+**Clerk JWT Verification:**
+- Frontend uses `getToken({ template: "backend" })` to get backend-compatible tokens
+- Backend verifies tokens using JWKS from `CLERK_JWKS_URL`
+- Audience must match `CLERK_AUDIENCE` environment variable
+- Issuer must match `CLERK_ISSUER` environment variable
+
+**Environment Variables (Backend):**
+- `CLERK_ISSUER` - Clerk issuer URL (e.g., https://your-subdomain.clerk.accounts.dev)
+- `CLERK_JWKS_URL` - JWKS endpoint (e.g., https://your-subdomain.clerk.accounts.dev/.well-known/jwks.json)
+- `CLERK_AUDIENCE` - JWT audience claim (e.g., cs2-skintracker-api-dev)
+- `NODE_ENV` - Environment (development/production) affects logging verbosity
+
 Error Format
 ------------
 
@@ -341,12 +353,72 @@ Code kopieren
   "wears": ["Factory New", "Minimal Wear", "Field-Tested"],
   "rarities": ["Consumer Grade", "Industrial Grade", "Mil-Spec Grade"]
 }
+Users
+-----
+
+POST /users/sync — requires JWT
+Sync user data from Clerk JWT to database.
+
+Request: { "userId": "user_123", "email": null, "firstName": null, "lastName": null }
+
+Response: { "ok": true, "id": 1, "message": "User synced successfully" }
+
+Error Codes:
+- 401 NO_BEARER_TOKEN - Missing Authorization header
+- 401 INVALID_JWT - Invalid or expired JWT token
+- 422 MISSING_SUB - JWT token missing 'sub' claim
+- 500 SYNC_ERROR - Database sync failed
+
+Health
+------
+
+GET /health
+Basic health check.
+
+Response: { "ok": true, "ts": "2024-01-01T00:00:00.000Z", "service": "CS2 Skin Tracker API" }
+
+GET /health/build-info
+Build and system information.
+
+Response: { "ok": true, "version": "1.0.0", "buildTime": "...", "gitCommit": "...", "nodeVersion": "v18.17.0", "environment": "development", "uptime": "3600", "memory": {...}, "platform": {...} }
+
+GET /health/clerk — requires JWT
+Test Clerk JWT verification.
+
+Response: { "ok": true, "sub": "user_123", "message": "Clerk JWT verification successful" }
+
+GET /health/cron-status
+Check cron job status.
+
+Response: { "ok": true, "priceHistoryLastRun": "2024-01-01T00:00:00.000Z", "portfolioHistoryLastRun": "2024-01-01T00:00:00.000Z", "now": "2024-01-01T00:00:00.000Z" }
+
 Admin
+-----
+
 GET /admin/overview — requires JWT + admin
 
 Response: { "users": number, "skins": number, "watchlist": number, "portfolio": number }
 
 Curl Examples
+User Sync
+
+makefile
+Code kopieren
+curl -X POST "$NEXT_PUBLIC_API_ORIGIN/api/v1/users/sync" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <clerk-jwt-token>" \
+  -d '{"userId":"user_123","email":null,"firstName":null,"lastName":null}'
+Health Check
+
+nginx
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/health"
+Clerk JWT Test
+
+makefile
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/health/clerk" \
+  -H "Authorization: Bearer <clerk-jwt-token>"
 Login
 
 makefile
