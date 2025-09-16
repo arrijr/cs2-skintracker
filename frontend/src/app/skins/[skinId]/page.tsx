@@ -262,8 +262,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         }),
       });
       setPortfolioMsg("Added to portfolio!");
-      // Refetch portfolio to show new item
-      getPortfolio().then((p) => setPortfolioSkins(Array.isArray(p) ? p : []));
+      // Refetch portfolio to show new item with JWT token
+      const portfolioToken = await getToken({ template: "backend" });
+      fetchJson(apiUrl("/api/v1/portfolio"), {
+        headers: {
+          ...(portfolioToken && { Authorization: `Bearer ${portfolioToken}` }),
+        },
+      }).then((p) => setPortfolioSkins(Array.isArray(p) ? p : []));
       setTimeout(() => {
         setShowPortfolioModal(false);
       }, 1200);
