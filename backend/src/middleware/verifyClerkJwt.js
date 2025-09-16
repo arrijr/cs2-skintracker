@@ -13,7 +13,7 @@ const {
 // Fallback für Development - aus dem Screenshot
 const FALLBACK_ISSUER = "https://leading-bug-60.clerk.accounts.dev";
 const FALLBACK_JWKS_URL = "https://leading-bug-60.clerk.accounts.dev/.well-known/jwks.json";
-const FALLBACK_AUDIENCE = "leading-bug-60";
+const FALLBACK_AUDIENCE = "cs2-skintrackr-api-dev";
 
 // Prüfe ob alle ENV-Variablen gesetzt sind
 if (!CLERK_JWKS_URL || !CLERK_ISSUER || !CLERK_AUDIENCE) {
@@ -85,7 +85,7 @@ export function verifyClerkJwt(req, res, next) {
       getKey,
       {
         algorithms: ["RS256"],
-        audience: audience,
+        audience: [audience, "cs2-skintracker-api-dev", "cs2-skintrackr-api-dev"], // Accept both variants
         issuer: issuer,
       },
       (err, payload) => {
