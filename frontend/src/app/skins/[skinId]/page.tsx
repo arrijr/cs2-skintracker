@@ -219,16 +219,28 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     setAddingAlert(true);
     setMsg("");
     try {
+      // Get JWT token for authentication
+      const token = await getToken({ template: "backend" });
+      
       await fetchJson(apiUrl(`/api/v1/watchlist`), {
         method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         body: JSON.stringify({
           skinId: skin.id,
           priceAlert: alert === "" ? null : Number(alert),
         }),
       });
       setMsg("Added to watchlist!");
-      const w = await getWatchlist();
-      setWatchlist(Array.isArray(w) ? w : []);
+      
+      // Refetch watchlist with JWT token
+      const watchlistToken = await getToken({ template: "backend" });
+      fetchJson(apiUrl("/api/v1/watchlist"), {
+        headers: {
+          ...(watchlistToken && { Authorization: `Bearer ${watchlistToken}` }),
+        },
+      }).then((w) => setWatchlist(Array.isArray(w) ? w : []));
     } catch (e: any) {
       setMsg(e.message || "Could not add skin.");
     } finally {
