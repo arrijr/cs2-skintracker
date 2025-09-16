@@ -78,89 +78,111 @@ export default function PortfolioPage() {
     <div className="min-h-screen bg-gray-950 text-white p-2 sm:p-4">
       {/* Error Banner */}
       {error && (
-        <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-          {error}
-        </div>
+        <Card className="mb-6 border-destructive">
+          <CardContent className="p-4">
+            <div className="text-destructive text-sm">{error}</div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Main */}
       <main className="max-w-6xl mx-auto flex flex-col gap-8">
         {/* Header KPIs Section */}
-        <section className="card">
-          <h1 className="text-3xl sm:text-4xl font-extrabold mb-2">Your Portfolio</h1>
-          <p className="text-gray-400 text-sm mb-6">
-            Overview of your skins, value history & watchlist
-          </p>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-3xl sm:text-4xl font-extrabold">Your Portfolio</CardTitle>
+            <CardDescription className="text-base">
+              Overview of your skins, value history & watchlist
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
           
           {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <div className="text-lg font-bold text-yellow-400">
-                {kpiData?.portfolioCount || portfolioSkins.length}
-              </div>
-              <div className="text-xs text-gray-400">Portfolio Skins</div>
-            </div>
+            <Card className="text-center">
+              <CardContent className="p-4">
+                <div className="text-lg font-bold text-yellow-400">
+                  {kpiData?.portfolioCount || portfolioSkins.length}
+                </div>
+                <div className="text-xs text-muted-foreground">Portfolio Skins</div>
+              </CardContent>
+            </Card>
             
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <div className="text-lg font-bold text-green-400">
-                ${kpiData?.portfolioValue?.toFixed(2) || "0.00"}
-              </div>
-              <div className="text-xs text-gray-400">Total Value</div>
-              <div className="text-xs text-gray-500">
+            <Card className="text-center">
+              <CardContent className="p-4">
+                <div className="text-lg font-bold text-green-400">
+                  ${kpiData?.portfolioValue?.toFixed(2) || "0.00"}
+                </div>
+                <div className="text-xs text-muted-foreground">Total Value</div>
                 {kpiData?.portfolioChange24h !== 0 && kpiData && (
-                  <span className={kpiData.portfolioChange24h > 0 ? "text-green-400" : "text-red-400"}>
+                  <Badge variant={kpiData.portfolioChange24h > 0 ? "default" : "destructive"} className="text-xs mt-1">
                     {kpiData.portfolioChange24h > 0 ? "+" : ""}{kpiData.portfolioChange24h.toFixed(1)}% 24h
-                  </span>
+                  </Badge>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
             
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <div className="text-lg font-bold text-blue-400">
-                ${kpiData?.totalInvested?.toFixed(2) || "0.00"}
-              </div>
-              <div className="text-xs text-gray-400">Total Invested</div>
-            </div>
+            <Card className="text-center">
+              <CardContent className="p-4">
+                <div className="text-lg font-bold text-blue-400">
+                  ${kpiData?.totalInvested?.toFixed(2) || "0.00"}
+                </div>
+                <div className="text-xs text-muted-foreground">Total Invested</div>
+              </CardContent>
+            </Card>
             
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <div className="text-lg font-bold text-purple-400">
-                ${kpiData?.unrealizedPL?.toFixed(2) || "0.00"}
-              </div>
-              <div className="text-xs text-gray-400">Unrealized P/L</div>
-              <div className="text-xs text-gray-500">
+            <Card className="text-center">
+              <CardContent className="p-4">
+                <div className="text-lg font-bold text-purple-400">
+                  ${kpiData?.unrealizedPL?.toFixed(2) || "0.00"}
+                </div>
+                <div className="text-xs text-muted-foreground">Unrealized P/L</div>
                 {kpiData?.portfolioChange7d !== 0 && kpiData && (
-                  <span className={kpiData.portfolioChange7d > 0 ? "text-green-400" : "text-red-400"}>
+                  <Badge variant={kpiData.portfolioChange7d > 0 ? "default" : "destructive"} className="text-xs mt-1">
                     {kpiData.portfolioChange7d > 0 ? "+" : ""}{kpiData.portfolioChange7d.toFixed(1)}% 7d
-                  </span>
+                  </Badge>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
             
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <div className="text-lg font-bold text-blue-400">
-                {kpiData?.watchlistCount || watchlist.length}
-              </div>
-              <div className="text-xs text-gray-400">Watchlist</div>
-            </div>
+            <Card className="text-center">
+              <CardContent className="p-4">
+                <div className="text-lg font-bold text-blue-400">
+                  {kpiData?.watchlistCount || watchlist.length}
+                </div>
+                <div className="text-xs text-muted-foreground">Watchlist</div>
+              </CardContent>
+            </Card>
             
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <div className="text-lg font-bold text-amber-400">
-                {kpiData?.activeAlerts || 0}
-              </div>
-              <div className="text-xs text-gray-400">Active Alerts</div>
-            </div>
+            <Card className="text-center">
+              <CardContent className="p-4">
+                <div className="text-lg font-bold text-amber-400">
+                  {kpiData?.activeAlerts || 0}
+                </div>
+                <div className="text-xs text-muted-foreground">Active Alerts</div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Last Updated */}
           <div className="text-center mb-4">
             <LastUpdatedChip onRefresh={() => mutate()} />
           </div>
-        </section>
+          </CardContent>
+        </Card>
 
         {/* Portfolio Chart Section */}
-        <section className="card">
-          <PortfolioChart history={history} />
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle>Portfolio Value History</CardTitle>
+            <CardDescription>
+              Track your portfolio performance over time
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PortfolioChart history={history} />
+          </CardContent>
+        </Card>
 
         {/* Performance Dashboard - Temporarily Disabled */}
         {/* <PremiumFeatureFlag feature="performance-dashboard">
