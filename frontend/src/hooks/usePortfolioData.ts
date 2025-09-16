@@ -1,5 +1,6 @@
 // /frontend/src/hooks/usePortfolioData.ts (Frontend)
 import useSWR from 'swr';
+import { useAuth } from '@clerk/nextjs';
 import { apiUrl, fetchJson } from '@/lib/api';
 
 interface PortfolioHistoryEntry {
@@ -39,11 +40,19 @@ interface PortfolioData {
   };
 }
 
-const fetcher = async (url: string): Promise<PortfolioData> => {
-  return await fetchJson<PortfolioData>(url);
-};
-
 export function usePortfolioData() {
+  const { getToken } = useAuth();
+
+  const fetcher = async (url: string): Promise<PortfolioData> => {
+    const token = await getToken({ template: "backend" });
+    
+    return await fetchJson<PortfolioData>(url, {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+  };
+
   const { data, error, isLoading, mutate } = useSWR<PortfolioData>(
     apiUrl('/api/v1/portfolio/history'),
     fetcher,
@@ -69,6 +78,18 @@ export function usePortfolioData() {
 }
 
 export function usePortfolioHistory() {
+  const { getToken } = useAuth();
+
+  const fetcher = async (url: string): Promise<PortfolioHistoryEntry[]> => {
+    const token = await getToken({ template: "backend" });
+    
+    return await fetchJson<PortfolioHistoryEntry[]>(url, {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+  };
+
   const { data, error, isLoading, mutate } = useSWR<PortfolioHistoryEntry[]>(
     apiUrl('/api/v1/portfolio/history'),
     fetcher,

@@ -23,7 +23,11 @@ async function getCurrentSteamPrice(marketHashName) {
 
 export const getPortfolio = async (req, res) => {
   try {
-    const userId = req.userId; // From Clerk middleware
+    const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
+    
+    if (!userId) {
+      return res.json([]); // Return empty array if no user
+    }
 
     // 1) Einträge inkl. Skin laden
     const entries = await prisma.portfolio.findMany({
@@ -204,7 +208,21 @@ export const updatePortfolio = async (req, res) => {
 // GET PORTFOLIO KPIs
 export const getPortfolioKPIs = async (req, res) => {
   try {
-    const userId = req.userId; // From Clerk middleware
+    const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
+    
+    if (!userId) {
+      return res.json({
+        portfolioCount: 0,
+        portfolioValue: 0,
+        portfolioChange24h: 0,
+        portfolioChange7d: 0,
+        totalInvested: 0,
+        unrealizedPL: 0,
+        watchlistCount: 0,
+        activeAlerts: 0,
+        lastUpdated: new Date().toISOString()
+      });
+    }
 
     // Get portfolio data
     const portfolio = await prisma.portfolio.findMany({

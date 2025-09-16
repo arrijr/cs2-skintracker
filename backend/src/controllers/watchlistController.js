@@ -2,7 +2,12 @@ import prisma from "../prisma/prismaClient.js";
 
 // GET /api/v1/watchlist
 export const getWatchlist = async (req, res) => {
-  const userId = req.userId; // From Clerk middleware
+  const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
+  
+  if (!userId) {
+    return res.json([]); // Return empty array if no user
+  }
+  
   const list = await prisma.watchlist.findMany({
     where: { userId },
     include: { skin: true }

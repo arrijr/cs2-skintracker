@@ -64,6 +64,19 @@ export async function fetchJson<T = unknown>(
 // SWR-kompatibler Fetcher
 export const swrFetcher = (key: string) => fetchJson(key);
 
+// Authentifizierter SWR-Fetcher (für React Components)
+export function createAuthenticatedFetcher(getToken: () => Promise<string | null>) {
+  return async (key: string) => {
+    const token = await getToken();
+    
+    return fetchJson(key, {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+  };
+}
+
 // API-Funktionen für verschiedene Endpoints
 export async function searchSkins(query: string) {
   return fetchJson(apiUrl(`/api/v1/skins/search?query=${encodeURIComponent(query)}`));

@@ -2,7 +2,7 @@
 // {/* Optimized Portfolio History Route - Fast, Stable, Guaranteed Data Form */}
 import express from "express";
 import prisma from "../prisma/prismaClient.js";
-import { clerkAuth } from "../middleware/clerkAuth.js";
+import { clerkAuth, optionalClerkAuth } from "../middleware/clerkAuth.js";
 import logger from "../utils/logger.js";
 
 const router = express.Router();
@@ -10,7 +10,7 @@ const router = express.Router();
 const MAX_DAYS = 90; // Maximum 90 days as requested
 const DEFAULT_DAYS = 30; // Default to 30 days
 
-router.get('/', clerkAuth, async (req, res) => {
+router.get('/', optionalClerkAuth, async (req, res) => {
   const startTime = Date.now();
   
   try {

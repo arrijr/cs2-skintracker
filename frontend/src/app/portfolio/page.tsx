@@ -17,15 +17,9 @@ import PortfolioHealthScore from "./PortfolioHealthScore";
 import MarketIntelligence from "./MarketIntelligence";
 
 
-// {/* API helpers (zentral aus /src/lib/api.ts) */}
-import {
-  getPortfolio,
-  getPortfolioHistory,
-  getWatchlist,
-  removeFromWatchlist,
-  apiUrl,
-  fetchJson,
-} from "@/lib/api";
+// {/* Authentifizierte Hooks */}
+import { useAuthenticatedPortfolio } from "@/hooks/useAuthenticatedPortfolio";
+import { useAuthenticatedWatchlist } from "@/hooks/useAuthenticatedWatchlist";
 
 // {/* Types kept minimal; UI components do stricter typing */}
 type WatchlistEntry = any;
