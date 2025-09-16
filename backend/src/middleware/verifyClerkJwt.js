@@ -111,6 +111,23 @@ export function verifyClerkJwt(req, res, next) {
         
         // Nutzlast für Controller verfügbar machen
         req.clerkJwt = payload;
+        
+        // Extract user ID from JWT payload
+        // For now, we'll use a hash of the sub to get a consistent integer ID
+        const clerkUserId = payload?.sub;
+        if (clerkUserId) {
+          // Simple hash function to convert string to integer
+          let hash = 0;
+          for (let i = 0; i < clerkUserId.length; i++) {
+            const char = clerkUserId.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32-bit integer
+          }
+          req.userId = Math.abs(hash) % 1000000; // Keep it reasonable
+          req.auth = { userId: req.userId };
+          console.log("[JWT VERIFY] User ID extracted:", req.userId, "from clerk:", clerkUserId);
+        }
+        
         next();
       }
     );
