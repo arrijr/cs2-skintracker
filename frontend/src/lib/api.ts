@@ -114,9 +114,12 @@ export async function getPortfolioHistory() {
   return fetchJson(apiUrl('/api/v1/portfolio/history'));
 }
 
-export async function deletePortfolioEntry(entryId: number) {
+export async function deletePortfolioEntry(entryId: number, token?: string) {
   return fetchJson(apiUrl(`/api/v1/portfolio/${entryId}`), {
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
   });
 }
 

@@ -413,6 +413,37 @@ export const getPortfolioKPIs = async (req, res) => {
       unrealizedPL: totalValue - totalInvested
     });
 
+    // Create portfolio history entry if it doesn't exist
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const existingHistory = await prisma.portfolioHistory.findFirst({
+        where: {
+          userId,
+          date: today
+        }
+      });
+      
+      if (!existingHistory) {
+        console.log("[PORTFOLIO-KPIS] Creating missing history entry for today");
+        await prisma.portfolioHistory.create({
+          data: {
+            userId,
+            date: today,
+            value: totalValue,
+            invested: totalInvested,
+            unrealizedPL: totalValue - totalInvested
+          }
+        });
+        console.log("[PORTFOLIO-KPIS] History entry created successfully");
+      } else {
+        console.log("[PORTFOLIO-KPIS] History entry already exists for today");
+      }
+    } catch (historyErr) {
+      console.error("[PORTFOLIO-KPIS] Failed to create history entry:", historyErr);
+    }
+
     // Get last updated from portfolio history
     const lastHistory = await prisma.portfolioHistory.findFirst({
       where: { userId },

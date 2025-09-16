@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { deletePortfolioEntry } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
 
 type Purchase = {
   id: number;
@@ -20,6 +21,7 @@ type Props = {
 
 export default function PurchaseAccordion({ purchases, onTransactionChange }: Omit<Props, 'total' | 'avgPrice' | 'performance'>) {
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  const { getToken } = useAuth();
 
   if (!purchases || purchases.length === 0) {
     return (
@@ -54,7 +56,8 @@ export default function PurchaseAccordion({ purchases, onTransactionChange }: Om
                             if (window.confirm("Are you sure you want to delete this purchase?")) {
                                 setIsDeleting(p.id);
                                 try {
-                                    await deletePortfolioEntry(p.id);
+                                    const token = await getToken({ template: "backend" });
+                                    await deletePortfolioEntry(p.id, token || undefined);
                                     onTransactionChange(); // Refresh data on parent
                                 } catch (e) {
                                     alert("Failed to delete entry.");
