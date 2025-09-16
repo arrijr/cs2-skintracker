@@ -175,8 +175,8 @@ export const addToPortfolio = async (req, res) => {
         // Use same price priority as in KPIs
         if (currentPrice === 0 && item.skin.priceLatest) {
           currentPrice = item.skin.priceLatest;
-        } else if (currentPrice === 0 && item.skin.marketPrice) {
-          currentPrice = item.skin.marketPrice;
+        } else if (currentPrice === 0 && item.skin.priceAvg) {
+          currentPrice = item.skin.priceAvg;
         } else if (currentPrice === 0) {
           currentPrice = item.buyPrice;
         }
@@ -370,10 +370,10 @@ export const getPortfolioKPIs = async (req, res) => {
         currentPrice = item.skin.priceLatest;
         console.log(`[PORTFOLIO-KPIS] Using stored priceLatest for ${item.skin.name}:`, currentPrice);
       }
-      // Priority 3: Use marketPrice from database (if available)
-      else if (item.skin.marketPrice) {
-        currentPrice = item.skin.marketPrice;
-        console.log(`[PORTFOLIO-KPIS] Using stored marketPrice for ${item.skin.name}:`, currentPrice);
+      // Priority 3: Use priceAvg from database (if available)
+      else if (item.skin.priceAvg) {
+        currentPrice = item.skin.priceAvg;
+        console.log(`[PORTFOLIO-KPIS] Using stored priceAvg for ${item.skin.name}:`, currentPrice);
       }
       // Priority 4: Use buyPrice as last resort
       else {
