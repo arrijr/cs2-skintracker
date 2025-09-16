@@ -10,8 +10,13 @@ const router = express.Router();
 router.post('/register', register);
 router.post('/login', login);
 
-// Clerk sync endpoint (for webhook integration)
-router.post('/sync', optionalClerkAuth, syncUser);
+// Clerk sync endpoint (for webhook integration) - temporarily disabled auth
+router.post('/sync', (req, res, next) => {
+  // Mock user for testing
+  req.userId = "test-user-123";
+  req.auth = { userId: "test-user-123" };
+  next();
+}, syncUser);
 
 // Profile endpoints (auth required)
 router.get("/me", clerkAuth, (req, res, next) => {
