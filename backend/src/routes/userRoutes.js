@@ -11,7 +11,7 @@ router.post('/register', register);
 router.post('/login', login);
 
 // Clerk sync endpoint (for webhook integration)
-router.post('/sync', verifyClerkJwt, syncUser);
+router.post('/sync', optionalClerkAuth, syncUser);
 
 // Profile endpoints (auth required)
 router.get("/me", clerkAuth, (req, res, next) => {

@@ -43,67 +43,25 @@ interface PortfolioKPIs {
 
 export default function PortfolioPage() {
   const { isSignedIn, isLoaded } = useUser();
-
-  const [history, setHistory] = useState<any[]>([]);
-  const [portfolioSkins, setPortfolioSkins] = useState<any[]>([]);
-  const [watchlist, setWatchlist] = useState<WatchlistEntry[]>([]);
-  const [kpiData, setKpiData] = useState<PortfolioKPIs | null>(null);
   const [activeFilter, setActiveFilter] = useState<{ type: string; value: string; values?: string[] } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  async function loadAll() {
-    // No need for isCancelled check if we get a fresh auth dependency
-    if (!isSignedIn) {
-      setHistory([]);
-      setPortfolioSkins([]);
-      setWatchlist([]);
-      setKpiData(null);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      const [h, p, w, kpis] = await Promise.all([
-        getPortfolioHistory(),
-        getPortfolio(),
-        getWatchlist(),
-        fetchJson(apiUrl("/api/v1/portfolio/kpis")).catch(() => null)
-      ]);
-      console.log('[DEBUG] Portfolio data received:', { h, p, w, kpis });
-      setHistory(Array.isArray(h) ? h : []);
-      setPortfolioSkins(Array.isArray(p) ? p : []);
-      setWatchlist(Array.isArray(w) ? w : []);
-      setKpiData(kpis && kpis.ok ? kpis : null);
-    } catch (e: any) {
-      setError(e?.message || "Failed to load portfolio data");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Load data on initial mount and when auth changes
-  useEffect(() => {
-    if (isLoaded) {
-      loadAll();
-    }
-  }, [isLoaded, isSignedIn]);
-
+  // Authentifizierte Hooks
+  const { portfolio: portfolioSkins, kpis: kpiData, history, isLoading, error, mutate } = useAuthenticatedPortfolio();
+  const { watchlist, isLoading: watchlistLoading, error: watchlistError, mutate: mutateWatchlist } = useAuthenticatedWatchlist();
 
   // {/* Remove from Watchlist */}
   async function handleRemoveWatchlist(skinId: number) {
     try {
-      await removeFromWatchlist(skinId);
-      setWatchlist((prev) => prev.filter((entry: any) => entry.skinId !== skinId));
+      // TODO: Implement removeFromWatchlist with auth
+      console.log("Remove from watchlist:", skinId);
+      mutateWatchlist();
     } catch (e: any) {
-      setError(e?.message || "Failed to remove from watchlist");
+      console.error("Failed to remove from watchlist:", e);
     }
   }
 
   // While loading auth state or data, show a loading message.
-  if (!isLoaded || loading) {
+  if (!isLoaded || isLoading) {
     return <div className="text-white p-6">Loading portfolio…</div>;
   }
 
