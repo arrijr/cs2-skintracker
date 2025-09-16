@@ -3,6 +3,16 @@
 "use client";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import SkinGrid from "../SkinGrid";
 import { apiUrl, fetchJson } from "@/lib/api";
 
@@ -136,6 +146,16 @@ const PAGE_SIZE = 24;
 export function SkinsPageContent() {
   const router = useRouter();
   const sp = useSearchParams();
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState(sp.get("q") || "");
+  const [priceRange, setPriceRange] = useState([0, 5000]);
+  const [selectedWear, setSelectedWear] = useState<string[]>([]);
+  const [selectedRarity, setSelectedRarity] = useState<string[]>([]);
+  const [stattrakEnabled, setStattrakEnabled] = useState(false);
+  const [specialEnabled, setSpecialEnabled] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("price_asc");
 
   // URL-synced state
   const [q, setQ] = useState(sp.get("q") ?? "");
