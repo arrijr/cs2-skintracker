@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Line } from "react-chartjs-2";
 import type { ChartData, ChartOptions } from "chart.js";
 import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 // {/* Central API helpers */}
 import {
   getPortfolio,
@@ -45,6 +45,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   // *** ALLE STATES GANZ OBEN ***
   const router = useRouter();
   const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const skinId = String(params.skinId ?? params.id ?? "");
 
   const [mounted, setMounted] = useState(false);
@@ -245,8 +246,14 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     setPortfolioMsg("");
 
     try {
+      // Get JWT token for authentication
+      const token = await getToken({ template: "backend" });
+      
       await fetchJson(apiUrl("/api/v1/portfolio"), {
         method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         body: JSON.stringify({
           skinId: skin!.id,
           amount: Number(amount),
