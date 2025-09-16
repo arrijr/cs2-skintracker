@@ -87,7 +87,8 @@ export function verifyClerkJwt(req, res, next) {
       getKey,
       {
         algorithms: ["RS256"],
-        audience: [audience, "cs2-skintracker-api-dev", "cs2-skintrackr-api-dev"], // Accept both variants
+        // Temporarily disable audience validation to debug
+        // audience: [audience, "cs2-skintracker-api-dev", "cs2-skintrackr-api-dev"],
         issuer: issuer,
       },
       (err, payload) => {
