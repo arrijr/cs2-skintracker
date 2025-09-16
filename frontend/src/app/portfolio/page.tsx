@@ -149,7 +149,7 @@ export default function PortfolioPage() {
 
           {/* Last Updated */}
           <div className="text-center mb-4">
-            <LastUpdatedChip onRefresh={loadAll} />
+            <LastUpdatedChip onRefresh={() => mutate()} />
           </div>
         </section>
 

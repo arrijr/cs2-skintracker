@@ -41,6 +41,16 @@ export function verifyClerkJwt(req, res, next) {
     const auth = req.headers.authorization || "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
 
+    console.log("[JWT VERIFY] Debug info:", {
+      hasAuth: !!auth,
+      hasToken: !!token,
+      tokenLength: token?.length,
+      tokenStart: token?.substring(0, 20) + "...",
+      issuer: CLERK_ISSUER,
+      audience: CLERK_AUDIENCE,
+      jwksUrl: CLERK_JWKS_URL
+    });
+
     if (!token) {
       return res.status(401).json({ 
         ok: false, 
@@ -59,20 +69,24 @@ export function verifyClerkJwt(req, res, next) {
       },
       (err, payload) => {
         if (err) {
-          if (NODE_ENV !== "production") {
-            // ausführliches Debugging nur in DEV
-            console.error("[JWT VERIFY] failed:", err?.message, {
-              issuer: CLERK_ISSUER,
-              audience: CLERK_AUDIENCE,
-              errorType: err.name,
-            });
-          }
+          console.error("[JWT VERIFY] failed:", err?.message, {
+            issuer: CLERK_ISSUER,
+            audience: CLERK_AUDIENCE,
+            errorType: err.name,
+            tokenStart: token?.substring(0, 20) + "..."
+          });
           return res.status(401).json({ 
             ok: false, 
             code: "INVALID_JWT", 
             message: err?.message 
           });
         }
+        
+        console.log("[JWT VERIFY] success:", {
+          sub: payload?.sub,
+          aud: payload?.aud,
+          iss: payload?.iss
+        });
         
         // Nutzlast für Controller verfügbar machen
         req.clerkJwt = payload;
