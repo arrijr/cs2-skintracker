@@ -349,7 +349,20 @@ export const getPortfolioKPIs = async (req, res) => {
     
     for (const item of portfolio) {
       const marketHashName = item.skin.market_hash_name || item.skin.marketHashName || item.skin.name;
-      const currentPrice = priceMap[marketHashName] || 0;
+      let currentPrice = priceMap[marketHashName] || 0;
+      
+      // Fallback: Use stored price if Steam API failed
+      if (currentPrice === 0 && item.skin.priceLatest) {
+        currentPrice = item.skin.priceLatest;
+        console.log(`[PORTFOLIO-KPIS] Using stored price for ${item.skin.name}:`, currentPrice);
+      }
+      
+      // Fallback: Use buyPrice if no other price available (temporary solution)
+      if (currentPrice === 0) {
+        currentPrice = item.buyPrice;
+        console.log(`[PORTFOLIO-KPIS] Using buyPrice as fallback for ${item.skin.name}:`, currentPrice);
+      }
+      
       const itemValue = currentPrice * item.amount;
       const itemInvested = item.buyPrice * item.amount;
       
