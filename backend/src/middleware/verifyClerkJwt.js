@@ -10,6 +10,11 @@ const {
   NODE_ENV,
 } = process.env;
 
+// Fallback für Development - aus dem Screenshot
+const FALLBACK_ISSUER = "https://leading-bug-60.clerk.accounts.dev";
+const FALLBACK_JWKS_URL = "https://leading-bug-60.clerk.accounts.dev/.well-known/jwks.json";
+const FALLBACK_AUDIENCE = "leading-bug-60";
+
 // Prüfe ob alle ENV-Variablen gesetzt sind
 if (!CLERK_JWKS_URL || !CLERK_ISSUER || !CLERK_AUDIENCE) {
   console.error("[JWT VERIFY] Missing required ENV variables:", {
@@ -20,8 +25,12 @@ if (!CLERK_JWKS_URL || !CLERK_ISSUER || !CLERK_AUDIENCE) {
   console.warn("[JWT VERIFY] Continuing without JWT verification - this is NOT secure for production!");
 }
 
-const client = CLERK_JWKS_URL ? jwksClient({
-  jwksUri: CLERK_JWKS_URL,
+const jwksUrl = CLERK_JWKS_URL || FALLBACK_JWKS_URL;
+const issuer = CLERK_ISSUER || FALLBACK_ISSUER;
+const audience = CLERK_AUDIENCE || FALLBACK_AUDIENCE;
+
+const client = jwksUrl ? jwksClient({
+  jwksUri: jwksUrl,
   cache: true,
   cacheMaxEntries: 5,
   cacheMaxAge: 10 * 60 * 1000, // 10 minutes
@@ -49,9 +58,9 @@ export function verifyClerkJwt(req, res, next) {
       hasToken: !!token,
       tokenLength: token?.length,
       tokenStart: token?.substring(0, 20) + "...",
-      issuer: CLERK_ISSUER,
-      audience: CLERK_AUDIENCE,
-      jwksUrl: CLERK_JWKS_URL,
+      issuer: issuer,
+      audience: audience,
+      jwksUrl: jwksUrl,
       hasClient: !!client
     });
 
@@ -64,10 +73,10 @@ export function verifyClerkJwt(req, res, next) {
     }
 
     // Skip JWT verification if JWKS is not configured
-    if (!client || !CLERK_ISSUER || !CLERK_AUDIENCE) {
+    if (!client || !issuer || !audience) {
       console.warn("[JWT VERIFY] Skipping JWT verification - JWKS not configured");
       // Create a mock payload for testing
-      req.clerkJwt = { sub: "test-user", aud: "test-audience", iss: "test-issuer" };
+      req.clerkJwt = { sub: "test-user", aud: audience, iss: issuer };
       return next();
     }
 
@@ -76,14 +85,14 @@ export function verifyClerkJwt(req, res, next) {
       getKey,
       {
         algorithms: ["RS256"],
-        audience: CLERK_AUDIENCE,
-        issuer: CLERK_ISSUER,
+        audience: audience,
+        issuer: issuer,
       },
       (err, payload) => {
         if (err) {
           console.error("[JWT VERIFY] failed:", err?.message, {
-            issuer: CLERK_ISSUER,
-            audience: CLERK_AUDIENCE,
+            issuer: issuer,
+            audience: audience,
             errorType: err.name,
             tokenStart: token?.substring(0, 20) + "..."
           });
