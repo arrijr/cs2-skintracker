@@ -146,6 +146,64 @@ export const addToPortfolio = async (req, res) => {
       }
     });
 
+    // Update portfolio history after adding skin
+    try {
+      // Calculate current portfolio value
+      const portfolio = await prisma.portfolio.findMany({
+        where: { userId },
+        include: { skin: true }
+      });
+
+      let totalValue = 0;
+      let totalInvested = 0;
+      
+      // Get current market prices for all skins
+      const uniqueSkins = [...new Set(portfolio.map(p => p.skin.market_hash_name || p.skin.marketHashName || p.skin.name))];
+      const priceMap = {};
+      await Promise.all(
+        uniqueSkins.map(async (mhn) => {
+          if (!mhn) return;
+          const p = await getCurrentSteamPrice(mhn);
+          priceMap[mhn] = typeof p === 'number' ? p : 0;
+        })
+      );
+      
+      for (const item of portfolio) {
+        const marketHashName = item.skin.market_hash_name || item.skin.marketHashName || item.skin.name;
+        const currentPrice = priceMap[marketHashName] || 0;
+        totalValue += currentPrice * item.amount;
+        totalInvested += item.buyPrice * item.amount;
+      }
+
+      // Create or update portfolio history entry for today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      await prisma.portfolioHistory.upsert({
+        where: {
+          userId_date: {
+            userId,
+            date: today
+          }
+        },
+        update: {
+          value: totalValue,
+          invested: totalInvested,
+          unrealizedPL: totalValue - totalInvested
+        },
+        create: {
+          userId,
+          date: today,
+          value: totalValue,
+          invested: totalInvested,
+          unrealizedPL: totalValue - totalInvested
+        }
+      });
+    } catch (historyErr) {
+      console.error("Failed to update portfolio history:", historyErr);
+      // Don't fail the main operation if history update fails
+    }
+
     return res.json({ message: "Added to portfolio", id: entry.id });
   } catch (err) {
     console.error(err);

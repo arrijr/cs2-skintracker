@@ -106,8 +106,17 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
       }
 
       if (isLoaded && user) {
-        getWatchlist().then((w) => !cancelled && setWatchlist(Array.isArray(w) ? w : []));
-        getPortfolio().then((p) => !cancelled && setPortfolioSkins(Array.isArray(p) ? p : []));
+        // Load watchlist and portfolio with JWT tokens
+        const token = await getToken({ template: "backend" });
+        if (token) {
+          fetchJson(apiUrl("/api/v1/watchlist"), {
+            headers: { Authorization: `Bearer ${token}` }
+          }).then((w) => !cancelled && setWatchlist(Array.isArray(w) ? w : []));
+          
+          fetchJson(apiUrl("/api/v1/portfolio"), {
+            headers: { Authorization: `Bearer ${token}` }
+          }).then((p) => !cancelled && setPortfolioSkins(Array.isArray(p) ? p : []));
+        }
       }
 
       // Load enhanced skin details

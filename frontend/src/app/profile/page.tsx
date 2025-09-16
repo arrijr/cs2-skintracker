@@ -1,5 +1,5 @@
 "use client";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { useRequireAuth } from "../hooks/useRequireAuth";
 import Link from "next/link";
 import { LogOut, User2, Star, Eye, Trash2, Settings, Shield, AlertTriangle } from "lucide-react";
@@ -36,6 +36,7 @@ interface KPIData {
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   useRequireAuth();
 
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -79,7 +80,12 @@ export default function ProfilePage() {
 
   const loadProfileData = async () => {
     try {
-      const data = await fetchJson(apiUrl("/api/v1/users/me"));
+      const token = await getToken({ template: "backend" });
+      const data = await fetchJson(apiUrl("/api/v1/users/me"), {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
       setProfileData(data);
       setSettings({
         displayName: data.displayName || "",
@@ -97,7 +103,12 @@ export default function ProfilePage() {
   const loadKPIData = async () => {
     try {
       // Use new KPI endpoint for better performance
-      const kpiResponse = await fetchJson(apiUrl("/api/v1/portfolio/kpis"));
+      const token = await getToken({ template: "backend" });
+      const kpiResponse = await fetchJson(apiUrl("/api/v1/portfolio/kpis"), {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
       
       setKpiData({
         portfolioCount: kpiResponse.portfolioCount || 0,
