@@ -12,6 +12,9 @@ export interface SkinsResponse {
   total: number;
   page: number;
   pageSize: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
 }
 
 export interface UseInfiniteSkinsOptions {
@@ -55,14 +58,24 @@ export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
   
   // Get key function for SWR Infinite
   const getKey = useCallback((pageIndex: number, previousPageData: SkinsResponse | null) => {
+    console.log('🔑 [useInfiniteSkins] getKey called', {
+      pageIndex,
+      hasPreviousData: !!previousPageData,
+      hasNextPage: previousPageData?.hasNextPage,
+      enabled: config.enabled
+    });
+
     // If we've reached the end, return null
-    if (previousPageData && previousPageData.items.length < config.pageSize) {
+    if (previousPageData && !previousPageData.hasNextPage) {
+      console.log('🛑 [useInfiniteSkins] Reached end, returning null');
       return null;
     }
 
     // Build URL for this page
     const queryString = buildQueryString(config.filters, pageIndex + 1);
-    return config.enabled ? apiUrl(`/api/v1/skins?${queryString}`) : null;
+    const url = config.enabled ? apiUrl(`/api/v1/skins?${queryString}`) : null;
+    console.log('🌐 [useInfiniteSkins] Generated URL:', url);
+    return url;
   }, [config.filters, config.enabled, config.pageSize]);
 
   // SWR Infinite hook
@@ -104,10 +117,7 @@ export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
     if (!data || data.length === 0) return null;
 
     const firstPage = data[0];
-    const { page, pageSize, total } = firstPage;
-    const totalPages = Math.ceil(total / pageSize);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
+    const { page, pageSize, total, totalPages, hasNextPage, hasPrevPage } = firstPage;
 
     return {
       currentPage: page,
@@ -125,10 +135,25 @@ export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
 
   // Load more function
   const loadMore = useCallback(() => {
+    console.log('🔄 [useInfiniteSkins] loadMore called', {
+      isLoading,
+      isValidating,
+      hasMore: pagination?.hasMore,
+      currentSize: size,
+      totalSkins: allSkins.length
+    });
+    
     if (!isLoading && !isValidating && pagination?.hasMore) {
+      console.log('✅ [useInfiniteSkins] Loading more pages...');
       setSize(prev => prev + 1);
+    } else {
+      console.log('❌ [useInfiniteSkins] Cannot load more:', {
+        isLoading,
+        isValidating,
+        hasMore: pagination?.hasMore
+      });
     }
-  }, [isLoading, isValidating, pagination?.hasMore, setSize]);
+  }, [isLoading, isValidating, pagination?.hasMore, setSize, size, allSkins.length]);
 
   // Reset function
   const reset = useCallback(() => {

@@ -282,11 +282,19 @@ router.get("/", optionalClerkAuth, async (req, res) => {
       console.log(`[DEBUG] Found ${items.length} skins for category: ${category}`);
       console.log(`[DEBUG] Total count: ${total}`);
 
+      const currentPage = Number(page) || 1;
+      const totalPages = Math.ceil(total / take);
+      const hasNextPage = currentPage < totalPages;
+      const hasPrevPage = currentPage > 1;
+
       const responseData = { 
         items, 
         total, 
-        page: Number(page) || 1, 
-        pageSize: take 
+        page: currentPage, 
+        pageSize: take,
+        totalPages,
+        hasNextPage,
+        hasPrevPage
       };
 
       // Cache the response
