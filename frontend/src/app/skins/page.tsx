@@ -2,14 +2,14 @@
 // {/* URL-sync for filters & sort on Skins Browse */}
 "use client";
 import { Suspense } from "react";
-import { ModernSkinsPageContent } from "./_components/ModernSkinsPageContent";
+import { SkinsPageContent } from "./_components/SkinsPageContent";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function SkinsPage() {
   return (
     <Suspense fallback={<SkinsPageSkeleton />}>
-      <ModernSkinsPageContent />
+      <SkinsPageContent />
     </Suspense>
   );
 }
