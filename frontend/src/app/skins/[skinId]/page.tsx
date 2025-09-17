@@ -20,7 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2 } from "lucide-react";
+import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2, Copy, BarChart3, Users, Clock, DollarSign } from "lucide-react";
 // {/* Central API helpers */}
 import {
   getPortfolio,
@@ -349,28 +349,55 @@ export default function SkinDetailPage() {
     }
   };
 
-  // P2 - Export Data
-  const exportData = useCallback(() => {
+  // P2 - Export Data (CSV/JSON)
+  const exportData = useCallback((format: 'csv' | 'json' = 'csv') => {
     if (!history.length) {
       toast.error("No data to export");
       return;
     }
     
-    const csvContent = [
-      "Date,Price",
-      ...history.map(h => `${h.date},${h.price}`)
-    ].join("\n");
+    let content: string;
+    let filename: string;
+    let mimeType: string;
     
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    if (format === 'json') {
+      content = JSON.stringify(history, null, 2);
+      filename = `${skin?.name || 'skin'}-price-history.json`;
+      mimeType = "application/json";
+    } else {
+      content = [
+        "Date,Price",
+        ...history.map(h => `${h.date},${h.price}`)
+      ].join("\n");
+      filename = `${skin?.name || 'skin'}-price-history.csv`;
+      mimeType = "text/csv";
+    }
+    
+    const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${skin?.name || 'skin'}-price-history.csv`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
     
-    toast.success("Data exported successfully");
+    toast.success(`Data exported as ${format.toUpperCase()}`);
   }, [history, skin?.name]);
+
+  // P2 - Scroll Position Restoration
+  useEffect(() => {
+    const savedScrollPosition = sessionStorage.getItem('skin-detail-scroll');
+    if (savedScrollPosition) {
+      window.scrollTo(0, parseInt(savedScrollPosition));
+      sessionStorage.removeItem('skin-detail-scroll');
+    }
+  }, []);
+
+  // P2 - Save scroll position before navigation
+  const handleBackToResults = useCallback(() => {
+    sessionStorage.setItem('skin-detail-scroll', window.scrollY.toString());
+    router.back();
+  }, [router]);
 
   // P2 - Copy Link
   const copyLink = useCallback(async () => {
@@ -448,8 +475,9 @@ export default function SkinDetailPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.back()}
-              className="flex items-center gap-2"
+              onClick={handleBackToResults}
+              className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              aria-label="Go back to previous page"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to results
@@ -535,24 +563,34 @@ export default function SkinDetailPage() {
                     {formatUSD(skin.marketPrice)}
                   </div>
                   
-                  {/* Price Deltas */}
+                  {/* P2 - Price Deltas mit A11y Tooltips */}
                   <div className="flex gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <span className="text-muted-foreground">24h:</span>
                       <div className="flex items-center gap-1">
                         {skin.priceMedian24h && skin.marketPrice ? (
-                          <>
-                            {skin.marketPrice > skin.priceMedian24h ? (
-                              <TrendingUp className="h-3 w-3 text-green-500" />
-                            ) : (
-                              <TrendingDown className="h-3 w-3 text-red-500" />
-                            )}
-                            <span className={skin.marketPrice > skin.priceMedian24h ? "text-green-500" : "text-red-500"}>
-                              {((skin.marketPrice - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%
-                            </span>
-                          </>
+                          <TooltipProvider>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-1 cursor-help">
+                                {skin.marketPrice > skin.priceMedian24h ? (
+                                  <TrendingUp className="h-3 w-3 text-green-500" aria-label="Price increased" />
+                                ) : (
+                                  <TrendingDown className="h-3 w-3 text-red-500" aria-label="Price decreased" />
+                                )}
+                                <span 
+                                  className={skin.marketPrice > skin.priceMedian24h ? "text-green-500" : "text-red-500"}
+                                  aria-label={`Price change: ${((skin.marketPrice - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%`}
+                                >
+                                  {((skin.marketPrice - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>24-hour price change from ${formatUSD(skin.priceMedian24h)}</p>
+                            </TooltipContent>
+                          </TooltipProvider>
                         ) : (
-                          <span className="text-muted-foreground">N/A</span>
+                          <span className="text-muted-foreground" aria-label="No 24h data available">N/A</span>
                         )}
                       </div>
                     </div>
@@ -560,18 +598,28 @@ export default function SkinDetailPage() {
                       <span className="text-muted-foreground">7d:</span>
                       <div className="flex items-center gap-1">
                         {skin.priceMedian7d && skin.marketPrice ? (
-                          <>
-                            {skin.marketPrice > skin.priceMedian7d ? (
-                              <TrendingUp className="h-3 w-3 text-green-500" />
-                            ) : (
-                              <TrendingDown className="h-3 w-3 text-red-500" />
-                            )}
-                            <span className={skin.marketPrice > skin.priceMedian7d ? "text-green-500" : "text-red-500"}>
-                              {((skin.marketPrice - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%
-                            </span>
-                          </>
+                          <TooltipProvider>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-1 cursor-help">
+                                {skin.marketPrice > skin.priceMedian7d ? (
+                                  <TrendingUp className="h-3 w-3 text-green-500" aria-label="Price increased" />
+                                ) : (
+                                  <TrendingDown className="h-3 w-3 text-red-500" aria-label="Price decreased" />
+                                )}
+                                <span 
+                                  className={skin.marketPrice > skin.priceMedian7d ? "text-green-500" : "text-red-500"}
+                                  aria-label={`Price change: ${((skin.marketPrice - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%`}
+                                >
+                                  {((skin.marketPrice - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>7-day price change from ${formatUSD(skin.priceMedian7d)}</p>
+                            </TooltipContent>
+                          </TooltipProvider>
                         ) : (
-                          <span className="text-muted-foreground">N/A</span>
+                          <span className="text-muted-foreground" aria-label="No 7d data available">N/A</span>
                         )}
                       </div>
                     </div>
@@ -585,7 +633,9 @@ export default function SkinDetailPage() {
                     disabled={watchlistLoading || isInWatchlist}
                     variant={isInWatchlist ? "secondary" : "default"}
                     size="sm"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+                    aria-pressed={isInWatchlist}
                   >
                     {watchlistLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -602,7 +652,9 @@ export default function SkinDetailPage() {
                     disabled={portfolioLoading || isInPortfolio}
                     variant={isInPortfolio ? "secondary" : "outline"}
                     size="sm"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    aria-label={isInPortfolio ? "Remove from portfolio" : "Add to portfolio"}
+                    aria-pressed={isInPortfolio}
                   >
                     {portfolioLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -619,7 +671,8 @@ export default function SkinDetailPage() {
                       href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                      aria-label="Open skin on Steam Market in new tab"
                     >
                       <ExternalLink className="h-4 w-4" />
                       View on Steam Market
@@ -677,9 +730,21 @@ export default function SkinDetailPage() {
                   </SelectContent>
                 </Select>
 
-                <Button variant="outline" size="sm" onClick={exportData}>
-                  <Download className="h-4 w-4" />
-                </Button>
+                {/* P2 - Share/Export Dropdown */}
+                <div className="flex gap-1">
+                  <Button variant="outline" size="sm" onClick={() => exportData('csv')}>
+                    <Download className="h-4 w-4 mr-1" />
+                    CSV
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => exportData('json')}>
+                    <BarChart3 className="h-4 w-4 mr-1" />
+                    JSON
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={copyLink}>
+                    <Copy className="h-4 w-4 mr-1" />
+                    Copy Link
+                  </Button>
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -708,22 +773,53 @@ export default function SkinDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{formatUSD(marketStats.medianPrice || 0)}</p>
-                    <p className="text-sm text-muted-foreground">Median Price</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{marketStats.buyOrders || 0}</p>
-                    <p className="text-sm text-muted-foreground">Buy Orders</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{marketStats.activeListings || 0}</p>
-                    <p className="text-sm text-muted-foreground">Active Listings</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{marketStats.volume24h || 0}</p>
-                    <p className="text-sm text-muted-foreground">Volume 24h</p>
-                  </div>
+                  <TooltipProvider>
+                    <TooltipTrigger asChild>
+                      <div className="text-center cursor-help">
+                        <p className="text-2xl font-bold">{formatUSD(marketStats.medianPrice || 0)}</p>
+                        <p className="text-sm text-muted-foreground">Median Price</p>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Median price over the last 30 days</p>
+                    </TooltipContent>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <TooltipTrigger asChild>
+                      <div className="text-center cursor-help">
+                        <p className="text-2xl font-bold">{marketStats.buyOrders || 0}</p>
+                        <p className="text-sm text-muted-foreground">Buy Orders</p>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Current buy orders on the Steam Market</p>
+                    </TooltipContent>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <TooltipTrigger asChild>
+                      <div className="text-center cursor-help">
+                        <p className="text-2xl font-bold">{marketStats.activeListings || 0}</p>
+                        <p className="text-sm text-muted-foreground">Active Listings</p>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Currently active sell listings on Steam Market</p>
+                    </TooltipContent>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <TooltipTrigger asChild>
+                      <div className="text-center cursor-help">
+                        <p className="text-2xl font-bold">{marketStats.volume24h || 0}</p>
+                        <p className="text-sm text-muted-foreground">Volume 24h</p>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Number of items sold in the last 24 hours</p>
+                    </TooltipContent>
+                  </TooltipProvider>
                 </div>
               </CardContent>
             </Card>
@@ -779,26 +875,57 @@ export default function SkinDetailPage() {
                         >
                           <div className="flex items-center gap-3">
                             <div className="flex gap-1">
-                              <Badge 
-                                variant={isActive ? "default" : "secondary"}
-                                className="text-xs"
-                              >
-                                {variant.wear || 'Unknown'}
-                              </Badge>
-                              <Badge 
-                                variant="outline" 
-                                className={`text-xs ${
-                                  variant.rarity === 'Covert' ? 'border-red-500 text-red-500' :
-                                  variant.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
-                                  variant.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
-                                  variant.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500' :
-                                  'border-gray-500 text-gray-500'
-                                }`}
-                              >
-                                {variant.rarity || 'Unknown'}
-                              </Badge>
+                              <TooltipProvider>
+                                <TooltipTrigger asChild>
+                                  <Badge 
+                                    variant={isActive ? "default" : "secondary"}
+                                    className="text-xs cursor-help"
+                                    aria-label={`Wear condition: ${variant.wear || 'Unknown'}`}
+                                  >
+                                    {variant.wear || 'Unknown'}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Wear condition: {variant.wear || 'Unknown'}</p>
+                                </TooltipContent>
+                              </TooltipProvider>
+                              
+                              <TooltipProvider>
+                                <TooltipTrigger asChild>
+                                  <Badge 
+                                    variant="outline" 
+                                    className={`text-xs cursor-help ${
+                                      variant.rarity === 'Covert' ? 'border-red-500 text-red-500' :
+                                      variant.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
+                                      variant.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
+                                      variant.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500' :
+                                      'border-gray-500 text-gray-500'
+                                    }`}
+                                    aria-label={`Rarity: ${variant.rarity || 'Unknown'}`}
+                                  >
+                                    {variant.rarity || 'Unknown'}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Rarity: {variant.rarity || 'Unknown'}</p>
+                                </TooltipContent>
+                              </TooltipProvider>
+                              
                               {variant.isStattrak && (
-                                <Badge variant="secondary" className="text-xs">StatTrak™</Badge>
+                                <TooltipProvider>
+                                  <TooltipTrigger asChild>
+                                    <Badge 
+                                      variant="secondary" 
+                                      className="text-xs cursor-help"
+                                      aria-label="StatTrak version - tracks kills"
+                                    >
+                                      StatTrak™
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>StatTrak version - tracks kills</p>
+                                  </TooltipContent>
+                                </TooltipProvider>
                               )}
                             </div>
                           </div>
