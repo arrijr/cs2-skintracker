@@ -16,6 +16,7 @@ import { Search, X, Loader2 } from "lucide-react";
 import { SkinCard } from "./SkinCard";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { useSkins, type SkinsFilters, type Skin } from "@/hooks/useSkins";
+import { saveFiltersToSession, loadFiltersFromSession, clearFiltersFromSession } from "@/lib/storage";
 
 // CS2 Categories
 const CS2_CATEGORIES = {
@@ -39,16 +40,61 @@ export function BrowsePageContent() {
   const router = useRouter();
   const sp = useSearchParams();
   
-  // URL-synced state
-  const [q, setQ] = useState(sp.get("q") ?? "");
-  const [min, setMin] = useState(sp.get("priceMin") ?? "");
-  const [max, setMax] = useState(sp.get("priceMax") ?? "");
-  const [rarity, setRarity] = useState(sp.get("rarity") ?? "");
-  const [wear, setWear] = useState(sp.get("wear") ?? "");
-  const [stattrak, setStattrak] = useState(sp.get("st") === "true");
-  const [special, setSpecial] = useState(sp.get("special") === "true");
-  const [sort, setSort] = useState(sp.get("sort") ?? "price_asc");
-  const [category, setCategory] = useState(sp.get("category") ?? undefined);
+  // URL-synced state with session storage fallback
+  const [q, setQ] = useState(() => {
+    const urlQ = sp.get("q");
+    if (urlQ) return urlQ;
+    const stored = loadFiltersFromSession();
+    return stored?.q ?? "";
+  });
+  const [min, setMin] = useState(() => {
+    const urlMin = sp.get("priceMin");
+    if (urlMin) return urlMin;
+    const stored = loadFiltersFromSession();
+    return stored?.min ?? "";
+  });
+  const [max, setMax] = useState(() => {
+    const urlMax = sp.get("priceMax");
+    if (urlMax) return urlMax;
+    const stored = loadFiltersFromSession();
+    return stored?.max ?? "";
+  });
+  const [rarity, setRarity] = useState(() => {
+    const urlRarity = sp.get("rarity");
+    if (urlRarity) return urlRarity;
+    const stored = loadFiltersFromSession();
+    return stored?.rarity ?? "";
+  });
+  const [wear, setWear] = useState(() => {
+    const urlWear = sp.get("wear");
+    if (urlWear) return urlWear;
+    const stored = loadFiltersFromSession();
+    return stored?.wear ?? "";
+  });
+  const [stattrak, setStattrak] = useState(() => {
+    const urlStattrak = sp.get("st") === "true";
+    if (urlStattrak) return urlStattrak;
+    const stored = loadFiltersFromSession();
+    return stored?.stattrak ?? false;
+  });
+  const [special, setSpecial] = useState(() => {
+    const urlSpecial = sp.get("special") === "true";
+    if (urlSpecial) return urlSpecial;
+    const stored = loadFiltersFromSession();
+    return stored?.special ?? false;
+  });
+  const [sort, setSort] = useState(() => {
+    const urlSort = sp.get("sort");
+    if (urlSort) return urlSort;
+    const stored = loadFiltersFromSession();
+    return stored?.sort ?? "price_asc";
+  });
+  const [category, setCategory] = useState(() => {
+    const urlCategory = sp.get("category");
+    if (urlCategory) return urlCategory;
+    const stored = loadFiltersFromSession();
+    return stored?.category ?? undefined;
+  });
   const [page, setPage] = useState(1);
 
   // Debounced search
@@ -79,6 +125,22 @@ export function BrowsePageContent() {
     const newUrl = `/browse?${params.toString()}`;
     router.replace(newUrl, { scroll: false });
   }, [q, min, max, rarity, wear, stattrak, special, sort, category, page, router]);
+
+  // {/* Filters Persistence */}
+  useEffect(() => {
+    saveFiltersToSession({
+      q,
+      min,
+      max,
+      rarity,
+      wear,
+      stattrak,
+      special,
+      sort,
+      category,
+      page
+    });
+  }, [q, min, max, rarity, wear, stattrak, special, sort, category, page]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -122,6 +184,7 @@ export function BrowsePageContent() {
     setSort("price_asc");
     setCategory(undefined);
     setPage(1);
+    clearFiltersFromSession();
   };
 
   // Remove specific filter
@@ -188,7 +251,9 @@ export function BrowsePageContent() {
                       placeholder="e.g. AK-47"
                       value={q}
                       onChange={(e) => setQ(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      aria-label="Search skins"
+                      aria-describedby="search-description"
                     />
                   </div>
                 </div>
@@ -324,6 +389,45 @@ export function BrowsePageContent() {
               })}
             </div>
 
+            {/* Shortcut Chips */}
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={sort === "popularity_desc" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSort("popularity_desc")}
+              >
+                Most Popular
+              </Button>
+              <Button
+                variant={sort === "price_asc" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSort("price_asc")}
+              >
+                Cheapest
+              </Button>
+              <Button
+                variant={sort === "price_desc" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSort("price_desc")}
+              >
+                Most Expensive
+              </Button>
+              <Button
+                variant={sort === "wear_asc" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSort("wear_asc")}
+              >
+                Lowest Wear
+              </Button>
+              <Button
+                variant={sort === "wear_desc" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSort("wear_desc")}
+              >
+                Highest Wear
+              </Button>
+            </div>
+
             {/* Active Filters & Result Count */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 flex-wrap">
@@ -378,11 +482,16 @@ export function BrowsePageContent() {
               {isLoading ? (
                 Array.from({ length: 12 }).map((_, i) => (
                   <Card key={i} className="overflow-hidden">
-                    <div className="aspect-square bg-muted animate-pulse" />
+                    <div className="aspect-square relative">
+                      <div className="h-full w-full bg-muted animate-pulse" />
+                    </div>
                     <CardContent className="p-4 space-y-2">
                       <div className="h-4 bg-muted animate-pulse rounded" />
+                      <div className="flex items-center justify-between">
+                        <div className="h-6 w-8 bg-muted animate-pulse rounded" />
+                        <div className="h-4 w-12 bg-muted animate-pulse rounded" />
+                      </div>
                       <div className="h-3 bg-muted animate-pulse rounded w-2/3" />
-                      <div className="h-4 bg-muted animate-pulse rounded w-1/3" />
                     </CardContent>
                   </Card>
                 ))

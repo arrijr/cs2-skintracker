@@ -54,13 +54,18 @@ function BrowsePageSkeleton() {
             </div>
             <Skeleton className="h-4 w-24" />
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {Array.from({ length: 10 }).map((_, i) => (
+              {Array.from({ length: 12 }).map((_, i) => (
                 <Card key={i} className="overflow-hidden">
-                  <Skeleton className="h-48 w-full" />
+                  <div className="aspect-square relative">
+                    <Skeleton className="h-full w-full" />
+                  </div>
                   <CardContent className="p-4 space-y-2">
                     <Skeleton className="h-4 w-3/4" />
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-6 w-8" />
+                      <Skeleton className="h-4 w-12" />
+                    </div>
                     <Skeleton className="h-3 w-1/2" />
-                    <Skeleton className="h-4 w-1/3" />
                   </CardContent>
                 </Card>
               ))}
