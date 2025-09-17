@@ -1,6 +1,26 @@
 import prisma from "../prisma/prismaClient.js";
 import { fetchSkinPrice } from "../services/steamService.js";
 
+// {/* Get price history for a skin */}
+export const getPriceHistory = async (req, res) => {
+  const { skinId } = req.params;
+  try {
+    const history = await prisma.priceHistory.findMany({
+      where: { skinId: parseInt(skinId) },
+      orderBy: { date: 'asc' },
+      select: {
+        date: true,
+        price: true
+      }
+    });
+    
+    res.json(history);
+  } catch (err) {
+    console.error(`[ERROR] Failed to fetch price history for skin ${skinId}:`, err);
+    res.status(500).json({ error: "Could not fetch price history" });
+  }
+};
+
 // {/* Get skin by ID with full details */}
 export const getSkinById = async (req, res) => {
   const { skinId } = req.params;
