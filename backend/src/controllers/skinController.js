@@ -275,7 +275,7 @@ export const getSkinMarketStats = async (req, res) => {
     const skin = await prisma.skin.findUnique({
       where: { id: parseInt(skinId) },
       select: {
-        marketPrice: true,
+        priceLatest: true,
         priceAvg: true,
         priceMedian: true,
         priceMedian24h: true,
@@ -296,7 +296,7 @@ export const getSkinMarketStats = async (req, res) => {
     });
     
     // Use current skin price as fallback if no price history
-    const currentPrice = skin.marketPrice || skin.priceAvg || skin.priceMedian || 0;
+    const currentPrice = skin.priceLatest || skin.priceAvg || skin.priceMedian || 0;
     
     if (priceHistory.length === 0) {
       // Generate sample market data based on current price
