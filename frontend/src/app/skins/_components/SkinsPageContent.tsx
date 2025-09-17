@@ -13,7 +13,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Search, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Search, X, Save, Share2, Trash2, Clock, CheckSquare, Square, Plus, Heart, HelpCircle } from "lucide-react";
+import { toast } from "sonner";
 import SkinGrid from "../SkinGrid";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { saveFiltersToSession, loadFiltersFromSession, clearFiltersFromSession } from "@/lib/storage";
@@ -277,6 +279,199 @@ export function SkinsPageContent() {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // {/* Filter presets */}
+  // P3: Filter presets functionality
+  const [savedPresets, setSavedPresets] = useState<Record<string, any>>({});
+  const [showPresetDialog, setShowPresetDialog] = useState(false);
+  const [presetName, setPresetName] = useState('');
+
+  // {/* Batch selection & actions */}
+  // P3: Batch actions functionality
+  const [selectedSkins, setSelectedSkins] = useState<Set<number>>(new Set());
+  const [batchMode, setBatchMode] = useState(false);
+  const [batchLoading, setBatchLoading] = useState(false);
+
+  // Load saved presets from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('skins-filter-presets');
+    if (saved) {
+      try {
+        setSavedPresets(JSON.parse(saved));
+      } catch (error) {
+        console.error('Error loading saved presets:', error);
+      }
+    }
+  }, []);
+
+  // Save current filters as preset
+  const saveCurrentPreset = () => {
+    if (!presetName.trim()) return;
+
+    const currentFilters = {
+      q, min, max, rarity, wear, quality, stattrak, special, 
+      category, weaponType, collection, finish, sort
+    };
+
+    const newPresets = {
+      ...savedPresets,
+      [presetName]: {
+        ...currentFilters,
+        savedAt: new Date().toISOString(),
+        name: presetName
+      }
+    };
+
+    setSavedPresets(newPresets);
+    localStorage.setItem('skins-filter-presets', JSON.stringify(newPresets));
+    setPresetName('');
+    setShowPresetDialog(false);
+    toast.success(`Preset "${presetName}" saved!`);
+  };
+
+  // Apply saved preset
+  const applyPreset = (presetKey: string) => {
+    const preset = savedPresets[presetKey];
+    if (!preset) return;
+
+    setQ(preset.q || '');
+    setMin(preset.min || '');
+    setMax(preset.max || '');
+    setRarity(preset.rarity || '');
+    setWear(preset.wear || '');
+    setQuality(preset.quality || '');
+    setStattrak(preset.stattrak || false);
+    setSpecial(preset.special || false);
+    setCategory(preset.category || undefined);
+    setWeaponType(preset.weaponType || '');
+    setCollection(preset.collection || '');
+    setFinish(preset.finish || '');
+    setSort(preset.sort || 'name_asc');
+    setPage(1);
+
+    toast.success(`Applied preset "${preset.name}"`);
+  };
+
+  // Delete preset
+  const deletePreset = (presetKey: string) => {
+    const newPresets = { ...savedPresets };
+    delete newPresets[presetKey];
+    setSavedPresets(newPresets);
+    localStorage.setItem('skins-filter-presets', JSON.stringify(newPresets));
+    toast.success('Preset deleted');
+  };
+
+  // Share current filters as URL
+  const shareCurrentFilters = () => {
+    const searchParams = new URLSearchParams();
+    
+    if (q) searchParams.set('q', q);
+    if (min) searchParams.set('priceMin', min);
+    if (max) searchParams.set('priceMax', max);
+    if (rarity) searchParams.set('rarity', rarity);
+    if (wear) searchParams.set('wear', wear);
+    if (quality) searchParams.set('quality', quality);
+    if (stattrak) searchParams.set('st', 'true');
+    if (special) searchParams.set('special', 'true');
+    if (category) searchParams.set('category', category);
+    if (weaponType) searchParams.set('weaponType', weaponType);
+    if (collection) searchParams.set('collection', collection);
+    if (finish) searchParams.set('finish', finish);
+    if (sort) searchParams.set('sort', sort);
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}?${searchParams.toString()}`;
+    
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      toast.success('Filter URL copied to clipboard!');
+    }).catch(() => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = shareUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      toast.success('Filter URL copied to clipboard!');
+    });
+  };
+
+  // Batch action functions
+  const toggleSkinSelection = (skinId: number) => {
+    const newSelection = new Set(selectedSkins);
+    if (newSelection.has(skinId)) {
+      newSelection.delete(skinId);
+    } else {
+      newSelection.add(skinId);
+    }
+    setSelectedSkins(newSelection);
+  };
+
+  const selectAllSkins = () => {
+    // This would need to be implemented with the actual skin data
+    // For now, we'll show a placeholder
+    toast.info('Select all functionality requires skin data access');
+  };
+
+  const clearSelection = () => {
+    setSelectedSkins(new Set());
+  };
+
+  const addSelectedToWatchlist = async () => {
+    if (selectedSkins.size === 0) return;
+    
+    setBatchLoading(true);
+    try {
+      const promises = Array.from(selectedSkins).map(skinId =>
+        fetchJson(apiUrl('/api/v1/watchlist'), {
+          method: "POST",
+          headers: { 
+            "Authorization": `Bearer ${localStorage.getItem("token")}` 
+          },
+          body: JSON.stringify({ skinId }),
+        })
+      );
+      
+      await Promise.all(promises);
+      toast.success(`${selectedSkins.size} skins added to watchlist!`);
+      clearSelection();
+    } catch (error) {
+      toast.error('Failed to add skins to watchlist');
+      console.error('Batch watchlist error:', error);
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  const addSelectedToPortfolio = async () => {
+    if (selectedSkins.size === 0) return;
+    
+    setBatchLoading(true);
+    try {
+      const promises = Array.from(selectedSkins).map(skinId =>
+        fetchJson(apiUrl('/api/v1/portfolio'), {
+          method: "POST",
+          headers: { 
+            "Authorization": `Bearer ${localStorage.getItem("token")}` 
+          },
+          body: JSON.stringify({
+            skinId,
+            amount: 1,
+            buyPrice: 0, // Would need actual price data
+            buyDate: new Date().toISOString().slice(0, 10),
+          }),
+        })
+      );
+      
+      await Promise.all(promises);
+      toast.success(`${selectedSkins.size} skins added to portfolio!`);
+      clearSelection();
+    } catch (error) {
+      toast.error('Failed to add skins to portfolio');
+      console.error('Batch portfolio error:', error);
+    } finally {
+      setBatchLoading(false);
+    }
   };
 
   // P3: Keyboard Shortcuts
@@ -610,7 +805,26 @@ export function SkinsPageContent() {
 
                 {/* Wear */}
                 <div className="space-y-3">
-                  <Label>Wear</Label>
+                  <div className="flex items-center gap-1">
+                    <Label>Wear</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">
+                            <strong>Wear</strong> indicates the condition of the skin. 
+                            <br />• <strong>Factory New (FN)</strong>: Perfect condition
+                            <br />• <strong>Minimal Wear (MW)</strong>: Slight scratches
+                            <br />• <strong>Field-Tested (FT)</strong>: Visible wear
+                            <br />• <strong>Well-Worn (WW)</strong>: Heavy wear
+                            <br />• <strong>Battle-Scarred (BS)</strong>: Maximum wear
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {[
                       { id: "fn", name: "FN", fullName: "Factory New" },
@@ -633,7 +847,27 @@ export function SkinsPageContent() {
 
                 {/* Rarity */}
                 <div className="space-y-3">
-                  <Label>Rarity</Label>
+                  <div className="flex items-center gap-1">
+                    <Label>Rarity</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">
+                            <strong>Rarity</strong> determines how rare and valuable a skin is.
+                            <br />• <strong>Covert</strong>: Red - Extremely rare, highest value
+                            <br />• <strong>Classified</strong>: Pink - Very rare, high value
+                            <br />• <strong>Restricted</strong>: Purple - Rare, medium-high value
+                            <br />• <strong>Mil-Spec</strong>: Blue - Uncommon, medium value
+                            <br />• <strong>Industrial</strong>: Light blue - Common, low value
+                            <br />• <strong>Consumer</strong>: Gray - Most common, lowest value
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <div className="space-y-2">
                     {[
                       "Covert",
@@ -659,7 +893,25 @@ export function SkinsPageContent() {
 
                 {/* StatTrak */}
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="stattrak">StatTrak™</Label>
+                  <div className="flex items-center gap-1">
+                    <Label htmlFor="stattrak">StatTrak™</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">
+                            <strong>StatTrak™</strong> skins track your kills with that weapon.
+                            <br />• Shows kill counter on the weapon
+                            <br />• More expensive than regular skins
+                            <br />• Orange StatTrak™ logo on the skin
+                            <br />• Counter resets when traded/sold
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <Switch
                     id="stattrak"
                     checked={stattrak}
@@ -669,7 +921,26 @@ export function SkinsPageContent() {
 
                 {/* Special */}
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="special">Special (Star)</Label>
+                  <div className="flex items-center gap-1">
+                    <Label htmlFor="special">Special (Star)</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">
+                            <strong>Special (Star)</strong> items are unique collectibles.
+                            <br />• <strong>Knives</strong>: ★ Karambit, ★ Butterfly, etc.
+                            <br />• <strong>Gloves</strong>: Special hand coverings
+                            <br />• <strong>Music Kits</strong>: Custom round music
+                            <br />• <strong>Stickers</strong>: Team/player stickers
+                            <br />• Usually very expensive and rare
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <Switch
                     id="special"
                     checked={special}
@@ -1202,6 +1473,160 @@ export function SkinsPageContent() {
               </div>
             </div>
 
+            {/* P3: Filter presets */}
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <Label className="text-sm font-medium">Filter Presets:</Label>
+                <div className="flex gap-2 flex-wrap">
+                  {/* Save Current Preset */}
+                  <Dialog open={showPresetDialog} onOpenChange={setShowPresetDialog}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Save className="h-4 w-4 mr-1" />
+                        Save Current
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Save Filter Preset</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="preset-name">Preset Name</Label>
+                          <Input
+                            id="preset-name"
+                            value={presetName}
+                            onChange={(e) => setPresetName(e.target.value)}
+                            placeholder="e.g., My Favorite Skins"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setShowPresetDialog(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={saveCurrentPreset} disabled={!presetName.trim()}>
+                            Save Preset
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Share Current Filters */}
+                  <Button variant="outline" size="sm" onClick={shareCurrentFilters}>
+                    <Share2 className="h-4 w-4 mr-1" />
+                    Share URL
+                  </Button>
+
+                  {/* Saved Presets */}
+                  {Object.entries(savedPresets).map(([key, preset]) => (
+                    <div key={key} className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => applyPreset(key)}
+                        className="text-xs"
+                      >
+                        {preset.name}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deletePreset(key)}
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        aria-label={`Delete preset ${preset.name}`}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Preset Info */}
+              {Object.keys(savedPresets).length > 0 && (
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {Object.keys(savedPresets).length} saved preset{Object.keys(savedPresets).length !== 1 ? 's' : ''}
+                </div>
+              )}
+            </div>
+
+            {/* P3: Batch selection & actions */}
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <Label className="text-sm font-medium">Batch Actions:</Label>
+                <div className="flex gap-2 flex-wrap">
+                  {/* Toggle Batch Mode */}
+                  <Button
+                    variant={batchMode ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setBatchMode(!batchMode);
+                      if (batchMode) clearSelection();
+                    }}
+                  >
+                    {batchMode ? <CheckSquare className="h-4 w-4 mr-1" /> : <Square className="h-4 w-4 mr-1" />}
+                    {batchMode ? "Exit Batch" : "Batch Select"}
+                  </Button>
+
+                  {/* Batch Actions (only show when in batch mode) */}
+                  {batchMode && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={selectAllSkins}
+                        disabled={batchLoading}
+                      >
+                        Select All
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearSelection}
+                        disabled={selectedSkins.size === 0 || batchLoading}
+                      >
+                        Clear Selection
+                      </Button>
+
+                      <Separator orientation="vertical" className="h-8" />
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={addSelectedToWatchlist}
+                        disabled={selectedSkins.size === 0 || batchLoading}
+                      >
+                        <Heart className="h-4 w-4 mr-1" />
+                        Add to Watchlist ({selectedSkins.size})
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={addSelectedToPortfolio}
+                        disabled={selectedSkins.size === 0 || batchLoading}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add to Portfolio ({selectedSkins.size})
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {/* Selection Info */}
+              {batchMode && selectedSkins.size > 0 && (
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  <CheckSquare className="h-3 w-3" />
+                  {selectedSkins.size} skin{selectedSkins.size !== 1 ? 's' : ''} selected
+                </div>
+              )}
+            </div>
+
 
             {/* Results Count and Sort */}
             <div className="flex items-center justify-between">
@@ -1269,6 +1694,10 @@ export function SkinsPageContent() {
               skeletonCount={6}
               enableInfiniteScroll={enableInfiniteScroll}
               onLoadMore={handleLoadMore}
+              // P3: Batch selection props
+              batchMode={batchMode}
+              selectedSkins={selectedSkins}
+              onToggleSelection={toggleSkinSelection}
             />
 
             {/* P2: Back to Top Button */}

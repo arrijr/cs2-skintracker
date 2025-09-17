@@ -17,6 +17,10 @@ interface SkinGridProps {
   skeletonCount?: number;
   enableInfiniteScroll?: boolean;
   onLoadMore?: () => void;
+  // P3: Batch selection props
+  batchMode?: boolean;
+  selectedSkins?: Set<number>;
+  onToggleSelection?: (skinId: number) => void;
 }
 
 export default function SkinGrid({ 
@@ -27,7 +31,11 @@ export default function SkinGrid({
   showSkeleton = true,
   skeletonCount = 12,
   enableInfiniteScroll = false,
-  onLoadMore
+  onLoadMore,
+  // P3: Batch selection props
+  batchMode = false,
+  selectedSkins = new Set(),
+  onToggleSelection
 }: SkinGridProps) {
   const { user, isLoaded } = useUser();
   const router = useRouter();
@@ -199,15 +207,19 @@ export default function SkinGrid({
           </>
         )}
         
-        {/* Actual skin cards */}
-        {!isLoading && skins.map((skin) => (
-          <div key={skin.id} onClick={() => handleSkinClick(skin.id)}>
-            <SkinCard 
-              skin={skin} 
-              onAdded={() => handleSkinAdd(skin.id)}
-            />
-          </div>
-        ))}
+                {/* Actual skin cards */}
+                {!isLoading && skins.map((skin) => (
+                  <div key={skin.id} onClick={() => handleSkinClick(skin.id)}>
+                    <SkinCard 
+                      skin={skin} 
+                      onAdded={() => handleSkinAdd(skin.id)}
+                      // P3: Batch selection props
+                      batchMode={batchMode}
+                      isSelected={selectedSkins.has(skin.id)}
+                      onToggleSelection={onToggleSelection}
+                    />
+                  </div>
+                ))}
       </div>
 
       {/* P3: Infinite Scroll Trigger */}

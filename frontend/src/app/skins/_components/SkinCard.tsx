@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Heart, Plus, Check, Loader2, Star } from "lucide-react";
+import { Heart, Plus, Check, Loader2, Star, CheckSquare, Square } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { toast } from "sonner";
@@ -35,7 +35,20 @@ type Skin = {
   price7dAvg?: number | null;
 };
 
-export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }) {
+export function SkinCard({ 
+  skin, 
+  onAdded,
+  // P3: Batch selection props
+  batchMode = false,
+  isSelected = false,
+  onToggleSelection
+}: { 
+  skin: Skin; 
+  onAdded?: () => void;
+  batchMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelection?: (skinId: number) => void;
+}) {
   const { user, isLoaded } = useUser();
   const [watchlistState, setWatchlistState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [portfolioState, setPortfolioState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -254,6 +267,27 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
           </TooltipProvider>
         )}
         
+        {/* P3: Batch selection checkbox */}
+        {batchMode && (
+          <div className="absolute top-2 left-2 z-10">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleSelection?.(skin.id);
+              }}
+              className="h-6 w-6 rounded border-2 bg-white/90 hover:bg-white flex items-center justify-center transition-colors"
+              aria-label={isSelected ? "Deselect skin" : "Select skin"}
+            >
+              {isSelected ? (
+                <CheckSquare className="h-4 w-4 text-primary" />
+              ) : (
+                <Square className="h-4 w-4 text-muted-foreground" />
+              )}
+            </button>
+          </div>
+        )}
+
         {/* Special Badges */}
         <div className="absolute top-2 right-2 flex gap-1">
           {skin.isStattrak && (
