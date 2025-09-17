@@ -368,6 +368,7 @@ export const getRelatedSkins = async (req, res) => {
     const baseSkin = await prisma.skin.findUnique({
       where: { id: parseInt(skinId) },
       select: { 
+        name: true,
         weaponType: true,
         itemGroup: true,
         itemName: true,
@@ -375,11 +376,16 @@ export const getRelatedSkins = async (req, res) => {
       }
     });
     
+    console.log(`[DEBUG] Base skin found:`, baseSkin);
+    
     if (!baseSkin) {
+      console.log(`[DEBUG] Skin ${skinId} not found`);
       return res.status(404).json({ error: 'Skin not found' });
     }
     
     // Find related skins (same weapon type or similar characteristics)
+    console.log(`[DEBUG] Searching for related skins with weaponType: ${baseSkin.weaponType}, itemName: ${baseSkin.itemName}`);
+    
     const relatedSkins = await prisma.skin.findMany({
       where: {
         AND: [
@@ -390,7 +396,7 @@ export const getRelatedSkins = async (req, res) => {
               { itemName: baseSkin.itemName },
               { 
                 name: {
-                  contains: baseSkin.name.split('|')[0]?.trim() || baseSkin.name.split('(')[0]?.trim() || baseSkin.name
+                  contains: baseSkin.name?.split('|')[0]?.trim() || baseSkin.name?.split('(')[0]?.trim() || baseSkin.name
                 }
               }
             ]
@@ -414,6 +420,9 @@ export const getRelatedSkins = async (req, res) => {
       ],
       take: 12 // Limit to 12 related skins
     });
+    
+    console.log(`[DEBUG] Found ${relatedSkins.length} related skins`);
+    console.log(`[DEBUG] Related skins:`, relatedSkins.map(s => ({ id: s.id, name: s.name })));
     
     res.json(relatedSkins);
   } catch (err) {
