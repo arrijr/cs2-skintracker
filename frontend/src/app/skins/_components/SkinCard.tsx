@@ -111,19 +111,19 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
   const safeWear = skin.wear || '';
 
   return (
-    <Card 
-      className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer group focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          window.location.href = `/skins/${skin.id}`;
-        }
-      }}
-      aria-label={`View details for ${skin.name}`}
-    >
-      <Link href={`/skins/${skin.id}`} className="block">
+    <Link href={`/skins/${skin.id}`} className="block">
+      <Card 
+        className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer group focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            window.location.href = `/skins/${skin.id}`;
+          }
+        }}
+        aria-label={`View details for ${skin.name}`}
+      >
         {/* Image */}
         <div className="aspect-square relative bg-muted">
           {skin.imageUrl ? (
@@ -265,7 +265,8 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
           </p>
         </div>
       </CardContent>
-    </Card>
+      </Card>
+    </Link>
   );
 }
 
