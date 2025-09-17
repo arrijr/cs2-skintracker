@@ -55,6 +55,28 @@ const CS2_CATEGORIES = {
   charms: { name: "Charms", color: "bg-amber-500" }
 };
 
+// P3: Advanced Filter Options
+const WEAPON_TYPES = [
+  "AK-47", "M4A1-S", "M4A4", "AWP", "AUG", "SG 553", "Galil AR", "FAMAS",
+  "Glock-18", "USP-S", "P250", "Tec-9", "Five-SeveN", "CZ75-Auto", "Desert Eagle", "R8 Revolver",
+  "P2000", "Dual Berettas", "P90", "PP-Bizon", "MP7", "MP9", "UMP-45", "MAC-10", "MP5-SD",
+  "Nova", "XM1014", "Sawed-Off", "MAG-7", "M249", "Negev", "MAG-7", "Sawed-Off"
+];
+
+const COLLECTIONS = [
+  "The Dust 2 Collection", "The Mirage Collection", "The Cache Collection", "The Cobblestone Collection",
+  "The Overpass Collection", "The Train Collection", "The Inferno Collection", "The Nuke Collection",
+  "The Vertigo Collection", "The Ancient Collection", "The Anubis Collection", "The Office Collection",
+  "The Italy Collection", "The Militia Collection", "The Assault Collection", "The Office Collection",
+  "The Militia Collection", "The Assault Collection", "The Office Collection", "The Militia Collection"
+];
+
+const FINISHES = [
+  "Doppler", "Case Hardened", "Crimson Web", "Fade", "Slaughter", "Tiger Tooth", "Marble Fade",
+  "Dragon Lore", "Howl", "Fire Serpent", "Vulcan", "Asiimov", "Redline", "Vulcan", "Asiimov",
+  "Redline", "Vulcan", "Asiimov", "Redline", "Vulcan", "Asiimov", "Redline", "Vulcan", "Asiimov"
+];
+
 // Filter presets for enhanced UX
 const FILTER_PRESETS = [
   { name: "Under $10", params: { min: "", max: "10" } },
@@ -171,6 +193,12 @@ export function SkinsPageContent() {
   const [sort, setSort] = useState(sp.get("sort") ?? "name_asc");
   const [category, setCategory] = useState(sp.get("category") ?? undefined);
 
+  // P3: Advanced Filter States
+  const [weaponType, setWeaponType] = useState(sp.get("weaponType") ?? "");
+  const [collection, setCollection] = useState(sp.get("collection") ?? "");
+  const [finish, setFinish] = useState(sp.get("finish") ?? "");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
   // Data state
   const [page, setPage] = useState(1);
 
@@ -192,6 +220,50 @@ export function SkinsPageContent() {
     return () => clearTimeout(timer);
   }, [q, SKINS_FILTERS_ENHANCED]);
 
+  // P3: Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Focus search on "/" key
+      if (e.key === "/" && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        const searchInput = document.getElementById("search");
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }
+      
+      // Clear filters on Escape
+      if (e.key === "Escape") {
+        clearFilters();
+      }
+      
+      // Quick sort shortcuts
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case "1":
+            e.preventDefault();
+            setSort("popularity_desc");
+            break;
+          case "2":
+            e.preventDefault();
+            setSort("price_asc");
+            break;
+          case "3":
+            e.preventDefault();
+            setSort("price_desc");
+            break;
+          case "4":
+            e.preventDefault();
+            setSort("newest");
+            break;
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Enhanced search input handler
   const handleSearchChange = useCallback((value: string) => {
     setQ(value);
@@ -212,10 +284,13 @@ export function SkinsPageContent() {
     if (special) p.set("special", "true");
     if (sort) p.set("sort", sort);
     if (category) p.set("category", category);
+    if (weaponType) p.set("weaponType", weaponType);
+    if (collection) p.set("collection", collection);
+    if (finish) p.set("finish", finish);
     
     console.log("🔄 Updating URL with params:", p.toString());
     router.replace(`/skins?${p.toString()}`, { scroll: false });
-  }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, router]);
+  }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, weaponType, collection, finish, router]);
 
   // Filters Persistence
   useEffect(() => {
@@ -229,9 +304,12 @@ export function SkinsPageContent() {
       special,
       sort,
       category,
+      weaponType,
+      collection,
+      finish,
       page
     });
-  }, [q, min, max, rarity, wear, stattrak, special, sort, category, page]);
+  }, [q, min, max, rarity, wear, stattrak, special, sort, category, weaponType, collection, finish, page]);
 
 
 
@@ -302,6 +380,9 @@ export function SkinsPageContent() {
     setSpecial(false);
     setSort("name_asc");
     setCategory(undefined);
+    setWeaponType("");
+    setCollection("");
+    setFinish("");
     clearFiltersFromSession();
   }
 
@@ -328,7 +409,7 @@ export function SkinsPageContent() {
     setPage(1);
   }, []);
 
-  // Copy current URL to clipboard
+  // P3: Export/Import Filter URLs
   const copyCurrentLink = useCallback(async () => {
     try {
       const currentUrl = window.location.href;
@@ -338,6 +419,50 @@ export function SkinsPageContent() {
     } catch (error) {
       console.error("💥 Failed to copy link:", error);
     }
+  }, []);
+
+  const exportFilters = useCallback(() => {
+    const filters = {
+      q, min, max, rarity, wear, quality, stattrak, special, sort, category,
+      weaponType, collection, finish
+    };
+    const dataStr = JSON.stringify(filters, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'cs2-skin-filters.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, weaponType, collection, finish]);
+
+  const importFilters = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const filters = JSON.parse(e.target?.result as string);
+        if (filters.q !== undefined) setQ(filters.q);
+        if (filters.min !== undefined) setMin(filters.min);
+        if (filters.max !== undefined) setMax(filters.max);
+        if (filters.rarity !== undefined) setRarity(filters.rarity);
+        if (filters.wear !== undefined) setWear(filters.wear);
+        if (filters.quality !== undefined) setQuality(filters.quality);
+        if (filters.stattrak !== undefined) setStattrak(filters.stattrak);
+        if (filters.special !== undefined) setSpecial(filters.special);
+        if (filters.sort !== undefined) setSort(filters.sort);
+        if (filters.category !== undefined) setCategory(filters.category);
+        if (filters.weaponType !== undefined) setWeaponType(filters.weaponType);
+        if (filters.collection !== undefined) setCollection(filters.collection);
+        if (filters.finish !== undefined) setFinish(filters.finish);
+        console.log("📥 Filters imported successfully");
+      } catch (error) {
+        console.error("💥 Failed to import filters:", error);
+      }
+    };
+    reader.readAsText(file);
   }, []);
 
   // Filter change handlers with validation
@@ -358,9 +483,9 @@ export function SkinsPageContent() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Sidebar - Filters */}
-          <div className="w-80 space-y-6">
+          <div className="w-full lg:w-80 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Filters</CardTitle>
@@ -488,6 +613,101 @@ export function SkinsPageContent() {
                   />
                 </div>
 
+                {/* P3: Advanced Filters Toggle */}
+                <div className="space-y-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className="w-full justify-between"
+                  >
+                    Advanced Filters
+                    <span className={`transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </Button>
+                  
+                  {showAdvancedFilters && (
+                    <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                      {/* Weapon Type */}
+                      <div className="space-y-2">
+                        <Label htmlFor="weaponType">Weapon Type</Label>
+                        <Select value={weaponType} onValueChange={setWeaponType}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select weapon type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">All Weapons</SelectItem>
+                            {WEAPON_TYPES.map((weapon) => (
+                              <SelectItem key={weapon} value={weapon}>
+                                {weapon}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Collection */}
+                      <div className="space-y-2">
+                        <Label htmlFor="collection">Collection</Label>
+                        <Select value={collection} onValueChange={setCollection}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select collection" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">All Collections</SelectItem>
+                            {COLLECTIONS.map((col) => (
+                              <SelectItem key={col} value={col}>
+                                {col}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Finish */}
+                      <div className="space-y-2">
+                        <Label htmlFor="finish">Finish</Label>
+                        <Select value={finish} onValueChange={setFinish}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select finish" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">All Finishes</SelectItem>
+                            {FINISHES.map((fin) => (
+                              <SelectItem key={fin} value={fin}>
+                                {fin}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* P3: Export/Import Filters */}
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button onClick={copyCurrentLink} variant="outline" size="sm" className="flex-1">
+                      Copy Link
+                    </Button>
+                    <Button onClick={exportFilters} variant="outline" size="sm" className="flex-1">
+                      Export
+                    </Button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={importFilters}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <Button variant="outline" size="sm" className="w-full">
+                      Import Filters
+                    </Button>
+                  </div>
+                </div>
+
                 {/* Clear Filters Button */}
                 <Button onClick={clearFilters} variant="outline" className="w-full">
                   Clear All
@@ -519,47 +739,156 @@ export function SkinsPageContent() {
               })}
             </div>
 
-            {/* Shortcut Chips */}
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant={sort === "popularity_desc" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSort("popularity_desc")}
-              >
-                Most Popular
-              </Button>
-              <Button
-                variant={sort === "price_asc" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSort("price_asc")}
-              >
-                Cheapest
-              </Button>
-              <Button
-                variant={sort === "price_desc" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSort("price_desc")}
-              >
-                Most Expensive
-              </Button>
-              <Button
-                variant={sort === "wear_asc" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSort("wear_asc")}
-              >
-                Lowest Wear
-              </Button>
-              <Button
-                variant={sort === "wear_desc" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSort("wear_desc")}
-              >
-                Highest Wear
-              </Button>
+            {/* P3: Filter Presets */}
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <Label className="text-sm font-medium">Quick Filters:</Label>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setMin("");
+                      setMax("10");
+                      setSort("price_asc");
+                    }}
+                  >
+                    Under $10
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setMin("");
+                      setMax("50");
+                      setSort("price_asc");
+                    }}
+                  >
+                    Under $50
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setMin("100");
+                      setMax("");
+                      setSort("price_desc");
+                    }}
+                  >
+                    $100+
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setStattrak(true);
+                      setSort("price_desc");
+                    }}
+                  >
+                    StatTrak Only
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setQ("★");
+                      setSort("price_desc");
+                    }}
+                  >
+                    Knives
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setQ("Gloves");
+                      setSort("price_desc");
+                    }}
+                  >
+                    Gloves
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setRarity("Covert");
+                      setWear("fn");
+                      setSort("price_desc");
+                    }}
+                  >
+                    Covert FN
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* P3: Sort Presets */}
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <Label className="text-sm font-medium">Quick Sort:</Label>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant={sort === "popularity_desc" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSort("popularity_desc")}
+                  >
+                    Most Popular
+                  </Button>
+                  <Button
+                    variant={sort === "price_asc" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSort("price_asc")}
+                  >
+                    Cheapest
+                  </Button>
+                  <Button
+                    variant={sort === "price_desc" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSort("price_desc")}
+                  >
+                    Most Expensive
+                  </Button>
+                  <Button
+                    variant={sort === "wear_asc" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSort("wear_asc")}
+                  >
+                    Lowest Wear
+                  </Button>
+                  <Button
+                    variant={sort === "wear_desc" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSort("wear_desc")}
+                  >
+                    Highest Wear
+                  </Button>
+                  <Button
+                    variant={sort === "newest" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSort("newest")}
+                  >
+                    Newest
+                  </Button>
+                  <Button
+                    variant={sort === "name_asc" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSort("name_asc")}
+                  >
+                    A→Z
+                  </Button>
+                  <Button
+                    variant={sort === "name_desc" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSort("name_desc")}
+                  >
+                    Z→A
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {/* Active Filters */}
-            {(category || rarity || stattrak) && (
+            {(category || rarity || stattrak || weaponType || collection || finish) && (
               <div className="flex items-center gap-2 flex-wrap">
                 {category && (
                   <Badge variant="secondary" className="flex items-center gap-1">
@@ -585,6 +914,33 @@ export function SkinsPageContent() {
                     <X
                       className="h-3 w-3 cursor-pointer"
                       onClick={() => setStattrak(false)}
+                    />
+                  </Badge>
+                )}
+                {weaponType && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    {weaponType}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => setWeaponType("")}
+                    />
+                  </Badge>
+                )}
+                {collection && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    {collection}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => setCollection("")}
+                    />
+                  </Badge>
+                )}
+                {finish && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    {finish}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => setFinish("")}
                     />
                   </Badge>
                 )}
@@ -631,6 +987,9 @@ export function SkinsPageContent() {
                 special: special || undefined,
                 sort,
                 category,
+                weaponType,
+                collection,
+                finish,
                 page,
                 pageSize: PAGE_SIZE
               }}
