@@ -597,8 +597,11 @@ export function SkinsPageContent() {
 
   // Initial load & when filters change → reset to page 1
   useEffect(() => { 
-    console.log("🔄 Filters changed, page will be automatically reset by useInfiniteSkins hook");
-  }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category]);
+    // Reset to page 1 when filters change
+    if (setSize) {
+      setSize(1);
+    }
+  }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, setSize]);
   
   // Load preset values from backend
   useEffect(() => {

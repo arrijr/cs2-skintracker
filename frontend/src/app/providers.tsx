@@ -41,6 +41,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
                console.log("[CLERK-SYNC] Success:", response);
              } catch (err) {
+               // Ignore Chrome extension errors
+               if (err instanceof Error && err.message.includes('runtime.lastError')) {
+                 console.debug("[CLERK-SYNC] Chrome extension error ignored:", err.message);
+                 return;
+               }
                console.error("[CLERK-SYNC] Failed to sync user:", err);
                // bewusst kein throw – UI soll weiter laufen
              }
