@@ -12,7 +12,6 @@ import { useUser, useAuth } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -643,204 +642,194 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </div>
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="history">Price History</TabsTrigger>
-            <TabsTrigger value="variants">Variants</TabsTrigger>
-            <TabsTrigger value="related">Related</TabsTrigger>
-          </TabsList>
+        {/* Price History - Moved out of tabs */}
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Price History</CardTitle>
+              <div className="flex items-center gap-2">
+                <Select value={chartRange} onValueChange={(value: Range) => setChartRange(value)}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="24h">24h</SelectItem>
+                    <SelectItem value="7d">7d</SelectItem>
+                    <SelectItem value="30d">30d</SelectItem>
+                    <SelectItem value="90d">90d</SelectItem>
+                    <SelectItem value="1y">1y</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={chartScale} onValueChange={setChartScale}>
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="linear">Linear</SelectItem>
+                    <SelectItem value="log">Log</SelectItem>
+                  </SelectContent>
+                </Select>
 
-          <TabsContent value="overview" className="space-y-6">
-            {/* P1 - Market Statistics */}
-            {/* Market Statistics */}
-            {loadingEnhanced ? (
-              <Skeleton className="h-32 w-full" />
-            ) : marketStats ? (
-              <MarketStatsCard stats={marketStats} />
-            ) : null}
+                <Select value={movingAverage} onValueChange={setMovingAverage}>
+                  <SelectTrigger className="w-20">
+                    <SelectValue placeholder="MA" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="7">MA 7</SelectItem>
+                    <SelectItem value="30">MA 30</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            {/* P1 - Case Information */}
-            {/* Case Information */}
-            {loadingEnhanced ? (
-              <Skeleton className="h-48 w-full" />
-            ) : caseInfo ? (
-              <CaseInfoCard caseInfo={caseInfo} />
-            ) : null}
-
-            {/* P1 - Price Alerts & Watchlist */}
-            {/* Price Alerts & Watchlist */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Price Alerts & Watchlist</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Alert price"
-                    value={alertPrice}
-                    onChange={(e) => setAlertPrice(e.target.value ? Number(e.target.value) : "")}
-                    className="flex-1"
-                  />
-                  <Button
-                    onClick={addPriceAlert}
-                    disabled={addingAlert || !alertPrice}
-                  >
-                    {addingAlert ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      "Set Alert"
-                    )}
-                  </Button>
+                <Button variant="outline" size="sm" onClick={exportData}>
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-96">
+              {history.length > 0 ? (
+                <Line data={chartData} options={chartOptions} />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  No price data available
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Get notified when the price reaches your target.
-                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* P1 - Market Statistics */}
+        {/* Market Statistics */}
+        {loadingEnhanced ? (
+          <Skeleton className="h-32 w-full mb-8" />
+        ) : marketStats ? (
+          <div className="mb-8">
+            <MarketStatsCard stats={marketStats} />
+          </div>
+        ) : null}
+
+        {/* P1 - Skin Variants */}
+        {/* Skin Variants */}
+        {loadingEnhanced ? (
+          <Skeleton className="h-64 w-full mb-8" />
+        ) : variants.length > 0 ? (
+          <div className="mb-8">
+            <SkinVariantsCard 
+              variants={variants} 
+              currentSkinId={skin?.id || 0}
+              onVariantSelect={(variantId) => {
+                setVariant(variantId.toString());
+                // Navigate to variant
+                router.push(`/skins/${variantId}`);
+              }}
+            />
+          </div>
+        ) : (
+          <Card className="mb-8">
+            <CardContent className="text-center py-8">
+              <p className="text-muted-foreground">No variants available</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* P1 - Case Information */}
+        {/* Case Information */}
+        {loadingEnhanced ? (
+          <Skeleton className="h-48 w-full mb-8" />
+        ) : caseInfo ? (
+          <div className="mb-8">
+            <CaseInfoCard caseInfo={caseInfo} />
+          </div>
+        ) : null}
+
+        {/* P2 - Related Skins */}
+        {/* Related Skins */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">Related Skins</h2>
+          {loadingEnhanced ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-48 w-full" />
+              ))}
+            </div>
+          ) : relatedSkins.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {relatedSkins.map((relatedSkin) => (
+                <Link key={relatedSkin.id} href={`/skins/${relatedSkin.id}`}>
+                  <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                    <CardContent className="p-4">
+                      <div className="aspect-square relative mb-2">
+                        <Image
+                          src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
+                          alt={relatedSkin.name}
+                          fill
+                          className="object-contain rounded group-hover:scale-105 transition-transform"
+                        />
+                      </div>
+                      <h3 className="font-medium text-sm truncate mb-1">{relatedSkin.name}</h3>
+                      <div className="flex items-center justify-between">
+                        <p className="text-primary font-bold">{formatUSD(relatedSkin.priceAvg || relatedSkin.marketPrice)}</p>
+                        <div className="flex gap-1">
+                          {relatedSkin.isStattrak && (
+                            <Badge variant="secondary" className="text-xs">ST</Badge>
+                          )}
+                          {relatedSkin.isSouvenir && (
+                            <Badge variant="outline" className="text-xs">SV</Badge>
+                          )}
+                        </div>
+                      </div>
+                      {relatedSkin.wear && (
+                        <p className="text-xs text-muted-foreground mt-1">{relatedSkin.wear}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="text-center py-8">
+                <p className="text-muted-foreground">No related skins found</p>
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
+        </div>
 
-          <TabsContent value="history" className="space-y-6">
-            {/* P1 - Price History */}
-            {/* Price History */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Price History</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Select value={chartRange} onValueChange={(value: Range) => setChartRange(value)}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="24h">24h</SelectItem>
-                        <SelectItem value="7d">7d</SelectItem>
-                        <SelectItem value="30d">30d</SelectItem>
-                        <SelectItem value="90d">90d</SelectItem>
-                        <SelectItem value="1y">1y</SelectItem>
-                        <SelectItem value="all">All</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select value={chartScale} onValueChange={setChartScale}>
-                      <SelectTrigger className="w-24">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="linear">Linear</SelectItem>
-                        <SelectItem value="log">Log</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={movingAverage} onValueChange={setMovingAverage}>
-                      <SelectTrigger className="w-20">
-                        <SelectValue placeholder="MA" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">None</SelectItem>
-                        <SelectItem value="7">MA 7</SelectItem>
-                        <SelectItem value="30">MA 30</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Button variant="outline" size="sm" onClick={exportData}>
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-96">
-                  {history.length > 0 ? (
-                    <Line data={chartData} options={chartOptions} />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      No price data available
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="variants" className="space-y-6">
-            {/* P1 - Skin Variants */}
-            {/* Skin Variants */}
-            {loadingEnhanced ? (
-              <Skeleton className="h-64 w-full" />
-            ) : variants.length > 0 ? (
-              <SkinVariantsCard 
-                variants={variants} 
-                currentSkinId={skin?.id || 0}
-                onVariantSelect={(variantId) => {
-                  setVariant(variantId.toString());
-                  // Navigate to variant
-                  router.push(`/skins/${variantId}`);
-                }}
+        {/* P1 - Price Alerts & Watchlist */}
+        {/* Price Alerts & Watchlist */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Price Alerts & Watchlist</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder="Alert price"
+                value={alertPrice}
+                onChange={(e) => setAlertPrice(e.target.value ? Number(e.target.value) : "")}
+                className="flex-1"
               />
-            ) : (
-              <Card>
-                <CardContent className="text-center py-8">
-                  <p className="text-muted-foreground">No variants available</p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="related" className="space-y-6">
-            {/* P2 - Related Skins */}
-            {/* Related Skins */}
-            {loadingEnhanced ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-48 w-full" />
-                ))}
-              </div>
-            ) : relatedSkins.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {relatedSkins.map((relatedSkin) => (
-                  <Link key={relatedSkin.id} href={`/skins/${relatedSkin.id}`}>
-                    <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
-                      <CardContent className="p-4">
-                        <div className="aspect-square relative mb-2">
-                          <Image
-                            src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
-                            alt={relatedSkin.name}
-                            fill
-                            className="object-contain rounded group-hover:scale-105 transition-transform"
-                          />
-                        </div>
-                        <h3 className="font-medium text-sm truncate mb-1">{relatedSkin.name}</h3>
-                        <div className="flex items-center justify-between">
-                          <p className="text-primary font-bold">{formatUSD(relatedSkin.priceAvg || relatedSkin.marketPrice)}</p>
-                          <div className="flex gap-1">
-                            {relatedSkin.isStattrak && (
-                              <Badge variant="secondary" className="text-xs">ST</Badge>
-                            )}
-                            {relatedSkin.isSouvenir && (
-                              <Badge variant="outline" className="text-xs">SV</Badge>
-                            )}
-                          </div>
-                        </div>
-                        {relatedSkin.wear && (
-                          <p className="text-xs text-muted-foreground mt-1">{relatedSkin.wear}</p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="text-center py-8">
-                  <p className="text-muted-foreground">No related skins found</p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+              <Button
+                onClick={addPriceAlert}
+                disabled={addingAlert || !alertPrice}
+              >
+                {addingAlert ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Set Alert"
+                )}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Get notified when the price reaches your target.
+            </p>
+          </CardContent>
+        </Card>
     </div>
   </div>
 );
