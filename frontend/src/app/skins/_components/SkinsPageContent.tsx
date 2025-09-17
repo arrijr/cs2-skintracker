@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import SkinGrid from "../SkinGrid";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { saveFiltersToSession, loadFiltersFromSession, clearFiltersFromSession } from "@/lib/storage";
+import { useSkins } from "@/hooks/useSkins";
 
 // Feature flag for enhanced filters
 const SKINS_FILTERS_ENHANCED = process.env.NEXT_PUBLIC_SKINS_FILTERS_ENHANCED === 'true';
@@ -208,6 +209,27 @@ export function SkinsPageContent() {
 
   // Enhanced features state
   const [debouncedQ, setDebouncedQ] = useState(q);
+
+  // Get skins data with pagination
+  const { data: skinsData, error, isLoading } = useSkins({
+    q: debouncedQ,
+    min: min ? Number(min) : undefined,
+    max: max ? Number(max) : undefined,
+    rarity,
+    wear,
+    quality,
+    stattrak: stattrak || undefined,
+    special: special || undefined,
+    sort,
+    category,
+    weaponType,
+    collection,
+    finish,
+    page,
+    pageSize: PAGE_SIZE
+  });
+
+  const pagination = skinsData?.pagination;
 
   // Preset values from backend
   const [presetValues, setPresetValues] = useState<{
