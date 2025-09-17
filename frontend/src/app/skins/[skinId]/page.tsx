@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2, Copy, BarChart3, Users, Clock, DollarSign } from "lucide-react";
@@ -642,24 +642,26 @@ export default function SkinDetailPage() {
                       <div className="flex items-center gap-1">
                         {skin.priceMedian24h && skin.marketPrice ? (
                           <TooltipProvider>
-                            <TooltipTrigger asChild>
-                              <div className="flex items-center gap-1 cursor-help">
-                                {skin.marketPrice > skin.priceMedian24h ? (
-                                  <TrendingUp className="h-3 w-3 text-green-500" aria-label="Price increased" />
-                                ) : (
-                                  <TrendingDown className="h-3 w-3 text-red-500" aria-label="Price decreased" />
-                                )}
-                                <span 
-                                  className={skin.marketPrice > skin.priceMedian24h ? "text-green-500" : "text-red-500"}
-                                  aria-label={`Price change: ${((skin.marketPrice - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%`}
-                                >
-                                  {((skin.marketPrice - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%
-                                </span>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>24-hour price change from ${formatUSD(skin.priceMedian24h)}</p>
-                            </TooltipContent>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center gap-1 cursor-help">
+                                  {skin.marketPrice > skin.priceMedian24h ? (
+                                    <TrendingUp className="h-3 w-3 text-green-500" aria-label="Price increased" />
+                                  ) : (
+                                    <TrendingDown className="h-3 w-3 text-red-500" aria-label="Price decreased" />
+                                  )}
+                                  <span 
+                                    className={skin.marketPrice > skin.priceMedian24h ? "text-green-500" : "text-red-500"}
+                                    aria-label={`Price change: ${((skin.marketPrice - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%`}
+                                  >
+                                    {((skin.marketPrice - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%
+                                  </span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>24-hour price change from ${formatUSD(skin.priceMedian24h)}</p>
+                              </TooltipContent>
+                            </Tooltip>
                           </TooltipProvider>
                         ) : (
                           <span className="text-muted-foreground" aria-label="No 24h data available">N/A</span>
@@ -671,24 +673,26 @@ export default function SkinDetailPage() {
                       <div className="flex items-center gap-1">
                         {skin.priceMedian7d && skin.marketPrice ? (
                           <TooltipProvider>
-                            <TooltipTrigger asChild>
-                              <div className="flex items-center gap-1 cursor-help">
-                                {skin.marketPrice > skin.priceMedian7d ? (
-                                  <TrendingUp className="h-3 w-3 text-green-500" aria-label="Price increased" />
-                                ) : (
-                                  <TrendingDown className="h-3 w-3 text-red-500" aria-label="Price decreased" />
-                                )}
-                                <span 
-                                  className={skin.marketPrice > skin.priceMedian7d ? "text-green-500" : "text-red-500"}
-                                  aria-label={`Price change: ${((skin.marketPrice - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%`}
-                                >
-                                  {((skin.marketPrice - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%
-                                </span>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>7-day price change from ${formatUSD(skin.priceMedian7d)}</p>
-                            </TooltipContent>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center gap-1 cursor-help">
+                                  {skin.marketPrice > skin.priceMedian7d ? (
+                                    <TrendingUp className="h-3 w-3 text-green-500" aria-label="Price increased" />
+                                  ) : (
+                                    <TrendingDown className="h-3 w-3 text-red-500" aria-label="Price decreased" />
+                                  )}
+                                  <span 
+                                    className={skin.marketPrice > skin.priceMedian7d ? "text-green-500" : "text-red-500"}
+                                    aria-label={`Price change: ${((skin.marketPrice - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%`}
+                                  >
+                                    {((skin.marketPrice - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%
+                                  </span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>7-day price change from ${formatUSD(skin.priceMedian7d)}</p>
+                              </TooltipContent>
+                            </Tooltip>
                           </TooltipProvider>
                         ) : (
                           <span className="text-muted-foreground" aria-label="No 7d data available">N/A</span>
@@ -846,51 +850,59 @@ export default function SkinDetailPage() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <TooltipProvider>
-                    <TooltipTrigger asChild>
-                      <div className="text-center cursor-help">
-                        <p className="text-2xl font-bold">{formatUSD(marketStats.medianPrice || 0)}</p>
-                        <p className="text-sm text-muted-foreground">Median Price</p>
-                </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Median price over the last 30 days</p>
-                    </TooltipContent>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-center cursor-help">
+                          <p className="text-2xl font-bold">{formatUSD(marketStats.medianPrice || 0)}</p>
+                          <p className="text-sm text-muted-foreground">Median Price</p>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Median price over the last 30 days</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </TooltipProvider>
                   
                   <TooltipProvider>
-                    <TooltipTrigger asChild>
-                      <div className="text-center cursor-help">
-                        <p className="text-2xl font-bold">{marketStats.buyOrders || 0}</p>
-                        <p className="text-sm text-muted-foreground">Buy Orders</p>
-              </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Current buy orders on the Steam Market</p>
-                    </TooltipContent>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-center cursor-help">
+                          <p className="text-2xl font-bold">{marketStats.buyOrders || 0}</p>
+                          <p className="text-sm text-muted-foreground">Buy Orders</p>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Current buy orders on the Steam Market</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </TooltipProvider>
                   
                   <TooltipProvider>
-                    <TooltipTrigger asChild>
-                      <div className="text-center cursor-help">
-                        <p className="text-2xl font-bold">{marketStats.activeListings || 0}</p>
-                        <p className="text-sm text-muted-foreground">Active Listings</p>
-            </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Currently active sell listings on Steam Market</p>
-                    </TooltipContent>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-center cursor-help">
+                          <p className="text-2xl font-bold">{marketStats.activeListings || 0}</p>
+                          <p className="text-sm text-muted-foreground">Active Listings</p>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Currently active sell listings on Steam Market</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </TooltipProvider>
                   
                   <TooltipProvider>
-                    <TooltipTrigger asChild>
-                      <div className="text-center cursor-help">
-                        <p className="text-2xl font-bold">{marketStats.volume24h || 0}</p>
-                        <p className="text-sm text-muted-foreground">Volume 24h</p>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Number of items sold in the last 24 hours</p>
-                    </TooltipContent>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-center cursor-help">
+                          <p className="text-2xl font-bold">{marketStats.volume24h || 0}</p>
+                          <p className="text-sm text-muted-foreground">Volume 24h</p>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Number of items sold in the last 24 hours</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </TooltipProvider>
                 </div>
               </CardContent>
@@ -948,55 +960,61 @@ export default function SkinDetailPage() {
                           <div className="flex items-center gap-3">
                             <div className="flex gap-1">
                               <TooltipProvider>
-                                <TooltipTrigger asChild>
-                                  <Badge 
-                                    variant={isActive ? "default" : "secondary"}
-                                    className="text-xs cursor-help"
-                                    aria-label={`Wear condition: ${variant.wear || 'Unknown'}`}
-                                  >
-                                    {variant.wear || 'Unknown'}
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Wear condition: {variant.wear || 'Unknown'}</p>
-                                </TooltipContent>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Badge 
+                                      variant={isActive ? "default" : "secondary"}
+                                      className="text-xs cursor-help"
+                                      aria-label={`Wear condition: ${variant.wear || 'Unknown'}`}
+                                    >
+                                      {variant.wear || 'Unknown'}
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Wear condition: {variant.wear || 'Unknown'}</p>
+                                  </TooltipContent>
+                                </Tooltip>
                               </TooltipProvider>
                               
                               <TooltipProvider>
-                                <TooltipTrigger asChild>
-                                  <Badge 
-                                    variant="outline" 
-                                    className={`text-xs cursor-help ${
-                                      variant.rarity === 'Covert' ? 'border-red-500 text-red-500' :
-                                      variant.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
-                                      variant.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
-                                      variant.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500' :
-                                      'border-gray-500 text-gray-500'
-                                    }`}
-                                    aria-label={`Rarity: ${variant.rarity || 'Unknown'}`}
-                                  >
-                                    {variant.rarity || 'Unknown'}
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Rarity: {variant.rarity || 'Unknown'}</p>
-                                </TooltipContent>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Badge 
+                                      variant="outline" 
+                                      className={`text-xs cursor-help ${
+                                        variant.rarity === 'Covert' ? 'border-red-500 text-red-500' :
+                                        variant.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
+                                        variant.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
+                                        variant.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500' :
+                                        'border-gray-500 text-gray-500'
+                                      }`}
+                                      aria-label={`Rarity: ${variant.rarity || 'Unknown'}`}
+                                    >
+                                      {variant.rarity || 'Unknown'}
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Rarity: {variant.rarity || 'Unknown'}</p>
+                                  </TooltipContent>
+                                </Tooltip>
                               </TooltipProvider>
                               
                               {variant.isStattrak && (
                                 <TooltipProvider>
-                                  <TooltipTrigger asChild>
-                                    <Badge 
-                                      variant="secondary" 
-                                      className="text-xs cursor-help"
-                                      aria-label="StatTrak version - tracks kills"
-                                    >
-                                      StatTrak™
-                                    </Badge>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>StatTrak version - tracks kills</p>
-                                  </TooltipContent>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Badge 
+                                        variant="secondary" 
+                                        className="text-xs cursor-help"
+                                        aria-label="StatTrak version - tracks kills"
+                                      >
+                                        StatTrak™
+                                      </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>StatTrak version - tracks kills</p>
+                                    </TooltipContent>
+                                  </Tooltip>
                                 </TooltipProvider>
                               )}
             </div>
