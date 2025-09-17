@@ -102,14 +102,14 @@ export const getSkinVariants = async (req, res) => {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    // Find all skins with similar characteristics (same weapon, itemName, itemGroup)
+    // Find all skins with similar characteristics (same weapon, itemName)
+    // For stickers, also match by weaponType (tournament)
     const variants = await prisma.skin.findMany({
       where: {
         AND: [
           { id: { not: parseInt(skinId) } }, // Exclude current skin
           { weaponType: baseSkin.weaponType },
-          { itemName: baseSkin.itemName },
-          { itemGroup: baseSkin.itemGroup }
+          { itemName: baseSkin.itemName }
         ]
       },
       select: {
@@ -175,14 +175,43 @@ export const getSkinCase = async (req, res) => {
     
     console.log(`[DEBUG] Skin found: itemGroup="${skin.itemGroup}", weaponType="${skin.weaponType}"`);
     
-    // If no itemGroup, return empty case info instead of 404
+    // If no itemGroup, try to find related skins by weaponType or similar characteristics
     if (!skin.itemGroup) {
-      console.log(`[DEBUG] Skin ${skinId} has no itemGroup, returning empty case info`);
+      console.log(`[DEBUG] Skin ${skinId} has no itemGroup, looking for related skins by weaponType`);
+      
+      // For stickers, find other stickers from same tournament
+      // For weapons, find other weapons of same type
+      const relatedSkins = await prisma.skin.findMany({
+        where: {
+          AND: [
+            { id: { not: parseInt(skinId) } },
+            { weaponType: skin.weaponType }
+          ]
+        },
+        select: {
+          id: true,
+          name: true,
+          wear: true,
+          rarity: true,
+          quality: true,
+          isStattrak: true,
+          isStar: true,
+          priceAvg: true,
+          priceMedian: true,
+          imageUrl: true
+        },
+        orderBy: [
+          { rarity: 'asc' },
+          { name: 'asc' }
+        ],
+        take: 20
+      });
+      
       return res.json({
-        caseName: "No Case Information",
-        skins: [],
-        totalSkins: 0,
-        message: "This skin is not part of a case or collection"
+        caseName: "Related Items",
+        skins: relatedSkins,
+        totalSkins: relatedSkins.length,
+        message: `Found ${relatedSkins.length} related items from ${skin.weaponType}`
       });
     }
     
@@ -338,7 +367,7 @@ export const getRelatedSkins = async (req, res) => {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    // Find related skins (same weapon type or item group)
+    // Find related skins (same weapon type or similar characteristics)
     const relatedSkins = await prisma.skin.findMany({
       where: {
         AND: [
@@ -346,7 +375,6 @@ export const getRelatedSkins = async (req, res) => {
           {
             OR: [
               { weaponType: baseSkin.weaponType },
-              { itemGroup: baseSkin.itemGroup },
               { itemName: baseSkin.itemName }
             ]
           }
