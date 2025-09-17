@@ -102,24 +102,17 @@ export const getSkinVariants = async (req, res) => {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    // Find all skins with similar characteristics
-    // For weapons: same weaponType and similar name pattern
-    // For stickers: same weaponType (tournament) and similar name pattern
+    // Find true variants - only exact matches for the same weapon/skin
+    // For weapons: same itemName (e.g., "ak-47 | redline")
+    // For stickers: same itemName (e.g., "twistzz (gold)")
+    console.log(`[DEBUG] Looking for variants with itemName: "${baseSkin.itemName}", weaponType: "${baseSkin.weaponType}"`);
+    
     const variants = await prisma.skin.findMany({
       where: {
         AND: [
           { id: { not: parseInt(skinId) } }, // Exclude current skin
-          { weaponType: baseSkin.weaponType },
-          {
-            OR: [
-              { itemName: baseSkin.itemName },
-              { 
-                name: {
-                  contains: baseSkin.name.split('|')[0]?.trim() || baseSkin.name.split('(')[0]?.trim() || baseSkin.name
-                }
-              }
-            ]
-          }
+          { itemName: baseSkin.itemName }, // Only exact itemName matches
+          { weaponType: baseSkin.weaponType } // Same weapon type
         ]
       },
       select: {
@@ -138,8 +131,10 @@ export const getSkinVariants = async (req, res) => {
         { wear: 'asc' },
         { isStattrak: 'asc' }
       ],
-      take: 20 // Limit to 20 variants maximum
+      take: 8 // Limit to 8 variants maximum
     });
+    
+    console.log(`[DEBUG] Found ${variants.length} variants:`, variants.map(v => ({ id: v.id, name: v.name, wear: v.wear })));
     
     // Add current skin to variants list
     const currentSkin = await prisma.skin.findUnique({
