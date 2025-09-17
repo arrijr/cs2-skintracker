@@ -5,7 +5,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { PriceHistoryChart } from "@/components/charts/price-history-chart";
+import { SimplePriceChart } from "@/components/charts/simple-price-chart";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -748,7 +748,7 @@ export default function SkinDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="h-96">
-              <PriceHistoryChart
+              <SimplePriceChart
                 data={filteredHistory}
                 range={chartRange}
                 scale={chartScale}
