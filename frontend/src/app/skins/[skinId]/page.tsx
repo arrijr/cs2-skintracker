@@ -29,12 +29,6 @@ import {
   fetchJson,
 } from "@/lib/api";
 import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
-import MarketStatsCard from "../../components/skins/MarketStatsCard";
-import SkinVariantsCard from "../../components/skins/SkinVariantsCard";
-import CaseInfoCard from "../../components/skins/CaseInfoCard";
-import PriceDeltaBadge from "../../components/skins/PriceDeltaBadge";
-import ChartRangeTabs, { Range } from "../../components/skins/ChartRangeTabs";
-import TagBadges from "../../components/skins/TagBadges";
 
 // Chart.js Registration
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
@@ -48,30 +42,42 @@ type Skin = {
   itemImage?: string;
   image_url?: string;
   imageUrl?: string;
-  isStattrak?: boolean;
-  isSouvenir?: boolean;
-  isStar?: boolean;
   wear?: string;
   rarity?: string;
-  weaponType?: string;
-  collection?: string;
+  quality?: string;
+  isStattrak?: boolean;
+  isStar?: boolean;
+  priceMedian24h?: number;
+  priceMedian7d?: number;
+  priceMedian30d?: number;
+  priceMedian90d?: number;
+  priceAvg?: number;
+  priceMedian?: number;
 };
 
-type PriceHistory = { date: string; price: number };
+type PriceHistory = {
+  date: string;
+  price: number;
+};
 
-export default function SkinDetailPage({ params }: { params: { skinId: string } }) {
-  // *** ALLE STATES GANZ OBEN ***
+type Range = "24h" | "7d" | "30d" | "90d" | "1y" | "all";
+
+export default function SkinDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
-  const skinId = String(params.skinId ?? params.id ?? "");
-
+  
   const [mounted, setMounted] = useState(false);
   const [skin, setSkin] = useState<Skin | null>(null);
-  const [history, setHistory] = useState<PriceHistory[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [history, setHistory] = useState<PriceHistory[]>([]);
+  const [variants, setVariants] = useState<any[]>([]);
+  const [caseInfo, setCaseInfo] = useState<any>(null);
+  const [marketStats, setMarketStats] = useState<any>(null);
+  const [relatedSkins, setRelatedSkins] = useState<any[]>([]);
+  const [loadingEnhanced, setLoadingEnhanced] = useState(false);
+  
   // P1 - URL Sync States
   const [variant, setVariant] = useState(searchParams.get("variant") || "");
   const [chartRange, setChartRange] = useState<Range>((searchParams.get("range") as Range) || "30d");
@@ -82,26 +88,10 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   // Watchlist & Portfolio
   const [watchlist, setWatchlist] = useState<any[]>([]);
   const [portfolioSkins, setPortfolioSkins] = useState<any[]>([]);
-  const [isInWatchlist, setIsInWatchlist] = useState(false);
-  const [isInPortfolio, setIsInPortfolio] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [portfolioLoading, setPortfolioLoading] = useState(false);
-
-  // Price Alerts
   const [alertPrice, setAlertPrice] = useState<number | "">("");
   const [addingAlert, setAddingAlert] = useState(false);
-
-  // Enhanced Skin Details
-  const [loadingEnhanced, setLoadingEnhanced] = useState(true);
-  const [marketStats, setMarketStats] = useState<any>(null);
-  const [variants, setVariants] = useState<any[]>([]);
-  const [caseInfo, setCaseInfo] = useState<any>(null);
-  const [relatedSkins, setRelatedSkins] = useState<any[]>([]);
-
-  // *** ALLE useEffect HOOKS OBEN ***
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // P1 - URL Sync
   const updateURL = useCallback(() => {
@@ -120,278 +110,94 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     updateURL();
   }, [updateURL]);
 
-  // Load skin data
+  // P1 - Enhanced Data Loading
   useEffect(() => {
-    if (!skinId) return;
-    let cancelled = false;
-
-    const loadSkinData = async () => {
-      setLoading(true);
-      try {
-        const [skinData, historyData] = await Promise.all([
-          fetchJson(apiUrl(`/api/v1/skins/${skinId}`)),
-          fetchJson(apiUrl(`/api/v1/skins/${skinId}/history?range=${chartRange}`))
-        ]);
-        
-        if (!cancelled) {
-          setSkin(skinData);
-          setHistory(historyData || []);
-        }
-      } catch (error) {
-        console.error("Error loading skin data:", error);
-        if (!cancelled) {
-          setSkin(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadSkinData();
-    return () => { cancelled = true; };
-  }, [skinId, chartRange]);
-
-  // Load enhanced data
-  useEffect(() => {
-    if (!skin) return;
-
-    const loadEnhancedData = async () => {
+    async function loadEnhancedData() {
+      if (!skin?.id) return;
+      
       setLoadingEnhanced(true);
       try {
-        const [statsData, variantsData, caseData, relatedData] = await Promise.all([
-          fetchJson(apiUrl(`/api/v1/skins/${skinId}/market-stats`)).catch(() => null),
-          fetchJson(apiUrl(`/api/v1/skins/${skinId}/variants`)).catch(() => []),
-          fetchJson(apiUrl(`/api/v1/skins/${skinId}/case`)).catch(() => null),
-          fetchJson(apiUrl(`/api/v1/skins/${skinId}/related`)).catch(() => [])
+        const [variantsRes, caseRes, marketRes, relatedRes] = await Promise.all([
+          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/variants`)),
+          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/case`)),
+          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/market-stats`)),
+          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/related`))
         ]);
-
-        setMarketStats(statsData);
-        setVariants(variantsData);
-            setCaseInfo(caseData);
-        setRelatedSkins(relatedData);
+        
+        setVariants(variantsRes || []);
+        setCaseInfo(caseRes || null);
+        setMarketStats(marketRes || null);
+        setRelatedSkins(relatedRes || []);
       } catch (error) {
-        console.error("Error loading enhanced data:", error);
-        } finally {
-            setLoadingEnhanced(false);
+        console.error("Failed to load enhanced data:", error);
+      } finally {
+        setLoadingEnhanced(false);
       }
-    };
-
+    }
+    
     loadEnhancedData();
-  }, [skin, skinId]);
+  }, [skin?.id]);
 
-  // Check watchlist/portfolio status
+  // P1 - Price History with better states
   useEffect(() => {
-    if (!user || !skin) return;
-
-    const checkStatus = async () => {
-      try {
-        const token = await getToken();
-        if (!token) return;
-
-        const [watchlistData, portfolioData] = await Promise.all([
-          fetchJson(apiUrl("/api/v1/watchlist"), {
-            headers: { "Authorization": `Bearer ${token}` }
-          }).catch(() => []),
-          fetchJson(apiUrl("/api/v1/portfolio"), {
-            headers: { "Authorization": `Bearer ${token}` }
-          }).catch(() => [])
-        ]);
-
-        setIsInWatchlist(watchlistData.some((item: any) => item.skinId === skin.id));
-        setIsInPortfolio(portfolioData.some((item: any) => item.skinId === skin.id));
-      } catch (error) {
-        console.error("Error checking status:", error);
-      }
-    };
-
-    checkStatus();
-  }, [user, skin, getToken]);
-
-  // P1 - Watchlist Functions
-  const addToWatchlist = async () => {
-    if (!user || !skin) {
-      toast.error("Please sign in to add to watchlist");
-      return;
-    }
-
-    setWatchlistLoading(true);
-    try {
-      const token = await getToken();
-      if (!token) throw new Error("No token available");
-
-      await fetchJson(apiUrl("/api/v1/watchlist"), {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ skinId: skin.id }),
-      });
-
-      setIsInWatchlist(true);
-      toast.success(`${skin.name} added to watchlist!`);
-    } catch (error) {
-      console.error("Watchlist error:", error);
-      toast.error("Failed to add to watchlist");
-    } finally {
-      setWatchlistLoading(false);
-    }
-  };
-
-  // P1 - Portfolio Functions
-  const addToPortfolio = async () => {
-    if (!user || !skin) {
-      toast.error("Please sign in to add to portfolio");
-      return;
-    }
-
-    setPortfolioLoading(true);
-    try {
-      const token = await getToken();
-      if (!token) throw new Error("No token available");
-
-      await fetchJson(apiUrl("/api/v1/portfolio"), {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          skinId: skin.id,
-          amount: 1,
-          buyPrice: skin.marketPrice || 0,
-          buyDate: new Date().toISOString().slice(0, 10),
-        }),
-      });
-
-      setIsInPortfolio(true);
-      toast.success(`${skin.name} added to portfolio!`);
-    } catch (error) {
-      console.error("Portfolio error:", error);
-      toast.error("Failed to add to portfolio");
-    } finally {
-      setPortfolioLoading(false);
-    }
-  };
-
-  // P1 - Price Alert Functions
-  const addPriceAlert = async () => {
-    if (!user || !skin || !alertPrice) {
-      toast.error("Please enter a valid alert price");
-      return;
-    }
-
-    setAddingAlert(true);
-    try {
-      const token = await getToken();
-      if (!token) throw new Error("No token available");
+    async function loadPriceHistory() {
+      if (!skin?.id) return;
       
-      await fetchJson(apiUrl("/api/v1/alerts"), {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          skinId: skin.id,
-          alertPrice: Number(alertPrice),
-        }),
-      });
-
-      toast.success(`Price alert set at $${alertPrice}`);
-      setAlertPrice("");
-    } catch (error) {
-      console.error("Alert error:", error);
-      toast.error("Failed to set price alert");
-    } finally {
-      setAddingAlert(false);
+      try {
+        const historyData = await fetchJson(apiUrl(`/api/v1/skins/${skin.id}/history`));
+        setHistory(historyData || []);
+      } catch (error) {
+        console.error("Failed to load price history:", error);
+        setHistory([]);
+      }
     }
-  };
+    
+    loadPriceHistory();
+  }, [skin?.id, variant]);
 
-  // P1 - Share Functions
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard!");
-    } catch (error) {
-      toast.error("Failed to copy link");
-    }
-  };
-
-  // P3 - Export Functions
-  const exportData = async () => {
-    if (!history.length) {
-      toast.error("No data to export");
-      return;
-    }
-
-    try {
-      const csvContent = [
-        "Date,Price",
-        ...history.map(h => `${h.date},${h.price}`)
-      ].join("\n");
-
-      const blob = new Blob([csvContent], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${skin?.name || "skin"}-price-history.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-
-      toast.success("Data exported successfully!");
-    } catch (error) {
-      toast.error("Failed to export data");
-    }
-  };
-
-  // Chart data with moving averages
+  // P1 - Chart Data with Moving Average
   const chartData = useMemo((): ChartData<"line"> => {
-    if (!history.length) return { labels: [], datasets: [] };
+    if (!history.length) {
+      return {
+        labels: [],
+        datasets: []
+      };
+    }
 
-    const labels = history.map(h => new Date(h.date).toLocaleDateString());
     const prices = history.map(h => h.price);
+    const labels = history.map(h => new Date(h.date).toLocaleDateString());
 
-    const datasets = [
-      {
-        label: "Price",
-        data: prices,
-        borderColor: "#10b981",
-        backgroundColor: "rgba(16, 185, 129, 0.1)",
-        borderWidth: 2,
-        fill: true,
-        tension: 0.1,
-      },
-    ];
+    const datasets: any[] = [{
+      label: 'Price',
+      data: prices,
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      tension: 0.1,
+      fill: true
+    }];
 
     // Add moving averages if enabled
     if (movingAverage === "7") {
       const ma7 = calculateMovingAverage(prices, 7);
       datasets.push({
-        label: "MA 7",
+        label: 'MA 7',
         data: ma7,
-        borderColor: "#f59e0b",
-        backgroundColor: "transparent",
-        borderWidth: 1,
-        borderDash: [5, 5],
-        fill: false,
+        borderColor: 'rgb(34, 197, 94)',
+        backgroundColor: 'transparent',
         tension: 0.1,
+        borderDash: [5, 5]
       });
     }
 
     if (movingAverage === "30") {
       const ma30 = calculateMovingAverage(prices, 30);
       datasets.push({
-        label: "MA 30",
+        label: 'MA 30',
         data: ma30,
-        borderColor: "#8b5cf6",
-        backgroundColor: "transparent",
-        borderWidth: 1,
-        borderDash: [5, 5],
-        fill: false,
+        borderColor: 'rgb(239, 68, 68)',
+        backgroundColor: 'transparent',
         tension: 0.1,
+        borderDash: [10, 5]
       });
     }
 
@@ -399,71 +205,244 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   }, [history, movingAverage]);
 
   // Helper function to calculate moving average
-  const calculateMovingAverage = (data: number[], period: number): number[] => {
+  const calculateMovingAverage = (prices: number[], period: number): number[] => {
     const result: number[] = [];
-    for (let i = 0; i < data.length; i++) {
+    for (let i = 0; i < prices.length; i++) {
       if (i < period - 1) {
         result.push(NaN);
       } else {
-        const slice = data.slice(i - period + 1, i + 1);
-        const average = slice.reduce((sum, val) => sum + val, 0) / period;
-        result.push(average);
+        const slice = prices.slice(i - period + 1, i + 1);
+        const avg = slice.reduce((sum, price) => sum + price, 0) / period;
+        result.push(avg);
       }
     }
     return result;
   };
 
+  // P1 - Chart Options with better tooltips
   const chartOptions: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        mode: "index",
-        intersect: false,
-        callbacks: {
-          label: (context) => `$${context.parsed.y.toFixed(2)}`,
-        },
-      },
-    },
     scales: {
-      x: {
-        display: true,
-        grid: {
-          color: "rgba(255, 255, 255, 0.1)",
-        },
-        ticks: {
-          color: "#9ca3af",
-        },
-      },
       y: {
         type: chartScale === "log" ? "logarithmic" : "linear",
-        display: true,
+        beginAtZero: false,
         grid: {
-          color: "rgba(255, 255, 255, 0.1)",
-        },
-        ticks: {
-          color: "#9ca3af",
-          callback: (value) => `$${Number(value).toFixed(2)}`,
-        },
+          color: 'rgba(255, 255, 255, 0.1)'
+        }
       },
+      x: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        }
+      }
+    },
+    plugins: {
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        callbacks: {
+          label: (context) => {
+            const label = context.dataset.label || '';
+            const value = context.parsed.y;
+            return `${label}: ${formatUSD(value)}`;
+          }
+        }
+      },
+      legend: {
+        display: true,
+        position: 'top'
+      }
     },
     interaction: {
-      mode: "nearest",
-      axis: "x",
-      intersect: false,
-    },
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false
+    }
   };
+
+  // P1 - Watchlist & Portfolio Management
+  const isInWatchlist = useMemo(() => 
+    watchlist.some(item => item.skinId === skin?.id), 
+    [watchlist, skin?.id]
+  );
+
+  const isInPortfolio = useMemo(() => 
+    portfolioSkins.some(item => item.skinId === skin?.id), 
+    [portfolioSkins, skin?.id]
+  );
+
+  const addToWatchlist = async () => {
+    if (!skin?.id || !user) return;
+    
+    setWatchlistLoading(true);
+    try {
+      const token = await getToken({ template: "backend" });
+      await fetchJson(apiUrl("/api/v1/watchlist"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ skinId: skin.id }),
+      });
+      
+      setWatchlist(prev => [...prev, { skinId: skin.id, skin: skin }]);
+      toast.success("Added to watchlist");
+    } catch (error) {
+      toast.error("Failed to add to watchlist");
+    } finally {
+      setWatchlistLoading(false);
+    }
+  };
+
+  const addToPortfolio = async () => {
+    if (!skin?.id || !user) return;
+    
+    setPortfolioLoading(true);
+    try {
+      const token = await getToken({ template: "backend" });
+      await fetchJson(apiUrl("/api/v1/portfolio"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ skinId: skin.id, quantity: 1 }),
+      });
+      
+      setPortfolioSkins(prev => [...prev, { skinId: skin.id, skin: skin, quantity: 1 }]);
+      toast.success("Added to portfolio");
+    } catch (error) {
+      toast.error("Failed to add to portfolio");
+    } finally {
+      setPortfolioLoading(false);
+    }
+  };
+
+  // P1 - Price Alert Management
+  const addPriceAlert = async () => {
+    if (!skin?.id || !user || !alertPrice) return;
+    
+    setAddingAlert(true);
+    try {
+      const token = await getToken({ template: "backend" });
+      await fetchJson(apiUrl("/api/v1/alerts"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ 
+          skinId: skin.id, 
+          targetPrice: alertPrice,
+          type: "price_alert"
+        }),
+      });
+      
+      toast.success(`Price alert set at ${formatUSD(alertPrice)}`);
+      setAlertPrice("");
+    } catch (error) {
+      toast.error("Failed to set price alert");
+    } finally {
+      setAddingAlert(false);
+    }
+  };
+
+  // P2 - Export Data
+  const exportData = useCallback(() => {
+    if (!history.length) {
+      toast.error("No data to export");
+      return;
+    }
+    
+    const csvContent = [
+      "Date,Price",
+      ...history.map(h => `${h.date},${h.price}`)
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${skin?.name || 'skin'}-price-history.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    toast.success("Data exported successfully");
+  }, [history, skin?.name]);
+
+  // P2 - Copy Link
+  const copyLink = useCallback(async () => {
+    const url = window.location.href;
+    await navigator.clipboard.writeText(url);
+    toast.success("Link copied to clipboard");
+  }, []);
+
+  // Load skin data
+  useEffect(() => {
+    async function loadSkin() {
+      const skinId = window.location.pathname.split('/').pop();
+      if (!skinId) return;
+      
+      setLoading(true);
+      try {
+        const skinData = await fetchJson(apiUrl(`/api/v1/skins/${skinId}`));
+        setSkin(skinData);
+      } catch (error) {
+        console.error("Failed to load skin:", error);
+        toast.error("Failed to load skin data");
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadSkin();
+  }, []);
+
+  // Load watchlist and portfolio
+  useEffect(() => {
+    async function loadUserData() {
+      if (!user || !isLoaded) return;
+      
+      try {
+        const token = await getToken({ template: "backend" });
+        const [watchlistData, portfolioData] = await Promise.all([
+          fetchJson(apiUrl("/api/v1/watchlist"), {
+            headers: { "Authorization": `Bearer ${token}` }
+          }),
+          fetchJson(apiUrl("/api/v1/portfolio"), {
+            headers: { "Authorization": `Bearer ${token}` }
+          })
+        ]);
+        
+        setWatchlist(watchlistData || []);
+        setPortfolioSkins(portfolioData || []);
+      } catch (error) {
+        console.error("Failed to load user data:", error);
+      }
+    }
+    
+    loadUserData();
+  }, [user, isLoaded, getToken]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!mounted) return null;
 
+  const skinImageUrl = skin?.itemimage || 
+    skin?.itemImage || 
+    skin?.image_url || 
+    skin?.imageUrl || 
+    "/images/placeholder-skin.png";
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <TooltipProvider>
+      <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
         {/* P1 - Skin Header */}
-        {/* Skin Header */}
+        {/* Skin Header - Preis + 24h/7d-Change, konsistente Badges & Quick-Actions */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-6">
             <Button
@@ -473,7 +452,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to list
+              Back to results
             </Button>
           </div>
 
@@ -497,21 +476,15 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               <div className="flex-shrink-0">
                 <div className="relative w-64 h-64 mx-auto md:mx-0">
                   <Image
-            src={
-              skin.itemimage ||
-              skin.itemImage ||
-              skin.image_url ||
-              skin.imageUrl ||
-              "/images/placeholder-skin.png"
-            }
-            alt={skin.name}
+                    src={skinImageUrl}
+                    alt={skin.name}
                     fill
                     className="object-contain rounded-xl bg-muted"
                     priority
                     quality={90}
                   />
                 </div>
-           </div>
+              </div>
            
               {/* Skin Info */}
               <div className="flex-1 space-y-4">
@@ -519,40 +492,100 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   <h1 className="text-3xl font-bold mb-2">{skin.name}</h1>
                   <p className="text-muted-foreground mb-4">{skin.marketHashName}</p>
                   
-                  {/* Tags */}
+                  {/* P1 - Badges - farbcodiert und konsistent */}
                   <div className="flex items-center gap-2 mb-4">
-           <TagBadges 
-             isStattrak={skin.isStattrak} 
-             isSouvenir={skin.isSouvenir} 
-             isStar={skin.isStar} 
-           />
-                    {skin.wear && (
-                      <Badge variant="outline">{skin.wear}</Badge>
+                    {/* Rarity Badge - farbcodiert */}
+                    <Badge 
+                      variant="outline" 
+                      className={`text-sm ${
+                        skin.rarity === 'Covert' ? 'border-red-500 text-red-500 bg-red-500/10' :
+                        skin.rarity === 'Classified' ? 'border-purple-500 text-purple-500 bg-purple-500/10' :
+                        skin.rarity === 'Restricted' ? 'border-pink-500 text-pink-500 bg-pink-500/10' :
+                        skin.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500 bg-blue-500/10' :
+                        'border-gray-500 text-gray-500 bg-gray-500/10'
+                      }`}
+                    >
+                      {skin.rarity || 'Unknown'}
+                    </Badge>
+                    
+                    {/* Wear Badge */}
+                    <Badge variant="secondary" className="text-sm">
+                      {skin.wear || 'Unknown'}
+                    </Badge>
+                    
+                    {/* StatTrak Badge - nur wenn aktiv */}
+                    {skin.isStattrak && (
+                      <Badge variant="default" className="text-sm bg-orange-500 hover:bg-orange-600">
+                        StatTrak™
+                      </Badge>
                     )}
-                    {skin.rarity && (
-                      <Badge variant="secondary">{skin.rarity}</Badge>
+                    
+                    {/* Star Badge */}
+                    {skin.isStar && (
+                      <Badge variant="outline" className="text-sm">
+                        ★
+                      </Badge>
                     )}
                   </div>
                 </div>
 
-                {/* Price */}
-                <div className="flex items-center gap-4">
+                {/* P1 - Price mit 24h/7d-Change */}
+                <div className="space-y-2">
                   <div className="text-3xl font-bold text-primary">
                     {formatUSD(skin.marketPrice)}
                   </div>
-             <PriceDeltaBadge 
-               current={skin.marketPrice} 
-               yesterday={history?.[history.length-2]?.price ?? null} 
-             />
-           </div>
+                  
+                  {/* Price Deltas */}
+                  <div className="flex gap-4 text-sm">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">24h:</span>
+                      <div className="flex items-center gap-1">
+                        {skin.priceMedian24h && skin.marketPrice ? (
+                          <>
+                            {skin.marketPrice > skin.priceMedian24h ? (
+                              <TrendingUp className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <TrendingDown className="h-3 w-3 text-red-500" />
+                            )}
+                            <span className={skin.marketPrice > skin.priceMedian24h ? "text-green-500" : "text-red-500"}>
+                              {((skin.marketPrice - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">7d:</span>
+                      <div className="flex items-center gap-1">
+                        {skin.priceMedian7d && skin.marketPrice ? (
+                          <>
+                            {skin.marketPrice > skin.priceMedian7d ? (
+                              <TrendingUp className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <TrendingDown className="h-3 w-3 text-red-500" />
+                            )}
+                            <span className={skin.marketPrice > skin.priceMedian7d ? "text-green-500" : "text-red-500"}>
+                              {((skin.marketPrice - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                {/* Quick Actions */}
+                {/* P1 - Quick Actions - immer sichtbar */}
                 <div className="flex flex-wrap gap-2">
                   <Button
                     onClick={addToWatchlist}
                     disabled={watchlistLoading || isInWatchlist}
-                    variant={isInWatchlist ? "default" : "outline"}
+                    variant={isInWatchlist ? "secondary" : "default"}
                     size="sm"
+                    className="flex items-center gap-2"
                   >
                     {watchlistLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -561,14 +594,15 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     ) : (
                       <Heart className="h-4 w-4" />
                     )}
-                    {isInWatchlist ? "In Watchlist" : "Add to Watchlist"}
+                    {isInWatchlist ? "Added ✓" : "Add to Watchlist"}
                   </Button>
 
                   <Button
                     onClick={addToPortfolio}
                     disabled={portfolioLoading || isInPortfolio}
-                    variant={isInPortfolio ? "default" : "outline"}
+                    variant={isInPortfolio ? "secondary" : "outline"}
                     size="sm"
+                    className="flex items-center gap-2"
                   >
                     {portfolioLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -577,72 +611,32 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     ) : (
                       <Plus className="h-4 w-4" />
                     )}
-                    {isInPortfolio ? "In Portfolio" : "Add to Portfolio"}
+                    {isInPortfolio ? "Added ✓" : "Add to Portfolio"}
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${skin.marketHashName}`, "_blank")}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Steam Market
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={copyLink}
-                  >
-                    <Share2 className="h-4 w-4" />
-                    Share
+                  <Button variant="outline" size="sm" asChild>
+                    <a
+                      href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      View on Steam Market
+                    </a>
                   </Button>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="text-center py-12">
-              <h2 className="text-2xl font-bold text-destructive mb-2">Skin not found</h2>
-              <p className="text-muted-foreground">The skin you're looking for doesn't exist.</p>
-             </div>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Skin not found</p>
+            </div>
           )}
-           </div>
-
-        {/* Mobile Sticky CTA */}
-        <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 md:hidden z-50">
-          <div className="flex gap-2">
-            <Button
-              onClick={addToWatchlist}
-              disabled={watchlistLoading || isInWatchlist}
-              variant={isInWatchlist ? "default" : "outline"}
-              className="flex-1"
-            >
-              {watchlistLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : isInWatchlist ? (
-                <Check className="h-4 w-4" />
-              ) : (
-                <Heart className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              onClick={addToPortfolio}
-              disabled={portfolioLoading || isInPortfolio}
-              variant={isInPortfolio ? "default" : "outline"}
-              className="flex-1"
-            >
-              {portfolioLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : isInPortfolio ? (
-                <Check className="h-4 w-4" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
         </div>
 
-        {/* Price History - Moved out of tabs */}
+        {/* P1 - Price History */}
+        {/* Price History - bessere States + Steuerung & URL-Sync */}
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -695,7 +689,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 <Line data={chartData} options={chartOptions} />
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
-                  No price data available
+                  No price data available for this variant
                 </div>
               )}
             </div>
@@ -708,25 +702,130 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           <Skeleton className="h-32 w-full mb-8" />
         ) : marketStats ? (
           <div className="mb-8">
-            <MarketStatsCard stats={marketStats} />
+            <Card>
+              <CardHeader>
+                <CardTitle>Market Statistics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">{formatUSD(marketStats.medianPrice || 0)}</p>
+                    <p className="text-sm text-muted-foreground">Median Price</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">{marketStats.buyOrders || 0}</p>
+                    <p className="text-sm text-muted-foreground">Buy Orders</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">{marketStats.activeListings || 0}</p>
+                    <p className="text-sm text-muted-foreground">Active Listings</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">{marketStats.volume24h || 0}</p>
+                    <p className="text-sm text-muted-foreground">Volume 24h</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         ) : null}
 
         {/* P1 - Skin Variants */}
-        {/* Skin Variants */}
+        {/* Skin Variants - echte Daten, sortiert, klarer Availability-State */}
         {loadingEnhanced ? (
           <Skeleton className="h-64 w-full mb-8" />
         ) : variants.length > 0 ? (
           <div className="mb-8">
-            <SkinVariantsCard 
-              variants={variants} 
-              currentSkinId={skin?.id || 0}
-              onVariantSelect={(variantId) => {
-                setVariant(variantId.toString());
-                // Navigate to variant
-                router.push(`/skins/${variantId}`);
-              }}
-            />
+            <Card>
+              <CardHeader>
+                <CardTitle>Skin Variants</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {variants
+                    .sort((a, b) => {
+                      // Sortierung: FN → MW → FT → WW → BS, pro Wear zuerst StatTrak, dann Normal
+                      const wearOrder = { 'Factory New': 0, 'Minimal Wear': 1, 'Field-Tested': 2, 'Well-Worn': 3, 'Battle-Scarred': 4 };
+                      const aWear = wearOrder[a.wear as keyof typeof wearOrder] ?? 999;
+                      const bWear = wearOrder[b.wear as keyof typeof wearOrder] ?? 999;
+                      
+                      if (aWear !== bWear) return aWear - bWear;
+                      
+                      // StatTrak zuerst
+                      if (a.isStattrak !== b.isStattrak) return a.isStattrak ? -1 : 1;
+                      
+                      return 0;
+                    })
+                    .map((variant: any) => {
+                      const isActive = variant.id === skin?.id;
+                      const isAvailable = variant.priceAvg || variant.priceMedian;
+                      
+                      return (
+                        <div
+                          key={variant.id}
+                          className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${
+                            isActive 
+                              ? 'border-primary bg-primary/5' 
+                              : isAvailable 
+                                ? 'border-border hover:border-primary/50 hover:bg-muted/50' 
+                                : 'border-border/50 bg-muted/30 opacity-60'
+                          }`}
+                          onClick={() => {
+                            if (isAvailable && !isActive) {
+                              setVariant(variant.id.toString());
+                              router.push(`/skins/${variant.id}`);
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex gap-1">
+                              <Badge 
+                                variant={isActive ? "default" : "secondary"}
+                                className="text-xs"
+                              >
+                                {variant.wear || 'Unknown'}
+                              </Badge>
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs ${
+                                  variant.rarity === 'Covert' ? 'border-red-500 text-red-500' :
+                                  variant.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
+                                  variant.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
+                                  variant.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500' :
+                                  'border-gray-500 text-gray-500'
+                                }`}
+                              >
+                                {variant.rarity || 'Unknown'}
+                              </Badge>
+                              {variant.isStattrak && (
+                                <Badge variant="secondary" className="text-xs">StatTrak™</Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3">
+                            {isAvailable ? (
+                              <>
+                                <div className="text-right">
+                                  <p className="font-bold">{formatUSD(variant.priceAvg || variant.priceMedian)}</p>
+                                  <p className="text-xs text-muted-foreground">N offers</p>
+                                </div>
+                                {isActive && (
+                                  <Badge variant="default" className="text-xs">Active</Badge>
+                                )}
+                              </>
+                            ) : (
+                              <div className="text-right">
+                                <p className="text-muted-foreground text-sm">Not available</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         ) : (
           <Card className="mb-8">
@@ -737,17 +836,77 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         )}
 
         {/* P1 - Case Information */}
-        {/* Case Information */}
+        {/* Case Information - nur echte Case-Mates anzeigen */}
         {loadingEnhanced ? (
           <Skeleton className="h-48 w-full mb-8" />
-        ) : caseInfo ? (
+        ) : caseInfo && caseInfo.totalSkins > 1 ? (
           <div className="mb-8">
-            <CaseInfoCard caseInfo={caseInfo} />
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    {caseInfo.caseName} · {caseInfo.totalSkins} skins
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/cases/${caseInfo.caseName?.toLowerCase().replace(/\s+/g, '-')}`}>
+                        View Case
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" asChild>
+                      <a 
+                        href={`https://steamcommunity.com/market/search?q=${encodeURIComponent(caseInfo.caseName || '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        Open on Steam
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {caseInfo.skins.slice(0, 8).map((skin: any) => (
+                    <Link key={skin.id} href={`/skins/${skin.id}`}>
+                      <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                        <CardContent className="p-4">
+                          <div className="aspect-square relative mb-2">
+                            <Image
+                              src={skin.imageUrl || "/images/placeholder-skin.png"}
+                              alt={skin.name}
+                              fill
+                              className="object-contain rounded group-hover:scale-105 transition-transform"
+                            />
+                          </div>
+                          <h3 className="font-medium text-sm truncate mb-1">{skin.name}</h3>
+                          <div className="flex items-center justify-between">
+                            <p className="text-primary font-bold">{formatUSD(skin.priceAvg || skin.priceMedian)}</p>
+                            <div className="flex gap-1">
+                              {skin.isStattrak && (
+                                <Badge variant="secondary" className="text-xs">ST</Badge>
+                              )}
+                              {skin.isStar && (
+                                <Badge variant="outline" className="text-xs">★</Badge>
+                              )}
+                            </div>
+                          </div>
+                          {skin.wear && (
+                            <p className="text-xs text-muted-foreground mt-1">{skin.wear}</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         ) : null}
 
-        {/* P2 - Related Skins */}
-        {/* Related Skins */}
+        {/* P1 - Related Skins */}
+        {/* Related Skins - zwei kuratierte Blöcke */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Related Skins</h2>
           {loadingEnhanced ? (
@@ -772,13 +931,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       </div>
                       <h3 className="font-medium text-sm truncate mb-1">{relatedSkin.name}</h3>
                       <div className="flex items-center justify-between">
-                        <p className="text-primary font-bold">{formatUSD(relatedSkin.priceAvg || relatedSkin.marketPrice)}</p>
+                        <p className="text-primary font-bold">{formatUSD(relatedSkin.priceAvg || relatedSkin.priceMedian)}</p>
                         <div className="flex gap-1">
                           {relatedSkin.isStattrak && (
                             <Badge variant="secondary" className="text-xs">ST</Badge>
                           )}
-                          {relatedSkin.isSouvenir && (
-                            <Badge variant="outline" className="text-xs">SV</Badge>
+                          {relatedSkin.isStar && (
+                            <Badge variant="outline" className="text-xs">★</Badge>
                           )}
                         </div>
                       </div>
@@ -800,7 +959,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         </div>
 
         {/* P1 - Price Alerts & Watchlist */}
-        {/* Price Alerts & Watchlist */}
+        {/* Price Alerts & Watchlist - Preisalarm sauber integrieren */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>Price Alerts & Watchlist</CardTitle>
@@ -813,10 +972,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 value={alertPrice}
                 onChange={(e) => setAlertPrice(e.target.value ? Number(e.target.value) : "")}
                 className="flex-1"
+                min="0"
+                step="0.01"
               />
               <Button
                 onClick={addPriceAlert}
-                disabled={addingAlert || !alertPrice}
+                disabled={addingAlert || !alertPrice || alertPrice <= 0}
               >
                 {addingAlert ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -830,7 +991,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             </p>
           </CardContent>
         </Card>
-    </div>
-  </div>
-);
+      </div>
+    </TooltipProvider>
+  );
 }
