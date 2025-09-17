@@ -56,27 +56,34 @@ const fetcher = (url: string): Promise<SkinsResponse> => {
 export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
   const config = { ...DEFAULT_OPTIONS, ...options };
   
-  // Get key function for SWR Infinite
+  // Stabilize filters to prevent infinite loops
+  const stableFilters = useMemo(() => config.filters, [
+    config.filters?.q,
+    config.filters?.min,
+    config.filters?.max,
+    config.filters?.rarity,
+    config.filters?.wear,
+    config.filters?.quality,
+    config.filters?.stattrak,
+    config.filters?.special,
+    config.filters?.category,
+    config.filters?.weaponType,
+    config.filters?.collection,
+    config.filters?.finish,
+    config.filters?.sort,
+  ]);
+  
+  // Get key function for SWR Infinite - memoized to prevent infinite loops
   const getKey = useCallback((pageIndex: number, previousPageData: SkinsResponse | null) => {
-    console.log('🔑 [useInfiniteSkins] getKey called', {
-      pageIndex,
-      hasPreviousData: !!previousPageData,
-      hasNextPage: previousPageData?.hasNextPage,
-      enabled: config.enabled
-    });
-
     // If we've reached the end, return null
     if (previousPageData && !previousPageData.hasNextPage) {
-      console.log('🛑 [useInfiniteSkins] Reached end, returning null');
       return null;
     }
 
     // Build URL for this page
-    const queryString = buildQueryString(config.filters, pageIndex + 1);
-    const url = config.enabled ? apiUrl(`/api/v1/skins?${queryString}`) : null;
-    console.log('🌐 [useInfiniteSkins] Generated URL:', url);
-    return url;
-  }, [config.filters, config.enabled, config.pageSize]);
+    const queryString = buildQueryString(stableFilters, pageIndex + 1);
+    return config.enabled ? apiUrl(`/api/v1/skins?${queryString}`) : null;
+  }, [stableFilters, config.enabled, config.pageSize]);
 
   // SWR Infinite hook
   const {
@@ -102,9 +109,10 @@ export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
   // Reset to first page when filters change
   useEffect(() => {
     if (size > 1) {
+      console.log('🔄 [useInfiniteSkins] Filters changed, resetting to page 1');
       setSize(1);
     }
-  }, [config.filters, setSize, size]);
+  }, [stableFilters, setSize, size]);
 
   // Flatten all loaded pages into a single array
   const allSkins = useMemo(() => {
@@ -135,25 +143,10 @@ export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
 
   // Load more function
   const loadMore = useCallback(() => {
-    console.log('🔄 [useInfiniteSkins] loadMore called', {
-      isLoading,
-      isValidating,
-      hasMore: pagination?.hasMore,
-      currentSize: size,
-      totalSkins: allSkins.length
-    });
-    
     if (!isLoading && !isValidating && pagination?.hasMore) {
-      console.log('✅ [useInfiniteSkins] Loading more pages...');
       setSize(prev => prev + 1);
-    } else {
-      console.log('❌ [useInfiniteSkins] Cannot load more:', {
-        isLoading,
-        isValidating,
-        hasMore: pagination?.hasMore
-      });
     }
-  }, [isLoading, isValidating, pagination?.hasMore, setSize, size, allSkins.length]);
+  }, [isLoading, isValidating, pagination?.hasMore, setSize]);
 
   // Reset function
   const reset = useCallback(() => {
