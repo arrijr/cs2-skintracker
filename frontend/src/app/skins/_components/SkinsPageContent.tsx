@@ -1328,6 +1328,101 @@ export function SkinsPageContent() {
               })}
             </div>
 
+            {/* Price-based Quick Filters */}
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <Label className="text-sm font-medium">Quick Filters:</Label>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Smart toggle: if already set to this range, clear it
+                      if (min === "" && max === "5") {
+                        setMin("");
+                        setMax("");
+                      } else {
+                        setMin("");
+                        setMax("5");
+                        setSort("price_asc");
+                      }
+                    }}
+                    className={min === "" && max === "5" ? "bg-primary text-primary-foreground" : ""}
+                  >
+                    Under $5
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (min === "" && max === "25") {
+                        setMin("");
+                        setMax("");
+                      } else {
+                        setMin("");
+                        setMax("25");
+                        setSort("price_asc");
+                      }
+                    }}
+                    className={min === "" && max === "25" ? "bg-primary text-primary-foreground" : ""}
+                  >
+                    Under $25
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (min === "100" && max === "500") {
+                        setMin("");
+                        setMax("");
+                      } else {
+                        setMin("100");
+                        setMax("500");
+                        setSort("price_desc");
+                      }
+                    }}
+                    className={min === "100" && max === "500" ? "bg-primary text-primary-foreground" : ""}
+                  >
+                    $100-$500
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (min === "500" && max === "") {
+                        setMin("");
+                        setMax("");
+                      } else {
+                        setMin("500");
+                        setMax("");
+                        setSort("price_desc");
+                      }
+                    }}
+                    className={min === "500" && max === "" ? "bg-primary text-primary-foreground" : ""}
+                  >
+                    $500+
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (min === "1000" && max === "") {
+                        setMin("");
+                        setMax("");
+                      } else {
+                        setMin("1000");
+                        setMax("");
+                        setSort("price_desc");
+                      }
+                    }}
+                    className={min === "1000" && max === "" ? "bg-primary text-primary-foreground" : ""}
+                  >
+                    High Value ($1000+)
+                  </Button>
+                </div>
+              </div>
+            </div>
+
 
 
             {/* Results Count and Sort */}
