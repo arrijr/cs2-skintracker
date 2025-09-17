@@ -3,7 +3,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { SkinCard } from "./_components/SkinCard";
-import { useSkins, type SkinsFilters } from "@/hooks/useSkins";
+import { useInfiniteSkins, type SkinsFilters } from "@/hooks/useInfiniteSkins";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { apiUrl, fetchJson } from "@/lib/api";
@@ -41,15 +41,17 @@ export default function SkinGrid({
   const router = useRouter();
   const observerRef = useRef<HTMLDivElement>(null);
   
-  // Use the skins hook with provided filters
+  // Use the infinite skins hook with provided filters
   const { 
     skins, 
     isLoading, 
+    isLoadingMore,
     isEmpty, 
     hasError, 
     error,
-    pagination 
-  } = useSkins({ 
+    pagination,
+    loadMore
+  } = useInfiniteSkins({ 
     filters,
     enabled: true 
   });
@@ -57,10 +59,10 @@ export default function SkinGrid({
   // P3: Infinite Scroll Implementation
   const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
     const target = entries[0];
-    if (target.isIntersecting && !isLoading && pagination?.hasMore && onLoadMore) {
-      onLoadMore();
+    if (target.isIntersecting && !isLoading && !isLoadingMore && pagination?.hasMore) {
+      loadMore();
     }
-  }, [isLoading, pagination?.hasMore, onLoadMore]);
+  }, [isLoading, isLoadingMore, pagination?.hasMore, loadMore]);
 
   useEffect(() => {
     if (!enableInfiniteScroll || !observerRef.current) return;
@@ -225,7 +227,7 @@ export default function SkinGrid({
       {/* P3: Infinite Scroll Trigger */}
       {enableInfiniteScroll && pagination?.hasMore && (
         <div ref={observerRef} className="flex justify-center py-8">
-          {isLoading ? (
+          {isLoadingMore ? (
             <div className="flex items-center gap-2 text-muted-foreground">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
               <span>Loading more skins...</span>
@@ -242,11 +244,11 @@ export default function SkinGrid({
       {!enableInfiniteScroll && pagination?.hasMore && (
         <div className="flex justify-center py-8">
           <button
-            onClick={onLoadMore}
-            disabled={isLoading}
+            onClick={loadMore}
+            disabled={isLoading || isLoadingMore}
             className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Loading..." : "Load More"}
+            {isLoadingMore ? "Loading..." : "Load More"}
           </button>
         </div>
       )}

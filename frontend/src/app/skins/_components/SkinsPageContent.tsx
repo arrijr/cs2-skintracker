@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import SkinGrid from "../SkinGrid";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { saveFiltersToSession, loadFiltersFromSession, clearFiltersFromSession } from "@/lib/storage";
-import { useSkins } from "@/hooks/useSkins";
+import { useInfiniteSkins } from "@/hooks/useInfiniteSkins";
 
 // Feature flag for enhanced filters
 const SKINS_FILTERS_ENHANCED = process.env.NEXT_PUBLIC_SKINS_FILTERS_ENHANCED === 'true';
@@ -204,32 +204,39 @@ export function SkinsPageContent() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [enableInfiniteScroll, setEnableInfiniteScroll] = useState(true);
 
-  // Data state
-  const [page, setPage] = useState(1);
+  // Data state - page is now handled by useInfiniteSkins hook
 
   // Enhanced features state
   const [debouncedQ, setDebouncedQ] = useState(q);
 
-  // Get skins data with pagination
-  const { data: skinsData, error, isLoading } = useSkins({
-    q: debouncedQ,
-    min: min ? Number(min) : undefined,
-    max: max ? Number(max) : undefined,
-    rarity,
-    wear,
-    quality,
-    stattrak: stattrak || undefined,
-    special: special || undefined,
-    sort,
-    category,
-    weaponType,
-    collection,
-    finish,
-    page,
-    pageSize: PAGE_SIZE
+  // Get skins data with infinite scroll
+  const { 
+    skins, 
+    total, 
+    pagination, 
+    error, 
+    isLoading, 
+    isLoadingMore,
+    isEmpty,
+    hasError
+  } = useInfiniteSkins({
+    filters: {
+      q: debouncedQ,
+      min: min ? Number(min) : undefined,
+      max: max ? Number(max) : undefined,
+      rarity,
+      wear,
+      quality,
+      stattrak: stattrak || undefined,
+      special: special || undefined,
+      sort,
+      category,
+      weaponType,
+      collection,
+      finish,
+    },
+    enabled: true
   });
-
-  const pagination = skinsData?.pagination;
 
   // Preset values from backend
   const [presetValues, setPresetValues] = useState<{
@@ -371,7 +378,7 @@ export function SkinsPageContent() {
     setCollection(preset.collection || '');
     setFinish(preset.finish || '');
     setSort(preset.sort || 'name_asc');
-    setPage(1);
+    // Page is automatically reset by useInfiniteSkins hook
 
     toast.success(`Applied preset "${preset.name}"`);
   };
@@ -544,8 +551,7 @@ export function SkinsPageContent() {
   // Enhanced search input handler
   const handleSearchChange = useCallback((value: string) => {
     setQ(value);
-    // Reset page when search changes
-    setPage(1);
+    // Page is automatically reset by useInfiniteSkins hook when filters change
   }, []);
 
   // Write state -> URL (replace, no scroll)
@@ -583,17 +589,15 @@ export function SkinsPageContent() {
       category,
       weaponType,
       collection,
-      finish,
-      page
+      finish
     });
-  }, [q, min, max, rarity, wear, stattrak, special, sort, category, weaponType, collection, finish, page]);
+  }, [q, min, max, rarity, wear, stattrak, special, sort, category, weaponType, collection, finish]);
 
 
 
   // Initial load & when filters change → reset to page 1
   useEffect(() => { 
-    console.log("🔄 Filters changed, resetting to page 1");
-    setPage(1); 
+    console.log("🔄 Filters changed, page will be automatically reset by useInfiniteSkins hook");
   }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category]);
   
   // Load preset values from backend
@@ -682,8 +686,7 @@ export function SkinsPageContent() {
     if (preset.params.special !== undefined) setSpecial(preset.params.special === "true");
     if (preset.params.q !== undefined) setQ(preset.params.q);
     
-    // Reset to page 1 when applying presets
-    setPage(1);
+    // Page is automatically reset by useInfiniteSkins hook when filters change
   }, []);
 
   // P3: Export/Import Filter URLs
@@ -742,10 +745,7 @@ export function SkinsPageContent() {
     reader.readAsText(file);
   }, []);
 
-  // P3: Load More Handler
-  const handleLoadMore = useCallback(() => {
-    setPage(prev => prev + 1);
-  }, []);
+  // P3: Load More Handler - now handled by useInfiniteSkins hook
 
   // Filter change handlers with validation
   const handleMinPriceChange = (value: string) => {
@@ -1119,7 +1119,7 @@ export function SkinsPageContent() {
             <div className="space-y-4">
               {/* Result Count */}
               <div className="text-sm text-muted-foreground">
-                {pagination?.total ? `${pagination.total} results` : "Loading..."}
+                {total ? `${total} results` : "Loading..."}
               </div>
               
               {/* Active Filter Chips */}
@@ -1484,13 +1484,10 @@ export function SkinsPageContent() {
                 weaponType,
                 collection,
                 finish,
-                page,
-                pageSize: PAGE_SIZE
               }}
               showSkeleton={true}
               skeletonCount={6}
               enableInfiniteScroll={enableInfiniteScroll}
-              onLoadMore={handleLoadMore}
               // P3: Batch selection props
               batchMode={batchMode}
               selectedSkins={selectedSkins}
