@@ -21,12 +21,14 @@ router.get("/", optionalClerkAuth, async (req, res) => {
   try {
     const {
       q, min, max, rarity, wear, quality, stattrak, special, category,
+      weaponType, collection, finish,
       sort = "name_asc", page = 1, pageSize = 24,
     } = req.query;
 
     // Create cache key from query parameters
     const cacheKey = JSON.stringify({
       q, min, max, rarity, wear, quality, stattrak, special, category,
+      weaponType, collection, finish,
       sort, page, pageSize
     });
 
@@ -56,6 +58,19 @@ router.get("/", optionalClerkAuth, async (req, res) => {
       ...(quality ? { quality: String(quality) } : {}),
       ...(stattrak !== undefined ? { isStattrak: String(stattrak) === "true" } : {}),
       ...(special !== undefined ? { isStar: String(special) === "true" } : {}),
+      ...(weaponType ? { weaponType: { contains: String(weaponType), mode: "insensitive" } } : {}),
+      ...(collection ? { 
+        OR: [
+          { name: { contains: String(collection), mode: "insensitive" } },
+          { marketHashName: { contains: String(collection), mode: "insensitive" } }
+        ]
+      } : {}),
+      ...(finish ? { 
+        OR: [
+          { name: { contains: String(finish), mode: "insensitive" } },
+          { marketHashName: { contains: String(finish), mode: "insensitive" } }
+        ]
+      } : {}),
       ...((min || max) ? {
         OR: [
           { priceAvg: {

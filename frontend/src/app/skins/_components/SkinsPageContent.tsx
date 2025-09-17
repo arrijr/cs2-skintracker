@@ -755,74 +755,127 @@ export function SkinsPageContent() {
                     size="sm"
                     onClick={() => {
                       setMin("");
-                      setMax("10");
+                      setMax("5");
                       setSort("price_asc");
+                      clearFilters();
                     }}
                   >
-                    Under $10
+                    Under $5
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
                       setMin("");
-                      setMax("50");
+                      setMax("25");
                       setSort("price_asc");
+                      clearFilters();
                     }}
                   >
-                    Under $50
+                    Under $25
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
                       setMin("100");
+                      setMax("500");
+                      setSort("price_desc");
+                      clearFilters();
+                    }}
+                  >
+                    $100-$500
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setMin("500");
                       setMax("");
                       setSort("price_desc");
+                      clearFilters();
                     }}
                   >
-                    $100+
+                    $500+
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      setStattrak(true);
+                      setWear("fn");
                       setSort("price_desc");
+                      clearFilters();
                     }}
                   >
-                    StatTrak Only
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setQ("★");
-                      setSort("price_desc");
-                    }}
-                  >
-                    Knives
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setQ("Gloves");
-                      setSort("price_desc");
-                    }}
-                  >
-                    Gloves
+                    Factory New
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
                       setRarity("Covert");
-                      setWear("fn");
                       setSort("price_desc");
+                      clearFilters();
                     }}
                   >
-                    Covert FN
+                    Covert Only
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setQ("Souvenir");
+                      setSort("price_desc");
+                      clearFilters();
+                    }}
+                  >
+                    Souvenir
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setQ("Sticker");
+                      setMax("10");
+                      setSort("price_asc");
+                      clearFilters();
+                    }}
+                  >
+                    Stickers <$10
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setMin("1000");
+                      setMax("");
+                      setSort("price_desc");
+                      clearFilters();
+                    }}
+                  >
+                    High Value
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setWear("bs");
+                      setSort("price_asc");
+                      clearFilters();
+                    }}
+                  >
+                    Battle-Scarred
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setQ("Doppler");
+                      setSort("price_desc");
+                      clearFilters();
+                    }}
+                  >
+                    Doppler
                   </Button>
                 </div>
               </div>

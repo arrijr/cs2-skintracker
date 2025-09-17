@@ -39,6 +39,9 @@ export interface SkinsFilters {
   stattrak?: boolean;
   special?: boolean;
   category?: string;
+  weaponType?: string;
+  collection?: string;
+  finish?: string;
   sort?: string;
   page?: number;
   pageSize?: number;
@@ -142,6 +145,7 @@ export function useSkins(options: UseSkinsOptions = {}) {
       totalPages,
       hasNextPage,
       hasPrevPage,
+      hasMore: hasNextPage, // Alias for compatibility
       startItem: (page - 1) * pageSize + 1,
       endItem: Math.min(page * pageSize, total),
     };
@@ -166,6 +170,9 @@ export function useSkins(options: UseSkinsOptions = {}) {
       stattrak: undefined,
       special: undefined,
       category: undefined,
+      weaponType: undefined,
+      collection: undefined,
+      finish: undefined,
       sort: 'name_asc',
       page: 1,
       pageSize: 24,
