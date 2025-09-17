@@ -29,6 +29,7 @@ import {
   fetchJson,
 } from "@/lib/api";
 import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
+import { useAnalytics } from "@/lib/analytics";
 
 // Chart.js Registration
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
@@ -67,7 +68,8 @@ export default function SkinDetailPage() {
   const searchParams = useSearchParams();
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
-  
+  const analytics = useAnalytics();
+
   const [mounted, setMounted] = useState(false);
   const [skin, setSkin] = useState<Skin | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,7 +95,7 @@ export default function SkinDetailPage() {
   const [alertPrice, setAlertPrice] = useState<number | "">("");
   const [addingAlert, setAddingAlert] = useState(false);
 
-  // P1 - URL Sync
+  // P1 - URL Sync with P3 Analytics
   const updateURL = useCallback(() => {
     const params = new URLSearchParams();
     if (variant) params.set("variant", variant);
@@ -105,6 +107,43 @@ export default function SkinDetailPage() {
     const newURL = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
     router.replace(newURL, { scroll: false });
   }, [variant, chartRange, chartScale, movingAverage, activeTab, router]);
+
+  // P3 - Analytics: Track parameter changes
+  const [previousParams, setPreviousParams] = useState({
+    variant: "",
+    chartRange: "30d" as Range,
+    chartScale: "linear",
+    movingAverage: "none",
+  });
+
+  useEffect(() => {
+    // Track variant change
+    if (variant && variant !== previousParams.variant && skin) {
+      analytics.trackVariantChange(skin.id, parseInt(variant), skin.name);
+    }
+
+    // Track range change
+    if (chartRange !== previousParams.chartRange) {
+      analytics.trackRangeChange(chartRange, previousParams.chartRange);
+    }
+
+    // Track scale toggle
+    if (chartScale !== previousParams.chartScale) {
+      analytics.trackScaleToggle(chartScale, previousParams.chartScale);
+    }
+
+    // Track moving average toggle
+    if (movingAverage !== previousParams.movingAverage) {
+      analytics.trackMovingAverageToggle(movingAverage, previousParams.movingAverage);
+    }
+
+    setPreviousParams({
+      variant,
+      chartRange,
+      chartScale,
+      movingAverage,
+    });
+  }, [variant, chartRange, chartScale, movingAverage, skin, analytics]);
 
   useEffect(() => {
     updateURL();
@@ -288,8 +327,14 @@ export default function SkinDetailPage() {
       });
       
       setWatchlist(prev => [...prev, { skinId: skin.id, skin: skin }]);
+      
+      // P3 - Analytics: Track watchlist add
+      analytics.trackWatchlistAdd(skin.id, skin.name, skin.marketPrice || 0);
+      
       toast.success("Added to watchlist");
     } catch (error) {
+      // P3 - Analytics: Track error
+      analytics.trackError("watchlist_add_failed", "addToWatchlist", skin.id);
       toast.error("Failed to add to watchlist");
     } finally {
       setWatchlistLoading(false);
@@ -312,15 +357,21 @@ export default function SkinDetailPage() {
       });
       
       setPortfolioSkins(prev => [...prev, { skinId: skin.id, skin: skin, quantity: 1 }]);
+      
+      // P3 - Analytics: Track portfolio add
+      analytics.trackPortfolioAdd(skin.id, skin.name, skin.marketPrice || 0);
+      
       toast.success("Added to portfolio");
     } catch (error) {
+      // P3 - Analytics: Track error
+      analytics.trackError("portfolio_add_failed", "addToPortfolio", skin.id);
       toast.error("Failed to add to portfolio");
     } finally {
       setPortfolioLoading(false);
     }
   };
 
-  // P1 - Price Alert Management
+  // P1 - Price Alert Management with P3 Analytics
   const addPriceAlert = async () => {
     if (!skin?.id || !user || !alertPrice) return;
     
@@ -333,23 +384,28 @@ export default function SkinDetailPage() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          skinId: skin.id, 
+        body: JSON.stringify({
+          skinId: skin.id,
           targetPrice: alertPrice,
           type: "price_alert"
         }),
       });
       
+      // P3 - Analytics: Track alert creation
+      analytics.trackAlertCreate(skin.id, skin.name, alertPrice);
+      
       toast.success(`Price alert set at ${formatUSD(alertPrice)}`);
       setAlertPrice("");
     } catch (error) {
+      // P3 - Analytics: Track error
+      analytics.trackError("alert_create_failed", "addPriceAlert", skin.id);
       toast.error("Failed to set price alert");
     } finally {
       setAddingAlert(false);
     }
   };
 
-  // P2 - Export Data (CSV/JSON)
+  // P2 - Export Data (CSV/JSON) with P3 Analytics
   const exportData = useCallback((format: 'csv' | 'json' = 'csv') => {
     if (!history.length) {
       toast.error("No data to export");
@@ -381,8 +437,13 @@ export default function SkinDetailPage() {
     a.click();
     URL.revokeObjectURL(url);
     
+    // P3 - Analytics: Track export
+    if (skin) {
+      analytics.trackExportData(skin.id, skin.name, format, history.length);
+    }
+    
     toast.success(`Data exported as ${format.toUpperCase()}`);
-  }, [history, skin?.name]);
+  }, [history, skin, analytics]);
 
   // P2 - Scroll Position Restoration
   useEffect(() => {
@@ -399,14 +460,20 @@ export default function SkinDetailPage() {
     router.back();
   }, [router]);
 
-  // P2 - Copy Link
+  // P2 - Copy Link with P3 Analytics
   const copyLink = useCallback(async () => {
     const url = window.location.href;
     await navigator.clipboard.writeText(url);
+    
+    // P3 - Analytics: Track copy link
+    if (skin) {
+      analytics.trackCopyLink(skin.id, skin.name);
+    }
+    
     toast.success("Link copied to clipboard");
-  }, []);
+  }, [skin, analytics]);
 
-  // Load skin data
+  // Load skin data with P3 Analytics
   useEffect(() => {
     async function loadSkin() {
       const skinId = window.location.pathname.split('/').pop();
@@ -416,16 +483,21 @@ export default function SkinDetailPage() {
       try {
         const skinData = await fetchJson(apiUrl(`/api/v1/skins/${skinId}`));
         setSkin(skinData);
+        
+        // P3 - Analytics: Track page view
+        analytics.trackPageView(parseInt(skinId), skinData.name);
       } catch (error) {
         console.error("Failed to load skin:", error);
+        // P3 - Analytics: Track error
+        analytics.trackError("skin_load_failed", "loadSkin", parseInt(skinId));
         toast.error("Failed to load skin data");
-      } finally {
+    } finally {
         setLoading(false);
       }
     }
     
     loadSkin();
-  }, []);
+  }, [analytics]);
 
   // Load watchlist and portfolio
   useEffect(() => {
@@ -505,14 +577,14 @@ export default function SkinDetailPage() {
                 <div className="relative w-64 h-64 mx-auto md:mx-0">
                   <Image
                     src={skinImageUrl}
-                    alt={skin.name}
+            alt={skin.name}
                     fill
                     className="object-contain rounded-xl bg-muted"
                     priority
                     quality={90}
                   />
                 </div>
-              </div>
+           </div>
            
               {/* Skin Info */}
               <div className="flex-1 space-y-4">
@@ -554,14 +626,14 @@ export default function SkinDetailPage() {
                         ★
                       </Badge>
                     )}
-                  </div>
-                </div>
+             </div>
+           </div>
 
                 {/* P1 - Price mit 24h/7d-Change */}
                 <div className="space-y-2">
                   <div className="text-3xl font-bold text-primary">
                     {formatUSD(skin.marketPrice)}
-                  </div>
+             </div>
                   
                   {/* P2 - Price Deltas mit A11y Tooltips */}
                   <div className="flex gap-4 text-sm">
@@ -686,7 +758,7 @@ export default function SkinDetailPage() {
               <p className="text-muted-foreground">Skin not found</p>
             </div>
           )}
-        </div>
+                </div>
 
         {/* P1 - Price History */}
         {/* Price History - bessere States + Steuerung & URL-Sync */}
@@ -744,9 +816,9 @@ export default function SkinDetailPage() {
                     <Copy className="h-4 w-4 mr-1" />
                     Copy Link
                   </Button>
+                  </div>
+                  </div>
                 </div>
-              </div>
-            </div>
           </CardHeader>
           <CardContent>
             <div className="h-96">
@@ -778,7 +850,7 @@ export default function SkinDetailPage() {
                       <div className="text-center cursor-help">
                         <p className="text-2xl font-bold">{formatUSD(marketStats.medianPrice || 0)}</p>
                         <p className="text-sm text-muted-foreground">Median Price</p>
-                      </div>
+                </div>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Median price over the last 30 days</p>
@@ -790,7 +862,7 @@ export default function SkinDetailPage() {
                       <div className="text-center cursor-help">
                         <p className="text-2xl font-bold">{marketStats.buyOrders || 0}</p>
                         <p className="text-sm text-muted-foreground">Buy Orders</p>
-                      </div>
+              </div>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Current buy orders on the Steam Market</p>
@@ -802,7 +874,7 @@ export default function SkinDetailPage() {
                       <div className="text-center cursor-help">
                         <p className="text-2xl font-bold">{marketStats.activeListings || 0}</p>
                         <p className="text-sm text-muted-foreground">Active Listings</p>
-                      </div>
+            </div>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Currently active sell listings on Steam Market</p>
@@ -927,7 +999,7 @@ export default function SkinDetailPage() {
                                   </TooltipContent>
                                 </TooltipProvider>
                               )}
-                            </div>
+            </div>
                           </div>
                           
                           <div className="flex items-center gap-3">
@@ -944,9 +1016,9 @@ export default function SkinDetailPage() {
                             ) : (
                               <div className="text-right">
                                 <p className="text-muted-foreground text-sm">Not available</p>
-                              </div>
-                            )}
-                          </div>
+              </div>
+            )}
+          </div>
                         </div>
                       );
                     })}
@@ -983,8 +1055,8 @@ export default function SkinDetailPage() {
                     <Button variant="outline" size="sm" asChild>
                       <a 
                         href={`https://steamcommunity.com/market/search?q=${encodeURIComponent(caseInfo.caseName || '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+            target="_blank"
+            rel="noopener noreferrer"
                       >
                         <ExternalLink className="h-4 w-4 mr-1" />
                         Open on Steam
@@ -995,38 +1067,47 @@ export default function SkinDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {caseInfo.skins.slice(0, 8).map((skin: any) => (
-                    <Link key={skin.id} href={`/skins/${skin.id}`}>
-                      <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
-                        <CardContent className="p-4">
-                          <div className="aspect-square relative mb-2">
-                            <Image
-                              src={skin.imageUrl || "/images/placeholder-skin.png"}
-                              alt={skin.name}
-                              fill
-                              className="object-contain rounded group-hover:scale-105 transition-transform"
-                            />
-                          </div>
-                          <h3 className="font-medium text-sm truncate mb-1">{skin.name}</h3>
-                          <div className="flex items-center justify-between">
-                            <p className="text-primary font-bold">{formatUSD(skin.priceAvg || skin.priceMedian)}</p>
-                            <div className="flex gap-1">
-                              {skin.isStattrak && (
-                                <Badge variant="secondary" className="text-xs">ST</Badge>
-                              )}
-                              {skin.isStar && (
-                                <Badge variant="outline" className="text-xs">★</Badge>
-                              )}
-                            </div>
-                          </div>
-                          {skin.wear && (
-                            <p className="text-xs text-muted-foreground mt-1">{skin.wear}</p>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
+                        {caseInfo.skins.slice(0, 8).map((caseSkin: any) => (
+                          <Link 
+                            key={caseSkin.id} 
+                            href={`/skins/${caseSkin.id}`}
+                            onClick={() => {
+                              // P3 - Analytics: Track case mate click
+                              if (skin) {
+                                analytics.trackCaseMateClick(skin.id, caseInfo.caseName, caseSkin.id);
+                              }
+                            }}
+                          >
+                            <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                              <CardContent className="p-4">
+                                <div className="aspect-square relative mb-2">
+                                  <Image
+                                    src={caseSkin.imageUrl || "/images/placeholder-skin.png"}
+                                    alt={caseSkin.name}
+                                    fill
+                                    className="object-contain rounded group-hover:scale-105 transition-transform"
+                                  />
+                                </div>
+                                <h3 className="font-medium text-sm truncate mb-1">{caseSkin.name}</h3>
+                                <div className="flex items-center justify-between">
+                                  <p className="text-primary font-bold">{formatUSD(caseSkin.priceAvg || caseSkin.priceMedian)}</p>
+                                  <div className="flex gap-1">
+                                    {caseSkin.isStattrak && (
+                                      <Badge variant="secondary" className="text-xs">ST</Badge>
+                                    )}
+                                    {caseSkin.isStar && (
+                                      <Badge variant="outline" className="text-xs">★</Badge>
+                                    )}
+                                  </div>
+                                </div>
+                                {caseSkin.wear && (
+                                  <p className="text-xs text-muted-foreground mt-1">{caseSkin.wear}</p>
+                                )}
+                              </CardContent>
+                            </Card>
+            </Link>
+                        ))}
+          </div>
               </CardContent>
             </Card>
           </div>
@@ -1045,7 +1126,16 @@ export default function SkinDetailPage() {
           ) : relatedSkins.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {relatedSkins.map((relatedSkin) => (
-                <Link key={relatedSkin.id} href={`/skins/${relatedSkin.id}`}>
+                <Link 
+                  key={relatedSkin.id} 
+                  href={`/skins/${relatedSkin.id}`}
+                  onClick={() => {
+                    // P3 - Analytics: Track related skin click
+                    if (skin) {
+                      analytics.trackRelatedClick(skin.id, relatedSkin.id, relatedSkin.name);
+                    }
+                  }}
+                >
                   <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
                     <CardContent className="p-4">
                       <div className="aspect-square relative mb-2">
