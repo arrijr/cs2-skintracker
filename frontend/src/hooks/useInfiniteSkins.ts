@@ -2,7 +2,7 @@
 // {/* Infinite scroll hook for skins with proper pagination */}
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import { apiUrl, swrFetcher } from '@/lib/api';
 import { Skin, SkinsFilters } from './useSkins';
@@ -56,24 +56,39 @@ const fetcher = (url: string): Promise<SkinsResponse> => {
 export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
   const config = { ...DEFAULT_OPTIONS, ...options };
   
-  // Stabilize filters to prevent infinite loops
-  const stableFilters = useMemo(() => config.filters, [
-    config.filters?.q,
-    config.filters?.min,
-    config.filters?.max,
-    config.filters?.rarity,
-    config.filters?.wear,
-    config.filters?.quality,
-    config.filters?.stattrak,
-    config.filters?.special,
-    config.filters?.category,
-    config.filters?.weaponType,
-    config.filters?.collection,
-    config.filters?.finish,
-    config.filters?.sort,
-  ]);
+  // Use ref to track if we should reset
+  const shouldResetRef = useRef(false);
+  const previousFiltersRef = useRef<string>('');
   
-  // Get key function for SWR Infinite - memoized to prevent infinite loops
+  // Create a stable filter key for comparison
+  const filterKey = useMemo(() => {
+    if (!config.filters) return '';
+    return JSON.stringify({
+      q: config.filters.q,
+      min: config.filters.min,
+      max: config.filters.max,
+      rarity: config.filters.rarity,
+      wear: config.filters.wear,
+      quality: config.filters.quality,
+      stattrak: config.filters.stattrak,
+      special: config.filters.special,
+      category: config.filters.category,
+      weaponType: config.filters.weaponType,
+      collection: config.filters.collection,
+      finish: config.filters.finish,
+      sort: config.filters.sort,
+    });
+  }, [config.filters]);
+  
+  // Check if filters changed
+  useEffect(() => {
+    if (previousFiltersRef.current !== filterKey) {
+      shouldResetRef.current = true;
+      previousFiltersRef.current = filterKey;
+    }
+  }, [filterKey]);
+  
+  // Get key function for SWR Infinite
   const getKey = useCallback((pageIndex: number, previousPageData: SkinsResponse | null) => {
     // If we've reached the end, return null
     if (previousPageData && !previousPageData.hasNextPage) {
@@ -81,9 +96,9 @@ export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
     }
 
     // Build URL for this page
-    const queryString = buildQueryString(stableFilters, pageIndex + 1);
+    const queryString = buildQueryString(config.filters, pageIndex + 1);
     return config.enabled ? apiUrl(`/api/v1/skins?${queryString}`) : null;
-  }, [stableFilters, config.enabled, config.pageSize]);
+  }, [config.filters, config.enabled, config.pageSize]);
 
   // SWR Infinite hook
   const {
@@ -108,11 +123,11 @@ export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
 
   // Reset to first page when filters change
   useEffect(() => {
-    if (size > 1) {
-      console.log('🔄 [useInfiniteSkins] Filters changed, resetting to page 1');
+    if (shouldResetRef.current && size > 1) {
+      shouldResetRef.current = false;
       setSize(1);
     }
-  }, [stableFilters, setSize, size]);
+  }, [size, setSize]);
 
   // Flatten all loaded pages into a single array
   const allSkins = useMemo(() => {
@@ -186,6 +201,7 @@ export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
       loadedPages: data?.length || 0,
       totalSkins: allSkins.length,
       hasMore: pagination?.hasMore || false,
+      filterKey,
     },
   };
 }
