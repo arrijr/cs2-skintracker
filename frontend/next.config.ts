@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 // {/* Proxy API to backend via rewrites */}
-const API_BASE = process.env.NEXT_PUBLIC_API_ORIGIN || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_ORIGIN || "https://cs2-skintracker-dev.onrender.com";
 
 const nextConfig = {
   // {/* Keep builds unblocked (you already had this) */}
