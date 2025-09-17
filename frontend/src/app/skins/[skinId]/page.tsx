@@ -300,7 +300,7 @@ export default function SkinDetailPage() {
     setAddingAlert(true);
     try {
       const token = await getToken({ template: "backend" });
-      await fetchJson(apiUrl("/api/v1/alerts"), {
+      await fetchJson(apiUrl("/api/v1/watchlist"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -308,8 +308,7 @@ export default function SkinDetailPage() {
         },
         body: JSON.stringify({
           skinId: skin.id,
-          targetPrice: alertPrice,
-          type: "price_alert"
+          priceAlert: alertPrice
         }),
       });
       

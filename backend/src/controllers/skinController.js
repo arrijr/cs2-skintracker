@@ -102,14 +102,24 @@ export const getSkinVariants = async (req, res) => {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    // Find all skins with similar characteristics (same weapon, itemName)
-    // For stickers, also match by weaponType (tournament)
+    // Find all skins with similar characteristics
+    // For weapons: same weaponType and similar name pattern
+    // For stickers: same weaponType (tournament) and similar name pattern
     const variants = await prisma.skin.findMany({
       where: {
         AND: [
           { id: { not: parseInt(skinId) } }, // Exclude current skin
           { weaponType: baseSkin.weaponType },
-          { itemName: baseSkin.itemName }
+          {
+            OR: [
+              { itemName: baseSkin.itemName },
+              { 
+                name: {
+                  contains: baseSkin.name.split('|')[0]?.trim() || baseSkin.name.split('(')[0]?.trim() || baseSkin.name
+                }
+              }
+            ]
+          }
         ]
       },
       select: {
@@ -121,7 +131,8 @@ export const getSkinVariants = async (req, res) => {
         isStar: true,
         imageUrl: true,
         priceAvg: true,
-        priceMedian: true
+        priceMedian: true,
+        priceLatest: true
       },
       orderBy: [
         { wear: 'asc' },
@@ -141,7 +152,8 @@ export const getSkinVariants = async (req, res) => {
         isStar: true,
         imageUrl: true,
         priceAvg: true,
-        priceMedian: true
+        priceMedian: true,
+        priceLatest: true
       }
     });
     
@@ -375,7 +387,12 @@ export const getRelatedSkins = async (req, res) => {
           {
             OR: [
               { weaponType: baseSkin.weaponType },
-              { itemName: baseSkin.itemName }
+              { itemName: baseSkin.itemName },
+              { 
+                name: {
+                  contains: baseSkin.name.split('|')[0]?.trim() || baseSkin.name.split('(')[0]?.trim() || baseSkin.name
+                }
+              }
             ]
           }
         ]
@@ -386,6 +403,7 @@ export const getRelatedSkins = async (req, res) => {
         imageUrl: true,
         priceAvg: true,
         priceMedian: true,
+        priceLatest: true,
         wear: true,
         rarity: true,
         isStattrak: true,
