@@ -16,9 +16,10 @@ interface SkinVariant {
 interface SkinVariantsCardProps {
   variants: SkinVariant[];
   currentSkinId: number;
+  onVariantSelect?: (variantId: number) => void;
 }
 
-export default function SkinVariantsCard({ variants, currentSkinId }: SkinVariantsCardProps) {
+export default function SkinVariantsCard({ variants, currentSkinId, onVariantSelect }: SkinVariantsCardProps) {
   if (!variants || variants.length === 0) return null;
 
   // Sort variants by price (lowest to highest)
@@ -36,11 +37,12 @@ export default function SkinVariantsCard({ variants, currentSkinId }: SkinVarian
         {sortedVariants.map((variant) => (
           <div 
             key={variant.id}
-            className={`flex items-center justify-between p-3 rounded-lg border-2 ${
+            className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-colors ${
               variant.id === currentSkinId 
                 ? 'border-emerald-500 bg-emerald-900/20' 
-                : 'border-neutral-600 bg-neutral-700/50'
+                : 'border-neutral-600 bg-neutral-700/50 hover:border-neutral-500'
             }`}
+            onClick={() => onVariantSelect?.(variant.id)}
           >
             <div className="flex items-center space-x-3">
               {variant.imageUrl && (

@@ -1,11 +1,27 @@
+// frontend/src/app/skins/[skinId]/page.tsx — [Frontend]
+// {/* Enhanced Skin Detail Page with P1, P2, P3 Features */}
 "use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Line } from "react-chartjs-2";
 import type { ChartData, ChartOptions } from "chart.js";
 import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
 import { useUser, useAuth } from "@clerk/nextjs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2 } from "lucide-react";
 // {/* Central API helpers */}
 import {
   getPortfolio,
@@ -14,15 +30,11 @@ import {
   fetchJson,
 } from "@/lib/api";
 import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
-import PurchaseAccordion from "../../components/PurchaseAccordion";
-import SkinPortfolioCard from "../../components/SkinPortfolioCard";
 import MarketStatsCard from "../../components/skins/MarketStatsCard";
 import SkinVariantsCard from "../../components/skins/SkinVariantsCard";
 import CaseInfoCard from "../../components/skins/CaseInfoCard";
 import PriceDeltaBadge from "../../components/skins/PriceDeltaBadge";
 import ChartRangeTabs, { Range } from "../../components/skins/ChartRangeTabs";
-import Skeleton from "../../components/ui/Skeleton";
-import { Tip } from "../../components/ui/Tooltip";
 import TagBadges from "../../components/skins/TagBadges";
 
 // Chart.js Registration
@@ -31,12 +43,19 @@ Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, L
 type Skin = {
   id: number;
   name: string;
-  marketPrice?: number;
   marketHashName?: string;
+  marketPrice?: number;
   itemimage?: string;
   itemImage?: string;
   image_url?: string;
   imageUrl?: string;
+  isStattrak?: boolean;
+  isSouvenir?: boolean;
+  isStar?: boolean;
+  wear?: string;
+  rarity?: string;
+  weaponType?: string;
+  collection?: string;
 };
 
 type PriceHistory = { date: string; price: number };
@@ -44,6 +63,7 @@ type PriceHistory = { date: string; price: number };
 export default function SkinDetailPage({ params }: { params: { skinId: string } }) {
   // *** ALLE STATES GANZ OBEN ***
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
   const skinId = String(params.skinId ?? params.id ?? "");
@@ -53,475 +73,706 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const [history, setHistory] = useState<PriceHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [watchlist, setWatchlist] = useState<any[]>([]);
-  const [alert, setAlert] = useState<number | "">("");
-  const [addingAlert, setAddingAlert] = useState(false);
-  const [msg, setMsg] = useState("");
+  // P1 - URL Sync States
+  const [variant, setVariant] = useState(searchParams.get("variant") || "");
+  const [chartRange, setChartRange] = useState<Range>((searchParams.get("range") as Range) || "30d");
+  const [chartScale, setChartScale] = useState(searchParams.get("scale") === "log" ? "log" : "linear");
+  const [movingAverage, setMovingAverage] = useState(searchParams.get("ma") || "");
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
 
-  // Portfolio
+  // Watchlist & Portfolio
+  const [watchlist, setWatchlist] = useState<any[]>([]);
   const [portfolioSkins, setPortfolioSkins] = useState<any[]>([]);
-  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
-  const [amount, setAmount] = useState(1);
-  const [buyPrice, setBuyPrice] = useState("");
-  const [buyDate, setBuyDate] = useState("");
-  const [useMarketPrice, setUseMarketPrice] = useState(false);
-  const [addingPortfolio, setAddingPortfolio] = useState(false);
-  const [portfolioMsg, setPortfolioMsg] = useState("");
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [isInPortfolio, setIsInPortfolio] = useState(false);
+  const [watchlistLoading, setWatchlistLoading] = useState(false);
+  const [portfolioLoading, setPortfolioLoading] = useState(false);
+
+  // Price Alerts
+  const [alertPrice, setAlertPrice] = useState<number | "">("");
+  const [addingAlert, setAddingAlert] = useState(false);
 
   // Enhanced Skin Details
   const [loadingEnhanced, setLoadingEnhanced] = useState(true);
   const [marketStats, setMarketStats] = useState<any>(null);
   const [variants, setVariants] = useState<any[]>([]);
   const [caseInfo, setCaseInfo] = useState<any>(null);
-  
-  // Chart Range
-  const [chartRange, setChartRange] = useState<Range>("30d");
+  const [relatedSkins, setRelatedSkins] = useState<any[]>([]);
 
   // *** ALLE useEffect HOOKS OBEN ***
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // P1 - URL Sync
+  const updateURL = useCallback(() => {
+    const params = new URLSearchParams();
+    if (variant) params.set("variant", variant);
+    if (chartRange !== "30d") params.set("range", chartRange);
+    if (chartScale !== "linear") params.set("scale", chartScale);
+    if (movingAverage) params.set("ma", movingAverage);
+    if (activeTab !== "overview") params.set("tab", activeTab);
+    
+    const newURL = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
+    router.replace(newURL, { scroll: false });
+  }, [variant, chartRange, chartScale, movingAverage, activeTab, router]);
+
+  useEffect(() => {
+    updateURL();
+  }, [updateURL]);
+
+  // Load skin data
   useEffect(() => {
     if (!skinId) return;
     let cancelled = false;
 
-    async function load() {
+    const loadSkinData = async () => {
       setLoading(true);
       try {
-        console.log(`[DEBUG] Loading skin ${skinId}...`);
-        const [s, h] = await Promise.all([
+        const [skinData, historyData] = await Promise.all([
           fetchJson(apiUrl(`/api/v1/skins/${skinId}`)),
-          fetchJson(apiUrl(`/api/v1/skins/${skinId}/history`)).catch(() => []),
+          fetchJson(apiUrl(`/api/v1/skins/${skinId}/history?range=${chartRange}`))
         ]);
-        console.log(`[DEBUG] API response - skin:`, s);
-        console.log(`[DEBUG] API response - history:`, h);
-        
+
         if (!cancelled) {
-          setSkin(s);
-          setHistory(Array.isArray(h) ? h : []);
+          setSkin(skinData);
+          setHistory(historyData || []);
+        }
+      } catch (error) {
+        console.error("Error loading skin data:", error);
+        if (!cancelled) {
+          setSkin(null);
         }
       } finally {
-        if (!cancelled) setLoading(false);
-      }
-
-      if (isLoaded && user) {
-        // Load watchlist and portfolio with JWT tokens
-        const token = await getToken({ template: "backend" });
-        if (token) {
-          fetchJson(apiUrl("/api/v1/watchlist"), {
-            headers: { Authorization: `Bearer ${token}` }
-          }).then((w) => !cancelled && setWatchlist(Array.isArray(w) ? w : []));
-          
-          fetchJson(apiUrl("/api/v1/portfolio"), {
-            headers: { Authorization: `Bearer ${token}` }
-          }).then((p) => !cancelled && setPortfolioSkins(Array.isArray(p) ? p : []));
+        if (!cancelled) {
+          setLoading(false);
         }
       }
+    };
 
-      // Load enhanced skin details
-      if (!cancelled) {
-        try {
-          console.log('[DEBUG] 🔍 Loading enhanced skin details...');
-          
-          // Test API calls directly
-          console.log('[DEBUG] 📡 Testing API endpoints...');
-          
-          // Test market stats
-          try {
-            const stats = await fetchJson(apiUrl(`/api/v1/skins/${skinId}/market-stats`));
-            console.log('[DEBUG] 📊 Market stats data:', stats);
-            setMarketStats(stats);
-          } catch (err) {
-            console.error('[DEBUG] ❌ Market stats error:', err);
-          }
-
-          // Test variants
-          try {
-            const variantsData = await fetchJson(apiUrl(`/api/v1/skins/${skinId}/variants`));
-            console.log('[DEBUG] 🔄 Variants data:', variantsData);
-            setVariants(variantsData?.variants || []);
-          } catch (err) {
-            console.error('[DEBUG] ❌ Variants error:', err);
-          }
-
-          // Test case info
-          try {
-            const caseData = await fetchJson(apiUrl(`/api/v1/skins/${skinId}/case`));
-            console.log('[DEBUG] 📦 Case info data:', caseData);
-            setCaseInfo(caseData);
-          } catch (err) {
-            console.error('[DEBUG] ❌ Case info error:', err);
-          }
-
-          console.log('[DEBUG] ✅ Enhanced data loading attempts completed');
-        } catch (err) {
-          console.error('[DEBUG] 💥 Enhanced details loading failed:', err);
-        } finally {
-          if (!cancelled) {
-            setLoadingEnhanced(false);
-            console.log('[DEBUG] 🏁 Enhanced loading finished');
-          }
-        }
-      }
-    }
-
-    load();
+    loadSkinData();
     return () => { cancelled = true; };
-  }, [skinId, isLoaded, user]);
+  }, [skinId, chartRange]);
 
-  if (!mounted) return null;
-  if (loading) return <div className="text-white py-8">Loading…</div>;
-  if (!skin) return <div className="text-red-400 py-8">Skin not found!</div>;
+  // Load enhanced data
+  useEffect(() => {
+    if (!skin) return;
 
-  // {/* Derived */}
-  const img = skin.itemimage || skin.itemImage || skin.image_url || skin.imageUrl || "/images/placeholder-skin.png";
-  const marketPrice = skin.marketPrice ?? null;
-  
-  console.log(`[DEBUG] Skin object:`, skin);
-  console.log(`[DEBUG] marketPrice value:`, marketPrice);
-  console.log(`[DEBUG] marketPrice type:`, typeof marketPrice);
+    const loadEnhancedData = async () => {
+      setLoadingEnhanced(true);
+      try {
+        const [statsData, variantsData, caseData, relatedData] = await Promise.all([
+          fetchJson(apiUrl(`/api/v1/skins/${skinId}/stats`)).catch(() => null),
+          fetchJson(apiUrl(`/api/v1/skins/${skinId}/variants`)).catch(() => []),
+          fetchJson(apiUrl(`/api/v1/skins/${skinId}/case`)).catch(() => null),
+          fetchJson(apiUrl(`/api/v1/skins/${skinId}/related`)).catch(() => [])
+        ]);
 
-  // Portfolio-Käufe für diesen Skin
-  const portfolioPurchasesForSkin = portfolioSkins.filter(
-    (p) => p.skinId === skin?.id
-  );
+        setMarketStats(statsData);
+        setVariants(variantsData);
+        setCaseInfo(caseData);
+        setRelatedSkins(relatedData);
+      } catch (error) {
+        console.error("Error loading enhanced data:", error);
+      } finally {
+        setLoadingEnhanced(false);
+      }
+    };
 
-  const totalAmount = portfolioPurchasesForSkin.reduce((sum: number, p: any) => sum + p.amount, 0);
-  const totalValue = portfolioPurchasesForSkin.reduce((sum: number, p: any) => sum + (p.amount * p.buyPrice), 0);
-  const avgPrice = totalAmount > 0 ? totalValue / totalAmount : 0;
-  const performance =
-    skin?.marketPrice && avgPrice ? ((skin.marketPrice - avgPrice) / avgPrice) * 100 : null;
+    loadEnhancedData();
+  }, [skin, skinId]);
 
-  // {/* Chart data with range filtering */}
-  const getDaysAgo = (days: number) => {
-    const date = new Date();
-    date.setDate(date.getDate() - days);
-    return date.toISOString().split('T')[0];
-  };
-  
-  const filteredHistory = history?.filter(h => {
-    const daysAgo = chartRange === "7d" ? 7 : chartRange === "30d" ? 30 : 90;
-    return h.date >= getDaysAgo(daysAgo);
-  }) || [];
-  
-  const chartData = {
-    labels: filteredHistory.map((h) => h.date) || [],
-    datasets: [
-      {
-        label: "Price ($)",
-        data: filteredHistory.map((h) => numberOrNull(h.price))
-          .filter((n): n is number => n !== null) || [],
-        borderColor: "rgb(59,130,246)",
-        tension: 0.2,
-        fill: false,
-      },
-    ],
-  };
+  // Check watchlist/portfolio status
+  useEffect(() => {
+    if (!user || !skin) return;
 
-  console.log(`[DEBUG] History data:`, history);
-  console.log(`[DEBUG] Chart data:`, chartData);
+    const checkStatus = async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
 
-  // {/* Add to Watchlist */}
-  async function addToWatchlist() {
-    if (!user) return router.push("/sign-in");
-    setAddingAlert(true);
-    setMsg("");
-    try {
-      // Get JWT token for authentication
-      const token = await getToken({ template: "backend" });
-      
-      await fetchJson(apiUrl(`/api/v1/watchlist`), {
-        method: "POST",
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify({
-          skinId: skin.id,
-          priceAlert: alert === "" ? null : Number(alert),
-        }),
-      });
-      setMsg("Added to watchlist!");
-      
-      // Refetch watchlist with JWT token
-      const watchlistToken = await getToken({ template: "backend" });
-      fetchJson(apiUrl("/api/v1/watchlist"), {
-        headers: {
-          ...(watchlistToken && { Authorization: `Bearer ${watchlistToken}` }),
-        },
-      }).then((w) => setWatchlist(Array.isArray(w) ? w : []));
-    } catch (e: any) {
-      setMsg(e.message || "Could not add skin.");
-    } finally {
-      setAddingAlert(false);
-    }
-  }
+        const [watchlistData, portfolioData] = await Promise.all([
+          fetchJson(apiUrl("/api/v1/watchlist"), {
+            headers: { "Authorization": `Bearer ${token}` }
+          }).catch(() => []),
+          fetchJson(apiUrl("/api/v1/portfolio"), {
+            headers: { "Authorization": `Bearer ${token}` }
+          }).catch(() => [])
+        ]);
 
-  // Handler: Add to Portfolio
-  const addToPortfolio = async () => {
-    if (!user) {
-      router.push("/sign-in");
+        setIsInWatchlist(watchlistData.some((item: any) => item.skinId === skin.id));
+        setIsInPortfolio(portfolioData.some((item: any) => item.skinId === skin.id));
+      } catch (error) {
+        console.error("Error checking status:", error);
+      }
+    };
+
+    checkStatus();
+  }, [user, skin, getToken]);
+
+  // P1 - Watchlist Functions
+  const addToWatchlist = async () => {
+    if (!user || !skin) {
+      toast.error("Please sign in to add to watchlist");
       return;
     }
-    setAddingPortfolio(true);
-    setPortfolioMsg("");
 
+    setWatchlistLoading(true);
     try {
-      // Get JWT token for authentication
-      const token = await getToken({ template: "backend" });
-      
+      const token = await getToken();
+      if (!token) throw new Error("No token available");
+
+      await fetchJson(apiUrl("/api/v1/watchlist"), {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ skinId: skin.id }),
+      });
+
+      setIsInWatchlist(true);
+      toast.success(`${skin.name} added to watchlist!`);
+    } catch (error) {
+      console.error("Watchlist error:", error);
+      toast.error("Failed to add to watchlist");
+    } finally {
+      setWatchlistLoading(false);
+    }
+  };
+
+  // P1 - Portfolio Functions
+  const addToPortfolio = async () => {
+    if (!user || !skin) {
+      toast.error("Please sign in to add to portfolio");
+      return;
+    }
+
+    setPortfolioLoading(true);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("No token available");
+
       await fetchJson(apiUrl("/api/v1/portfolio"), {
         method: "POST",
         headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          skinId: skin!.id,
-          amount: Number(amount),
-          buyPrice: Number(useMarketPrice ? skin!.marketPrice : buyPrice),
-          buyDate,
+          skinId: skin.id,
+          amount: 1,
+          buyPrice: skin.marketPrice || 0,
+          buyDate: new Date().toISOString().slice(0, 10),
         }),
       });
-      setPortfolioMsg("Added to portfolio!");
-      // Refetch portfolio to show new item with JWT token
-      const portfolioToken = await getToken({ template: "backend" });
-      fetchJson(apiUrl("/api/v1/portfolio"), {
-        headers: {
-          ...(portfolioToken && { Authorization: `Bearer ${portfolioToken}` }),
-        },
-      }).then((p) => setPortfolioSkins(Array.isArray(p) ? p : []));
-      setTimeout(() => {
-        setShowPortfolioModal(false);
-      }, 1200);
-    } catch (e: any) {
-      setPortfolioMsg(e.message || "Could not add skin.");
+
+      setIsInPortfolio(true);
+      toast.success(`${skin.name} added to portfolio!`);
+    } catch (error) {
+      console.error("Portfolio error:", error);
+      toast.error("Failed to add to portfolio");
     } finally {
-      setAddingPortfolio(false);
+      setPortfolioLoading(false);
     }
   };
 
+  // P1 - Price Alert Functions
+  const addPriceAlert = async () => {
+    if (!user || !skin || !alertPrice) {
+      toast.error("Please enter a valid alert price");
+      return;
+    }
+
+    setAddingAlert(true);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("No token available");
+
+      await fetchJson(apiUrl("/api/v1/alerts"), {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          skinId: skin.id,
+          alertPrice: Number(alertPrice),
+        }),
+      });
+
+      toast.success(`Price alert set at $${alertPrice}`);
+      setAlertPrice("");
+    } catch (error) {
+      console.error("Alert error:", error);
+      toast.error("Failed to set price alert");
+    } finally {
+      setAddingAlert(false);
+    }
+  };
+
+  // P1 - Share Functions
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard!");
+    } catch (error) {
+      toast.error("Failed to copy link");
+    }
+  };
+
+  // P3 - Export Functions
+  const exportData = async () => {
+    if (!history.length) {
+      toast.error("No data to export");
+      return;
+    }
+
+    try {
+      const csvContent = [
+        "Date,Price",
+        ...history.map(h => `${h.date},${h.price}`)
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${skin?.name || "skin"}-price-history.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast.success("Data exported successfully!");
+    } catch (error) {
+      toast.error("Failed to export data");
+    }
+  };
+
+  // Chart data
+  const chartData = useMemo((): ChartData<"line"> => {
+    if (!history.length) return { labels: [], datasets: [] };
+
+    const labels = history.map(h => new Date(h.date).toLocaleDateString());
+    const prices = history.map(h => h.price);
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Price",
+          data: prices,
+          borderColor: "#10b981",
+          backgroundColor: "rgba(16, 185, 129, 0.1)",
+          borderWidth: 2,
+          fill: true,
+          tension: 0.1,
+        },
+      ],
+    };
+  }, [history]);
+
+  const chartOptions: ChartOptions<"line"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        callbacks: {
+          label: (context) => `$${context.parsed.y.toFixed(2)}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        display: true,
+        grid: {
+          color: "rgba(255, 255, 255, 0.1)",
+        },
+        ticks: {
+          color: "#9ca3af",
+        },
+      },
+      y: {
+        type: chartScale === "log" ? "logarithmic" : "linear",
+        display: true,
+        grid: {
+          color: "rgba(255, 255, 255, 0.1)",
+        },
+        ticks: {
+          color: "#9ca3af",
+          callback: (value) => `$${Number(value).toFixed(2)}`,
+        },
+      },
+    },
+    interaction: {
+      mode: "nearest",
+      axis: "x",
+      intersect: false,
+    },
+  };
+
+  if (!mounted) return null;
+
   return (
-  //Chart DIV
-  <div className="min-h-screen bg-gray-950 text-white p-4">
-    <div className="card max-w-xl mx-auto mt-10 flex flex-col items-center">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* P1 - Skin Header */}
+        {/* Skin Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to list
+            </Button>
+          </div>
 
-      {/* Loading/Error */}
-      {loading && <div className="text-white py-8">Loading...</div>}
-      {!loading && !skin && <div className="text-red-400 py-8">Skin not found!</div>}
-
-      {/* Content */}
-      {skin && (
-        <>
-          <img
-            src={
-              skin.itemimage ||
-              skin.itemImage ||
-              skin.image_url ||
-              skin.imageUrl ||
-              "/images/placeholder-skin.png"
-            }
-            alt={skin.name}
-            className="w-36 h-36 md:w-48 md:h-48 object-contain rounded-xl mb-4 shadow-lg bg-neutral-800"
-          />
-                     <h1 className="text-2xl md:text-3xl font-extrabold mb-2 text-center">
-             {skin.name}
-           </h1>
-           <div className="text-gray-400 mb-2 text-sm text-center">
-             {skin.marketHashName}
-           </div>
-           
-           {/* Tag Badges */}
-           <TagBadges 
-             isStattrak={skin.isStattrak} 
-             isSouvenir={skin.isSouvenir} 
-             isStar={skin.isStar} 
-           />
-           
-           <div className="mb-4 text-lg font-semibold text-emerald-400 flex items-center gap-2 justify-center">
-             <span>Current Price: {formatUSD(skin.marketPrice)}</span>
-             {/* Price delta vs. yesterday */}
-             <PriceDeltaBadge 
-               current={skin.marketPrice} 
-               yesterday={history?.[history.length-2]?.price ?? null} 
-             />
-           </div>
-
-                     {/* Chart */}
-           <div className="w-full bg-neutral-800 rounded-xl shadow-md p-4 mb-6">
-             <div className="flex justify-between items-center mb-4">
-               <h3 className="text-lg font-semibold text-blue-400">Price History</h3>
-               <ChartRangeTabs value={chartRange} onChange={setChartRange} />
-             </div>
-             <Line data={chartData} />
-           </div>
-
-                     {/* Enhanced Skin Details */}
-           {loadingEnhanced ? (
-             <div className="space-y-4">
-               <Skeleton className="h-32 w-full" />
-               <Skeleton className="h-48 w-full" />
-               <Skeleton className="h-64 w-full" />
-             </div>
-           ) : (
-             <>
-               {marketStats && <MarketStatsCard stats={marketStats} />}
-               {variants && variants.length > 0 && (
-                 <SkinVariantsCard variants={variants} currentSkinId={skin?.id || 0} />
-               )}
-               {caseInfo && <CaseInfoCard caseInfo={caseInfo} />}
-             </>
-           )}
-
-          {/* Add Skin to Portfolio */}
-          <button
-            className="btn-main bg-red-600 hover:bg-red-700 mt-4"
-            onClick={() => setShowPortfolioModal(true)}
-          >
-            + Add to Portfolio
-          </button>
-
-          {showPortfolioModal && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
-              <div className="bg-zinc-900 rounded-2xl shadow-xl p-6 w-full max-w-md relative">
-                <button
-                  className="absolute top-2 right-2 text-zinc-400 hover:text-white"
-                  onClick={() => setShowPortfolioModal(false)}
-                >
-                  ×
-                </button>
-                <h2 className="text-xl font-bold mb-4">{skin.name}</h2>
-
-                {/* Menge */}
-                <div className="mb-2">
-                  <label className="block text-sm font-medium">Quantity</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={amount}
-                    onChange={(e) => setAmount(Number(e.target.value))}
-                    className="input-main w-full"
-                  />
-                  <div className="text-xs text-zinc-400">How many units did you buy?</div>
+          {loading ? (
+            <div className="flex flex-col md:flex-row gap-8">
+              <Skeleton className="w-64 h-64 mx-auto md:mx-0" />
+              <div className="flex-1 space-y-4">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-6 w-1/4" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-10 w-32" />
                 </div>
-
-                {/* Preis */}
-                <div className="mb-2">
-                  <label className="block text-sm font-medium">Unit Price ($)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={useMarketPrice ? skin.marketPrice ?? "" : buyPrice}
-                    onChange={(e) => setBuyPrice(e.target.value)}
-                    disabled={useMarketPrice}
-                    className="input-main w-full"
+              </div>
+            </div>
+          ) : skin ? (
+            <div className="flex flex-col md:flex-row gap-8">
+              {/* Skin Image */}
+              <div className="flex-shrink-0">
+                <div className="relative w-64 h-64 mx-auto md:mx-0">
+                  <Image
+                    src={
+                      skin.itemimage ||
+                      skin.itemImage ||
+                      skin.image_url ||
+                      skin.imageUrl ||
+                      "/images/placeholder-skin.png"
+                    }
+                    alt={skin.name}
+                    fill
+                    className="object-contain rounded-xl bg-muted"
+                    priority
+                    quality={90}
                   />
-                  <div className="flex items-center gap-2 mt-1">
-                    <input
-                      type="checkbox"
-                      checked={useMarketPrice}
-                      onChange={() => setUseMarketPrice(!useMarketPrice)}
-                      id="useMarketPrice"
+                </div>
+              </div>
+
+              {/* Skin Info */}
+              <div className="flex-1 space-y-4">
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">{skin.name}</h1>
+                  <p className="text-muted-foreground mb-4">{skin.marketHashName}</p>
+                  
+                  {/* Tags */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <TagBadges 
+                      isStattrak={skin.isStattrak} 
+                      isSouvenir={skin.isSouvenir} 
+                      isStar={skin.isStar} 
                     />
-                    <label htmlFor="useMarketPrice" className="text-xs text-zinc-400">
-                      Use market price
-                    </label>
-                  </div>
-                  <div className="text-xs text-zinc-400">
-                    The market price will be used if checked.
+                    {skin.wear && (
+                      <Badge variant="outline">{skin.wear}</Badge>
+                    )}
+                    {skin.rarity && (
+                      <Badge variant="secondary">{skin.rarity}</Badge>
+                    )}
                   </div>
                 </div>
 
-                {/* Kaufdatum */}
-                <div className="mb-2">
-                  <label className="block text-sm font-medium">Date</label>
-                  <input
-                    type="date"
-                    value={buyDate}
-                    onChange={(e) => setBuyDate(e.target.value)}
-                    className="input-main w-full"
+                {/* Price */}
+                <div className="flex items-center gap-4">
+                  <div className="text-3xl font-bold text-primary">
+                    {formatUSD(skin.marketPrice)}
+                  </div>
+                  <PriceDeltaBadge 
+                    current={skin.marketPrice} 
+                    yesterday={history?.[history.length-2]?.price ?? null} 
                   />
                 </div>
 
-                {/* Aktionen */}
-                <button
-                  className="btn-main mt-4 w-full"
-                  onClick={addToPortfolio}
-                  disabled={addingPortfolio}
-                >
-                  Add Product
-                </button>
-                {portfolioMsg && (
-                  <div className="mt-2 text-sm text-emerald-400">{portfolioMsg}</div>
-                )}
+                {/* Quick Actions */}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={addToWatchlist}
+                    disabled={watchlistLoading || isInWatchlist}
+                    variant={isInWatchlist ? "default" : "outline"}
+                    size="sm"
+                  >
+                    {watchlistLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : isInWatchlist ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Heart className="h-4 w-4" />
+                    )}
+                    {isInWatchlist ? "In Watchlist" : "Add to Watchlist"}
+                  </Button>
+
+                  <Button
+                    onClick={addToPortfolio}
+                    disabled={portfolioLoading || isInPortfolio}
+                    variant={isInPortfolio ? "default" : "outline"}
+                    size="sm"
+                  >
+                    {portfolioLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : isInPortfolio ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                    {isInPortfolio ? "In Portfolio" : "Add to Portfolio"}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${skin.marketHashName}`, "_blank")}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Steam Market
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyLink}
+                  >
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </Button>
+                </div>
               </div>
             </div>
+          ) : (
+            <div className="text-center py-12">
+              <h2 className="text-2xl font-bold text-destructive mb-2">Skin not found</h2>
+              <p className="text-muted-foreground">The skin you're looking for doesn't exist.</p>
+            </div>
           )}
+        </div>
 
-          {portfolioMsg && (
-            <div className="mt-2 text-sm text-emerald-400">{portfolioMsg}</div>
-          )}
+        {/* Mobile Sticky CTA */}
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 md:hidden z-50">
+          <div className="flex gap-2">
+            <Button
+              onClick={addToWatchlist}
+              disabled={watchlistLoading || isInWatchlist}
+              variant={isInWatchlist ? "default" : "outline"}
+              className="flex-1"
+            >
+              {watchlistLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isInWatchlist ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Heart className="h-4 w-4" />
+              )}
+            </Button>
+            <Button
+              onClick={addToPortfolio}
+              disabled={portfolioLoading || isInPortfolio}
+              variant={isInPortfolio ? "default" : "outline"}
+              className="flex-1"
+            >
+              {portfolioLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isInPortfolio ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
 
-          {/* Watchlist-Button & Alert */}
-          <div className="mb-4 p-4 bg-neutral-800 rounded-xl w-full">
-            <div className="mb-2 font-semibold">Add to Watchlist with Price Alert</div>
-            <div className="flex flex-col sm:flex-row gap-2 items-center">
-              <input
-                type="number"
-                placeholder="Alert price (optional)"
-                value={alert}
-                onChange={(e) => setAlert(e.target.value === "" ? "" : Number(e.target.value))}
-                className="input-main w-full sm:w-32"
-                min={0}
-                step={0.01}
+        {/* Main Content Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="history">Price History</TabsTrigger>
+            <TabsTrigger value="variants">Variants</TabsTrigger>
+            <TabsTrigger value="related">Related</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            {/* P1 - Market Statistics */}
+            {/* Market Statistics */}
+            {loadingEnhanced ? (
+              <Skeleton className="h-32 w-full" />
+            ) : marketStats ? (
+              <MarketStatsCard stats={marketStats} />
+            ) : null}
+
+            {/* P1 - Case Information */}
+            {/* Case Information */}
+            {loadingEnhanced ? (
+              <Skeleton className="h-48 w-full" />
+            ) : caseInfo ? (
+              <CaseInfoCard caseInfo={caseInfo} />
+            ) : null}
+
+            {/* P1 - Price Alerts & Watchlist */}
+            {/* Price Alerts & Watchlist */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Price Alerts & Watchlist</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Alert price"
+                    value={alertPrice}
+                    onChange={(e) => setAlertPrice(e.target.value ? Number(e.target.value) : "")}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={addPriceAlert}
+                    disabled={addingAlert || !alertPrice}
+                  >
+                    {addingAlert ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Set Alert"
+                    )}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Get notified when the price reaches your target.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-6">
+            {/* P1 - Price History */}
+            {/* Price History */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Price History</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Select value={chartRange} onValueChange={(value: Range) => setChartRange(value)}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="24h">24h</SelectItem>
+                        <SelectItem value="7d">7d</SelectItem>
+                        <SelectItem value="30d">30d</SelectItem>
+                        <SelectItem value="90d">90d</SelectItem>
+                        <SelectItem value="1y">1y</SelectItem>
+                        <SelectItem value="all">All</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={chartScale} onValueChange={setChartScale}>
+                      <SelectTrigger className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="linear">Linear</SelectItem>
+                        <SelectItem value="log">Log</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Button variant="outline" size="sm" onClick={exportData}>
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-96">
+                  {history.length > 0 ? (
+                    <Line data={chartData} options={chartOptions} />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      No price data available
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="variants" className="space-y-6">
+            {/* P1 - Skin Variants */}
+            {/* Skin Variants */}
+            {loadingEnhanced ? (
+              <Skeleton className="h-64 w-full" />
+            ) : variants.length > 0 ? (
+              <SkinVariantsCard 
+                variants={variants} 
+                currentSkinId={skin?.id || 0}
+                onVariantSelect={(variantId) => {
+                  setVariant(variantId.toString());
+                  // Navigate to variant
+                  router.push(`/skins/${variantId}`);
+                }}
               />
-              <button
-                onClick={addToWatchlist}
-                className="btn-main w-full sm:w-auto"
-                disabled={addingAlert}
-              >
-                Add to Watchlist
-              </button>
-            </div>
-            {msg && (
-              <div className="mt-2 text-sm text-yellow-400">{msg}</div>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <p className="text-muted-foreground">No variants available</p>
+                </CardContent>
+              </Card>
             )}
-            {watchlist.some((item) => item.skinId === skin.id) && (
-              <div className="mb-2 text-green-400 text-sm font-semibold">
-                Already on your Watchlist!
+          </TabsContent>
+
+          <TabsContent value="related" className="space-y-6">
+            {/* P2 - Related Skins */}
+            {/* Related Skins */}
+            {loadingEnhanced ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-48 w-full" />
+                ))}
               </div>
+            ) : relatedSkins.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {relatedSkins.map((relatedSkin) => (
+                  <Card key={relatedSkin.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="aspect-square relative mb-2">
+                        <Image
+                          src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
+                          alt={relatedSkin.name}
+                          fill
+                          className="object-contain rounded"
+                        />
+                      </div>
+                      <h3 className="font-medium text-sm truncate">{relatedSkin.name}</h3>
+                      <p className="text-primary font-bold">{formatUSD(relatedSkin.priceAvg)}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <p className="text-muted-foreground">No related skins found</p>
+                </CardContent>
+              </Card>
             )}
-          </div>
-
-          {/* Purchase Accordion - Shows portfolio data for THIS skin only */}
-          {portfolioPurchasesForSkin.length > 0 && (
-            <PurchaseAccordion
-              purchases={portfolioPurchasesForSkin}
-              total={totalAmount}
-              avgPrice={avgPrice}
-              performance={performance}
-            />
-          )}
-
-          {/* Steam-Link & Navigation */}
-          <a
-            href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(
-              skin?.marketHashName || ""
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-400 underline mt-2"
-          >
-            View on Steam Market
-          </a>
-          <div className="mt-6 text-center">
-            <Link href="/skins" className="text-neutral-400 hover:underline">
-              ← Back to all skins
-            </Link>
-          </div>
-        </>
-      )}
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
-  </div>
-);
+  );
 }
