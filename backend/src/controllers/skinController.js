@@ -181,7 +181,7 @@ export const getSkinCase = async (req, res) => {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    console.log(`[DEBUG] Skin found: itemGroup="${skin.itemGroup}", weaponType="${skin.weaponType}"`);
+    console.log(`[DEBUG] Skin found: itemGroup="${skin.itemGroup}", weaponType="${skin.weaponType}", itemName="${skin.itemName}"`);
     
     // If no itemGroup, try to find related skins by weaponType or similar characteristics
     if (!skin.itemGroup) {
@@ -206,6 +206,7 @@ export const getSkinCase = async (req, res) => {
           isStar: true,
           priceAvg: true,
           priceMedian: true,
+          priceLatest: true,
           imageUrl: true
         },
         orderBy: [
@@ -214,6 +215,8 @@ export const getSkinCase = async (req, res) => {
         ],
         take: 20
       });
+      
+      console.log(`[DEBUG] Found ${relatedSkins.length} related skins for weaponType "${skin.weaponType}"`);
       
       return res.json({
         caseName: "Related Items",
@@ -238,6 +241,7 @@ export const getSkinCase = async (req, res) => {
         isStar: true,
         priceAvg: true,
         priceMedian: true,
+        priceLatest: true,
         imageUrl: true
       },
       orderBy: [
