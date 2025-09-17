@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Search, X } from "lucide-react";
 import SkinGrid from "../SkinGrid";
 import { apiUrl, fetchJson } from "@/lib/api";
 
@@ -337,375 +338,224 @@ export function SkinsPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">CS2 Skins Browse</h1>
-        
-        {/* Weapon Category Tabs */}
-        <div className="mb-8">
-          <div className="flex flex-wrap justify-center gap-3">
-            {Object.entries(CS2_CATEGORIES).map(([key, cat]) => {
-              const isActive = key === 'all' ? !category : category === key;
-              
-              return (
-                <button
-                  key={key}
-                  onClick={() => updateCategory(key === 'all' ? undefined : key)}
-                  className={`px-6 py-3 rounded-xl transition-all duration-200 font-medium text-sm ${
-                    isActive 
-                      ? `${cat.color} text-white shadow-lg transform scale-105` 
-                      : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Quick Sort Bar */}
-        <div className="mb-6">
-          <div className="flex flex-wrap justify-center gap-2">
-            <button
-              onClick={() => setSort("popularity_desc")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                sort === "popularity_desc" 
-                  ? "bg-blue-600 text-white" 
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-            >
-              Most Popular
-            </button>
-            <button
-              onClick={() => setSort("price_asc")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                sort === "price_asc" 
-                  ? "bg-green-600 text-white" 
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-            >
-              Cheapest
-            </button>
-            <button
-              onClick={() => setSort("price_desc")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                sort === "price_desc" 
-                  ? "bg-red-600 text-white" 
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-            >
-              Most Expensive
-            </button>
-            <button
-              onClick={() => setSort("wear_asc")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                sort === "wear_asc" 
-                  ? "bg-purple-600 text-white" 
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-            >
-              Lowest Wear
-            </button>
-            <button
-              onClick={() => setSort("wear_desc")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                sort === "wear_desc" 
-                  ? "bg-orange-600 text-white" 
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-            >
-              Highest Wear
-            </button>
-          </div>
-        </div>
-
-        {/* Enhanced Filter Presets (Feature Flag) */}
-        {SKINS_FILTERS_ENHANCED && (
-          <div className="mb-6 space-y-4">
-            {/* Budget Presets */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Budget</h4>
-              <div className="flex flex-wrap justify-center gap-2">
-                {ENHANCED_FILTER_PRESETS.budget.map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => applyFilterPreset(preset)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-                  >
-                    {preset.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Wear Presets */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Wear</h4>
-              <div className="flex flex-wrap justify-center gap-2">
-                {ENHANCED_FILTER_PRESETS.wear.map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => applyFilterPreset(preset)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-                  >
-                    {preset.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Rarity Presets */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Rarity</h4>
-              <div className="flex flex-wrap justify-center gap-2">
-                {ENHANCED_FILTER_PRESETS.rarity.map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => applyFilterPreset(preset)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-                  >
-                    {preset.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Special Presets */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Special</h4>
-              <div className="flex flex-wrap justify-center gap-2">
-                {ENHANCED_FILTER_PRESETS.special.map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => applyFilterPreset(preset)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-                  >
-                    {preset.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Category Presets */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Categories</h4>
-              <div className="flex flex-wrap justify-center gap-2">
-                {ENHANCED_FILTER_PRESETS.category.map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => applyFilterPreset(preset)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-                  >
-                    {preset.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Finish Presets */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Finishes</h4>
-              <div className="flex flex-wrap justify-center gap-2">
-                {ENHANCED_FILTER_PRESETS.finish.map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => applyFilterPreset(preset)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-                  >
-                    {preset.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Combined Presets */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Combined</h4>
-              <div className="flex flex-wrap justify-center gap-2">
-                {ENHANCED_FILTER_PRESETS.combined.map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => applyFilterPreset(preset)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-                  >
-                    {preset.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Sort Presets */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-400 mb-2 text-center">Sort</h4>
-              <div className="flex flex-wrap justify-center gap-2">
-                {ENHANCED_FILTER_PRESETS.sort.map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => applyFilterPreset(preset)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-                  >
-                    {preset.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-8">
+        <div className="flex gap-6">
           {/* Left Sidebar - Filters */}
-          <div className="w-80 flex-shrink-0">
-            <div className="bg-gray-800 rounded-xl p-6 sticky top-8">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold">Filters</h3>
-                <div className="flex gap-2">
-                  {SKINS_FILTERS_ENHANCED && (
-                    <button
-                      onClick={copyCurrentLink}
-                      className="text-sm text-blue-400 hover:text-blue-300 underline"
-                      title="Copy current filter URL"
-                    >
-                      Copy Link
-                    </button>
-                  )}
-                  <button
-                    onClick={clearFilters}
-                    className="text-sm text-blue-400 hover:text-blue-300 underline"
-                  >
-                    Clear All
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-6">
+          <div className="w-80 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Filters</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 {/* Enhanced Search with Debouncing */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Search</label>
-                  <input
-                    type="text"
-                    value={q}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    placeholder="Search skins..."
-                    className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-                  />
+                <div className="space-y-2">
+                  <Label htmlFor="search">Search</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      id="search"
+                      placeholder="e.g. AK-47"
+                      value={q}
+                      onChange={(e) => handleSearchChange(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                   {SKINS_FILTERS_ENHANCED && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted-foreground">
                       {q !== debouncedQ ? "Typing..." : "Ready"}
                     </p>
                   )}
                 </div>
 
                 {/* Price Range */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Price Range</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      value={min}
-                      onChange={(e) => handleMinPriceChange(e.target.value)}
-                      placeholder="Min"
-                      className="flex-1 px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
+                <div className="space-y-4">
+                  <Label>Price Range</Label>
+                  <div className="space-y-4">
+                    <Slider
+                      value={[min ? Number(min) : 0, max ? Number(max) : 5000]}
+                      onValueChange={([minVal, maxVal]) => {
+                        setMin(minVal.toString());
+                        setMax(maxVal.toString());
+                      }}
+                      max={5000}
+                      step={10}
+                      className="w-full"
                     />
-                    <input
-                      type="number"
-                      value={max}
-                      onChange={(e) => handleMaxPriceChange(e.target.value)}
-                      placeholder="Max"
-                      className="flex-1 px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Min"
+                        value={min}
+                        onChange={(e) => handleMinPriceChange(e.target.value)}
+                        className="w-20"
+                      />
+                      <Input
+                        placeholder="Max"
+                        value={max}
+                        onChange={(e) => handleMaxPriceChange(e.target.value)}
+                        className="w-20"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Wear */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Wear</label>
-                  <select
-                    value={wear}
-                    onChange={(e) => setWear(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-                  >
-                    <option value="">All Wear</option>
-                    <option value="fn">Factory New</option>
-                    <option value="mw">Minimal Wear</option>
-                    <option value="ft">Field-Tested</option>
-                    <option value="ww">Well-Worn</option>
-                    <option value="bs">Battle-Scarred</option>
-                  </select>
+                <div className="space-y-3">
+                  <Label>Wear</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: "fn", name: "FN", fullName: "Factory New" },
+                      { id: "mw", name: "MW", fullName: "Minimal Wear" },
+                      { id: "ft", name: "FT", fullName: "Field-Tested" },
+                      { id: "ww", name: "WW", fullName: "Well-Worn" },
+                      { id: "bs", name: "BS", fullName: "Battle-Scarred" }
+                    ].map((wearOption) => (
+                      <Button
+                        key={wearOption.id}
+                        variant={wear === wearOption.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setWear(wear === wearOption.id ? "" : wearOption.id)}
+                      >
+                        {wearOption.name}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Rarity */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Rarity</label>
-                  <select
-                    value={rarity}
-                    onChange={(e) => setRarity(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-                  >
-                    <option value="">All Rarities</option>
-                    <option value="Consumer Grade">Consumer Grade</option>
-                    <option value="Industrial Grade">Industrial Grade</option>
-                    <option value="Mil-Spec">Mil-Spec</option>
-                    <option value="Restricted">Restricted</option>
-                    <option value="Classified">Classified</option>
-                    <option value="Covert">Covert</option>
-                    <option value="Contraband">Contraband</option>
-                  </select>
-                </div>
-
-                {/* Quality */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Quality</label>
-                  <select
-                    value={quality}
-                    onChange={(e) => setQuality(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-                  >
-                    <option value="">All Qualities</option>
-                    <option value="Normal">Normal</option>
-                    <option value="StatTrak">StatTrak</option>
-                    <option value="Souvenir">Souvenir</option>
-                  </select>
-                </div>
-
-                {/* Boolean Filters */}
                 <div className="space-y-3">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={stattrak}
-                      onChange={(e) => setStattrak(e.target.checked)}
-                      className="mr-2 rounded"
-                    />
-                    StatTrak
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={special}
-                      onChange={(e) => setSpecial(e.target.checked)}
-                      className="mr-2 rounded"
-                    />
-                    Special (Star)
-                  </label>
+                  <Label>Rarity</Label>
+                  <div className="space-y-2">
+                    {[
+                      "Covert",
+                      "Classified", 
+                      "Restricted",
+                      "Mil-Spec"
+                    ].map((rarityOption) => (
+                      <div key={rarityOption} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={rarityOption}
+                          checked={rarity === rarityOption}
+                          onCheckedChange={(checked) => {
+                            setRarity(checked ? rarityOption : "");
+                          }}
+                        />
+                        <Label htmlFor={rarityOption} className="text-sm">
+                          {rarityOption}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </div>
+
+                {/* StatTrak */}
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="stattrak">StatTrak™</Label>
+                  <Switch
+                    id="stattrak"
+                    checked={stattrak}
+                    onCheckedChange={setStattrak}
+                  />
+                </div>
+
+                {/* Special */}
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="special">Special (Star)</Label>
+                  <Switch
+                    id="special"
+                    checked={special}
+                    onCheckedChange={setSpecial}
+                  />
+                </div>
+
+                {/* Clear Filters Button */}
+                <Button onClick={clearFilters} variant="outline" className="w-full">
+                  Clear All
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Right Content - Results */}
-          <div className="flex-1">
-            {/* Enhanced Results Info */}
-            <div className="mb-6">
-              <div className="text-center space-y-2">
-                <p className="text-gray-400">
-                  Browse CS2 skins with advanced filtering
-                </p>
-                {SKINS_FILTERS_ENHANCED && (
-                  <div className="text-xs text-gray-600">
-                    Enhanced filters enabled
-                  </div>
+          {/* Main Content */}
+          <div className="flex-1 space-y-6">
+            {/* Header */}
+            <div>
+              <h1 className="text-3xl font-bold">Browse Skins</h1>
+            </div>
+
+            {/* Category Tabs */}
+            <div className="flex gap-2">
+              {Object.entries(CS2_CATEGORIES).map(([key, cat]) => {
+                const isActive = key === 'all' ? !category : category === key;
+                return (
+                  <Button
+                    key={key}
+                    variant={isActive ? "default" : "outline"}
+                    onClick={() => updateCategory(key === 'all' ? undefined : key)}
+                  >
+                    {cat.name}
+                  </Button>
+                );
+              })}
+            </div>
+
+            {/* Active Filters */}
+            {(category || rarity || stattrak) && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {category && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    {CS2_CATEGORIES[category as keyof typeof CS2_CATEGORIES]?.name}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => setCategory(undefined)}
+                    />
+                  </Badge>
                 )}
+                {rarity && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    {rarity}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => setRarity("")}
+                    />
+                  </Badge>
+                )}
+                {stattrak && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    StatTrak™
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => setStattrak(false)}
+                    />
+                  </Badge>
+                )}
+                <Button variant="link" size="sm" onClick={clearFilters}>
+                  Clear all
+                </Button>
+              </div>
+            )}
+
+            {/* Results Count and Sort */}
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Browse CS2 skins with advanced filtering
+              </div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="sort">Sort by:</Label>
+                <Select value={sort} onValueChange={setSort}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                    <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                    <SelectItem value="name_asc">Name: A to Z</SelectItem>
+                    <SelectItem value="name_desc">Name: Z to A</SelectItem>
+                    <SelectItem value="popularity_desc">Most Popular</SelectItem>
+                    <SelectItem value="wear_asc">Lowest Wear</SelectItem>
+                    <SelectItem value="wear_desc">Highest Wear</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -728,7 +578,6 @@ export function SkinsPageContent() {
               showSkeleton={true}
               skeletonCount={6}
             />
-
           </div>
         </div>
       </div>
