@@ -70,7 +70,7 @@ export function PortfolioHistoryChart({ history, onRangeChange }: Props) {
   const config = {
     value: {
       label: "Portfolio Value",
-      color: "hsl(var(--primary))",
+      color: "hsl(221.2 83.2% 53.3%)", // Blue-600
     },
   };
 
@@ -151,14 +151,14 @@ export function PortfolioHistoryChart({ history, onRangeChange }: Props) {
             <Area
               type="monotone"
               dataKey="value"
-              stroke="var(--color-value)"
-              fill="var(--color-value)"
+              stroke="hsl(221.2 83.2% 53.3%)"
+              fill="hsl(221.2 83.2% 53.3%)"
               fillOpacity={0.1}
               strokeWidth={2}
               dot={false}
               activeDot={{
                 r: 4,
-                fill: "var(--color-value)",
+                fill: "hsl(221.2 83.2% 53.3%)",
               }}
             />
           </AreaChart>

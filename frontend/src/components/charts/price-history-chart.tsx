@@ -65,15 +65,15 @@ export function PriceHistoryChart({
   const config = {
     price: {
       label: "Price",
-      color: "hsl(var(--primary))",
+      color: "hsl(221.2 83.2% 53.3%)", // Blue-600
     },
     ma7: {
       label: "MA 7",
-      color: "hsl(var(--chart-2))",
+      color: "hsl(142.1 76.2% 36.3%)", // Green-600
     },
     ma30: {
       label: "MA 30", 
-      color: "hsl(var(--chart-3))",
+      color: "hsl(0 84.2% 60.2%)", // Red-500
     },
   };
 
@@ -139,14 +139,14 @@ export function PriceHistoryChart({
           <Area
             type="monotone"
             dataKey="price"
-            stroke="var(--color-price)"
-            fill="var(--color-price)"
+            stroke="hsl(221.2 83.2% 53.3%)"
+            fill="hsl(221.2 83.2% 53.3%)"
             fillOpacity={0.1}
             strokeWidth={2}
             dot={false}
             activeDot={{
               r: 4,
-              fill: "var(--color-price)",
+              fill: "hsl(221.2 83.2% 53.3%)",
             }}
           />
           
@@ -155,7 +155,7 @@ export function PriceHistoryChart({
             <Area
               type="monotone"
               dataKey="ma7"
-              stroke="var(--color-ma7)"
+              stroke="hsl(142.1 76.2% 36.3%)"
               fill="transparent"
               strokeWidth={2}
               strokeDasharray="5 5"
@@ -168,7 +168,7 @@ export function PriceHistoryChart({
             <Area
               type="monotone"
               dataKey="ma30"
-              stroke="var(--color-ma30)"
+              stroke="hsl(0 84.2% 60.2%)"
               fill="transparent"
               strokeWidth={2}
               strokeDasharray="10 5"
