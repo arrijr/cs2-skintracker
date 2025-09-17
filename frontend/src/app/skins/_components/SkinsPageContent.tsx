@@ -242,6 +242,43 @@ export function SkinsPageContent() {
     setHasFilterChanges(hasChanges);
   }, [q, min, max, rarity, wear, stattrak, special, weaponType, collection, finish, category]);
 
+  // {/* Scroll restoration & back-to-top */}
+  // P2: Scroll restoration and back-to-top functionality
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  // Save scroll position on navigation
+  useEffect(() => {
+    const saveScrollPosition = () => {
+      sessionStorage.setItem('skins-scroll-position', window.scrollY.toString());
+    };
+
+    window.addEventListener('beforeunload', saveScrollPosition);
+    return () => window.removeEventListener('beforeunload', saveScrollPosition);
+  }, []);
+
+  // Restore scroll position on mount
+  useEffect(() => {
+    const savedPosition = sessionStorage.getItem('skins-scroll-position');
+    if (savedPosition) {
+      window.scrollTo(0, parseInt(savedPosition));
+      sessionStorage.removeItem('skins-scroll-position');
+    }
+  }, []);
+
+  // Show/hide back-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > window.innerHeight);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // P3: Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -763,105 +800,175 @@ export function SkinsPageContent() {
                   <span className="text-sm font-medium text-muted-foreground">Active filters:</span>
                   
                   {q && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge 
+                      variant="secondary" 
+                      className="flex items-center gap-1 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                    >
                       Search: "{q}"
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      <button
+                        className="h-3 w-3 cursor-pointer hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         onClick={() => setQ("")}
-                      />
+                        aria-label={`Remove search filter: ${q}`}
+                        tabIndex={0}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </Badge>
                   )}
                   
                   {category && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge 
+                      variant="secondary" 
+                      className="flex items-center gap-1 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                    >
                       {CS2_CATEGORIES[category as keyof typeof CS2_CATEGORIES]?.name}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      <button
+                        className="h-3 w-3 cursor-pointer hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         onClick={() => setCategory(undefined)}
-                      />
+                        aria-label={`Remove category filter: ${CS2_CATEGORIES[category as keyof typeof CS2_CATEGORIES]?.name}`}
+                        tabIndex={0}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </Badge>
                   )}
                   
                   {rarity && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge 
+                      variant="secondary" 
+                      className="flex items-center gap-1 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                    >
                       {rarity}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      <button
+                        className="h-3 w-3 cursor-pointer hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         onClick={() => setRarity("")}
-                      />
+                        aria-label={`Remove rarity filter: ${rarity}`}
+                        tabIndex={0}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </Badge>
                   )}
                   
                   {wear && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge 
+                      variant="secondary" 
+                      className="flex items-center gap-1 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                    >
                       {wear.toUpperCase()}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      <button
+                        className="h-3 w-3 cursor-pointer hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         onClick={() => setWear("")}
-                      />
+                        aria-label={`Remove wear filter: ${wear}`}
+                        tabIndex={0}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </Badge>
                   )}
                   
                   {stattrak && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge 
+                      variant="secondary" 
+                      className="flex items-center gap-1 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                    >
                       StatTrak™
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      <button
+                        className="h-3 w-3 cursor-pointer hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         onClick={() => setStattrak(false)}
-                      />
+                        aria-label="Remove StatTrak filter"
+                        tabIndex={0}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </Badge>
                   )}
                   
                   {special && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge 
+                      variant="secondary" 
+                      className="flex items-center gap-1 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                    >
                       Special
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      <button
+                        className="h-3 w-3 cursor-pointer hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         onClick={() => setSpecial(false)}
-                      />
+                        aria-label="Remove special filter"
+                        tabIndex={0}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </Badge>
                   )}
                   
                   {(min || max) && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge 
+                      variant="secondary" 
+                      className="flex items-center gap-1 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                    >
                       ${min || "0"} - ${max || "∞"}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      <button
+                        className="h-3 w-3 cursor-pointer hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         onClick={() => {
                           setMin("");
                           setMax("");
                         }}
-                      />
+                        aria-label={`Remove price filter: $${min || "0"} - $${max || "∞"}`}
+                        tabIndex={0}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </Badge>
                   )}
                   
                   {weaponType && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge 
+                      variant="secondary" 
+                      className="flex items-center gap-1 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                    >
                       {weaponType}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      <button
+                        className="h-3 w-3 cursor-pointer hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         onClick={() => setWeaponType("")}
-                      />
+                        aria-label={`Remove weapon type filter: ${weaponType}`}
+                        tabIndex={0}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </Badge>
                   )}
                   
                   {collection && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge 
+                      variant="secondary" 
+                      className="flex items-center gap-1 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                    >
                       {collection}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      <button
+                        className="h-3 w-3 cursor-pointer hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         onClick={() => setCollection("")}
-                      />
+                        aria-label={`Remove collection filter: ${collection}`}
+                        tabIndex={0}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </Badge>
                   )}
                   
                   {finish && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge 
+                      variant="secondary" 
+                      className="flex items-center gap-1 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                    >
                       {finish}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      <button
+                        className="h-3 w-3 cursor-pointer hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         onClick={() => setFinish("")}
-                      />
+                        aria-label={`Remove finish filter: ${finish}`}
+                        tabIndex={0}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </Badge>
                   )}
                   
@@ -893,7 +1000,7 @@ export function SkinsPageContent() {
               })}
             </div>
 
-            {/* P3: Filter Presets */}
+            {/* P2: Quick filter macros behavior */}
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <Label className="text-sm font-medium">Quick Filters:</Label>
@@ -902,11 +1009,18 @@ export function SkinsPageContent() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      setMin("");
-                      setMax("5");
-                      setSort("price_asc");
+                      // Smart toggle: if already set to this range, clear it
+                      if (min === "" && max === "5") {
+                        setMin("");
+                        setMax("");
+                      } else {
+                        setMin("");
+                        setMax("5");
+                        setSort("price_asc");
+                      }
                       clearFilters();
                     }}
+                    className={min === "" && max === "5" ? "bg-primary text-primary-foreground" : ""}
                   >
                     Under $5
                   </Button>
@@ -914,23 +1028,53 @@ export function SkinsPageContent() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      setMin("");
-                      setMax("25");
-                      setSort("price_asc");
+                      if (min === "" && max === "10") {
+                        setMin("");
+                        setMax("");
+                      } else {
+                        setMin("");
+                        setMax("10");
+                        setSort("price_asc");
+                      }
                       clearFilters();
                     }}
+                    className={min === "" && max === "10" ? "bg-primary text-primary-foreground" : ""}
                   >
-                    Under $25
+                    Under $10
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      setMin("100");
-                      setMax("500");
-                      setSort("price_desc");
+                      if (min === "" && max === "50") {
+                        setMin("");
+                        setMax("");
+                      } else {
+                        setMin("");
+                        setMax("50");
+                        setSort("price_asc");
+                      }
                       clearFilters();
                     }}
+                    className={min === "" && max === "50" ? "bg-primary text-primary-foreground" : ""}
+                  >
+                    Under $50
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (min === "100" && max === "500") {
+                        setMin("");
+                        setMax("");
+                      } else {
+                        setMin("100");
+                        setMax("500");
+                        setSort("price_desc");
+                      }
+                      clearFilters();
+                    }}
+                    className={min === "100" && max === "500" ? "bg-primary text-primary-foreground" : ""}
                   >
                     $100-$500
                   </Button>
@@ -938,11 +1082,17 @@ export function SkinsPageContent() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      setMin("500");
-                      setMax("");
-                      setSort("price_desc");
+                      if (min === "500" && max === "") {
+                        setMin("");
+                        setMax("");
+                      } else {
+                        setMin("500");
+                        setMax("");
+                        setSort("price_desc");
+                      }
                       clearFilters();
                     }}
+                    className={min === "500" && max === "" ? "bg-primary text-primary-foreground" : ""}
                   >
                     $500+
                   </Button>
@@ -950,13 +1100,38 @@ export function SkinsPageContent() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      setMin("1000");
-                      setMax("");
-                      setSort("price_desc");
+                      // Covert FN macro
+                      if (rarity === "Covert" && wear === "fn") {
+                        setRarity("");
+                        setWear("");
+                      } else {
+                        setRarity("Covert");
+                        setWear("fn");
+                        setSort("price_desc");
+                      }
                       clearFilters();
                     }}
+                    className={rarity === "Covert" && wear === "fn" ? "bg-primary text-primary-foreground" : ""}
                   >
-                    High Value
+                    Covert FN
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // StatTrak Only macro
+                      if (stattrak && !special) {
+                        setStattrak(false);
+                      } else {
+                        setStattrak(true);
+                        setSpecial(false);
+                        setSort("price_desc");
+                      }
+                      clearFilters();
+                    }}
+                    className={stattrak && !special ? "bg-primary text-primary-foreground" : ""}
+                  >
+                    StatTrak Only
                   </Button>
                 </div>
               </div>
@@ -1095,6 +1270,17 @@ export function SkinsPageContent() {
               enableInfiniteScroll={enableInfiniteScroll}
               onLoadMore={handleLoadMore}
             />
+
+            {/* P2: Back to Top Button */}
+            {showBackToTop && (
+              <Button
+                onClick={scrollToTop}
+                className="fixed bottom-6 right-6 z-50 shadow-lg rounded-full h-12 w-12 p-0"
+                aria-label="Back to top"
+              >
+                ↑
+              </Button>
+            )}
           </div>
         </div>
       </div>

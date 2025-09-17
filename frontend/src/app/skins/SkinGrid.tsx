@@ -109,30 +109,37 @@ export default function SkinGrid({
     }
   };
 
-  // P3: Enhanced Loading Skeleton
+  // {/* Perf: images/skeleton/virtualization */}
+  // P2: Enhanced Loading Skeleton with better performance
   const SkeletonCard = () => (
     <div className="overflow-hidden border rounded-lg bg-card">
       <div className="aspect-square relative bg-muted">
-        <div className="h-full w-full bg-gradient-to-br from-muted to-muted/50 animate-pulse" />
+        <div className="h-full w-full bg-gradient-to-br from-muted via-muted/80 to-muted/50 animate-pulse" />
         {/* Rarity badge skeleton */}
-        <div className="absolute top-2 left-2 h-5 w-16 bg-muted animate-pulse rounded" />
+        <div className="absolute top-2 left-2 h-5 w-16 bg-muted/80 animate-pulse rounded" />
         {/* Special badges skeleton */}
         <div className="absolute top-2 right-2 flex gap-1">
-          <div className="h-5 w-5 bg-muted animate-pulse rounded" />
+          <div className="h-5 w-5 bg-muted/80 animate-pulse rounded" />
         </div>
       </div>
       <div className="p-4 space-y-3">
         {/* Title skeleton */}
-        <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
-        {/* Rarity & Wear badges skeleton */}
+        <div className="h-4 bg-muted/80 animate-pulse rounded w-3/4" />
+        {/* P2: Enhanced Rarity & Wear badges skeleton */}
         <div className="flex items-center gap-2">
-          <div className="h-5 w-16 bg-muted animate-pulse rounded" />
-          <div className="h-5 w-12 bg-muted animate-pulse rounded" />
+          <div className="h-5 w-16 bg-muted/80 animate-pulse rounded" />
+          <div className="h-5 w-12 bg-muted/80 animate-pulse rounded" />
         </div>
-        {/* Price & Volume skeleton */}
-        <div className="flex items-baseline justify-between">
-          <div className="h-6 w-20 bg-muted animate-pulse rounded" />
-          <div className="h-3 w-16 bg-muted animate-pulse rounded" />
+        {/* P2: Enhanced Price & Volume skeleton with change indicator */}
+        <div className="space-y-1">
+          <div className="flex items-baseline justify-between">
+            <div className="h-6 w-20 bg-muted/80 animate-pulse rounded" />
+            <div className="h-4 w-16 bg-muted/60 animate-pulse rounded" />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="h-3 w-16 bg-muted/60 animate-pulse rounded" />
+            <div className="h-3 w-12 bg-muted/60 animate-pulse rounded" />
+          </div>
         </div>
       </div>
     </div>

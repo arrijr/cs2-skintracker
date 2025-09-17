@@ -28,6 +28,11 @@ type Skin = {
   priceMedian?: number | null;
   offerVolume?: number | null;
   sold24h?: number | null;
+  // P2: Additional fields for enhanced card info
+  priceChange24h?: number | null;
+  priceChange7d?: number | null;
+  lastUpdated?: string | null;
+  price7dAvg?: number | null;
 };
 
 export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }) {
@@ -148,6 +153,51 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
   const safeRarity = skin.rarity || '';
   const safeWear = skin.wear || '';
 
+  // {/* Card info: wear/rarity/offers/change */}
+  // Helper functions for enhanced card information
+  const getWearShortForm = (wear: string | null | undefined): string => {
+    if (!wear) return '';
+    const wearMap: Record<string, string> = {
+      'Factory New': 'FN',
+      'Minimal Wear': 'MW', 
+      'Field-Tested': 'FT',
+      'Well-Worn': 'WW',
+      'Battle-Scarred': 'BS'
+    };
+    return wearMap[wear] || wear;
+  };
+
+  const getTimeAgo = (lastUpdated: string | null | undefined): string => {
+    if (!lastUpdated) return '';
+    const now = new Date();
+    const updated = new Date(lastUpdated);
+    const diffMs = now.getTime() - updated.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d ago`;
+  };
+
+  const getPriceChangeBadge = (change24h: number | null | undefined, change7d: number | null | undefined) => {
+    const change = change24h || change7d;
+    if (!change || change === 0) return null;
+    
+    const isPositive = change > 0;
+    const color = isPositive ? 'text-green-500' : 'text-red-500';
+    const symbol = isPositive ? '+' : '';
+    const period = change24h ? '24h' : '7d';
+    
+    return (
+      <Badge variant="outline" className={`text-xs ${color} border-current`}>
+        {symbol}{change.toFixed(1)}% vs {period} avg
+      </Badge>
+    );
+  };
+
   return (
     <Link href={`/skins/${skin.id}`} className="block">
       <Card 
@@ -164,22 +214,26 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
       >
         {/* Image */}
         <div className="aspect-square relative bg-muted">
-          {skin.imageUrl ? (
-            <Image
-              src={skin.imageUrl}
-              alt={skin.name}
-              fill
-              className="object-cover transition-transform duration-200 group-hover:scale-105"
-              loading="lazy"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-              placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-            />
-          ) : (
-            <div className="w-full h-full bg-muted flex items-center justify-center">
-              <span className="text-muted-foreground text-sm">No Image</span>
-            </div>
-          )}
+                  {skin.imageUrl ? (
+                    <Image
+                      src={skin.imageUrl}
+                      alt={skin.name}
+                      fill
+                      className="object-cover transition-transform duration-200 group-hover:scale-105"
+                      loading="lazy"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                      // P2: Performance optimizations
+                      priority={false}
+                      quality={85}
+                      unoptimized={false}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                      <span className="text-muted-foreground text-sm">No Image</span>
+                    </div>
+                  )}
         
         {/* Rarity Badge */}
         {skin.rarity && (
@@ -270,37 +324,53 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
         </div>
         </div>
 
-        <CardContent className="p-4 space-y-2">
+        <CardContent className="p-4 space-y-3">
           {/* Title */}
           <h3 className="text-sm font-semibold truncate">{safeName}</h3>
           
-          {/* Rarity & Wear */}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {/* P2: Enhanced Rarity & Wear with better structure */}
+          <div className="flex items-center gap-2 text-xs">
             {skin.rarity && (
-              <Badge className={getRarityColor(skin.rarity)}>{skin.rarity}</Badge>
+              <Badge className={`${getRarityColor(skin.rarity)} text-white border-0`}>
+                {skin.rarity}
+              </Badge>
             )}
             {skin.wear && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Badge variant="outline">{skin.wear}</Badge>
+                    <Badge variant="outline" className="text-muted-foreground">
+                      {getWearShortForm(skin.wear)}
+                    </Badge>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{getWearFullName(skin.wear)}</p>
+                    <p className="font-medium">{getWearFullName(skin.wear)}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
           </div>
 
-          {/* Price & Volume */}
-          <div className="flex items-baseline justify-between">
-            <p className="text-lg font-bold text-primary">
-              {price ? `$${price.toFixed(2)}` : "N/A"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {skin.offerVolume ? `${skin.offerVolume} offers` : "N/A offers"}
-            </p>
+          {/* P2: Price with change indicator */}
+          <div className="space-y-1">
+            <div className="flex items-baseline justify-between">
+              <p className="text-lg font-bold text-primary">
+                {price ? `$${price.toFixed(2)}` : "N/A"}
+              </p>
+              {getPriceChangeBadge(skin.priceChange24h, skin.priceChange7d)}
+            </div>
+            
+            {/* P2: Secondary info - offers and last updated */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>
+                {skin.offerVolume ? `${skin.offerVolume} offers` : "No offers"}
+              </span>
+              {skin.lastUpdated && (
+                <span className="text-xs">
+                  Updated {getTimeAgo(skin.lastUpdated)}
+                </span>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -309,19 +379,19 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
 }
 
 function getRarityColor(rarity: string | null | undefined): string {
-  if (!rarity) return 'bg-gray-500 border-gray-500';
+  if (!rarity) return 'bg-gray-600 border-gray-600';
   
   const colors: Record<string, string> = {
     'Consumer Grade': 'bg-gray-500 border-gray-500',
-    'Industrial Grade': 'bg-cyan-500 border-cyan-500',
-    'Mil-Spec': 'bg-blue-500 border-blue-500',
-    'Restricted': 'bg-purple-500 border-purple-500',
-    'Classified': 'bg-pink-500 border-pink-500',
-    'Covert': 'bg-red-500 border-red-500',
-    'Contraband': 'bg-orange-500 border-orange-500',
+    'Industrial Grade': 'bg-cyan-600 border-cyan-600',
+    'Mil-Spec': 'bg-blue-600 border-blue-600',
+    'Restricted': 'bg-purple-600 border-purple-600',
+    'Classified': 'bg-pink-600 border-pink-600',
+    'Covert': 'bg-red-600 border-red-600',
+    'Contraband': 'bg-orange-600 border-orange-600',
   };
   
-  return colors[rarity] || 'bg-gray-500 border-gray-500';
+  return colors[rarity] || 'bg-gray-600 border-gray-600';
 }
 
 function getWearFullName(wear: string): string {
