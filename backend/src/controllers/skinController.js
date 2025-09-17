@@ -52,8 +52,8 @@ export const getSkinVariants = async (req, res) => {
         name: true, 
         marketHashName: true,
         weaponType: true,
-        collection: true,
-        finish: true
+        itemName: true,
+        itemGroup: true
       }
     });
     
@@ -61,14 +61,14 @@ export const getSkinVariants = async (req, res) => {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    // Find all skins with similar characteristics (same weapon, collection, finish)
+    // Find all skins with similar characteristics (same weapon, itemName, itemGroup)
     const variants = await prisma.skin.findMany({
       where: {
         AND: [
           { id: { not: parseInt(skinId) } }, // Exclude current skin
           { weaponType: baseSkin.weaponType },
-          { collection: baseSkin.collection },
-          { finish: baseSkin.finish }
+          { itemName: baseSkin.itemName },
+          { itemGroup: baseSkin.itemGroup }
         ]
       },
       select: {
@@ -77,15 +77,14 @@ export const getSkinVariants = async (req, res) => {
         wear: true,
         quality: true,
         isStattrak: true,
-        isSouvenir: true,
         isStar: true,
         imageUrl: true,
-        marketPrice: true
+        priceAvg: true,
+        priceMedian: true
       },
       orderBy: [
         { wear: 'asc' },
-        { isStattrak: 'asc' },
-        { isSouvenir: 'asc' }
+        { isStattrak: 'asc' }
       ]
     });
     
@@ -98,10 +97,10 @@ export const getSkinVariants = async (req, res) => {
         wear: true,
         quality: true,
         isStattrak: true,
-        isSouvenir: true,
         isStar: true,
         imageUrl: true,
-        marketPrice: true
+        priceAvg: true,
+        priceMedian: true
       }
     });
     
@@ -125,17 +124,17 @@ export const getSkinCase = async (req, res) => {
     // Get the skin to find its case/collection
     const skin = await prisma.skin.findUnique({
       where: { id: parseInt(skinId) },
-      select: { collection: true, weaponType: true }
+      select: { itemGroup: true, weaponType: true, itemName: true }
     });
     
     if (!skin) {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    // Find all skins in the same collection
+    // Find all skins in the same item group (case/collection)
     const caseSkins = await prisma.skin.findMany({
       where: {
-        collection: skin.collection
+        itemGroup: skin.itemGroup
       },
       select: {
         id: true,
@@ -144,8 +143,9 @@ export const getSkinCase = async (req, res) => {
         rarity: true,
         quality: true,
         isStattrak: true,
-        isSouvenir: true,
-        marketPrice: true,
+        isStar: true,
+        priceAvg: true,
+        priceMedian: true,
         imageUrl: true
       },
       orderBy: [
@@ -155,7 +155,7 @@ export const getSkinCase = async (req, res) => {
     });
     
     const caseInfo = {
-      caseName: skin.collection || "Unknown Case",
+      caseName: skin.itemGroup || "Unknown Case",
       skins: caseSkins,
       totalSkins: caseSkins.length
     };
@@ -246,8 +246,8 @@ export const getRelatedSkins = async (req, res) => {
       where: { id: parseInt(skinId) },
       select: { 
         weaponType: true,
-        collection: true,
-        finish: true,
+        itemGroup: true,
+        itemName: true,
         rarity: true
       }
     });
@@ -256,7 +256,7 @@ export const getRelatedSkins = async (req, res) => {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    // Find related skins (same weapon type or collection)
+    // Find related skins (same weapon type or item group)
     const relatedSkins = await prisma.skin.findMany({
       where: {
         AND: [
@@ -264,8 +264,8 @@ export const getRelatedSkins = async (req, res) => {
           {
             OR: [
               { weaponType: baseSkin.weaponType },
-              { collection: baseSkin.collection },
-              { finish: baseSkin.finish }
+              { itemGroup: baseSkin.itemGroup },
+              { itemName: baseSkin.itemName }
             ]
           }
         ]
@@ -274,15 +274,15 @@ export const getRelatedSkins = async (req, res) => {
         id: true,
         name: true,
         imageUrl: true,
-        marketPrice: true,
         priceAvg: true,
+        priceMedian: true,
         wear: true,
         rarity: true,
         isStattrak: true,
-        isSouvenir: true
+        isStar: true
       },
       orderBy: [
-        { marketPrice: 'desc' }
+        { priceAvg: 'desc' }
       ],
       take: 12 // Limit to 12 related skins
     });
