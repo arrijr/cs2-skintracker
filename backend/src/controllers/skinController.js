@@ -128,7 +128,21 @@ export const getSkinCase = async (req, res) => {
     });
     
     if (!skin) {
+      console.log(`[DEBUG] Skin ${skinId} not found in database`);
       return res.status(404).json({ error: 'Skin not found' });
+    }
+    
+    console.log(`[DEBUG] Skin found: itemGroup="${skin.itemGroup}", weaponType="${skin.weaponType}"`);
+    
+    // If no itemGroup, return empty case info instead of 404
+    if (!skin.itemGroup) {
+      console.log(`[DEBUG] Skin ${skinId} has no itemGroup, returning empty case info`);
+      return res.json({
+        caseName: "No Case Information",
+        skins: [],
+        totalSkins: 0,
+        message: "This skin is not part of a case or collection"
+      });
     }
     
     // Find all skins in the same item group (case/collection)
@@ -154,8 +168,10 @@ export const getSkinCase = async (req, res) => {
       ]
     });
     
+    console.log(`[DEBUG] Found ${caseSkins.length} skins in case "${skin.itemGroup}"`);
+    
     const caseInfo = {
-      caseName: skin.itemGroup || "Unknown Case",
+      caseName: skin.itemGroup,
       skins: caseSkins,
       totalSkins: caseSkins.length
     };
