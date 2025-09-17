@@ -802,51 +802,6 @@ export function SkinsPageContent() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      setWear("fn");
-                      setSort("price_desc");
-                      clearFilters();
-                    }}
-                  >
-                    Factory New
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setRarity("Covert");
-                      setSort("price_desc");
-                      clearFilters();
-                    }}
-                  >
-                    Covert Only
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setQ("Souvenir");
-                      setSort("price_desc");
-                      clearFilters();
-                    }}
-                  >
-                    Souvenir
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setQ("Sticker");
-                      setMax("10");
-                      setSort("price_asc");
-                      clearFilters();
-                    }}
-                  >
-                    Stickers <$10
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
                       setMin("1000");
                       setMax("");
                       setSort("price_desc");
@@ -854,28 +809,6 @@ export function SkinsPageContent() {
                     }}
                   >
                     High Value
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setWear("bs");
-                      setSort("price_asc");
-                      clearFilters();
-                    }}
-                  >
-                    Battle-Scarred
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setQ("Doppler");
-                      setSort("price_desc");
-                      clearFilters();
-                    }}
-                  >
-                    Doppler
                   </Button>
                 </div>
               </div>
