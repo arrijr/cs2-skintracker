@@ -280,7 +280,7 @@ export const getSkinMarketStats = async (req, res) => {
     
     // Calculate statistics
     const prices = priceHistory.map(h => h.price);
-    const currentPrice = prices[0];
+    const historyCurrentPrice = prices[0];
     const lowestPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
     const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
@@ -300,7 +300,7 @@ export const getSkinMarketStats = async (req, res) => {
       volume24h,
       volume7d,
       volume30d,
-      currentPrice,
+      currentPrice: historyCurrentPrice,
       medianPrice,
       lowestPrice,
       maxPrice,
