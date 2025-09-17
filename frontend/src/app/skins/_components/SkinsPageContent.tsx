@@ -218,7 +218,8 @@ export function SkinsPageContent() {
     isLoading, 
     isLoadingMore,
     isEmpty,
-    hasError
+    hasError,
+    setSize
   } = useInfiniteSkins({
     filters: {
       q: debouncedQ,
