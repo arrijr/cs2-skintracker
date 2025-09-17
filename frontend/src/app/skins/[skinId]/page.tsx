@@ -76,7 +76,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const [variant, setVariant] = useState(searchParams.get("variant") || "");
   const [chartRange, setChartRange] = useState<Range>((searchParams.get("range") as Range) || "30d");
   const [chartScale, setChartScale] = useState(searchParams.get("scale") === "log" ? "log" : "linear");
-  const [movingAverage, setMovingAverage] = useState(searchParams.get("ma") || "");
+  const [movingAverage, setMovingAverage] = useState(searchParams.get("ma") || "none");
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
 
   // Watchlist & Portfolio
@@ -109,7 +109,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     if (variant) params.set("variant", variant);
     if (chartRange !== "30d") params.set("range", chartRange);
     if (chartScale !== "linear") params.set("scale", chartScale);
-    if (movingAverage) params.set("ma", movingAverage);
+    if (movingAverage && movingAverage !== "none") params.set("ma", movingAverage);
     if (activeTab !== "overview") params.set("tab", activeTab);
     
     const newURL = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
@@ -677,7 +677,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     <SelectValue placeholder="MA" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     <SelectItem value="7">MA 7</SelectItem>
                     <SelectItem value="30">MA 30</SelectItem>
                   </SelectContent>
