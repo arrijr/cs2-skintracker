@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Line } from "react-chartjs-2";
 import type { ChartData, ChartOptions } from "chart.js";
-import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
+import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Tooltip as ChartTooltip, Legend } from "chart.js";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
 import { useAnalytics } from "@/lib/analytics";
 
 // Chart.js Registration
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTooltip, Legend);
 
 type Skin = {
   id: number;
