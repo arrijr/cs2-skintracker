@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2 } from "lucide-react";
@@ -133,7 +133,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           fetchJson(apiUrl(`/api/v1/skins/${skinId}`)),
           fetchJson(apiUrl(`/api/v1/skins/${skinId}/history?range=${chartRange}`))
         ]);
-
+        
         if (!cancelled) {
           setSkin(skinData);
           setHistory(historyData || []);
@@ -170,12 +170,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
         setMarketStats(statsData);
         setVariants(variantsData);
-        setCaseInfo(caseData);
+            setCaseInfo(caseData);
         setRelatedSkins(relatedData);
       } catch (error) {
         console.error("Error loading enhanced data:", error);
-      } finally {
-        setLoadingEnhanced(false);
+        } finally {
+            setLoadingEnhanced(false);
       }
     };
 
@@ -288,7 +288,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     try {
       const token = await getToken();
       if (!token) throw new Error("No token available");
-
+      
       await fetchJson(apiUrl("/api/v1/alerts"), {
         method: "POST",
         headers: {
@@ -455,22 +455,22 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               <div className="flex-shrink-0">
                 <div className="relative w-64 h-64 mx-auto md:mx-0">
                   <Image
-                    src={
-                      skin.itemimage ||
-                      skin.itemImage ||
-                      skin.image_url ||
-                      skin.imageUrl ||
-                      "/images/placeholder-skin.png"
-                    }
-                    alt={skin.name}
+            src={
+              skin.itemimage ||
+              skin.itemImage ||
+              skin.image_url ||
+              skin.imageUrl ||
+              "/images/placeholder-skin.png"
+            }
+            alt={skin.name}
                     fill
                     className="object-contain rounded-xl bg-muted"
                     priority
                     quality={90}
                   />
                 </div>
-              </div>
-
+           </div>
+           
               {/* Skin Info */}
               <div className="flex-1 space-y-4">
                 <div>
@@ -479,11 +479,11 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   
                   {/* Tags */}
                   <div className="flex items-center gap-2 mb-4">
-                    <TagBadges 
-                      isStattrak={skin.isStattrak} 
-                      isSouvenir={skin.isSouvenir} 
-                      isStar={skin.isStar} 
-                    />
+           <TagBadges 
+             isStattrak={skin.isStattrak} 
+             isSouvenir={skin.isSouvenir} 
+             isStar={skin.isStar} 
+           />
                     {skin.wear && (
                       <Badge variant="outline">{skin.wear}</Badge>
                     )}
@@ -498,11 +498,11 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   <div className="text-3xl font-bold text-primary">
                     {formatUSD(skin.marketPrice)}
                   </div>
-                  <PriceDeltaBadge 
-                    current={skin.marketPrice} 
-                    yesterday={history?.[history.length-2]?.price ?? null} 
-                  />
-                </div>
+             <PriceDeltaBadge 
+               current={skin.marketPrice} 
+               yesterday={history?.[history.length-2]?.price ?? null} 
+             />
+           </div>
 
                 {/* Quick Actions */}
                 <div className="flex flex-wrap gap-2">
@@ -562,9 +562,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             <div className="text-center py-12">
               <h2 className="text-2xl font-bold text-destructive mb-2">Skin not found</h2>
               <p className="text-muted-foreground">The skin you're looking for doesn't exist.</p>
-            </div>
+             </div>
           )}
-        </div>
+           </div>
 
         {/* Mobile Sticky CTA */}
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 md:hidden z-50">
@@ -772,7 +772,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             )}
           </TabsContent>
         </Tabs>
-      </div>
     </div>
-  );
+  </div>
+);
 }
