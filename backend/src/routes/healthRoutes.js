@@ -1,11 +1,9 @@
 // backend/src/routes/healthRoutes.js — [Backend]
 // {/* Health: exposes last timestamps for PriceHistory & PortfolioHistory */}
 import { Router } from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../prisma/prismaClient.js";
 import logger from "../utils/logger.js";
 import { verifyClerkJwt } from "../middleware/verifyClerkJwt.js";
-
-const prisma = new PrismaClient();
 const router = Router();
 
 // General health check
