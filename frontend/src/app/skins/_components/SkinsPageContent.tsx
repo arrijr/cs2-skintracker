@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { Search, X } from "lucide-react";
 import SkinGrid from "../SkinGrid";
 import { apiUrl, fetchJson } from "@/lib/api";
+import { saveFiltersToSession, loadFiltersFromSession, clearFiltersFromSession } from "@/lib/storage";
 
 // Feature flag for enhanced filters
 const SKINS_FILTERS_ENHANCED = process.env.NEXT_PUBLIC_SKINS_FILTERS_ENHANCED === 'true';
@@ -216,6 +217,22 @@ export function SkinsPageContent() {
     router.replace(`/skins?${p.toString()}`, { scroll: false });
   }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, router]);
 
+  // Filters Persistence
+  useEffect(() => {
+    saveFiltersToSession({
+      q,
+      min,
+      max,
+      rarity,
+      wear,
+      stattrak,
+      special,
+      sort,
+      category,
+      page
+    });
+  }, [q, min, max, rarity, wear, stattrak, special, sort, category, page]);
+
 
 
   // Initial load & when filters change → reset to page 1
@@ -285,6 +302,7 @@ export function SkinsPageContent() {
     setSpecial(false);
     setSort("name_asc");
     setCategory(undefined);
+    clearFiltersFromSession();
   }
 
   // Enhanced filter preset handler
@@ -358,7 +376,9 @@ export function SkinsPageContent() {
                       placeholder="e.g. AK-47"
                       value={q}
                       onChange={(e) => handleSearchChange(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      aria-label="Search skins"
+                      aria-describedby="search-description"
                     />
                   </div>
                   {SKINS_FILTERS_ENHANCED && (
@@ -497,6 +517,45 @@ export function SkinsPageContent() {
                   </Button>
                 );
               })}
+            </div>
+
+            {/* Shortcut Chips */}
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={sort === "popularity_desc" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSort("popularity_desc")}
+              >
+                Most Popular
+              </Button>
+              <Button
+                variant={sort === "price_asc" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSort("price_asc")}
+              >
+                Cheapest
+              </Button>
+              <Button
+                variant={sort === "price_desc" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSort("price_desc")}
+              >
+                Most Expensive
+              </Button>
+              <Button
+                variant={sort === "wear_asc" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSort("wear_asc")}
+              >
+                Lowest Wear
+              </Button>
+              <Button
+                variant={sort === "wear_desc" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSort("wear_desc")}
+              >
+                Highest Wear
+              </Button>
             </div>
 
             {/* Active Filters */}

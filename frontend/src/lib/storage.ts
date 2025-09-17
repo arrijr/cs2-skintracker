@@ -15,7 +15,7 @@ export interface FilterState {
   page?: number;
 }
 
-const STORAGE_KEY = 'cs2-browse-filters';
+const STORAGE_KEY = 'cs2-skins-filters';
 
 export const saveFiltersToSession = (filters: FilterState) => {
   if (typeof window === 'undefined') return;

@@ -85,7 +85,19 @@ export default function SkinGrid({
 
   // Loading skeleton
   const SkeletonCard = () => (
-    <div className="h-48 rounded-2xl bg-gray-800 animate-pulse" />
+    <div className="overflow-hidden">
+      <div className="aspect-square relative">
+        <div className="h-full w-full bg-muted animate-pulse" />
+      </div>
+      <div className="p-4 space-y-2">
+        <div className="h-4 bg-muted animate-pulse rounded" />
+        <div className="flex items-center justify-between">
+          <div className="h-6 w-8 bg-muted animate-pulse rounded" />
+          <div className="h-4 w-12 bg-muted animate-pulse rounded" />
+        </div>
+        <div className="h-3 bg-muted animate-pulse rounded w-2/3" />
+      </div>
+    </div>
   );
 
   // Error state

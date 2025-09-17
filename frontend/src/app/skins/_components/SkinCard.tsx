@@ -1,13 +1,17 @@
 // frontend/src/app/skins/_components/SkinCard.tsx — [Frontend]
-// {/* Skin card with quick "Add to Watchlist" */}
+// {/* Modern skin card with quick actions and enhanced UX */}
 "use client";
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Share2, ShoppingCart } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Heart, Plus, Check, Loader2, Star } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 import { apiUrl, fetchJson } from "@/lib/api";
+import { toast } from "sonner";
+import { useState } from "react";
 
 type Skin = {
   id: number;
@@ -27,10 +31,22 @@ type Skin = {
 };
 
 export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }) {
-  async function addToWatchlist(e: React.MouseEvent) {
-    e.preventDefault(); // Prevent navigation when clicking the button
-    e.stopPropagation(); // Stop event bubbling
+  const { user, isLoaded } = useUser();
+  const [watchlistState, setWatchlistState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [portfolioState, setPortfolioState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [isInPortfolio, setIsInPortfolio] = useState(false);
+
+  const handleWatchlistAdd = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     
+    if (!user) {
+      toast.error("Please sign in to add to watchlist");
+      return;
+    }
+    
+    setWatchlistState('loading');
     try {
       await fetchJson(apiUrl('/api/v1/watchlist'), {
         method: "POST",
@@ -40,13 +56,51 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
         body: JSON.stringify({ skinId: skin.id }),
       });
       
+      setIsInWatchlist(true);
+      setWatchlistState('success');
+      toast.success(`${skin.name} added to watchlist!`);
       onAdded?.();
-      // replace with your toast system
-      console.log("Added to Watchlist");
-    } catch {
-      console.error("Failed to add to watchlist");
+    } catch (error) {
+      setWatchlistState('error');
+      toast.error(`Failed to add ${skin.name} to watchlist`);
+      console.error("Watchlist error:", error);
     }
-  }
+  };
+
+  const handlePortfolioAdd = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      toast.error("Please sign in to add to portfolio");
+      return;
+    }
+    
+    setPortfolioState('loading');
+    try {
+      await fetchJson(apiUrl('/api/v1/portfolio'), {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${localStorage.getItem("token")}` 
+        },
+        body: JSON.stringify({
+          skinId: skin.id,
+          amount: 1,
+          buyPrice: skin.priceAvg || 0,
+          buyDate: new Date().toISOString().slice(0, 10),
+        }),
+      });
+      
+      setIsInPortfolio(true);
+      setPortfolioState('success');
+      toast.success(`${skin.name} added to portfolio!`);
+      onAdded?.();
+    } catch (error) {
+      setPortfolioState('error');
+      toast.error(`Failed to add ${skin.name} to portfolio`);
+      console.error("Portfolio error:", error);
+    }
+  };
 
   const price = skin.priceAvg || skin.priceMedian;
   const rarityColor = getRarityColor(skin.rarity);
@@ -57,82 +111,188 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
   const safeWear = skin.wear || '';
 
   return (
-    <Link href={`/skins/${skin.id}`} className="block">
-      <div className="rounded-2xl bg-gray-800 p-3 hover:bg-gray-700 transition-all duration-200 hover:scale-105 group cursor-pointer">
+    <Card 
+      className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer group focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          window.location.href = `/skins/${skin.id}`;
+        }
+      }}
+      aria-label={`View details for ${skin.name}`}
+    >
+      <Link href={`/skins/${skin.id}`} className="block">
         {/* Image */}
-        <div className="aspect-square overflow-hidden rounded-xl mb-3 relative">
-          <Image
-            src={skin.imageUrl || "/images/placeholder-skin.png"}
-            alt={skin.name}
-            width={200}
-            height={200}
-            loading="lazy"
-            className="w-full h-full object-contain"
-          />
-          
-          {/* Special Indicators */}
-          {skin.isStattrak && (
-            <div className="absolute top-2 right-2 bg-orange-600 text-xs px-2 py-1 rounded font-bold">
-              ST
+        <div className="aspect-square relative bg-muted">
+          {skin.imageUrl ? (
+            <Image
+              src={skin.imageUrl}
+              alt={skin.name}
+              fill
+              className="object-cover transition-transform duration-200 group-hover:scale-105"
+              loading="lazy"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+            />
+          ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <span className="text-muted-foreground text-sm">No Image</span>
             </div>
+          )}
+        
+        {/* Rarity Badge */}
+        {skin.rarity && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge 
+                  className={`absolute top-2 left-2 ${getRarityColor(skin.rarity)} text-white border-2 shadow-lg`}
+                  variant="secondary"
+                >
+                  {skin.rarity}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="font-medium">{skin.rarity} Rarity</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+        
+        {/* Special Badges */}
+        <div className="absolute top-2 right-2 flex gap-1">
+          {skin.isStattrak && (
+            <Badge variant="outline" className="bg-orange-500 text-white border-orange-500">
+              ST
+            </Badge>
           )}
           {skin.isStar && (
-            <div className="absolute top-2 left-2 text-yellow-400 text-2xl">
-              ★
-            </div>
+            <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
           )}
         </div>
 
-        {/* Title */}
-        <div className="text-sm font-semibold line-clamp-2 mb-2 group-hover:text-blue-400 transition-colors">
-          {safeName}
+        {/* Quick Actions - Always Visible */}
+        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleWatchlistAdd}
+                  disabled={watchlistState === 'loading' || isInWatchlist}
+                  className="h-8 w-8 p-0 focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+                  aria-pressed={isInWatchlist}
+                >
+                  {watchlistState === 'loading' ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isInWatchlist || watchlistState === 'success' ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Heart className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handlePortfolioAdd}
+                  disabled={portfolioState === 'loading' || isInPortfolio}
+                  className="h-8 w-8 p-0 focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  aria-label={isInPortfolio ? "Remove from portfolio" : "Add to portfolio"}
+                  aria-pressed={isInPortfolio}
+                >
+                  {portfolioState === 'loading' ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isInPortfolio || portfolioState === 'success' ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isInPortfolio ? "Remove from portfolio" : "Add to portfolio"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
+      </Link>
+
+      <CardContent className="p-4 space-y-2">
+        {/* Title */}
+        <h3 className="text-sm font-semibold truncate">{safeName}</h3>
         
         {/* Rarity & Wear */}
-        <div className="text-xs text-gray-400 mb-3">
-          {safeRarity && (
-            <span className={`${rarityColor} mr-2`}>
-              {safeRarity}
-            </span>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {skin.rarity && (
+            <Badge className={getRarityColor(skin.rarity)}>{skin.rarity}</Badge>
           )}
-          {safeWear && (
-            <span className="text-gray-500">
-              {safeWear}
-            </span>
+          {skin.wear && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline">{skin.wear}</Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{getWearFullName(skin.wear)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
 
-        {/* Price / Actions */}
-        <div className="flex items-center justify-between">
-          <span className="font-bold text-green-400">
-            {price ? `$${price.toFixed(2)}` : "--"}
-          </span>
-          
-          {/* Quick Add to Watchlist */}
-          <button 
-            onClick={addToWatchlist}
-            className="text-xs px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 transition-colors"
-          >
-            + Watchlist
-          </button>
+        {/* Price & Volume */}
+        <div className="flex items-baseline justify-between">
+          <p className="text-lg font-bold text-primary">
+            {price ? `$${price.toFixed(2)}` : "N/A"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {skin.offerVolume ? `${skin.offerVolume} offers` : "N/A offers"}
+          </p>
         </div>
-      </div>
-    </Link>
+      </CardContent>
+    </Card>
   );
 }
 
 function getRarityColor(rarity: string | null | undefined): string {
-  if (!rarity) return 'text-gray-400';
+  if (!rarity) return 'bg-gray-500 border-gray-500';
   
   const colors: Record<string, string> = {
-    'Consumer Grade': 'text-gray-400',
-    'Industrial Grade': 'text-blue-400',
-    'Mil-Spec': 'text-blue-500',
-    'Restricted': 'text-purple-400',
-    'Classified': 'text-pink-400',
-    'Covert': 'text-red-400',
-    'Contraband': 'text-yellow-400',
+    'Consumer Grade': 'bg-gray-500 border-gray-500',
+    'Industrial Grade': 'bg-cyan-500 border-cyan-500',
+    'Mil-Spec': 'bg-blue-500 border-blue-500',
+    'Restricted': 'bg-purple-500 border-purple-500',
+    'Classified': 'bg-pink-500 border-pink-500',
+    'Covert': 'bg-red-500 border-red-500',
+    'Contraband': 'bg-orange-500 border-orange-500',
   };
   
-  return colors[rarity] || 'text-gray-400';
+  return colors[rarity] || 'bg-gray-500 border-gray-500';
+}
+
+function getWearFullName(wear: string): string {
+  const wearMap: Record<string, string> = {
+    'FN': 'Factory New',
+    'MW': 'Minimal Wear',
+    'FT': 'Field-Tested',
+    'WW': 'Well-Worn',
+    'BS': 'Battle-Scarred',
+  };
+  
+  return wearMap[wear] || wear;
 }
