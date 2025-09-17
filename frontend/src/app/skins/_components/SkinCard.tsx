@@ -230,41 +230,40 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
             </Tooltip>
           </TooltipProvider>
         </div>
-      </Link>
 
-      <CardContent className="p-4 space-y-2">
-        {/* Title */}
-        <h3 className="text-sm font-semibold truncate">{safeName}</h3>
-        
-        {/* Rarity & Wear */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {skin.rarity && (
-            <Badge className={getRarityColor(skin.rarity)}>{skin.rarity}</Badge>
-          )}
-          {skin.wear && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Badge variant="outline">{skin.wear}</Badge>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{getWearFullName(skin.wear)}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
+        <CardContent className="p-4 space-y-2">
+          {/* Title */}
+          <h3 className="text-sm font-semibold truncate">{safeName}</h3>
+          
+          {/* Rarity & Wear */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {skin.rarity && (
+              <Badge className={getRarityColor(skin.rarity)}>{skin.rarity}</Badge>
+            )}
+            {skin.wear && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline">{skin.wear}</Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{getWearFullName(skin.wear)}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
 
-        {/* Price & Volume */}
-        <div className="flex items-baseline justify-between">
-          <p className="text-lg font-bold text-primary">
-            {price ? `$${price.toFixed(2)}` : "N/A"}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {skin.offerVolume ? `${skin.offerVolume} offers` : "N/A offers"}
-          </p>
-        </div>
-      </CardContent>
+          {/* Price & Volume */}
+          <div className="flex items-baseline justify-between">
+            <p className="text-lg font-bold text-primary">
+              {price ? `$${price.toFixed(2)}` : "N/A"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {skin.offerVolume ? `${skin.offerVolume} offers` : "N/A offers"}
+            </p>
+          </div>
+        </CardContent>
       </Card>
     </Link>
   );
