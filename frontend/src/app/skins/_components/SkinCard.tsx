@@ -230,6 +230,7 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
             </Tooltip>
           </TooltipProvider>
         </div>
+        </div>
 
         <CardContent className="p-4 space-y-2">
           {/* Title */}
