@@ -194,17 +194,46 @@ export default function SkinDetailPage() {
     loadPriceHistory();
   }, [skin?.id, variant]);
 
+  // Filter history based on selected range
+  const filteredHistory = useMemo(() => {
+    if (!history.length) return [];
+    
+    const now = new Date();
+    const filtered = history.filter(item => {
+      const itemDate = new Date(item.date);
+      const daysDiff = (now.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24);
+      
+      switch (chartRange) {
+        case "24h":
+          return daysDiff <= 1;
+        case "7d":
+          return daysDiff <= 7;
+        case "30d":
+          return daysDiff <= 30;
+        case "90d":
+          return daysDiff <= 90;
+        case "1y":
+          return daysDiff <= 365;
+        case "all":
+        default:
+          return true;
+      }
+    });
+    
+    return filtered;
+  }, [history, chartRange]);
+
   // P1 - Chart Data with Moving Average
   const chartData = useMemo((): ChartData<"line"> => {
-    if (!history.length) {
+    if (!filteredHistory.length) {
       return {
         labels: [],
         datasets: []
       };
     }
 
-    const prices = history.map(h => h.price);
-    const labels = history.map(h => new Date(h.date).toLocaleDateString());
+    const prices = filteredHistory.map(h => h.price);
+    const labels = filteredHistory.map(h => new Date(h.date).toLocaleDateString());
 
     const datasets: any[] = [{
       label: 'Price',
@@ -241,7 +270,7 @@ export default function SkinDetailPage() {
     }
 
     return { labels, datasets };
-  }, [history, movingAverage]);
+  }, [filteredHistory, movingAverage]);
 
   // Helper function to calculate moving average
   const calculateMovingAverage = (prices: number[], period: number): number[] => {
@@ -407,7 +436,7 @@ export default function SkinDetailPage() {
 
   // P2 - Export Data (CSV/JSON) with P3 Analytics
   const exportData = useCallback((format: 'csv' | 'json' = 'csv') => {
-    if (!history.length) {
+    if (!filteredHistory.length) {
       toast.error("No data to export");
       return;
     }
@@ -417,15 +446,15 @@ export default function SkinDetailPage() {
     let mimeType: string;
     
     if (format === 'json') {
-      content = JSON.stringify(history, null, 2);
-      filename = `${skin?.name || 'skin'}-price-history.json`;
+      content = JSON.stringify(filteredHistory, null, 2);
+      filename = `${skin?.name || 'skin'}-price-history-${chartRange}.json`;
       mimeType = "application/json";
     } else {
       content = [
         "Date,Price",
-        ...history.map(h => `${h.date},${h.price}`)
+        ...filteredHistory.map(h => `${h.date},${h.price}`)
       ].join("\n");
-      filename = `${skin?.name || 'skin'}-price-history.csv`;
+      filename = `${skin?.name || 'skin'}-price-history-${chartRange}.csv`;
       mimeType = "text/csv";
     }
     
@@ -439,11 +468,11 @@ export default function SkinDetailPage() {
     
     // P3 - Analytics: Track export
     if (skin) {
-      analytics.trackExportData(skin.id, skin.name, format, history.length);
+      analytics.trackExportData(skin.id, skin.name, format, filteredHistory.length);
     }
     
     toast.success(`Data exported as ${format.toUpperCase()}`);
-  }, [history, skin, analytics]);
+  }, [filteredHistory, skin, analytics, chartRange]);
 
   // P2 - Scroll Position Restoration
   useEffect(() => {
@@ -826,11 +855,11 @@ export default function SkinDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="h-96">
-              {history.length > 0 ? (
+              {filteredHistory.length > 0 ? (
                 <Line data={chartData} options={chartOptions} />
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
-                  No price data available for this variant
+                  No price data available for this time range
                 </div>
               )}
             </div>
