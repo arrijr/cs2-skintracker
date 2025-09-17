@@ -198,6 +198,7 @@ export function SkinsPageContent() {
   const [collection, setCollection] = useState(sp.get("collection") ?? "");
   const [finish, setFinish] = useState(sp.get("finish") ?? "");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [enableInfiniteScroll, setEnableInfiniteScroll] = useState(true);
 
   // Data state
   const [page, setPage] = useState(1);
@@ -463,6 +464,11 @@ export function SkinsPageContent() {
       }
     };
     reader.readAsText(file);
+  }, []);
+
+  // P3: Load More Handler
+  const handleLoadMore = useCallback(() => {
+    setPage(prev => prev + 1);
   }, []);
 
   // Filter change handlers with validation
@@ -995,6 +1001,8 @@ export function SkinsPageContent() {
               }}
               showSkeleton={true}
               skeletonCount={6}
+              enableInfiniteScroll={enableInfiniteScroll}
+              onLoadMore={handleLoadMore}
             />
           </div>
         </div>

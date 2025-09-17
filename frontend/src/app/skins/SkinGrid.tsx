@@ -1,7 +1,7 @@
 // frontend/src/app/skins/SkinGrid.tsx — [Frontend]
 // {/* Reusable Skin Grid with Loading/Error/Empty States */}
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { SkinCard } from "./_components/SkinCard";
 import { useSkins, type SkinsFilters } from "@/hooks/useSkins";
 import { useUser } from "@clerk/nextjs";
@@ -15,6 +15,8 @@ interface SkinGridProps {
   className?: string;
   showSkeleton?: boolean;
   skeletonCount?: number;
+  enableInfiniteScroll?: boolean;
+  onLoadMore?: () => void;
 }
 
 export default function SkinGrid({ 
@@ -23,10 +25,13 @@ export default function SkinGrid({
   onSkinAdd,
   className = "",
   showSkeleton = true,
-  skeletonCount = 12
+  skeletonCount = 12,
+  enableInfiniteScroll = false,
+  onLoadMore
 }: SkinGridProps) {
   const { user, isLoaded } = useUser();
   const router = useRouter();
+  const observerRef = useRef<HTMLDivElement>(null);
   
   // Use the skins hook with provided filters
   const { 
@@ -40,6 +45,27 @@ export default function SkinGrid({
     filters,
     enabled: true 
   });
+
+  // P3: Infinite Scroll Implementation
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+    const target = entries[0];
+    if (target.isIntersecting && !isLoading && pagination?.hasMore && onLoadMore) {
+      onLoadMore();
+    }
+  }, [isLoading, pagination?.hasMore, onLoadMore]);
+
+  useEffect(() => {
+    if (!enableInfiniteScroll || !observerRef.current) return;
+
+    const observer = new IntersectionObserver(handleObserver, {
+      threshold: 0.1,
+      rootMargin: '100px'
+    });
+
+    observer.observe(observerRef.current);
+
+    return () => observer.disconnect();
+  }, [enableInfiniteScroll, handleObserver]);
 
   // Handle skin click
   const handleSkinClick = (skinId: number) => {
@@ -83,19 +109,31 @@ export default function SkinGrid({
     }
   };
 
-  // Loading skeleton
+  // P3: Enhanced Loading Skeleton
   const SkeletonCard = () => (
-    <div className="overflow-hidden">
-      <div className="aspect-square relative">
-        <div className="h-full w-full bg-muted animate-pulse" />
-      </div>
-      <div className="p-4 space-y-2">
-        <div className="h-4 bg-muted animate-pulse rounded" />
-        <div className="flex items-center justify-between">
-          <div className="h-6 w-8 bg-muted animate-pulse rounded" />
-          <div className="h-4 w-12 bg-muted animate-pulse rounded" />
+    <div className="overflow-hidden border rounded-lg bg-card">
+      <div className="aspect-square relative bg-muted">
+        <div className="h-full w-full bg-gradient-to-br from-muted to-muted/50 animate-pulse" />
+        {/* Rarity badge skeleton */}
+        <div className="absolute top-2 left-2 h-5 w-16 bg-muted animate-pulse rounded" />
+        {/* Special badges skeleton */}
+        <div className="absolute top-2 right-2 flex gap-1">
+          <div className="h-5 w-5 bg-muted animate-pulse rounded" />
         </div>
-        <div className="h-3 bg-muted animate-pulse rounded w-2/3" />
+      </div>
+      <div className="p-4 space-y-3">
+        {/* Title skeleton */}
+        <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
+        {/* Rarity & Wear badges skeleton */}
+        <div className="flex items-center gap-2">
+          <div className="h-5 w-16 bg-muted animate-pulse rounded" />
+          <div className="h-5 w-12 bg-muted animate-pulse rounded" />
+        </div>
+        {/* Price & Volume skeleton */}
+        <div className="flex items-baseline justify-between">
+          <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+          <div className="h-3 w-16 bg-muted animate-pulse rounded" />
+        </div>
       </div>
     </div>
   );
@@ -143,25 +181,56 @@ export default function SkinGrid({
   }
 
   return (
-    <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 ${className}`}>
-      {/* Loading skeletons */}
-      {isLoading && showSkeleton && (
-        <>
-          {Array.from({ length: skeletonCount }).map((_, i) => (
-            <SkeletonCard key={`skeleton-${i}`} />
-          ))}
-        </>
-      )}
-      
-      {/* Actual skin cards */}
-      {!isLoading && skins.map((skin) => (
-        <div key={skin.id} onClick={() => handleSkinClick(skin.id)}>
-          <SkinCard 
-            skin={skin} 
-            onAdded={() => handleSkinAdd(skin.id)}
-          />
+    <div className="space-y-4">
+      <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 ${className}`}>
+        {/* Loading skeletons */}
+        {isLoading && showSkeleton && (
+          <>
+            {Array.from({ length: skeletonCount }).map((_, i) => (
+              <SkeletonCard key={`skeleton-${i}`} />
+            ))}
+          </>
+        )}
+        
+        {/* Actual skin cards */}
+        {!isLoading && skins.map((skin) => (
+          <div key={skin.id} onClick={() => handleSkinClick(skin.id)}>
+            <SkinCard 
+              skin={skin} 
+              onAdded={() => handleSkinAdd(skin.id)}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* P3: Infinite Scroll Trigger */}
+      {enableInfiniteScroll && pagination?.hasMore && (
+        <div ref={observerRef} className="flex justify-center py-8">
+          {isLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              <span>Loading more skins...</span>
+            </div>
+          ) : (
+            <div className="text-muted-foreground text-sm">
+              Scroll down to load more
+            </div>
+          )}
         </div>
-      ))}
+      )}
+
+      {/* P3: Load More Button (fallback) */}
+      {!enableInfiniteScroll && pagination?.hasMore && (
+        <div className="flex justify-center py-8">
+          <button
+            onClick={onLoadMore}
+            disabled={isLoading}
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
