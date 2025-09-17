@@ -59,35 +59,55 @@ export function SkinCard({
   // Check if skin is already in watchlist/portfolio on mount
   useEffect(() => {
     const checkExistingEntries = async () => {
-      if (!user) return;
+      // Only check if user is loaded and authenticated
+      if (!isLoaded || !user) {
+        setIsInWatchlist(false);
+        setIsInPortfolio(false);
+        return;
+      }
+      
+      // Check if we have a valid token
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setIsInWatchlist(false);
+        setIsInPortfolio(false);
+        return;
+      }
       
       try {
         // Check watchlist
         const watchlistResponse = await fetchJson(apiUrl('/api/v1/watchlist'), {
-          headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+          headers: { "Authorization": `Bearer ${token}` }
         });
         const isInWatchlist = watchlistResponse.some((item: any) => item.skinId === skin.id);
         setIsInWatchlist(isInWatchlist);
         
         // Check portfolio
         const portfolioResponse = await fetchJson(apiUrl('/api/v1/portfolio'), {
-          headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+          headers: { "Authorization": `Bearer ${token}` }
         });
         const isInPortfolio = portfolioResponse.some((item: any) => item.skinId === skin.id);
         setIsInPortfolio(isInPortfolio);
       } catch (error) {
-        console.error("Error checking existing entries:", error);
+        // Handle 401 and other auth errors gracefully
+        if (error instanceof Error && error.message.includes('401')) {
+          // User is not authenticated, clear states
+          setIsInWatchlist(false);
+          setIsInPortfolio(false);
+        } else {
+          console.error("Error checking existing entries:", error);
+        }
       }
     };
 
     checkExistingEntries();
-  }, [user, skin.id]);
+  }, [isLoaded, user, skin.id]);
 
   const handleWatchlistAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (!user) {
+    if (!isLoaded || !user) {
       toast.error("Please sign in to add to watchlist");
       return;
     }
@@ -97,12 +117,18 @@ export function SkinCard({
       return;
     }
     
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please sign in to add to watchlist");
+      return;
+    }
+    
     setWatchlistState('loading');
     try {
       await fetchJson(apiUrl('/api/v1/watchlist'), {
         method: "POST",
         headers: { 
-          "Authorization": `Bearer ${localStorage.getItem("token")}` 
+          "Authorization": `Bearer ${token}` 
         },
         body: JSON.stringify({ skinId: skin.id }),
       });
@@ -113,7 +139,11 @@ export function SkinCard({
       onAdded?.();
     } catch (error) {
       setWatchlistState('error');
-      toast.error(`Failed to add ${skin.name} to watchlist`);
+      if (error instanceof Error && error.message.includes('401')) {
+        toast.error("Please sign in to add to watchlist");
+      } else {
+        toast.error(`Failed to add ${skin.name} to watchlist`);
+      }
       console.error("Watchlist error:", error);
     }
   };
@@ -122,7 +152,7 @@ export function SkinCard({
     e.preventDefault();
     e.stopPropagation();
     
-    if (!user) {
+    if (!isLoaded || !user) {
       toast.error("Please sign in to add to portfolio");
       return;
     }
@@ -132,12 +162,18 @@ export function SkinCard({
       return;
     }
     
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please sign in to add to portfolio");
+      return;
+    }
+    
     setPortfolioState('loading');
     try {
       await fetchJson(apiUrl('/api/v1/portfolio'), {
         method: "POST",
         headers: { 
-          "Authorization": `Bearer ${localStorage.getItem("token")}` 
+          "Authorization": `Bearer ${token}` 
         },
         body: JSON.stringify({
           skinId: skin.id,
@@ -153,7 +189,11 @@ export function SkinCard({
       onAdded?.();
     } catch (error) {
       setPortfolioState('error');
-      toast.error(`Failed to add ${skin.name} to portfolio`);
+      if (error instanceof Error && error.message.includes('401')) {
+        toast.error("Please sign in to add to portfolio");
+      } else {
+        toast.error(`Failed to add ${skin.name} to portfolio`);
+      }
       console.error("Portfolio error:", error);
     }
   };
