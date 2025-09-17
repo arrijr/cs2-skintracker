@@ -162,7 +162,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
       setLoadingEnhanced(true);
       try {
         const [statsData, variantsData, caseData, relatedData] = await Promise.all([
-          fetchJson(apiUrl(`/api/v1/skins/${skinId}/stats`)).catch(() => null),
+          fetchJson(apiUrl(`/api/v1/skins/${skinId}/market-stats`)).catch(() => null),
           fetchJson(apiUrl(`/api/v1/skins/${skinId}/variants`)).catch(() => []),
           fetchJson(apiUrl(`/api/v1/skins/${skinId}/case`)).catch(() => null),
           fetchJson(apiUrl(`/api/v1/skins/${skinId}/related`)).catch(() => [])
@@ -348,28 +348,71 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     }
   };
 
-  // Chart data
+  // Chart data with moving averages
   const chartData = useMemo((): ChartData<"line"> => {
     if (!history.length) return { labels: [], datasets: [] };
 
     const labels = history.map(h => new Date(h.date).toLocaleDateString());
     const prices = history.map(h => h.price);
 
-    return {
-      labels,
-      datasets: [
-        {
-          label: "Price",
-          data: prices,
-          borderColor: "#10b981",
-          backgroundColor: "rgba(16, 185, 129, 0.1)",
-          borderWidth: 2,
-          fill: true,
-          tension: 0.1,
-        },
-      ],
-    };
-  }, [history]);
+    const datasets = [
+      {
+        label: "Price",
+        data: prices,
+        borderColor: "#10b981",
+        backgroundColor: "rgba(16, 185, 129, 0.1)",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.1,
+      },
+    ];
+
+    // Add moving averages if enabled
+    if (movingAverage === "7") {
+      const ma7 = calculateMovingAverage(prices, 7);
+      datasets.push({
+        label: "MA 7",
+        data: ma7,
+        borderColor: "#f59e0b",
+        backgroundColor: "transparent",
+        borderWidth: 1,
+        borderDash: [5, 5],
+        fill: false,
+        tension: 0.1,
+      });
+    }
+
+    if (movingAverage === "30") {
+      const ma30 = calculateMovingAverage(prices, 30);
+      datasets.push({
+        label: "MA 30",
+        data: ma30,
+        borderColor: "#8b5cf6",
+        backgroundColor: "transparent",
+        borderWidth: 1,
+        borderDash: [5, 5],
+        fill: false,
+        tension: 0.1,
+      });
+    }
+
+    return { labels, datasets };
+  }, [history, movingAverage]);
+
+  // Helper function to calculate moving average
+  const calculateMovingAverage = (data: number[], period: number): number[] => {
+    const result: number[] = [];
+    for (let i = 0; i < data.length; i++) {
+      if (i < period - 1) {
+        result.push(NaN);
+      } else {
+        const slice = data.slice(i - period + 1, i + 1);
+        const average = slice.reduce((sum, val) => sum + val, 0) / period;
+        result.push(average);
+      }
+    }
+    return result;
+  };
 
   const chartOptions: ChartOptions<"line"> = {
     responsive: true,
@@ -691,6 +734,17 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       </SelectContent>
                     </Select>
 
+                    <Select value={movingAverage} onValueChange={setMovingAverage}>
+                      <SelectTrigger className="w-20">
+                        <SelectValue placeholder="MA" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="7">MA 7</SelectItem>
+                        <SelectItem value="30">MA 30</SelectItem>
+                      </SelectContent>
+                    </Select>
+
                     <Button variant="outline" size="sm" onClick={exportData}>
                       <Download className="h-4 w-4" />
                     </Button>
@@ -747,20 +801,35 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             ) : relatedSkins.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {relatedSkins.map((relatedSkin) => (
-                  <Card key={relatedSkin.id} className="cursor-pointer hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="aspect-square relative mb-2">
-                        <Image
-                          src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
-                          alt={relatedSkin.name}
-                          fill
-                          className="object-contain rounded"
-                        />
-                      </div>
-                      <h3 className="font-medium text-sm truncate">{relatedSkin.name}</h3>
-                      <p className="text-primary font-bold">{formatUSD(relatedSkin.priceAvg)}</p>
-                    </CardContent>
-                  </Card>
+                  <Link key={relatedSkin.id} href={`/skins/${relatedSkin.id}`}>
+                    <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                      <CardContent className="p-4">
+                        <div className="aspect-square relative mb-2">
+                          <Image
+                            src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
+                            alt={relatedSkin.name}
+                            fill
+                            className="object-contain rounded group-hover:scale-105 transition-transform"
+                          />
+                        </div>
+                        <h3 className="font-medium text-sm truncate mb-1">{relatedSkin.name}</h3>
+                        <div className="flex items-center justify-between">
+                          <p className="text-primary font-bold">{formatUSD(relatedSkin.priceAvg || relatedSkin.marketPrice)}</p>
+                          <div className="flex gap-1">
+                            {relatedSkin.isStattrak && (
+                              <Badge variant="secondary" className="text-xs">ST</Badge>
+                            )}
+                            {relatedSkin.isSouvenir && (
+                              <Badge variant="outline" className="text-xs">SV</Badge>
+                            )}
+                          </div>
+                        </div>
+                        {relatedSkin.wear && (
+                          <p className="text-xs text-muted-foreground mt-1">{relatedSkin.wear}</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             ) : (

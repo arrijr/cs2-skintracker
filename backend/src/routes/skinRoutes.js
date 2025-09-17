@@ -5,7 +5,8 @@ import {
   getSkinById, 
   getSkinVariants, 
   getSkinCase, 
-  getSkinMarketStats 
+  getSkinMarketStats,
+  getRelatedSkins
 } from "../controllers/skinController.js";
 import { fetchSkinPrice } from "../services/steamService.js";
 import { optionalClerkAuth } from "../middleware/clerkAuth.js";
@@ -574,6 +575,9 @@ router.get("/:skinId/case", getSkinCase);
 
 // Get market statistics for a skin (with alias)
 router.get("/:skinId/market-stats", getSkinMarketStats);
+
+// Get related skins
+router.get("/:skinId/related", getRelatedSkins);
 router.get("/:skinId/market", getSkinMarketStats); // Alias for compatibility
 
 export default router;

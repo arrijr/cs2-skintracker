@@ -25,53 +25,74 @@ export const getSkinVariants = async (req, res) => {
   try {
     console.log(`[DEBUG] Fetching variants for skin ID: ${skinId}`);
     
-    // Simple test response first to avoid database errors
-    const testVariants = {
-      variants: [
-        {
-          id: 19122,
-          name: "★ StatTrak™ Gut Knife | Urban Masked",
-          wear: "Factory New",
-          quality: "Covert",
-          isStattrak: true,
-          isStar: true,
-          priceLatest: 250.00,
-          imageUrl: "https://example.com/skin1.jpg"
-        },
-        {
-          id: 19123,
-          name: "★ StatTrak™ Gut Knife | Urban Masked",
-          wear: "Minimal Wear",
-          quality: "Covert",
-          isStattrak: true,
-          isStar: true,
-          priceLatest: 190.40,
-          imageUrl: "https://example.com/skin2.jpg",
-          isActive: true // Mark current skin as active
-        },
-        {
-          id: 19124,
-          name: "★ StatTrak™ Gut Knife | Urban Masked",
-          wear: "Field-Tested",
-          quality: "Covert",
-          isStattrak: true,
-          isStar: true,
-          priceLatest: 150.00,
-          imageUrl: "https://example.com/skin3.jpg"
-        }
-      ],
-      currentSkin: {
-        name: "★ StatTrak™ Gut Knife | Urban Masked",
-        weaponType: "gut knife",
-        itemGroup: "knife"
+    // Get the base skin to find variants
+    const baseSkin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      select: { 
+        name: true, 
+        marketHashName: true,
+        weaponType: true,
+        collection: true,
+        finish: true
       }
-    };
-
-    console.log(`[DEBUG] Returning test variants:`, testVariants);
-    res.json(testVariants);
+    });
+    
+    if (!baseSkin) {
+      return res.status(404).json({ error: 'Skin not found' });
+    }
+    
+    // Find all skins with similar characteristics (same weapon, collection, finish)
+    const variants = await prisma.skin.findMany({
+      where: {
+        AND: [
+          { id: { not: parseInt(skinId) } }, // Exclude current skin
+          { weaponType: baseSkin.weaponType },
+          { collection: baseSkin.collection },
+          { finish: baseSkin.finish }
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        wear: true,
+        quality: true,
+        isStattrak: true,
+        isSouvenir: true,
+        isStar: true,
+        imageUrl: true,
+        marketPrice: true
+      },
+      orderBy: [
+        { wear: 'asc' },
+        { isStattrak: 'asc' },
+        { isSouvenir: 'asc' }
+      ]
+    });
+    
+    // Add current skin to variants list
+    const currentSkin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      select: {
+        id: true,
+        name: true,
+        wear: true,
+        quality: true,
+        isStattrak: true,
+        isSouvenir: true,
+        isStar: true,
+        imageUrl: true,
+        marketPrice: true
+      }
+    });
+    
+    if (currentSkin) {
+      variants.unshift({ ...currentSkin, isActive: true });
+    }
+    
+    res.json(variants);
   } catch (err) {
-    console.error(`[ERROR] getSkinVariants error:`, err);
-    res.status(500).json({ error: "Could not fetch skin variants", details: err.message });
+    console.error(`[ERROR] Failed to fetch variants for skin ${skinId}:`, err);
+    res.status(500).json({ error: "Could not fetch skin variants" });
   }
 };
 
@@ -81,49 +102,48 @@ export const getSkinCase = async (req, res) => {
   try {
     console.log(`[DEBUG] Fetching case info for skin ID: ${skinId}`);
     
-    // Simple test response first to avoid database errors
-    const testCaseInfo = {
-      caseName: "Revolution Case",
-      skins: [
-        {
-          id: 19125,
-          name: "AK-47 | Redline",
-          wear: "Field-Tested",
-          rarity: "Classified",
-          quality: "Classified",
-          isStattrak: false,
-          priceLatest: 15.50,
-          imageUrl: "https://example.com/ak47.jpg"
-        },
-        {
-          id: 19126,
-          name: "M4A4 | Desolate Space",
-          wear: "Minimal Wear",
-          rarity: "Covert",
-          quality: "Covert",
-          isStattrak: true,
-          priceLatest: 85.00,
-          imageUrl: "https://example.com/m4a4.jpg"
-        },
-        {
-          id: 19127,
-          name: "AWP | Hyper Beast",
-          wear: "Factory New",
-          rarity: "Covert",
-          quality: "Covert",
-          isStattrak: false,
-          priceLatest: 120.00,
-          imageUrl: "https://example.com/awp.jpg"
-        }
-      ],
-      totalSkins: 3
+    // Get the skin to find its case/collection
+    const skin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      select: { collection: true, weaponType: true }
+    });
+    
+    if (!skin) {
+      return res.status(404).json({ error: 'Skin not found' });
+    }
+    
+    // Find all skins in the same collection
+    const caseSkins = await prisma.skin.findMany({
+      where: {
+        collection: skin.collection
+      },
+      select: {
+        id: true,
+        name: true,
+        wear: true,
+        rarity: true,
+        quality: true,
+        isStattrak: true,
+        isSouvenir: true,
+        marketPrice: true,
+        imageUrl: true
+      },
+      orderBy: [
+        { rarity: 'asc' },
+        { name: 'asc' }
+      ]
+    });
+    
+    const caseInfo = {
+      caseName: skin.collection || "Unknown Case",
+      skins: caseSkins,
+      totalSkins: caseSkins.length
     };
-
-    console.log(`[DEBUG] Returning test case info:`, testCaseInfo);
-    res.json(testCaseInfo);
+    
+    res.json(caseInfo);
   } catch (err) {
-    console.error(`[ERROR] getSkinCase error:`, err);
-    res.status(500).json({ error: "Could not fetch case information", details: err.message });
+    console.error(`[ERROR] Failed to fetch case info for skin ${skinId}:`, err);
+    res.status(500).json({ error: "Could not fetch case information" });
   }
 };
 
@@ -133,89 +153,123 @@ export const getSkinMarketStats = async (req, res) => {
   try {
     console.log(`[DEBUG] Fetching market stats for skin ID: ${skinId}`);
     
-    // Simple test response first
-    const testStats = {
-      volume24h: 150,
-      volume7d: 1200,
-      volume30d: 5000,
-      currentPrice: 25.50,
-      medianPrice: 24.00,
-      minPrice: 20.00,
-      maxPrice: 30.00,
-      avgPrice: 24.50,
-      buyOrders: 45,
-      listings: 120,
-      lastUpdated: new Date()
-    };
-
-    console.log(`[DEBUG] Returning test stats:`, testStats);
-    res.json(testStats);
-  } catch (err) {
-    console.error(`[ERROR] getSkinMarketStats error:`, err);
-    res.status(500).json({ error: "Could not fetch market statistics", details: err.message });
-  }
-};
-
-export const searchSkin = async (req, res) => {
-  const { q } = req.query;
-  if (!q) return res.status(400).json({ error: 'Missing search query.' });
-
-  // Try to get skin from DB
-  let skin = await prisma.skin.findUnique({
-    where: { marketHashName: q }
-  });
-
-  // If not found: fetch price from Steam and create skin in DB
-  if (!skin) {
-    const priceData = await fetchSkinPrice(q);
-    if (!priceData || !priceData.lowest_price) {
-      return res.status(404).json({ error: 'Skin not found on Steam Market.' });
-    }
-
-    // Create new skin in DB
-    skin = await prisma.skin.create({
-      data: {
-        name: q, // You can extract a display name here if needed
-        marketHashName: q,
-        imageUrl: null // Optional: add images later
-      }
-    });
-
-    // Also save price in PriceHistory
-    await prisma.priceHistory.create({
-      data: {
-        skinId: skin.id,
-        date: new Date(),
-        price: parseFloat(
-          priceData.lowest_price.replace('€', '').replace(',', '.').trim()
-        )
-      }
-    });
-  }
-
-  // Fetch current price
-  const priceData = await fetchSkinPrice(q);
-
-  res.json({
-    id: skin.id,
-    name: skin.name,
-    marketHashName: skin.marketHashName,
-    imageUrl: skin.imageUrl,
-    price: priceData?.lowest_price ?? null,
-    median: priceData?.median_price ?? null
-  });
-};
-
-export const getPriceHistory = async (req, res) => {
-  const { skinId } = req.params;
-  try {
+    // Get price history for calculations
     const priceHistory = await prisma.priceHistory.findMany({
       where: { skinId: parseInt(skinId) },
-      orderBy: { date: "asc" },
-      select: { date: true, price: true }
+      orderBy: { date: 'desc' },
+      take: 30 // Last 30 days
     });
-    res.json(priceHistory);
+    
+    if (priceHistory.length === 0) {
+      return res.json({
+        volume24h: 0,
+        volume7d: 0,
+        volume30d: 0,
+        currentPrice: 0,
+        medianPrice: 0,
+        lowestPrice: 0,
+        maxPrice: 0,
+        avgPrice: 0,
+        buyOrders: 0,
+        listings: 0,
+        lastUpdated: null
+      });
+    }
+    
+    // Calculate statistics
+    const prices = priceHistory.map(h => h.price);
+    const currentPrice = prices[0];
+    const lowestPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+    
+    // Calculate median
+    const sortedPrices = [...prices].sort((a, b) => a - b);
+    const medianPrice = sortedPrices.length % 2 === 0
+      ? (sortedPrices[sortedPrices.length / 2 - 1] + sortedPrices[sortedPrices.length / 2]) / 2
+      : sortedPrices[Math.floor(sortedPrices.length / 2)];
+    
+    // Simulate volume data (in real implementation, this would come from trade data)
+    const volume24h = Math.floor(Math.random() * 50) + 1;
+    const volume7d = volume24h * 7 + Math.floor(Math.random() * 20);
+    const volume30d = volume7d * 4 + Math.floor(Math.random() * 50);
+    
+    const stats = {
+      volume24h,
+      volume7d,
+      volume30d,
+      currentPrice,
+      medianPrice,
+      lowestPrice,
+      maxPrice,
+      avgPrice,
+      buyOrders: Math.floor(Math.random() * 20) + 1,
+      listings: Math.floor(Math.random() * 100) + 1,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    res.json(stats);
   } catch (err) {
-    res.status(500).json({ error: "Could not fetch price history" });
+    console.error(`[ERROR] Failed to fetch market stats for skin ${skinId}:`, err);
+    res.status(500).json({ error: "Could not fetch market statistics" });
+  }
+};
+
+// {/* Get related skins */}
+export const getRelatedSkins = async (req, res) => {
+  const { skinId } = req.params;
+  try {
+    console.log(`[DEBUG] Fetching related skins for skin ID: ${skinId}`);
+    
+    // Get the base skin to find related skins
+    const baseSkin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      select: { 
+        weaponType: true,
+        collection: true,
+        finish: true,
+        rarity: true
+      }
+    });
+    
+    if (!baseSkin) {
+      return res.status(404).json({ error: 'Skin not found' });
+    }
+    
+    // Find related skins (same weapon type or collection)
+    const relatedSkins = await prisma.skin.findMany({
+      where: {
+        AND: [
+          { id: { not: parseInt(skinId) } }, // Exclude current skin
+          {
+            OR: [
+              { weaponType: baseSkin.weaponType },
+              { collection: baseSkin.collection },
+              { finish: baseSkin.finish }
+            ]
+          }
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        imageUrl: true,
+        marketPrice: true,
+        priceAvg: true,
+        wear: true,
+        rarity: true,
+        isStattrak: true,
+        isSouvenir: true
+      },
+      orderBy: [
+        { marketPrice: 'desc' }
+      ],
+      take: 12 // Limit to 12 related skins
+    });
+    
+    res.json(relatedSkins);
+  } catch (err) {
+    console.error(`[ERROR] Failed to fetch related skins for skin ${skinId}:`, err);
+    res.status(500).json({ error: "Could not fetch related skins" });
   }
 };
