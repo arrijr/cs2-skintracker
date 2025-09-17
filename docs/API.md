@@ -161,41 +161,40 @@ Get skin variants (same skin, different wear/quality).
 
 **Response**
 ```json
-{
-  "variants": [
-    {
-      "id": 19122,
-      "name": "★ StatTrak™ Gut Knife | Urban Masked",
-      "wear": "Factory New",
-      "quality": "Covert",
-      "isStattrak": true,
-      "isStar": true,
-      "priceLatest": 250.00,
-      "imageUrl": "https://example.com/skin1.jpg"
-    },
-    {
-      "id": 19123,
-      "name": "★ StatTrak™ Gut Knife | Urban Masked",
-      "wear": "Minimal Wear",
-      "quality": "Covert",
-      "isStattrak": true,
-      "isStar": true,
-      "priceLatest": 190.40,
-      "imageUrl": "https://example.com/skin2.jpg",
-      "isActive": true
-    }
-  ],
-  "currentSkin": {
+[
+  {
+    "id": 19122,
     "name": "★ StatTrak™ Gut Knife | Urban Masked",
-    "weaponType": "gut knife",
-    "itemGroup": "knife"
+    "wear": "Factory New",
+    "quality": "Covert",
+    "isStattrak": true,
+    "isStar": true,
+    "priceAvg": 250.00,
+    "priceMedian": 245.00,
+    "priceLatest": 250.00,
+    "imageUrl": "https://example.com/skin1.jpg"
+  },
+  {
+    "id": 19123,
+    "name": "★ StatTrak™ Gut Knife | Urban Masked",
+    "wear": "Minimal Wear",
+    "quality": "Covert",
+    "isStattrak": true,
+    "isStar": true,
+    "priceAvg": 190.40,
+    "priceMedian": 185.00,
+    "priceLatest": 190.40,
+    "imageUrl": "https://example.com/skin2.jpg",
+    "isActive": true
   }
-}
+]
 ```
 
 **Notes**
-* `priceLatest` kann fehlen → Client zeigt "—".
-* `isActive` markiert die aktuelle Skin-Variante.
+* Returns array of skin variants, not object with variants property
+* `priceLatest`, `priceAvg`, `priceMedian` can be null → Client shows "—"
+* `isActive` marks the current skin variant (added to first item in array)
+* Variants are found by matching `weaponType` and either `itemName` or similar name patterns
 
 #### GET `/skins/:skinId/case`
 Get case information for a skin.
@@ -221,6 +220,32 @@ Get case information for a skin.
 ```
 
 **204 No Content** → keine Case-Daten; Client blendet Panel aus.
+
+#### GET `/skins/:skinId/related`
+Get related skins (similar weapon type, collection, or characteristics).
+
+**Response**
+```json
+[
+  {
+    "id": 19125,
+    "name": "AK-47 | Redline",
+    "imageUrl": "https://example.com/ak47.jpg",
+    "priceAvg": 15.50,
+    "priceMedian": 15.00,
+    "priceLatest": 15.50,
+    "wear": "Field-Tested",
+    "rarity": "Restricted",
+    "isStattrak": false,
+    "isStar": false
+  }
+]
+```
+
+**Notes**
+* Returns array of related skins (max 12)
+* Related skins are found by matching `weaponType`, `itemName`, or similar name patterns
+* `priceLatest`, `priceAvg`, `priceMedian` can be null → Client shows "—"
 {
   "id": 1,
   "name": "AK-47 | Redline",
@@ -353,6 +378,82 @@ Code kopieren
   "wears": ["Factory New", "Minimal Wear", "Field-Tested"],
   "rarities": ["Consumer Grade", "Industrial Grade", "Mil-Spec Grade"]
 }
+Watchlist
+---------
+
+#### GET `/watchlist` — requires JWT
+Get user's watchlist with price alerts.
+
+**Response**
+```json
+[
+  {
+    "id": 1,
+    "skinId": 123,
+    "priceAlert": 15.50,
+    "skin": {
+      "id": 123,
+      "name": "AK-47 | Redline",
+      "imageUrl": "https://example.com/ak47.jpg",
+      "priceLatest": 16.00
+    }
+  }
+]
+```
+
+#### POST `/watchlist` — requires JWT
+Add skin to watchlist with optional price alert.
+
+**Request**
+```json
+{
+  "skinId": 123,
+  "priceAlert": 15.50
+}
+```
+
+**Response**
+```json
+{
+  "message": "Added to watchlist",
+  "id": 1
+}
+```
+
+#### PATCH `/watchlist/:skinId` — requires JWT
+Update price alert for a skin in watchlist.
+
+**Request**
+```json
+{
+  "priceAlert": 20.00
+}
+```
+
+**Response**
+```json
+{
+  "message": "Price alert updated",
+  "skinId": 123,
+  "priceAlert": 20.00
+}
+```
+
+#### DELETE `/watchlist/:skinId` — requires JWT
+Remove skin from watchlist.
+
+**Response**
+```json
+{
+  "message": "Removed from watchlist"
+}
+```
+
+**Notes**
+* Only 1 price alert allowed per user across all skins
+* `priceAlert` can be null to remove alert without removing from watchlist
+* Price alerts are used for notifications when target price is reached
+
 Users
 -----
 

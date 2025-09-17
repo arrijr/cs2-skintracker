@@ -32,3 +32,48 @@ Fix
 Prevention
 - Code-Review-Regel: keine direkten `.toFixed` im UI.
 - Doku: API-Felder können `null`/`string` sein (siehe `/docs/API.md`).
+
+Skin Detail Page Shows "No variants available" / "No related skins found"
+-----------------------------------------------------------------------
+
+Symptom
+* Skin detail page displays empty state messages instead of actual data
+* Variants, related skins, and case information not loading
+
+Cause
+* Database queries in variants/related endpoints too restrictive
+* Only matching exact `itemName` instead of using flexible matching
+* Missing `priceLatest` field in API responses
+
+Fix
+* Update variants query to use OR conditions: `itemName` OR similar name patterns
+* Update related skins query with same flexible matching logic
+* Add `priceLatest` field to all skin API responses
+* Test queries with actual database data before deploying
+
+Prevention
+* Always test database queries with sample data before implementing
+* Use flexible matching patterns (weaponType + name patterns) instead of exact matches
+* Include all required fields in API responses
+* Document API response format changes in `/docs/API.md`
+
+Price Alerts Not Working
+------------------------
+
+Symptom
+* Price alert button shows error when clicked
+* "Failed to set price alert" toast message appears
+
+Cause
+* Frontend using wrong API endpoint (`/api/v1/alerts` instead of `/api/v1/watchlist`)
+* Missing or incorrect request body format
+
+Fix
+* Update frontend to use `/api/v1/watchlist` endpoint
+* Use correct request body: `{ skinId: number, priceAlert: number }`
+* Ensure JWT token is properly included in Authorization header
+
+Prevention
+* Always check existing API endpoints before implementing new functionality
+* Use consistent naming conventions for API routes
+* Document all API endpoints and their usage in `/docs/API.md`

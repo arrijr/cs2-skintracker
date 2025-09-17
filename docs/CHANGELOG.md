@@ -16,6 +16,12 @@
 
 ### Fixed
 * fix(admin): resolved admin access issue by removing unnecessary API call
+* fix(skins): repair skin detail page variants, related skins, and price alerts
+  * Fix variants query logic to find actual skin variants by weaponType and name patterns
+  * Fix related skins query with improved matching logic using OR conditions
+  * Fix price alert endpoint from /api/v1/alerts to /api/v1/watchlist
+  * Add priceLatest field to all skin API responses for consistent pricing
+  * Resolves skin detail page showing 'No variants available' and 'No related skins found'
 
 ## [2024-01-XX] - Previous Release
 
