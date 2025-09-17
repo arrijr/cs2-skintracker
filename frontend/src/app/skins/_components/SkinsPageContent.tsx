@@ -971,6 +971,40 @@ export function SkinsPageContent() {
                   />
                 </div>
 
+                {/* Souvenir */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <Label htmlFor="souvenir">Souvenir</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">
+                            <strong>Souvenir</strong> items are special tournament drops.
+                            <br />• Dropped during professional CS2 matches
+                            <br />• Have unique tournament stickers
+                            <br />• Usually more expensive than regular skins
+                            <br />• Limited availability and collectible value
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <Switch
+                    id="souvenir"
+                    checked={q.includes("Souvenir")}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setQ(q ? `${q} Souvenir` : "Souvenir");
+                      } else {
+                        setQ(q.replace(/\bSouvenir\b/g, "").trim());
+                      }
+                    }}
+                  />
+                </div>
+
                 {/* P3: Advanced Filters Toggle */}
                 <div className="space-y-3">
                   <Button
@@ -1294,361 +1328,6 @@ export function SkinsPageContent() {
               })}
             </div>
 
-            {/* P2: Quick filter macros behavior */}
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <Label className="text-sm font-medium">Quick Filters:</Label>
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      // Smart toggle: if already set to this range, clear it
-                      if (min === "" && max === "5") {
-                        setMin("");
-                        setMax("");
-                      } else {
-                        setMin("");
-                        setMax("5");
-                        setSort("price_asc");
-                      }
-                      clearFilters();
-                    }}
-                    className={min === "" && max === "5" ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    Under $5
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (min === "" && max === "10") {
-                        setMin("");
-                        setMax("");
-                      } else {
-                        setMin("");
-                        setMax("10");
-                        setSort("price_asc");
-                      }
-                      clearFilters();
-                    }}
-                    className={min === "" && max === "10" ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    Under $10
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (min === "" && max === "50") {
-                        setMin("");
-                        setMax("");
-                      } else {
-                        setMin("");
-                        setMax("50");
-                        setSort("price_asc");
-                      }
-                      clearFilters();
-                    }}
-                    className={min === "" && max === "50" ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    Under $50
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (min === "100" && max === "500") {
-                        setMin("");
-                        setMax("");
-                      } else {
-                        setMin("100");
-                        setMax("500");
-                        setSort("price_desc");
-                      }
-                      clearFilters();
-                    }}
-                    className={min === "100" && max === "500" ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    $100-$500
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (min === "500" && max === "") {
-                        setMin("");
-                        setMax("");
-                      } else {
-                        setMin("500");
-                        setMax("");
-                        setSort("price_desc");
-                      }
-                      clearFilters();
-                    }}
-                    className={min === "500" && max === "" ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    $500+
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      // Covert FN macro
-                      if (rarity === "Covert" && wear === "fn") {
-                        setRarity("");
-                        setWear("");
-                      } else {
-                        setRarity("Covert");
-                        setWear("fn");
-                        setSort("price_desc");
-                      }
-                      clearFilters();
-                    }}
-                    className={rarity === "Covert" && wear === "fn" ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    Covert FN
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      // StatTrak Only macro
-                      if (stattrak && !special) {
-                        setStattrak(false);
-                      } else {
-                        setStattrak(true);
-                        setSpecial(false);
-                        setSort("price_desc");
-                      }
-                      clearFilters();
-                    }}
-                    className={stattrak && !special ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    StatTrak Only
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* P1: Sort options & quick sort mapping */}
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <Label className="text-sm font-medium">Quick Sort:</Label>
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    variant={sort === "price_asc" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSort("price_asc")}
-                  >
-                    Cheapest
-                  </Button>
-                  <Button
-                    variant={sort === "price_desc" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSort("price_desc")}
-                  >
-                    Most Expensive
-                  </Button>
-                  <Button
-                    variant={sort === "popularity_desc" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSort("popularity_desc")}
-                  >
-                    Most Popular
-                  </Button>
-                  <Button
-                    variant={sort === "change_24h_desc" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSort("change_24h_desc")}
-                  >
-                    24h Change ↓
-                  </Button>
-                  <Button
-                    variant={sort === "offers_desc" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSort("offers_desc")}
-                  >
-                    Most Offers
-                  </Button>
-                  <Button
-                    variant={sort === "newest" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSort("newest")}
-                  >
-                    Newest
-                  </Button>
-                  <Button
-                    variant={sort === "wear_asc" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSort("wear_asc")}
-                  >
-                    Lowest Wear
-                  </Button>
-                  <Button
-                    variant={sort === "name_asc" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSort("name_asc")}
-                  >
-                    A→Z
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* P3: Filter presets */}
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <Label className="text-sm font-medium">Filter Presets:</Label>
-                <div className="flex gap-2 flex-wrap">
-                  {/* Save Current Preset */}
-                  <Dialog open={showPresetDialog} onOpenChange={setShowPresetDialog}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Save className="h-4 w-4 mr-1" />
-                        Save Current
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Save Filter Preset</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="preset-name">Preset Name</Label>
-                          <Input
-                            id="preset-name"
-                            value={presetName}
-                            onChange={(e) => setPresetName(e.target.value)}
-                            placeholder="e.g., My Favorite Skins"
-                            className="mt-1"
-                          />
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" onClick={() => setShowPresetDialog(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={saveCurrentPreset} disabled={!presetName.trim()}>
-                            Save Preset
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-
-                  {/* Share Current Filters */}
-                  <Button variant="outline" size="sm" onClick={shareCurrentFilters}>
-                    <Share2 className="h-4 w-4 mr-1" />
-                    Share URL
-                  </Button>
-
-                  {/* Saved Presets */}
-                  {Object.entries(savedPresets).map(([key, preset]) => (
-                    <div key={key} className="flex items-center gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => applyPreset(key)}
-                        className="text-xs"
-                      >
-                        {preset.name}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deletePreset(key)}
-                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                        aria-label={`Delete preset ${preset.name}`}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Preset Info */}
-              {Object.keys(savedPresets).length > 0 && (
-                <div className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {Object.keys(savedPresets).length} saved preset{Object.keys(savedPresets).length !== 1 ? 's' : ''}
-                </div>
-              )}
-            </div>
-
-            {/* P3: Batch selection & actions */}
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <Label className="text-sm font-medium">Batch Actions:</Label>
-                <div className="flex gap-2 flex-wrap">
-                  {/* Toggle Batch Mode */}
-                  <Button
-                    variant={batchMode ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      setBatchMode(!batchMode);
-                      if (batchMode) clearSelection();
-                    }}
-                  >
-                    {batchMode ? <CheckSquare className="h-4 w-4 mr-1" /> : <Square className="h-4 w-4 mr-1" />}
-                    {batchMode ? "Exit Batch" : "Batch Select"}
-                  </Button>
-
-                  {/* Batch Actions (only show when in batch mode) */}
-                  {batchMode && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={selectAllSkins}
-                        disabled={batchLoading}
-                      >
-                        Select All
-                      </Button>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={clearSelection}
-                        disabled={selectedSkins.size === 0 || batchLoading}
-                      >
-                        Clear Selection
-                      </Button>
-
-                      <Separator orientation="vertical" className="h-8" />
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={addSelectedToWatchlist}
-                        disabled={selectedSkins.size === 0 || batchLoading}
-                      >
-                        <Heart className="h-4 w-4 mr-1" />
-                        Add to Watchlist ({selectedSkins.size})
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={addSelectedToPortfolio}
-                        disabled={selectedSkins.size === 0 || batchLoading}
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add to Portfolio ({selectedSkins.size})
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-              
-              {/* Selection Info */}
-              {batchMode && selectedSkins.size > 0 && (
-                <div className="text-xs text-muted-foreground flex items-center gap-1">
-                  <CheckSquare className="h-3 w-3" />
-                  {selectedSkins.size} skin{selectedSkins.size !== 1 ? 's' : ''} selected
-                </div>
-              )}
-            </div>
 
 
             {/* Results Count and Sort */}
