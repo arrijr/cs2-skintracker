@@ -11,7 +11,7 @@ import { Heart, Plus, Check, Loader2, Star } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Skin = {
   id: number;
@@ -37,12 +37,45 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [isInPortfolio, setIsInPortfolio] = useState(false);
 
+  // {/* Quick Actions: state & dedupe */}
+  // Check if skin is already in watchlist/portfolio on mount
+  useEffect(() => {
+    const checkExistingEntries = async () => {
+      if (!user) return;
+      
+      try {
+        // Check watchlist
+        const watchlistResponse = await fetchJson(apiUrl('/api/v1/watchlist'), {
+          headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+        });
+        const isInWatchlist = watchlistResponse.some((item: any) => item.skinId === skin.id);
+        setIsInWatchlist(isInWatchlist);
+        
+        // Check portfolio
+        const portfolioResponse = await fetchJson(apiUrl('/api/v1/portfolio'), {
+          headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+        });
+        const isInPortfolio = portfolioResponse.some((item: any) => item.skinId === skin.id);
+        setIsInPortfolio(isInPortfolio);
+      } catch (error) {
+        console.error("Error checking existing entries:", error);
+      }
+    };
+
+    checkExistingEntries();
+  }, [user, skin.id]);
+
   const handleWatchlistAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (!user) {
       toast.error("Please sign in to add to watchlist");
+      return;
+    }
+
+    // Prevent double-add
+    if (isInWatchlist || watchlistState === 'loading') {
       return;
     }
     
@@ -73,6 +106,11 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
     
     if (!user) {
       toast.error("Please sign in to add to portfolio");
+      return;
+    }
+
+    // Prevent double-add
+    if (isInPortfolio || portfolioState === 'loading') {
       return;
     }
     
@@ -181,16 +219,16 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
               <TooltipTrigger asChild>
                 <Button
                   size="sm"
-                  variant="secondary"
+                  variant={isInWatchlist ? "default" : "secondary"}
                   onClick={handleWatchlistAdd}
                   disabled={watchlistState === 'loading' || isInWatchlist}
                   className="h-8 w-8 p-0 focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+                  aria-label={isInWatchlist ? "Added to watchlist" : "Add to watchlist"}
                   aria-pressed={isInWatchlist}
                 >
                   {watchlistState === 'loading' ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : isInWatchlist || watchlistState === 'success' ? (
+                  ) : isInWatchlist ? (
                     <Check className="h-4 w-4" />
                   ) : (
                     <Heart className="h-4 w-4" />
@@ -208,16 +246,16 @@ export function SkinCard({ skin, onAdded }: { skin: Skin; onAdded?: () => void }
               <TooltipTrigger asChild>
                 <Button
                   size="sm"
-                  variant="secondary"
+                  variant={isInPortfolio ? "default" : "secondary"}
                   onClick={handlePortfolioAdd}
                   disabled={portfolioState === 'loading' || isInPortfolio}
                   className="h-8 w-8 p-0 focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  aria-label={isInPortfolio ? "Remove from portfolio" : "Add to portfolio"}
+                  aria-label={isInPortfolio ? "Added to portfolio" : "Add to portfolio"}
                   aria-pressed={isInPortfolio}
                 >
                   {portfolioState === 'loading' ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : isInPortfolio || portfolioState === 'success' ? (
+                  ) : isInPortfolio ? (
                     <Check className="h-4 w-4" />
                   ) : (
                     <Plus className="h-4 w-4" />

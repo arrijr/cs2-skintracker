@@ -221,6 +221,27 @@ export function SkinsPageContent() {
     return () => clearTimeout(timer);
   }, [q, SKINS_FILTERS_ENHANCED]);
 
+  // {/* Debounced search & apply behavior */}
+  // Check if filters have changed (for mobile sticky apply)
+  const [hasFilterChanges, setHasFilterChanges] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Track filter changes for mobile sticky apply
+  useEffect(() => {
+    const hasChanges = !!(q || min || max || rarity || wear || stattrak || special || weaponType || collection || finish || category);
+    setHasFilterChanges(hasChanges);
+  }, [q, min, max, rarity, wear, stattrak, special, weaponType, collection, finish, category]);
+
   // P3: Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -729,6 +750,133 @@ export function SkinsPageContent() {
               <h1 className="text-3xl font-bold">Browse Skins</h1>
             </div>
 
+            {/* Active filter chips & result count */}
+            <div className="space-y-4">
+              {/* Result Count */}
+              <div className="text-sm text-muted-foreground">
+                {pagination?.total ? `${pagination.total} results` : "Loading..."}
+              </div>
+              
+              {/* Active Filter Chips */}
+              {(q || min || max || rarity || wear || stattrak || special || weaponType || collection || finish || category) && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-medium text-muted-foreground">Active filters:</span>
+                  
+                  {q && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      Search: "{q}"
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setQ("")}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {category && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      {CS2_CATEGORIES[category as keyof typeof CS2_CATEGORIES]?.name}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setCategory(undefined)}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {rarity && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      {rarity}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setRarity("")}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {wear && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      {wear.toUpperCase()}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setWear("")}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {stattrak && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      StatTrak™
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setStattrak(false)}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {special && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      Special
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setSpecial(false)}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {(min || max) && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      ${min || "0"} - ${max || "∞"}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => {
+                          setMin("");
+                          setMax("");
+                        }}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {weaponType && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      {weaponType}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setWeaponType("")}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {collection && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      {collection}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setCollection("")}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {finish && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      {finish}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setFinish("")}
+                      />
+                    </Badge>
+                  )}
+                  
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    onClick={clearFilters}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    Clear all
+                  </Button>
+                </div>
+              )}
+            </div>
+
             {/* Category Tabs */}
             <div className="flex gap-2">
               {Object.entries(CS2_CATEGORIES).map(([key, cat]) => {
@@ -814,18 +962,11 @@ export function SkinsPageContent() {
               </div>
             </div>
 
-            {/* P3: Sort Presets */}
+            {/* P1: Sort options & quick sort mapping */}
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <Label className="text-sm font-medium">Quick Sort:</Label>
                 <div className="flex gap-2 flex-wrap">
-                  <Button
-                    variant={sort === "popularity_desc" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSort("popularity_desc")}
-                  >
-                    Most Popular
-                  </Button>
                   <Button
                     variant={sort === "price_asc" ? "default" : "outline"}
                     size="sm"
@@ -841,18 +982,25 @@ export function SkinsPageContent() {
                     Most Expensive
                   </Button>
                   <Button
-                    variant={sort === "wear_asc" ? "default" : "outline"}
+                    variant={sort === "popularity_desc" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setSort("wear_asc")}
+                    onClick={() => setSort("popularity_desc")}
                   >
-                    Lowest Wear
+                    Most Popular
                   </Button>
                   <Button
-                    variant={sort === "wear_desc" ? "default" : "outline"}
+                    variant={sort === "change_24h_desc" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setSort("wear_desc")}
+                    onClick={() => setSort("change_24h_desc")}
                   >
-                    Highest Wear
+                    24h Change ↓
+                  </Button>
+                  <Button
+                    variant={sort === "offers_desc" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSort("offers_desc")}
+                  >
+                    Most Offers
                   </Button>
                   <Button
                     variant={sort === "newest" ? "default" : "outline"}
@@ -862,91 +1010,39 @@ export function SkinsPageContent() {
                     Newest
                   </Button>
                   <Button
+                    variant={sort === "wear_asc" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSort("wear_asc")}
+                  >
+                    Lowest Wear
+                  </Button>
+                  <Button
                     variant={sort === "name_asc" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSort("name_asc")}
                   >
                     A→Z
                   </Button>
-                  <Button
-                    variant={sort === "name_desc" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSort("name_desc")}
-                  >
-                    Z→A
-                  </Button>
                 </div>
               </div>
             </div>
 
-            {/* Active Filters */}
-            {(category || rarity || stattrak || weaponType || collection || finish) && (
-              <div className="flex items-center gap-2 flex-wrap">
-                {category && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    {CS2_CATEGORIES[category as keyof typeof CS2_CATEGORIES]?.name}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => setCategory(undefined)}
-                    />
-                  </Badge>
-                )}
-                {rarity && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    {rarity}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => setRarity("")}
-                    />
-                  </Badge>
-                )}
-                {stattrak && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    StatTrak™
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => setStattrak(false)}
-                    />
-                  </Badge>
-                )}
-                {weaponType && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    {weaponType}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => setWeaponType("")}
-                    />
-                  </Badge>
-                )}
-                {collection && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    {collection}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => setCollection("")}
-                    />
-                  </Badge>
-                )}
-                {finish && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    {finish}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => setFinish("")}
-                    />
-                  </Badge>
-                )}
-                <Button variant="link" size="sm" onClick={clearFilters}>
-                  Clear all
-                </Button>
-              </div>
-            )}
 
             {/* Results Count and Sort */}
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
                 Browse CS2 skins with advanced filtering
               </div>
+
+              {/* Mobile Sticky Apply Button */}
+              {isMobile && hasFilterChanges && (
+                <Button 
+                  onClick={() => setHasFilterChanges(false)}
+                  className="fixed bottom-4 right-4 z-50 shadow-lg"
+                >
+                  Apply Filters
+                </Button>
+              )}
               <div className="flex items-center gap-2">
                 <Label htmlFor="sort">Sort by:</Label>
                 <Select value={sort} onValueChange={setSort}>
@@ -961,6 +1057,15 @@ export function SkinsPageContent() {
                     <SelectItem value="popularity_desc">Most Popular</SelectItem>
                     <SelectItem value="wear_asc">Lowest Wear</SelectItem>
                     <SelectItem value="wear_desc">Highest Wear</SelectItem>
+                    {/* P1: Additional sort options */}
+                    <SelectItem value="change_24h_desc">24h Change ↓</SelectItem>
+                    <SelectItem value="change_24h_asc">24h Change ↑</SelectItem>
+                    <SelectItem value="change_7d_desc">7d Change ↓</SelectItem>
+                    <SelectItem value="change_7d_asc">7d Change ↑</SelectItem>
+                    <SelectItem value="offers_desc">Most Offers</SelectItem>
+                    <SelectItem value="offers_asc">Least Offers</SelectItem>
+                    <SelectItem value="volume_24h_desc">24h Volume ↓</SelectItem>
+                    <SelectItem value="volume_24h_asc">24h Volume ↑</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
