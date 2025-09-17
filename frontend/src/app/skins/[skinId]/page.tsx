@@ -5,9 +5,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Line } from "react-chartjs-2";
-import type { ChartData, ChartOptions } from "chart.js";
-import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Tooltip as ChartTooltip, Legend } from "chart.js";
+import { PriceHistoryChart } from "@/components/charts/price-history-chart";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,8 +29,7 @@ import {
 import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
 import { useAnalytics } from "@/lib/analytics";
 
-// Chart.js Registration
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTooltip, Legend);
+// Chart components are now handled by Shadcn UI Charts
 
 type Skin = {
   id: number;
@@ -223,111 +220,7 @@ export default function SkinDetailPage() {
     return filtered;
   }, [history, chartRange]);
 
-  // P1 - Chart Data with Moving Average
-  const chartData = useMemo((): ChartData<"line"> => {
-    if (!filteredHistory.length) {
-      return {
-        labels: [],
-        datasets: []
-      };
-    }
-
-    const prices = filteredHistory.map(h => h.price);
-    const labels = filteredHistory.map(h => new Date(h.date).toLocaleDateString());
-
-    const datasets: any[] = [{
-      label: 'Price',
-      data: prices,
-      borderColor: 'rgb(59, 130, 246)',
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      tension: 0.1,
-      fill: true
-    }];
-
-    // Add moving averages if enabled
-    if (movingAverage === "7") {
-      const ma7 = calculateMovingAverage(prices, 7);
-      datasets.push({
-        label: 'MA 7',
-        data: ma7,
-        borderColor: 'rgb(34, 197, 94)',
-        backgroundColor: 'transparent',
-        tension: 0.1,
-        borderDash: [5, 5]
-      });
-    }
-
-    if (movingAverage === "30") {
-      const ma30 = calculateMovingAverage(prices, 30);
-      datasets.push({
-        label: 'MA 30',
-        data: ma30,
-        borderColor: 'rgb(239, 68, 68)',
-        backgroundColor: 'transparent',
-        tension: 0.1,
-        borderDash: [10, 5]
-      });
-    }
-
-    return { labels, datasets };
-  }, [filteredHistory, movingAverage]);
-
-  // Helper function to calculate moving average
-  const calculateMovingAverage = (prices: number[], period: number): number[] => {
-    const result: number[] = [];
-    for (let i = 0; i < prices.length; i++) {
-      if (i < period - 1) {
-        result.push(NaN);
-      } else {
-        const slice = prices.slice(i - period + 1, i + 1);
-        const avg = slice.reduce((sum, price) => sum + price, 0) / period;
-        result.push(avg);
-      }
-    }
-    return result;
-  };
-
-  // P1 - Chart Options with better tooltips
-  const chartOptions: ChartOptions<"line"> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        type: chartScale === "log" ? "logarithmic" : "linear",
-        beginAtZero: false,
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
-        }
-      },
-      x: {
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
-        }
-      }
-    },
-    plugins: {
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-        callbacks: {
-          label: (context) => {
-            const label = context.dataset.label || '';
-            const value = context.parsed.y;
-            return `${label}: ${formatUSD(value)}`;
-          }
-        }
-      },
-      legend: {
-        display: true,
-        position: 'top'
-      }
-    },
-    interaction: {
-      mode: 'nearest',
-      axis: 'x',
-      intersect: false
-    }
-  };
+  // Chart data is now handled by the PriceHistoryChart component
 
   // P1 - Watchlist & Portfolio Management
   const isInWatchlist = useMemo(() => 
@@ -855,13 +748,13 @@ export default function SkinDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="h-96">
-              {filteredHistory.length > 0 ? (
-                <Line data={chartData} options={chartOptions} />
-              ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  No price data available for this time range
-                </div>
-              )}
+              <PriceHistoryChart
+                data={filteredHistory}
+                range={chartRange}
+                scale={chartScale}
+                movingAverage={movingAverage as "7" | "30" | "none"}
+                className="w-full h-full"
+              />
             </div>
           </CardContent>
         </Card>
