@@ -986,11 +986,13 @@ export default function SkinDetailPage() {
                     {caseInfo.caseName} · {caseInfo.totalSkins} skins
                   </CardTitle>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={`/cases/${caseInfo.caseName?.toLowerCase().replace(/\s+/g, '-')}`}>
-                        View Case
-                      </Link>
-                    </Button>
+                    {caseInfo.caseName !== "Related Items" && (
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/cases/${caseInfo.caseName?.toLowerCase().replace(/\s+/g, '-')}`}>
+                          View Case
+                        </Link>
+                      </Button>
+                    )}
                     <Button variant="outline" size="sm" asChild>
                       <a 
                         href={`https://steamcommunity.com/market/search?q=${encodeURIComponent(caseInfo.caseName || '')}`}
@@ -1052,67 +1054,68 @@ export default function SkinDetailPage() {
           </div>
         ) : null}
 
-        {/* P1 - Related Skins */}
-        {/* Related Skins - zwei kuratierte Blöcke */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Related Skins</h2>
-          {loadingEnhanced ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-48 w-full" />
-              ))}
-            </div>
-          ) : relatedSkins.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {relatedSkins.map((relatedSkin) => (
-                <Link 
-                  key={relatedSkin.id} 
-                  href={`/skins/${relatedSkin.id}`}
-                  onClick={() => {
-                    // P3 - Analytics: Track related skin click
-                    if (skin) {
-                      analytics.trackRelatedClick(skin.id, relatedSkin.id, relatedSkin.name);
-                    }
-                  }}
-                >
-                  <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
-                    <CardContent className="p-4">
-                      <div className="aspect-square relative mb-2">
-                        <Image
-                          src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
-                          alt={relatedSkin.name}
-                          fill
-                          className="object-contain rounded group-hover:scale-105 transition-transform"
-                        />
-                      </div>
-                      <h3 className="font-medium text-sm truncate mb-1">{relatedSkin.name}</h3>
-                      <div className="flex items-center justify-between">
-                        <p className="text-primary font-bold">{formatUSD(relatedSkin.priceAvg || relatedSkin.priceMedian)}</p>
-                        <div className="flex gap-1">
-                          {relatedSkin.isStattrak && (
-                            <Badge variant="secondary" className="text-xs">ST</Badge>
-                          )}
-                          {relatedSkin.isStar && (
-                            <Badge variant="outline" className="text-xs">★</Badge>
-                          )}
+        {/* P1 - Related Skins - only show if no case info or case info is not "Related Items" */}
+        {(!caseInfo || caseInfo.caseName !== "Related Items") && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Related Skins</h2>
+            {loadingEnhanced ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-48 w-full" />
+                ))}
+              </div>
+            ) : relatedSkins.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {relatedSkins.map((relatedSkin) => (
+                  <Link 
+                    key={relatedSkin.id} 
+                    href={`/skins/${relatedSkin.id}`}
+                    onClick={() => {
+                      // P3 - Analytics: Track related skin click
+                      if (skin) {
+                        analytics.trackRelatedClick(skin.id, relatedSkin.id, relatedSkin.name);
+                      }
+                    }}
+                  >
+                    <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                      <CardContent className="p-4">
+                        <div className="aspect-square relative mb-2">
+                          <Image
+                            src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
+                            alt={relatedSkin.name}
+                            fill
+                            className="object-contain rounded group-hover:scale-105 transition-transform"
+                          />
                         </div>
-                      </div>
-                      {relatedSkin.wear && (
-                        <p className="text-xs text-muted-foreground mt-1">{relatedSkin.wear}</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="text-center py-8">
-                <p className="text-muted-foreground">No related skins found</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                        <h3 className="font-medium text-sm truncate mb-1">{relatedSkin.name}</h3>
+                        <div className="flex items-center justify-between">
+                          <p className="text-primary font-bold">{formatUSD(relatedSkin.priceAvg || relatedSkin.priceMedian)}</p>
+                          <div className="flex gap-1">
+                            {relatedSkin.isStattrak && (
+                              <Badge variant="secondary" className="text-xs">ST</Badge>
+                            )}
+                            {relatedSkin.isStar && (
+                              <Badge variant="outline" className="text-xs">★</Badge>
+                            )}
+                          </div>
+                        </div>
+                        {relatedSkin.wear && (
+                          <p className="text-xs text-muted-foreground mt-1">{relatedSkin.wear}</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <p className="text-muted-foreground">No related skins found</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
 
         {/* P1 - Price Alerts & Watchlist */}
         {/* Price Alerts & Watchlist - Preisalarm sauber integrieren */}

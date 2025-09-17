@@ -137,7 +137,8 @@ export const getSkinVariants = async (req, res) => {
       orderBy: [
         { wear: 'asc' },
         { isStattrak: 'asc' }
-      ]
+      ],
+      take: 20 // Limit to 20 variants maximum
     });
     
     // Add current skin to variants list
