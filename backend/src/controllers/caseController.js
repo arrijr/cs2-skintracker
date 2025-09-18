@@ -170,7 +170,30 @@ export const getSkinCase = async (req, res) => {
       'gallery': 'Gallery Case',
       'clutch': 'Clutch Case',
       'cs20': 'CS20 Case',
-      'shadow': 'Shadow Case'
+      'shadow': 'Shadow Case',
+      // Add more case patterns as needed
+      'prisma': 'Prisma Case',
+      'dreams': 'Dreams Case',
+      'falchion': 'Falchion Case',
+      'danger zone': 'Danger Zone Case',
+      'horizon': 'Horizon Case',
+      'wildfire': 'Wildfire Case',
+      'revolver': 'Revolver Case',
+      'spectrum': 'Spectrum Case'
+    };
+    
+    // Method 1.5: Look for skin finishes that might indicate a case
+    const finishToCaseMappings = {
+      'case hardened': 'Operation Bravo Case', // Case Hardened skins are often from Operation Bravo
+      'fade': 'Operation Bravo Case',
+      'crimson web': 'Operation Bravo Case',
+      'slaughter': 'Operation Bravo Case',
+      'night': 'Operation Bravo Case',
+      'blue steel': 'Operation Bravo Case',
+      'stained': 'Operation Bravo Case',
+      'urban masked': 'Operation Bravo Case',
+      'boreal forest': 'Operation Bravo Case',
+      'forest ddpat': 'Operation Bravo Case'
     };
     
     const skinNameLower = skin.name.toLowerCase();
@@ -198,6 +221,35 @@ export const getSkinCase = async (req, res) => {
           };
           console.log(`[DEBUG] Found case via mapping: ${caseName}`);
           break;
+        }
+      }
+    }
+    
+    // Check for finish mappings if no case found yet
+    if (!caseInfo) {
+      for (const [finish, caseName] of Object.entries(finishToCaseMappings)) {
+        if (skinNameLower.includes(finish)) {
+          const caseItem = await prisma.skin.findFirst({
+            where: {
+              weaponType: "case",
+              name: caseName
+            },
+            select: {
+              id: true,
+              name: true,
+              imageUrl: true
+            }
+          });
+          
+          if (caseItem) {
+            caseInfo = {
+              id: caseItem.id,
+              name: caseItem.name,
+              imageUrl: caseItem.imageUrl
+            };
+            console.log(`[DEBUG] Found case via finish mapping: ${finish} -> ${caseName}`);
+            break;
+          }
         }
       }
     }
