@@ -784,72 +784,101 @@ export default function SkinDetailPage() {
         </Card>
 
         {/* P1 - Market Statistics */}
-        {/* Market Statistics */}
+        {/* Market Stats Card — price, orders, listings, volume */}
         {loadingEnhanced ? (
           <Skeleton className="h-32 w-full mb-8" />
         ) : marketStats ? (
           <div className="mb-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Market Statistics</CardTitle>
+            <Card className="border-2 border-primary/10 bg-gradient-to-br from-primary/5 to-secondary/5">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  Market Statistics
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="text-center cursor-help">
-                          <p className="text-2xl font-bold">{formatUSD(marketStats.medianPrice || 0)}</p>
-                          <p className="text-sm text-muted-foreground">Median Price</p>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Median price over the last 30 days</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Top Row */}
+                  <div className="space-y-4">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
+                            <div className="p-2 rounded-full bg-primary/10">
+                              <DollarSign className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-bold text-primary">{formatUSD(marketStats.medianPrice || 0)}</p>
+                              <p className="text-sm text-muted-foreground">Median Price</p>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Median price over the last 30 days</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
+                            <div className="p-2 rounded-full bg-green-500/10">
+                              <TrendingUp className="h-5 w-5 text-green-500" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-bold text-green-600">{marketStats.buyOrders || 0}</p>
+                              <p className="text-sm text-muted-foreground">Buy Orders</p>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Current buy orders on the Steam Market</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="text-center cursor-help">
-                          <p className="text-2xl font-bold">{marketStats.buyOrders || 0}</p>
-                          <p className="text-sm text-muted-foreground">Buy Orders</p>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Current buy orders on the Steam Market</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="text-center cursor-help">
-                          <p className="text-2xl font-bold">{marketStats.activeListings || 0}</p>
-                          <p className="text-sm text-muted-foreground">Active Listings</p>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Currently active sell listings on Steam Market</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="text-center cursor-help">
-                          <p className="text-2xl font-bold">{marketStats.volume24h || 0}</p>
-                          <p className="text-sm text-muted-foreground">Volume 24h</p>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Number of items sold in the last 24 hours</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  {/* Bottom Row */}
+                  <div className="space-y-4">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
+                            <div className="p-2 rounded-full bg-blue-500/10">
+                              <Users className="h-5 w-5 text-blue-500" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-bold text-blue-600">{marketStats.activeListings || 0}</p>
+                              <p className="text-sm text-muted-foreground">Active Listings</p>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Currently active sell listings on Steam Market</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
+                            <div className="p-2 rounded-full bg-orange-500/10">
+                              <Clock className="h-5 w-5 text-orange-500" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-bold text-orange-600">{marketStats.volume24h || 0}</p>
+                              <p className="text-sm text-muted-foreground">Volume 24h</p>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Number of items sold in the last 24 hours</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 </div>
               </CardContent>
             </Card>
