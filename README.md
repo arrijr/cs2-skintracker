@@ -13,6 +13,7 @@ Features (MVP)
 - One price alert per user (email/push prepared)
 - Skin detail with 30-day price chart (stored history)
 - **Case System** - Display case information and related skins
+- **Quantity History (Active Listings)** - Daily market snapshots with bar charts
 - Portfolio overview (positions, P/L, history)
 - Responsive UI (mobile & desktop)
 Planned (Premium / upcoming):
@@ -25,6 +26,35 @@ Repo Structure
 /frontend # Next.js app
 /backend # Express API, Prisma, Cron
 /docs # Architecture, API, data model, features, troubleshooting, ADRs
+
+## Quantity History (Active Listings)
+
+### Overview
+Daily market snapshots that track active listings and 24h volume for each skin, providing insights into market supply and demand.
+
+### Data Model
+- **MarketSnapshot** table stores daily snapshots per skin
+- Fields: `skinId`, `date`, `priceUsd`, `activeListings`, `soldVolume24h`, `source`, `fetchedAt`
+- Unique constraint on `skinId + date` (one snapshot per skin per day)
+
+### Cron Schedule
+- **Daily job** runs at 2:00 AM UTC
+- Collects market data for all tracked skins
+- Rate limited: 1 second between requests, 10 skins per batch
+- Manual trigger available via admin API
+
+### API Endpoints
+- `GET /api/v1/skins/:skinId/history/quantity?range=7d|30d|90d|1y|all`
+- `GET /api/v1/skins/:skinId/history/price-and-quantity?range=...`
+- `GET /api/v1/skins/:skinId/snapshot/latest`
+- `GET /api/v1/snapshots/stats?days=7`
+
+### Frontend UI
+- **QuantityBarChart** component with shadcn ToggleGroup for time ranges
+- Toggle between Active Listings and 24h Volume display
+- Statistics summary (max/avg/min values)
+- Tooltips with detailed information
+- Integrated into Skin Detail page below Price History
 
 Quick Start
 
