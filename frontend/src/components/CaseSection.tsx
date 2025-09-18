@@ -96,38 +96,44 @@ export function CaseSection({ skinId }: CaseSectionProps) {
 
   return (
     <div className="mb-8">
-      <Card>
-        <CardHeader>
+      {/* Case Section Card — shows case info and link */}
+      <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5 shadow-lg">
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {/* Case Header: case thumbnail, name, View Case button */}
-              <div className="flex items-center gap-3">
-                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted/20">
-                  <Image
-                    src={caseInfo.imageUrl || "/images/placeholder-case.png"}
-                    alt={caseInfo.name}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="h-5 w-5" />
-                    Contained in {caseInfo.name}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {caseInfo.skinCount} skins in this case
-                  </p>
-                </div>
+            {/* Case Icon and Name */}
+            <div className="flex items-center gap-4">
+              <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-muted/30 shadow-lg">
+                <Image
+                  src={caseInfo.imageUrl || "/images/placeholder-case.png"}
+                  alt={caseInfo.name}
+                  fill
+                  className="object-contain p-2"
+                />
+              </div>
+              <div>
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <span className="text-3xl">📦</span>
+                  {caseInfo.name}
+                </CardTitle>
+                {caseInfo.skinCount > 0 && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="secondary" className="text-sm font-medium">
+                      {caseInfo.skinCount} skins
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">in this case</span>
+                  </div>
+                )}
               </div>
             </div>
+            
+            {/* Action Buttons */}
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="default" size="sm" asChild className="shadow-md">
                 <Link href={`/cases/${encodeURIComponent(caseInfo.name)}`}>
                   View Case
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="sm" asChild className="shadow-md">
                 <a 
                   href={`https://steamcommunity.com/market/search?q=${encodeURIComponent(caseInfo.name)}`}
                   target="_blank"
