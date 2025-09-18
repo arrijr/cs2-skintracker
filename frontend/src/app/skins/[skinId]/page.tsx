@@ -1037,7 +1037,6 @@ export default function SkinDetailPage() {
               </Card>
             )}
           </div>
-        )}
 
         {/* P1 - Price Alerts & Watchlist */}
         {/* Price Alerts & Watchlist - Preisalarm sauber integrieren */}
