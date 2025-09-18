@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -886,60 +887,79 @@ export default function SkinDetailPage() {
         ) : null}
 
         {/* P1 - Skin Variants */}
-        {/* Skin Variants - echte Daten, sortiert, klarer Availability-State */}
+        {/* Skin Variants Table with shadcn Table and Exterior Badges */}
         {loadingEnhanced ? (
           <Skeleton className="h-64 w-full mb-8" />
         ) : variants.length > 0 ? (
           <div className="mb-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Skin Variants</CardTitle>
+            <Card className="border-2 border-primary/10 bg-gradient-to-br from-primary/5 to-secondary/5">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-primary" />
+                  Skin Variants
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {variants
-                    .sort((a, b) => {
-                      // Sortierung: FN → MW → FT → WW → BS, pro Wear zuerst StatTrak, dann Normal
-                      const wearOrder = { 'Factory New': 0, 'Minimal Wear': 1, 'Field-Tested': 2, 'Well-Worn': 3, 'Battle-Scarred': 4 };
-                      const aWear = wearOrder[a.wear as keyof typeof wearOrder] ?? 999;
-                      const bWear = wearOrder[b.wear as keyof typeof wearOrder] ?? 999;
-                      
-                      if (aWear !== bWear) return aWear - bWear;
-                      
-                      // StatTrak zuerst
-                      if (a.isStattrak !== b.isStattrak) return a.isStattrak ? -1 : 1;
-                      
-                      return 0;
-                    })
-                    .map((variant: any) => {
-                      const isActive = variant.id === skin?.id;
-                      const isAvailable = variant.priceAvg || variant.priceMedian;
-                      
-                      return (
-                        <div
-                          key={variant.id}
-                          className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${
-                            isActive 
-                              ? 'border-primary bg-primary/5' 
-                              : isAvailable 
-                                ? 'border-border hover:border-primary/50 hover:bg-muted/50' 
-                                : 'border-border/50 bg-muted/30 opacity-60'
-                          }`}
-                          onClick={() => {
-                            if (isAvailable && !isActive) {
-                              setVariant(variant.id.toString());
-                              router.push(`/skins/${variant.id}`);
-                            }
-                          }}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="flex gap-1">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Wear Condition</TableHead>
+                      <TableHead>Rarity</TableHead>
+                      <TableHead>Special</TableHead>
+                      <TableHead className="text-right">Price</TableHead>
+                      <TableHead className="text-right">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {variants
+                      .sort((a, b) => {
+                        // Sortierung: FN → MW → FT → WW → BS, pro Wear zuerst StatTrak, dann Normal
+                        const wearOrder = { 'Factory New': 0, 'Minimal Wear': 1, 'Field-Tested': 2, 'Well-Worn': 3, 'Battle-Scarred': 4 };
+                        const aWear = wearOrder[a.wear as keyof typeof wearOrder] ?? 999;
+                        const bWear = wearOrder[b.wear as keyof typeof wearOrder] ?? 999;
+                        
+                        if (aWear !== bWear) return aWear - bWear;
+                        
+                        // StatTrak zuerst
+                        if (a.isStattrak !== b.isStattrak) return a.isStattrak ? -1 : 1;
+                        
+                        return 0;
+                      })
+                      .map((variant: any) => {
+                        const isActive = variant.id === skin?.id;
+                        const isAvailable = variant.priceAvg || variant.priceMedian;
+                        
+                        return (
+                          <TableRow
+                            key={variant.id}
+                            className={`cursor-pointer transition-all ${
+                              isActive 
+                                ? 'bg-primary/10 border-primary/20' 
+                                : isAvailable 
+                                  ? 'hover:bg-muted/50' 
+                                  : 'opacity-60'
+                            }`}
+                            onClick={() => {
+                              if (isAvailable && !isActive) {
+                                setVariant(variant.id.toString());
+                                router.push(`/skins/${variant.id}`);
+                              }
+                            }}
+                          >
+                            <TableCell>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <Badge 
                                       variant={isActive ? "default" : "secondary"}
-                                      className="text-xs cursor-help"
+                                      className={`text-xs cursor-help ${
+                                        variant.wear === 'Factory New' ? 'bg-green-100 text-green-800 border-green-200' :
+                                        variant.wear === 'Minimal Wear' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                                        variant.wear === 'Field-Tested' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                                        variant.wear === 'Well-Worn' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                        variant.wear === 'Battle-Scarred' ? 'bg-red-100 text-red-800 border-red-200' :
+                                        'bg-gray-100 text-gray-800 border-gray-200'
+                                      }`}
                                       aria-label={`Wear condition: ${variant.wear || 'Unknown'}`}
                                     >
                                       {variant.wear || 'Unknown'}
@@ -950,7 +970,9 @@ export default function SkinDetailPage() {
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
-                              
+                            </TableCell>
+                            
+                            <TableCell>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -973,49 +995,64 @@ export default function SkinDetailPage() {
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
-                              
+                            </TableCell>
+                            
+                            <TableCell>
                               {variant.isStattrak && (
                                 <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Badge 
                                         variant="secondary" 
-                                        className="text-xs cursor-help"
-                                        aria-label="StatTrak version - tracks kills"
+                                        className="text-xs cursor-help bg-orange-100 text-orange-800 border-orange-200"
+                                        aria-label="StatTrak™ enabled"
                                       >
-                                        StatTrak™
+                                        ST
                                       </Badge>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      <p>StatTrak version - tracks kills</p>
+                                      <p>StatTrak™ enabled</p>
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
                               )}
-            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-3">
-                            {isAvailable ? (
-                              <>
-                                <div className="text-right">
-                                  <p className="font-bold">{formatUSD(variant.priceAvg || variant.priceMedian)}</p>
-                                  <p className="text-xs text-muted-foreground">N offers</p>
+                            </TableCell>
+                            
+                            <TableCell className="text-right">
+                              {isAvailable ? (
+                                <div>
+                                  <p className="font-semibold text-primary">
+                                    {formatUSD(variant.priceAvg || variant.priceMedian || variant.priceLatest)}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {variant.priceAvg ? 'Avg' : variant.priceMedian ? 'Med' : 'Latest'}
+                                  </p>
                                 </div>
-                                {isActive && (
-                                  <Badge variant="default" className="text-xs">Active</Badge>
-                                )}
-                              </>
-                            ) : (
-                              <div className="text-right">
-                                <p className="text-muted-foreground text-sm">Not available</p>
-              </div>
-            )}
-          </div>
-                        </div>
-                      );
-                    })}
-                </div>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">No data</p>
+                              )}
+                            </TableCell>
+                            
+                            <TableCell className="text-right">
+                              {isActive ? (
+                                <Badge variant="default" className="text-xs">
+                                  Current
+                                </Badge>
+                              ) : isAvailable ? (
+                                <Badge variant="outline" className="text-xs">
+                                  Available
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="text-xs">
+                                  No data
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </div>
