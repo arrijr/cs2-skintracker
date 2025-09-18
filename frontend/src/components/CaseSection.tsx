@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ExternalLink, Package } from "lucide-react";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { formatUSD } from "@/lib/num";
@@ -148,7 +149,8 @@ export function CaseSection({ skinId }: CaseSectionProps) {
         </CardHeader>
         <CardContent>
           {/* Case Skins Grid — all skins contained in this case */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {caseSkins.slice(0, 12).map((skin) => (
               <Link 
                 key={skin.id} 
@@ -214,6 +216,82 @@ export function CaseSection({ skinId }: CaseSectionProps) {
                 </Card>
               </Link>
             ))}
+          </div>
+          
+          {/* Mobile Carousel for Skins (Case + Related) */}
+          <div className="md:hidden">
+            <Carousel className="w-full">
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {caseSkins.slice(0, 12).map((skin) => (
+                  <CarouselItem key={skin.id} className="pl-2 md:pl-4 basis-1/2">
+                    <Link 
+                      href={`/skins/${skin.id}`}
+                      className="group"
+                    >
+                      <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 group-hover:scale-105 border-2 hover:border-primary/20">
+                        <CardContent className="p-3">
+                          <div className="aspect-square relative mb-2 bg-muted/20 rounded-lg overflow-hidden">
+                            <Image
+                              src={skin.imageUrl || "/images/placeholder-skin.png"}
+                              alt={skin.name}
+                              fill
+                              className="object-contain group-hover:scale-110 transition-transform duration-200"
+                              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+                            />
+                            {/* Case Badge */}
+                            <Badge 
+                              variant="secondary" 
+                              className="absolute top-1 left-1 text-xs px-1 py-0"
+                            >
+                              Case
+                            </Badge>
+                          </div>
+                          <h3 className="font-medium text-xs truncate mb-1 group-hover:text-primary transition-colors">
+                            {skin.name}
+                          </h3>
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <p className="text-primary font-bold text-sm">
+                                {formatUSD(skin.priceAvg || skin.priceMedian || skin.priceLatest)}
+                              </p>
+                              <div className="flex gap-1">
+                                {skin.isStattrak && (
+                                  <Badge variant="secondary" className="text-xs px-1 py-0">ST</Badge>
+                                )}
+                                {skin.isStar && (
+                                  <Badge variant="outline" className="text-xs px-1 py-0">★</Badge>
+                                )}
+                              </div>
+                            </div>
+                            {skin.wear && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {skin.wear}
+                              </p>
+                            )}
+                            {skin.rarity && (
+                              <Badge
+                                variant="outline"
+                                className={`text-xs px-1 py-0 ${
+                                  skin.rarity === 'Covert' ? 'border-red-500 text-red-500' :
+                                  skin.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
+                                  skin.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
+                                  skin.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500' :
+                                  'border-gray-500 text-gray-500'
+                                }`}
+                              >
+                                {skin.rarity}
+                              </Badge>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2" />
+              <CarouselNext className="right-2" />
+            </Carousel>
           </div>
           
           {/* Case Section States: loading / empty / error */}

@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -1114,8 +1115,10 @@ export default function SkinDetailPage() {
                 ))}
               </div>
             ) : relatedSkins.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {relatedSkins.map((relatedSkin) => (
+              <>
+                {/* Desktop Grid */}
+                <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-4">
+                  {relatedSkins.map((relatedSkin) => (
                   <div key={relatedSkin.id} className="group relative">
                     <Link 
                       href={`/skins/${relatedSkin.id}`}
@@ -1248,7 +1251,86 @@ export default function SkinDetailPage() {
                     </Link>
                   </div>
                 ))}
-              </div>
+                </div>
+                
+                {/* Mobile Carousel for Skins (Case + Related) */}
+                <div className="md:hidden">
+                  <Carousel className="w-full">
+                    <CarouselContent className="-ml-2 md:-ml-4">
+                      {relatedSkins.map((relatedSkin) => (
+                        <CarouselItem key={relatedSkin.id} className="pl-2 md:pl-4 basis-1/2">
+                          <div className="group relative">
+                            <Link 
+                              href={`/skins/${relatedSkin.id}`}
+                              onClick={() => {
+                                // P3 - Analytics: Track related skin click
+                                if (skin) {
+                                  analytics.trackRelatedClick(skin.id, relatedSkin.id, relatedSkin.name);
+                                }
+                              }}
+                            >
+                              <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-2 hover:border-primary/30 bg-gradient-to-br from-background to-muted/20">
+                                <CardContent className="p-3">
+                                  <div className="aspect-square relative mb-2 overflow-hidden rounded-lg">
+                                    <Image
+                                      src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
+                                      alt={relatedSkin.name}
+                                      fill
+                                      className="object-contain group-hover:scale-110 transition-transform duration-300"
+                                    />
+                                  </div>
+                                  
+                                  <h3 className="font-medium text-xs truncate mb-1 group-hover:text-primary transition-colors">
+                                    {relatedSkin.name}
+                                  </h3>
+                                  
+                                  <div className="space-y-1">
+                                    <div className="flex items-center justify-between">
+                                      <p className="text-primary font-bold text-sm">
+                                        {formatUSD(relatedSkin.priceAvg || relatedSkin.priceMedian || relatedSkin.priceLatest)}
+                                      </p>
+                                      <div className="flex gap-1">
+                                        {relatedSkin.isStattrak && (
+                                          <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
+                                            ST
+                                          </Badge>
+                                        )}
+                                        {relatedSkin.isStar && (
+                                          <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
+                                            ★
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                    
+                                    {relatedSkin.wear && (
+                                      <Badge 
+                                        variant="outline" 
+                                        className={`text-xs ${
+                                          relatedSkin.wear === 'Factory New' ? 'border-green-500 text-green-600' :
+                                          relatedSkin.wear === 'Minimal Wear' ? 'border-blue-500 text-blue-600' :
+                                          relatedSkin.wear === 'Field-Tested' ? 'border-yellow-500 text-yellow-600' :
+                                          relatedSkin.wear === 'Well-Worn' ? 'border-orange-500 text-orange-600' :
+                                          relatedSkin.wear === 'Battle-Scarred' ? 'border-red-500 text-red-600' :
+                                          'border-gray-500 text-gray-600'
+                                        }`}
+                                      >
+                                        {relatedSkin.wear}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </Link>
+                          </div>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-2" />
+                    <CarouselNext className="right-2" />
+                  </Carousel>
+                </div>
+              </>
             ) : (
               <Card className="border-2 border-dashed border-muted-foreground/25">
                 <CardContent className="text-center py-12">
