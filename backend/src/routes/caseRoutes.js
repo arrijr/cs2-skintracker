@@ -7,10 +7,10 @@ import { optionalClerkAuth } from "../middleware/clerkAuth.js";
 
 const router = express.Router();
 
-// Get case by ID
+// Get case by ID (supports both caseId and id parameters)
 router.get("/:caseId", optionalClerkAuth, getCaseById);
 
-// Get all skins in a case
+// Get all skins in a case (supports both caseId and id parameters)
 router.get("/:caseId/skins", optionalClerkAuth, getCaseSkins);
 
 export default router;
