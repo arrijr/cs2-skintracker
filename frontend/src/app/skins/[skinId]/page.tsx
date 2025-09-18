@@ -1068,8 +1068,12 @@ export default function SkinDetailPage() {
         {skin && <CaseSection skinId={skin.id} />}
 
         {/* P1 - Related Skins */}
+        {/* Related Skins Grid with interactive Cards and Quick Actions */}
         <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">Related Skins</h2>
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <Heart className="h-6 w-6 text-primary" />
+              Related Skins
+            </h2>
             {loadingEnhanced ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -1079,50 +1083,145 @@ export default function SkinDetailPage() {
             ) : relatedSkins.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {relatedSkins.map((relatedSkin) => (
-                  <Link 
-                    key={relatedSkin.id} 
-                    href={`/skins/${relatedSkin.id}`}
-                    onClick={() => {
-                      // P3 - Analytics: Track related skin click
-                      if (skin) {
-                        analytics.trackRelatedClick(skin.id, relatedSkin.id, relatedSkin.name);
-                      }
-                    }}
-                  >
-                    <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
-                      <CardContent className="p-4">
-                        <div className="aspect-square relative mb-2">
-                          <Image
-                            src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
-                            alt={relatedSkin.name}
-                            fill
-                            className="object-contain rounded group-hover:scale-105 transition-transform"
-                          />
-                        </div>
-                        <h3 className="font-medium text-sm truncate mb-1">{relatedSkin.name}</h3>
-                        <div className="flex items-center justify-between">
-                          <p className="text-primary font-bold">{formatUSD(relatedSkin.priceAvg || relatedSkin.priceMedian)}</p>
-                          <div className="flex gap-1">
-                            {relatedSkin.isStattrak && (
-                              <Badge variant="secondary" className="text-xs">ST</Badge>
-                            )}
-                            {relatedSkin.isStar && (
-                              <Badge variant="outline" className="text-xs">★</Badge>
+                  <div key={relatedSkin.id} className="group relative">
+                    <Link 
+                      href={`/skins/${relatedSkin.id}`}
+                      onClick={() => {
+                        // P3 - Analytics: Track related skin click
+                        if (skin) {
+                          analytics.trackRelatedClick(skin.id, relatedSkin.id, relatedSkin.name);
+                        }
+                      }}
+                    >
+                      <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-2 hover:border-primary/30 bg-gradient-to-br from-background to-muted/20">
+                        <CardContent className="p-4">
+                          <div className="aspect-square relative mb-3 overflow-hidden rounded-lg">
+                            <Image
+                              src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
+                              alt={relatedSkin.name}
+                              fill
+                              className="object-contain group-hover:scale-110 transition-transform duration-300"
+                            />
+                            {/* Quick Actions Overlay */}
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              <div className="flex gap-1">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          // Add to watchlist logic
+                                          console.log("Add to watchlist:", relatedSkin.id);
+                                        }}
+                                      >
+                                        <Heart className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Add to Watchlist</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          // Add to portfolio logic
+                                          console.log("Add to portfolio:", relatedSkin.id);
+                                        }}
+                                      >
+                                        <BarChart3 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Add to Portfolio</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <h3 className="font-medium text-sm truncate mb-2 group-hover:text-primary transition-colors">
+                            {relatedSkin.name}
+                          </h3>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <p className="text-primary font-bold text-lg">
+                                {formatUSD(relatedSkin.priceAvg || relatedSkin.priceMedian || relatedSkin.priceLatest)}
+                              </p>
+                              <div className="flex gap-1">
+                                {relatedSkin.isStattrak && (
+                                  <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
+                                    ST
+                                  </Badge>
+                                )}
+                                {relatedSkin.isStar && (
+                                  <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
+                                    ★
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {relatedSkin.wear && (
+                              <div className="flex items-center justify-between">
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs ${
+                                    relatedSkin.wear === 'Factory New' ? 'border-green-500 text-green-600' :
+                                    relatedSkin.wear === 'Minimal Wear' ? 'border-blue-500 text-blue-600' :
+                                    relatedSkin.wear === 'Field-Tested' ? 'border-yellow-500 text-yellow-600' :
+                                    relatedSkin.wear === 'Well-Worn' ? 'border-orange-500 text-orange-600' :
+                                    relatedSkin.wear === 'Battle-Scarred' ? 'border-red-500 text-red-600' :
+                                    'border-gray-500 text-gray-600'
+                                  }`}
+                                >
+                                  {relatedSkin.wear}
+                                </Badge>
+                                
+                                {relatedSkin.rarity && (
+                                  <Badge 
+                                    variant="outline" 
+                                    className={`text-xs ${
+                                      relatedSkin.rarity === 'Covert' ? 'border-red-500 text-red-500' :
+                                      relatedSkin.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
+                                      relatedSkin.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
+                                      relatedSkin.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500' :
+                                      'border-gray-500 text-gray-500'
+                                    }`}
+                                  >
+                                    {relatedSkin.rarity}
+                                  </Badge>
+                                )}
+                              </div>
                             )}
                           </div>
-                        </div>
-                        {relatedSkin.wear && (
-                          <p className="text-xs text-muted-foreground mt-1">{relatedSkin.wear}</p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </Link>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </div>
                 ))}
               </div>
             ) : (
-              <Card>
-                <CardContent className="text-center py-8">
-                  <p className="text-muted-foreground">No related skins found</p>
+              <Card className="border-2 border-dashed border-muted-foreground/25">
+                <CardContent className="text-center py-12">
+                  <Heart className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                  <p className="text-muted-foreground text-lg">No related skins found</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">Try exploring different weapon types or collections</p>
                 </CardContent>
               </Card>
             )}
