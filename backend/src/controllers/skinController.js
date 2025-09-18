@@ -173,7 +173,14 @@ export const getSkinCase = async (req, res) => {
     // Get the skin to find its case/collection
     const skin = await prisma.skin.findUnique({
       where: { id: parseInt(skinId) },
-      select: { itemGroup: true, weaponType: true, itemName: true }
+      select: { 
+        itemGroup: true, 
+        weaponType: true, 
+        itemName: true,
+        name: true,
+        rarity: true,
+        quality: true
+      }
     });
     
     if (!skin) {
@@ -183,53 +190,35 @@ export const getSkinCase = async (req, res) => {
     
     console.log(`[DEBUG] Skin found: itemGroup="${skin.itemGroup}", weaponType="${skin.weaponType}", itemName="${skin.itemName}"`);
     
-    // If no itemGroup, try to find related skins by weaponType or similar characteristics
-    if (!skin.itemGroup) {
-      console.log(`[DEBUG] Skin ${skinId} has no itemGroup, looking for related skins by weaponType`);
-      
-      // For stickers, find other stickers from same tournament
-      // For weapons, find other weapons of same type
-      const relatedSkins = await prisma.skin.findMany({
-        where: {
-          AND: [
-            { id: { not: parseInt(skinId) } },
-            { weaponType: skin.weaponType }
-          ]
-        },
-        select: {
-          id: true,
-          name: true,
-          wear: true,
-          rarity: true,
-          quality: true,
-          isStattrak: true,
-          isStar: true,
-          priceAvg: true,
-          priceMedian: true,
-          priceLatest: true,
-          imageUrl: true
-        },
-        orderBy: [
-          { rarity: 'asc' },
-          { name: 'asc' }
-        ],
-        take: 20
-      });
-      
-      console.log(`[DEBUG] Found ${relatedSkins.length} related skins for weaponType "${skin.weaponType}"`);
-      
-      return res.json({
-        caseName: "Related Items",
-        skins: relatedSkins,
-        totalSkins: relatedSkins.length,
-        message: `Found ${relatedSkins.length} related items from ${skin.weaponType}`
-      });
+    // Determine case name from weaponType or itemGroup
+    let caseName = skin.itemGroup || skin.weaponType || "Unknown Case";
+    
+    // Clean up case name for better display
+    if (caseName.includes("2018") || caseName.includes("2019") || caseName.includes("2020") || 
+        caseName.includes("2021") || caseName.includes("2022") || caseName.includes("2023") || 
+        caseName.includes("2024")) {
+      // Tournament stickers - format nicely
+      caseName = caseName.replace(/(\d{4})/, '$1 Major');
+    } else if (caseName.includes("knife") || caseName.includes("gloves")) {
+      // Knives and gloves - these are usually from cases
+      caseName = "Knife & Glove Collection";
+    } else if (caseName.includes("souvenir")) {
+      // Souvenir items
+      caseName = "Souvenir Collection";
     }
     
-    // Find all skins in the same item group (case/collection)
+    // Find all skins in the same case/collection
+    // First try itemGroup, then fall back to weaponType
+    const whereClause = skin.itemGroup ? 
+      { itemGroup: skin.itemGroup } : 
+      { weaponType: skin.weaponType };
+    
     const caseSkins = await prisma.skin.findMany({
       where: {
-        itemGroup: skin.itemGroup
+        AND: [
+          whereClause,
+          { id: { not: parseInt(skinId) } } // Exclude current skin
+        ]
       },
       select: {
         id: true,
@@ -242,20 +231,24 @@ export const getSkinCase = async (req, res) => {
         priceAvg: true,
         priceMedian: true,
         priceLatest: true,
-        imageUrl: true
+        imageUrl: true,
+        weaponType: true
       },
       orderBy: [
         { rarity: 'asc' },
         { name: 'asc' }
-      ]
+      ],
+      take: 24 // Limit to 24 skins for better performance
     });
     
-    console.log(`[DEBUG] Found ${caseSkins.length} skins in case "${skin.itemGroup}"`);
+    console.log(`[DEBUG] Found ${caseSkins.length} skins in case "${caseName}"`);
     
     const caseInfo = {
-      caseName: skin.itemGroup,
+      caseName: caseName,
       skins: caseSkins,
-      totalSkins: caseSkins.length
+      totalSkins: caseSkins.length,
+      originalWeaponType: skin.weaponType,
+      originalItemGroup: skin.itemGroup
     };
     
     res.json(caseInfo);

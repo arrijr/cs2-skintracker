@@ -974,19 +974,25 @@ export default function SkinDetailPage() {
         )}
 
         {/* P1 - Case Information */}
-        {/* Case Information - nur echte Case-Mates anzeigen */}
+        {/* Case Information - verbesserte Darstellung mit mehr Details */}
         {loadingEnhanced ? (
           <Skeleton className="h-48 w-full mb-8" />
-        ) : caseInfo && caseInfo.totalSkins > 1 ? (
+        ) : caseInfo && caseInfo.totalSkins > 0 ? (
           <div className="mb-8">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    {caseInfo.caseName} · {caseInfo.totalSkins} skins
-                  </CardTitle>
+                  <div className="flex items-center gap-3">
+                    <CardTitle className="flex items-center gap-2">
+                      <span className="text-2xl">📦</span>
+                      {caseInfo.caseName}
+                    </CardTitle>
+                    <Badge variant="secondary" className="text-sm">
+                      {caseInfo.totalSkins} skins
+                    </Badge>
+                  </div>
                   <div className="flex gap-2">
-                    {caseInfo.caseName !== "Related Items" && (
+                    {caseInfo.caseName !== "Related Items" && caseInfo.caseName !== "Knife & Glove Collection" && (
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/cases/${caseInfo.caseName?.toLowerCase().replace(/\s+/g, '-')}`}>
                           View Case
@@ -995,9 +1001,9 @@ export default function SkinDetailPage() {
                     )}
                     <Button variant="outline" size="sm" asChild>
                       <a 
-                        href={`https://steamcommunity.com/market/search?q=${encodeURIComponent(caseInfo.caseName || '')}`}
-            target="_blank"
-            rel="noopener noreferrer"
+                        href={`https://steamcommunity.com/market/search?q=${encodeURIComponent(caseInfo.originalWeaponType || caseInfo.caseName || '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
                         <ExternalLink className="h-4 w-4 mr-1" />
                         Open on Steam
@@ -1005,50 +1011,86 @@ export default function SkinDetailPage() {
                     </Button>
                   </div>
                 </div>
+                {caseInfo.originalWeaponType && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Collection: {caseInfo.originalWeaponType}
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {caseInfo.skins.slice(0, 8).map((caseSkin: any) => (
-                          <Link 
-                            key={caseSkin.id} 
-                            href={`/skins/${caseSkin.id}`}
-                            onClick={() => {
-                              // P3 - Analytics: Track case mate click
-                              if (skin) {
-                                analytics.trackCaseMateClick(skin.id, caseInfo.caseName, caseSkin.id);
-                              }
-                            }}
-                          >
-                            <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
-                              <CardContent className="p-4">
-                                <div className="aspect-square relative mb-2">
-                                  <Image
-                                    src={caseSkin.imageUrl || "/images/placeholder-skin.png"}
-                                    alt={caseSkin.name}
-                                    fill
-                                    className="object-contain rounded group-hover:scale-105 transition-transform"
-                                  />
-                                </div>
-                                <h3 className="font-medium text-sm truncate mb-1">{caseSkin.name}</h3>
-                                <div className="flex items-center justify-between">
-                                  <p className="text-primary font-bold">{formatUSD(caseSkin.priceAvg || caseSkin.priceMedian)}</p>
-                                  <div className="flex gap-1">
-                                    {caseSkin.isStattrak && (
-                                      <Badge variant="secondary" className="text-xs">ST</Badge>
-                                    )}
-                                    {caseSkin.isStar && (
-                                      <Badge variant="outline" className="text-xs">★</Badge>
-                                    )}
-                                  </div>
-                                </div>
-                                {caseSkin.wear && (
-                                  <p className="text-xs text-muted-foreground mt-1">{caseSkin.wear}</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                  {caseInfo.skins.slice(0, 12).map((caseSkin: any) => (
+                    <Link 
+                      key={caseSkin.id} 
+                      href={`/skins/${caseSkin.id}`}
+                      className="group"
+                      onClick={() => {
+                        // P3 - Analytics: Track case mate click
+                        if (skin) {
+                          analytics.trackCaseMateClick(skin.id, caseInfo.caseName, caseSkin.id);
+                        }
+                      }}
+                    >
+                      <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 group-hover:scale-105 border-2 hover:border-primary/20">
+                        <CardContent className="p-3">
+                          <div className="aspect-square relative mb-2 bg-muted/20 rounded-lg overflow-hidden">
+                            <Image
+                              src={caseSkin.imageUrl || "/images/placeholder-skin.png"}
+                              alt={caseSkin.name}
+                              fill
+                              className="object-contain group-hover:scale-110 transition-transform duration-200"
+                              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+                            />
+                          </div>
+                          <h3 className="font-medium text-xs truncate mb-1 group-hover:text-primary transition-colors">
+                            {caseSkin.name}
+                          </h3>
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <p className="text-primary font-bold text-sm">
+                                {formatUSD(caseSkin.priceAvg || caseSkin.priceMedian || caseSkin.priceLatest)}
+                              </p>
+                              <div className="flex gap-1">
+                                {caseSkin.isStattrak && (
+                                  <Badge variant="secondary" className="text-xs px-1 py-0">ST</Badge>
                                 )}
-                              </CardContent>
-                            </Card>
-            </Link>
-                        ))}
-          </div>
+                                {caseSkin.isStar && (
+                                  <Badge variant="outline" className="text-xs px-1 py-0">★</Badge>
+                                )}
+                              </div>
+                            </div>
+                            {caseSkin.wear && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {caseSkin.wear}
+                              </p>
+                            )}
+                            {caseSkin.rarity && (
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs px-1 py-0 ${
+                                  caseSkin.rarity === 'Covert' ? 'border-red-500 text-red-500' :
+                                  caseSkin.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
+                                  caseSkin.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
+                                  caseSkin.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500' :
+                                  'border-gray-500 text-gray-500'
+                                }`}
+                              >
+                                {caseSkin.rarity}
+                              </Badge>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+                {caseInfo.totalSkins > 12 && (
+                  <div className="mt-4 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      Showing 12 of {caseInfo.totalSkins} skins in this collection
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

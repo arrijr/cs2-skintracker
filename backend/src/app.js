@@ -8,6 +8,7 @@ import "./cron/index.js";
 
 import userRoutes from "./routes/userRoutes.js";
 import skinRoutes from "./routes/skinRoutes.js";
+import caseRoutes from "./routes/caseRoutes.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
 import portfolioRoutes from "./routes/portfolioRoutes.js";
 import portfolioHistoryRoutes from "./routes/portfolioHistoryRoutes.js";
@@ -110,6 +111,7 @@ app.options(/.*/, cors(corsOptions));
 // Routes (nur Pfade, keine URLs!)
 app.use("/api/v1/users", sensitiveLimiter, userRoutes);
 app.use("/api/v1/skins", skinRoutes);
+app.use("/api/v1/cases", caseRoutes);
 app.use("/api/v1/watchlist", watchlistRoutes);
 app.use("/api/v1/portfolio", portfolioRoutes);
 app.use("/api/v1/portfolio/history", portfolioHistoryRoutes);
