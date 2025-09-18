@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -687,46 +688,69 @@ export default function SkinDetailPage() {
                 </div>
 
         {/* P1 - Price History */}
-        {/* Price History - bessere States + Steuerung & URL-Sync */}
+        {/* Price History Chart with ToggleGroup and Tooltip */}
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Price History</CardTitle>
-              <div className="flex items-center gap-2">
-                <Select value={chartRange} onValueChange={(value: Range) => setChartRange(value)}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="24h">24h</SelectItem>
-                    <SelectItem value="7d">7d</SelectItem>
-                    <SelectItem value="30d">30d</SelectItem>
-                    <SelectItem value="90d">90d</SelectItem>
-                    <SelectItem value="1y">1y</SelectItem>
-                    <SelectItem value="all">All</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center gap-4">
+                <ToggleGroup 
+                  type="single" 
+                  value={chartRange} 
+                  onValueChange={(value: Range) => value && setChartRange(value)}
+                  className="bg-muted/50 p-1 rounded-lg"
+                >
+                  <ToggleGroupItem value="24h" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    24h
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="7d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    7d
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="30d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    30d
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="90d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    90d
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="1y" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    1y
+                  </ToggleGroupItem>
+                </ToggleGroup>
                 
-                <Select value={chartScale} onValueChange={setChartScale}>
-                  <SelectTrigger className="w-24">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="linear">Linear</SelectItem>
-                    <SelectItem value="log">Log</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Select value={chartScale} onValueChange={setChartScale}>
+                      <SelectTrigger className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="linear">Linear</SelectItem>
+                        <SelectItem value="log">Log</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Chart scale type</p>
+                  </TooltipContent>
+                </Tooltip>
 
-                <Select value={movingAverage} onValueChange={setMovingAverage}>
-                  <SelectTrigger className="w-20">
-                    <SelectValue placeholder="MA" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="7">MA 7</SelectItem>
-                    <SelectItem value="30">MA 30</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Select value={movingAverage} onValueChange={setMovingAverage}>
+                      <SelectTrigger className="w-20">
+                        <SelectValue placeholder="MA" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="7">MA 7</SelectItem>
+                        <SelectItem value="30">MA 30</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Moving average smoothing</p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {/* P2 - Share/Export Dropdown */}
                 <div className="flex gap-1">
