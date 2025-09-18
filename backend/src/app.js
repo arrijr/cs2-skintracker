@@ -17,6 +17,7 @@ import healthRoutes from "./routes/healthRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import adminMetricsRoutes from "./routes/adminMetricsRoutes.js";
 import logsRoutes from "./routes/logsRoutes.js";
+import marketSnapshotRoutes from "./routes/marketSnapshotRoutes.js";
 
 dotenv.config();
 
@@ -118,6 +119,7 @@ app.use("/api/v1/portfolio/history", portfolioHistoryRoutes);
 app.use("/api/v1/transactions", transactionRoutes);
 app.use("/api/v1/health", healthRoutes);
 app.use("/api/v1/logs", logsRoutes);
+app.use("/api/v1", marketSnapshotRoutes);
 app.use("/api/v1/admin", adminLimiter, adminRoutes);
 app.use("/api/v1/admin/metrics", adminLimiter, adminMetricsRoutes);
 

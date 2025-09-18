@@ -90,6 +90,7 @@ model Skin {
   watchlist      Watchlist[]
   portfolio      Portfolio[]
   transactions   Transaction[]
+  marketSnapshots MarketSnapshot[]
 
   @@index([rarity])
   @@index([wear])
@@ -205,4 +206,24 @@ model JobRun {
   @@index([jobName, status])
   @@index([adminId])
   @@index([rateLimitKey])
+}
+
+model MarketSnapshot {
+  id              Int      @id @default(autoincrement())
+  skin            Skin     @relation(fields: [skinId], references: [id])
+  skinId          Int
+  date            DateTime @db.Date // YYYY-MM-DD format
+  priceUsd        Float?   // Current price in USD
+  activeListings  Int      // Number of active listings on market
+  soldVolume24h   Int?     // Items sold in last 24h (if available)
+  source          String   @default("steam") // Data source
+  fetchedAt       DateTime @default(now())
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([skinId, date]) // One snapshot per skin per day
+  @@index([skinId, date])
+  @@index([date])
+  @@index([source])
 }
