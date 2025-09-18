@@ -115,6 +115,7 @@ export default function SkinDetailPage() {
     movingAverage: "none",
   });
 
+  useEffect(() => {
     // Track range change
     if (chartRange !== previousParams.chartRange) {
       analytics.trackRangeChange(chartRange, previousParams.chartRange);
