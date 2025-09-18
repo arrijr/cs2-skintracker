@@ -28,6 +28,7 @@ import {
 } from "@/lib/api";
 import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
 import { useAnalytics } from "@/lib/analytics";
+import { CaseSection } from "@/components/CaseSection";
 
 // Chart components are now handled by Shadcn UI Charts
 
@@ -1095,6 +1096,9 @@ export default function SkinDetailPage() {
             </Card>
           </div>
         ) : null}
+
+        {/* Contained in Case — shows the case of this skin + grid of all skins from that case */}
+        {skin && <CaseSection skinId={skin.id} />}
 
         {/* P1 - Related Skins - only show if no case info or case info is not "Related Items" */}
         {(!caseInfo || caseInfo.caseName !== "Related Items") && (
