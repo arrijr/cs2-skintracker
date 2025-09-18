@@ -99,7 +99,6 @@ export default function SkinDetailPage() {
   // P1 - URL Sync with P3 Analytics
   const updateURL = useCallback(() => {
     const params = new URLSearchParams();
-    if (variant) params.set("variant", variant);
     if (chartRange !== "30d") params.set("range", chartRange);
     if (chartScale !== "linear") params.set("scale", chartScale);
     if (movingAverage && movingAverage !== "none") params.set("ma", movingAverage);
@@ -107,21 +106,14 @@ export default function SkinDetailPage() {
     
     const newURL = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
     router.replace(newURL, { scroll: false });
-  }, [variant, chartRange, chartScale, movingAverage, activeTab, router]);
+  }, [chartRange, chartScale, movingAverage, activeTab, router]);
 
   // P3 - Analytics: Track parameter changes
   const [previousParams, setPreviousParams] = useState({
-    variant: "",
     chartRange: "30d" as Range,
     chartScale: "linear",
     movingAverage: "none",
   });
-
-  useEffect(() => {
-    // Track variant change
-    if (variant && variant !== previousParams.variant && skin) {
-      analytics.trackVariantChange(skin.id, parseInt(variant), skin.name);
-    }
 
     // Track range change
     if (chartRange !== previousParams.chartRange) {
@@ -139,12 +131,11 @@ export default function SkinDetailPage() {
     }
 
     setPreviousParams({
-      variant,
       chartRange,
       chartScale,
       movingAverage,
     });
-  }, [variant, chartRange, chartScale, movingAverage, skin, analytics]);
+  }, [chartRange, chartScale, movingAverage, skin, analytics]);
 
   useEffect(() => {
     updateURL();
@@ -190,7 +181,7 @@ export default function SkinDetailPage() {
     }
     
     loadPriceHistory();
-  }, [skin?.id, variant]);
+  }, [skin?.id]);
 
   // Filter history based on selected range
   const filteredHistory = useMemo(() => {
@@ -796,15 +787,15 @@ export default function SkinDetailPage() {
                 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Select value={chartScale} onValueChange={setChartScale}>
-                      <SelectTrigger className="w-24">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="linear">Linear</SelectItem>
-                        <SelectItem value="log">Log</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <Select value={chartScale} onValueChange={setChartScale}>
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="linear">Linear</SelectItem>
+                    <SelectItem value="log">Log</SelectItem>
+                  </SelectContent>
+                </Select>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Chart scale type</p>
@@ -813,16 +804,16 @@ export default function SkinDetailPage() {
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Select value={movingAverage} onValueChange={setMovingAverage}>
-                      <SelectTrigger className="w-20">
-                        <SelectValue placeholder="MA" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        <SelectItem value="7">MA 7</SelectItem>
-                        <SelectItem value="30">MA 30</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <Select value={movingAverage} onValueChange={setMovingAverage}>
+                  <SelectTrigger className="w-20">
+                    <SelectValue placeholder="MA" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="7">MA 7</SelectItem>
+                    <SelectItem value="30">MA 30</SelectItem>
+                  </SelectContent>
+                </Select>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Moving average smoothing</p>
@@ -886,84 +877,84 @@ export default function SkinDetailPage() {
                 <div className="grid grid-cols-2 gap-6">
                   {/* Top Row */}
                   <div className="space-y-4">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                           <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
                             <div className="p-2 rounded-full bg-primary/10">
                               <DollarSign className="h-5 w-5 text-primary" />
                             </div>
                             <div>
                               <p className="text-2xl font-bold text-primary">{formatUSD(marketStats.medianPrice || 0)}</p>
-                              <p className="text-sm text-muted-foreground">Median Price</p>
+                          <p className="text-sm text-muted-foreground">Median Price</p>
                             </div>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Median price over the last 30 days</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Median price over the last 30 days</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                           <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
                             <div className="p-2 rounded-full bg-green-500/10">
                               <TrendingUp className="h-5 w-5 text-green-500" />
                             </div>
                             <div>
                               <p className="text-2xl font-bold text-green-600">{marketStats.buyOrders || 0}</p>
-                              <p className="text-sm text-muted-foreground">Buy Orders</p>
+                          <p className="text-sm text-muted-foreground">Buy Orders</p>
                             </div>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Current buy orders on the Steam Market</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Current buy orders on the Steam Market</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   </div>
                   
                   {/* Bottom Row */}
                   <div className="space-y-4">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                           <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
                             <div className="p-2 rounded-full bg-blue-500/10">
                               <Users className="h-5 w-5 text-blue-500" />
                             </div>
                             <div>
                               <p className="text-2xl font-bold text-blue-600">{marketStats.activeListings || 0}</p>
-                              <p className="text-sm text-muted-foreground">Active Listings</p>
+                          <p className="text-sm text-muted-foreground">Active Listings</p>
                             </div>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Currently active sell listings on Steam Market</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Currently active sell listings on Steam Market</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                           <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
                             <div className="p-2 rounded-full bg-orange-500/10">
                               <Clock className="h-5 w-5 text-orange-500" />
                             </div>
                             <div>
                               <p className="text-2xl font-bold text-orange-600">{marketStats.volume24h || 0}</p>
-                              <p className="text-sm text-muted-foreground">Volume 24h</p>
+                          <p className="text-sm text-muted-foreground">Volume 24h</p>
                             </div>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Number of items sold in the last 24 hours</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Number of items sold in the last 24 hours</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   </div>
                 </div>
               </CardContent>
@@ -996,7 +987,7 @@ export default function SkinDetailPage() {
                   <div key={relatedSkin.id} className="group relative">
                     <Link 
                       href={`/skins/${relatedSkin.id}`}
-                      onClick={() => {
+                          onClick={() => {
                         // P3 - Analytics: Track related skin click
                         if (skin) {
                           analytics.trackRelatedClick(skin.id, relatedSkin.id, relatedSkin.name);
@@ -1014,10 +1005,10 @@ export default function SkinDetailPage() {
                             />
                             {/* Quick Actions Overlay */}
                             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                              <div className="flex gap-1">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
+                            <div className="flex gap-1">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
                                       <Button
                                         size="sm"
                                         variant="secondary"
@@ -1031,19 +1022,19 @@ export default function SkinDetailPage() {
                                       >
                                         <Heart className="h-4 w-4" />
                                       </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
                                       <p>Add to Watchlist</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                                
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
                                       <Button
                                         size="sm"
-                                        variant="secondary"
+                                        variant="secondary" 
                                         className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
                                         onClick={(e) => {
                                           e.preventDefault();
@@ -1060,9 +1051,9 @@ export default function SkinDetailPage() {
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
-                              </div>
-                            </div>
+            </div>
                           </div>
+                                </div>
                           
                           <h3 className="font-medium text-sm truncate mb-2 group-hover:text-primary transition-colors">
                             {relatedSkin.name}
@@ -1083,12 +1074,12 @@ export default function SkinDetailPage() {
                                   <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
                                     ★
                                   </Badge>
-                                )}
-                              </div>
-                            </div>
+            )}
+          </div>
+                        </div>
                             
                             {relatedSkin.wear && (
-                              <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                                 <Badge 
                                   variant="outline" 
                                   className={`text-xs ${
@@ -1116,68 +1107,68 @@ export default function SkinDetailPage() {
                                   >
                                     {relatedSkin.rarity}
                                   </Badge>
+                                    )}
+                                  </div>
                                 )}
-                              </div>
-                            )}
                           </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  </div>
+                              </CardContent>
+                            </Card>
+            </Link>
+          </div>
                 ))}
-                </div>
+              </div>
                 
                 {/* Mobile Carousel for Skins (Case + Related) */}
                 <div className="md:hidden">
                   <Carousel className="w-full">
                     <CarouselContent className="-ml-2 md:-ml-4">
-                      {relatedSkins.map((relatedSkin) => (
+                {relatedSkins.map((relatedSkin) => (
                         <CarouselItem key={relatedSkin.id} className="pl-2 md:pl-4 basis-1/2">
                           <div className="group relative">
-                            <Link 
-                              href={`/skins/${relatedSkin.id}`}
-                              onClick={() => {
-                                // P3 - Analytics: Track related skin click
-                                if (skin) {
-                                  analytics.trackRelatedClick(skin.id, relatedSkin.id, relatedSkin.name);
-                                }
-                              }}
-                            >
+                  <Link 
+                    href={`/skins/${relatedSkin.id}`}
+                    onClick={() => {
+                      // P3 - Analytics: Track related skin click
+                      if (skin) {
+                        analytics.trackRelatedClick(skin.id, relatedSkin.id, relatedSkin.name);
+                      }
+                    }}
+                  >
                               <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-2 hover:border-primary/30 bg-gradient-to-br from-background to-muted/20">
                                 <CardContent className="p-3">
                                   <div className="aspect-square relative mb-2 overflow-hidden rounded-lg">
-                                    <Image
-                                      src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
-                                      alt={relatedSkin.name}
-                                      fill
+                          <Image
+                            src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
+                            alt={relatedSkin.name}
+                            fill
                                       className="object-contain group-hover:scale-110 transition-transform duration-300"
-                                    />
-                                  </div>
+                          />
+                        </div>
                                   
                                   <h3 className="font-medium text-xs truncate mb-1 group-hover:text-primary transition-colors">
                                     {relatedSkin.name}
                                   </h3>
                                   
                                   <div className="space-y-1">
-                                    <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between">
                                       <p className="text-primary font-bold text-sm">
                                         {formatUSD(relatedSkin.priceAvg || relatedSkin.priceMedian || relatedSkin.priceLatest)}
                                       </p>
-                                      <div className="flex gap-1">
-                                        {relatedSkin.isStattrak && (
+                          <div className="flex gap-1">
+                            {relatedSkin.isStattrak && (
                                           <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
                                             ST
                                           </Badge>
-                                        )}
-                                        {relatedSkin.isStar && (
+                            )}
+                            {relatedSkin.isStar && (
                                           <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
                                             ★
                                           </Badge>
-                                        )}
-                                      </div>
-                                    </div>
+                            )}
+                          </div>
+                        </div>
                                     
-                                    {relatedSkin.wear && (
+                        {relatedSkin.wear && (
                                       <Badge 
                                         variant="outline" 
                                         className={`text-xs ${
@@ -1193,17 +1184,17 @@ export default function SkinDetailPage() {
                                       </Badge>
                                     )}
                                   </div>
-                                </CardContent>
-                              </Card>
-                            </Link>
+                      </CardContent>
+                    </Card>
+                  </Link>
                           </div>
                         </CarouselItem>
-                      ))}
+                ))}
                     </CarouselContent>
                     <CarouselPrevious className="left-2" />
                     <CarouselNext className="right-2" />
                   </Carousel>
-                </div>
+              </div>
               </>
             ) : (
               <Card className="border-2 border-dashed border-muted-foreground/25">
