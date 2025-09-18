@@ -102,6 +102,36 @@ The Case System displays case information and related skins on skin detail pages
 - `CaseSection` (`/frontend/src/components/CaseSection.tsx`) - Case display on skin pages
 - Case Detail Page (`/frontend/src/app/cases/[id]/page.tsx`) - Full case information
 
+## UI/UX Components
+
+### Enhanced Skin Detail Page
+The skin detail page has been completely redesigned with modern shadcn components and improved user experience:
+
+#### Visual Enhancements
+- **Case Section Card** - Styled with gradient backgrounds, larger icons, and shadow effects
+- **Price History Chart** - ToggleGroup for time range selection with tooltips
+- **Market Stats Card** - 2x2 grid layout with colored icons and hover effects
+- **Skin Variants Table** - shadcn Table with color-coded wear condition badges
+- **Related Skins Grid** - Interactive cards with hover effects and Quick Actions
+- **Breadcrumb Navigation** - Shows navigation path: Home > Skins > Case > Skin
+
+#### Mobile Optimization
+- **Responsive Design** - Desktop grid and mobile carousel for skin displays
+- **Touch-Friendly** - Carousel navigation with Previous/Next buttons
+- **Adaptive Layout** - Optimized spacing and sizing for mobile devices
+
+#### Interactive Features
+- **Quick Actions** - Watchlist and Portfolio buttons on hover
+- **Hover Effects** - Scale animations and color transitions
+- **Tooltips** - Contextual help for all interactive elements
+- **Color-Coded Badges** - Visual distinction for wear conditions and rarities
+
+#### Technical Implementation
+- **shadcn/ui Components** - Card, Table, Badge, ToggleGroup, Tooltip, Carousel, Breadcrumb
+- **Responsive Breakpoints** - Mobile-first design with md: and lg: breakpoints
+- **Accessibility** - ARIA labels, keyboard navigation, screen reader support
+- **Performance** - Optimized images, lazy loading, efficient state management
+
 Niemals relative Pfade wie `fetch("/api/...")`, sonst landen Requests auf der Vercel-Domain und führen zu 502 Bad Gateway.
 
 ### FRONTEND (Vercel)
