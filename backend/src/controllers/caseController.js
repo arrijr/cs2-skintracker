@@ -58,12 +58,46 @@ export const getCaseSkins = async (req, res) => {
   try {
     console.log(`[DEBUG] Fetching skins for case: ${caseId}`);
     
-    // For now, we'll return a placeholder since we need proper case-skin mapping
-    // This should be implemented with a proper case-skin relationship table
+    // First, get the case to find its name
+    const caseItem = await prisma.skin.findFirst({
+      where: {
+        weaponType: "case",
+        name: caseId
+      },
+      select: {
+        id: true,
+        name: true
+      }
+    });
+    
+    if (!caseItem) {
+      console.log(`[DEBUG] Case ${caseId} not found`);
+      return res.status(404).json({ error: 'Case not found' });
+    }
+    
+    console.log(`[DEBUG] Found case: ${caseItem.name}`);
+    
+    // Find skins that belong to this case using reverse mapping
+    const caseMappings = {
+      'Fever Case': 'fever dream',
+      'Revolution Case': 'neon revolution', 
+      'Recoil Case': 'recoil',
+      'Fracture Case': 'fracture',
+      'Kilowatt Case': 'kilowatt',
+      'Snakebite Case': 'snakebite',
+      'Gallery Case': 'gallery',
+      'Clutch Case': 'clutch',
+      'CS20 Case': 'cs20',
+      'Shadow Case': 'shadow'
+    };
+    
+    const casePattern = caseMappings[caseItem.name] || caseItem.name.toLowerCase().replace(' case', '');
+    console.log(`[DEBUG] Looking for skins with pattern: "${casePattern}"`);
+    
     const skins = await prisma.skin.findMany({
       where: {
-        // Placeholder: return some skins for demonstration
-        weaponType: { not: "case" }
+        weaponType: { not: "case" }, // Exclude other cases
+        name: { contains: casePattern, mode: 'insensitive' }
       },
       select: {
         id: true,
@@ -85,10 +119,10 @@ export const getCaseSkins = async (req, res) => {
         { rarity: 'asc' },
         { name: 'asc' }
       ],
-      take: 50 // Limit for now
+      take: 100 // Increased limit for real cases
     });
     
-    console.log(`[DEBUG] Found ${skins.length} skins for case ${caseId}`);
+    console.log(`[DEBUG] Found ${skins.length} skins for case ${caseItem.name}`);
     res.json({
       skins: skins,
       total: skins.length
@@ -120,25 +154,34 @@ export const getSkinCase = async (req, res) => {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    // For now, we'll use a simple approach to determine the case
-    // In a real implementation, this would use a proper case-skin relationship
+    console.log(`[DEBUG] Skin: "${skin.name}" (${skin.weaponType})`);
+    
+    // Try to find a real case for this skin
     let caseInfo = null;
     
-    // Check if this skin is from a known case pattern
-    const casePatterns = [
-      'recoil', 'fracture', 'kilowatt', 'revolution', 'snakebite', 
-      'gallery', 'fever', 'clutch', 'cs20', 'shadow', 'prisma', 
-      'dreams', 'falchion', 'danger zone', 'horizon', 'wildfire', 
-      'revolver', 'spectrum'
-    ];
+    // Method 1: Look for specific case patterns in skin name
+    const caseMappings = {
+      'fever dream': 'Fever Case',
+      'neon revolution': 'Revolution Case', 
+      'recoil': 'Recoil Case',
+      'fracture': 'Fracture Case',
+      'kilowatt': 'Kilowatt Case',
+      'snakebite': 'Snakebite Case',
+      'gallery': 'Gallery Case',
+      'clutch': 'Clutch Case',
+      'cs20': 'CS20 Case',
+      'shadow': 'Shadow Case'
+    };
     
-    for (const pattern of casePatterns) {
-      if (skin.name.toLowerCase().includes(pattern)) {
-        // Find the corresponding case
+    const skinNameLower = skin.name.toLowerCase();
+    
+    // Check for specific mappings first
+    for (const [pattern, caseName] of Object.entries(caseMappings)) {
+      if (skinNameLower.includes(pattern)) {
         const caseItem = await prisma.skin.findFirst({
           where: {
             weaponType: "case",
-            name: { contains: pattern, mode: 'insensitive' }
+            name: caseName
           },
           select: {
             id: true,
@@ -153,13 +196,48 @@ export const getSkinCase = async (req, res) => {
             name: caseItem.name,
             imageUrl: caseItem.imageUrl
           };
+          console.log(`[DEBUG] Found case via mapping: ${caseName}`);
           break;
         }
       }
     }
     
+    // Method 2: If no specific mapping, try generic case patterns
     if (!caseInfo) {
-      console.log(`[DEBUG] No case found for skin ${skinId}`);
+      const genericPatterns = ['recoil', 'fracture', 'kilowatt', 'revolution', 'snakebite', 
+                              'gallery', 'fever', 'clutch', 'cs20', 'shadow', 'prisma', 
+                              'dreams', 'falchion', 'danger zone', 'horizon', 'wildfire', 
+                              'revolver', 'spectrum'];
+      
+      for (const pattern of genericPatterns) {
+        if (skinNameLower.includes(pattern)) {
+          const caseItem = await prisma.skin.findFirst({
+            where: {
+              weaponType: "case",
+              name: { contains: pattern, mode: 'insensitive' }
+            },
+            select: {
+              id: true,
+              name: true,
+              imageUrl: true
+            }
+          });
+          
+          if (caseItem) {
+            caseInfo = {
+              id: caseItem.id,
+              name: caseItem.name,
+              imageUrl: caseItem.imageUrl
+            };
+            console.log(`[DEBUG] Found case via pattern: ${pattern} -> ${caseItem.name}`);
+            break;
+          }
+        }
+      }
+    }
+    
+    if (!caseInfo) {
+      console.log(`[DEBUG] No case found for skin ${skinId} - this is normal for many skins`);
       return res.json({ case: null });
     }
     
