@@ -97,50 +97,51 @@ export function CaseSection({ skinId }: CaseSectionProps) {
 
   return (
     <div className="mb-8">
-      {/* Case Section Card — shows case info and link */}
-      <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5 shadow-lg">
+      {/* Case Section Card — case info + View Case link */}
+      <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl hover:shadow-2xl transition-all duration-300">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             {/* Case Icon and Name */}
             <div className="flex items-center gap-4">
-              <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-muted/30 shadow-lg">
+              <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-br from-accent/20 to-accent/10 shadow-lg ring-2 ring-accent/20">
                 <Image
                   src={caseInfo.imageUrl || "/images/placeholder-case.png"}
                   alt={caseInfo.name}
                   fill
-                  className="object-contain p-2"
+                  className="object-contain p-3"
                 />
               </div>
               <div>
-                <CardTitle className="flex items-center gap-3 text-xl">
-                  <span className="text-3xl">📦</span>
+                <CardTitle className="flex items-center gap-3 text-2xl font-bold">
+                  <Package className="h-6 w-6 text-accent" />
                   {caseInfo.name}
                 </CardTitle>
                 {caseInfo.skinCount > 0 && (
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="secondary" className="text-sm font-medium">
+                  <div className="flex items-center gap-3 mt-2">
+                    <Badge variant="secondary" className="text-sm font-semibold bg-accent/10 text-accent-foreground border-accent/20">
                       {caseInfo.skinCount} skins
                     </Badge>
-                    <span className="text-sm text-muted-foreground">in this case</span>
+                    <span className="text-sm text-muted-foreground">contained in this case</span>
                   </div>
                 )}
               </div>
             </div>
             
             {/* Action Buttons */}
-            <div className="flex gap-2">
-              <Button variant="default" size="sm" asChild className="shadow-md">
+            <div className="flex gap-3">
+              <Button variant="default" size="sm" asChild className="shadow-lg bg-accent hover:bg-accent/90 text-accent-foreground">
                 <Link href={`/cases/${encodeURIComponent(caseInfo.name)}`}>
+                  <Package className="h-4 w-4 mr-2" />
                   View Case
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" asChild className="shadow-md">
+              <Button variant="outline" size="sm" asChild className="shadow-md border-accent/30 hover:bg-accent/10">
                 <a 
                   href={`https://steamcommunity.com/market/search?q=${encodeURIComponent(caseInfo.name)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <ExternalLink className="h-4 w-4 mr-1" />
+                  <ExternalLink className="h-4 w-4 mr-2" />
                   Steam
                 </a>
               </Button>
@@ -157,38 +158,38 @@ export function CaseSection({ skinId }: CaseSectionProps) {
                 href={`/skins/${skin.id}`}
                 className="group"
               >
-                <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 group-hover:scale-105 border-2 hover:border-primary/20">
+                <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-105 border-2 hover:border-accent/30 bg-gradient-to-br from-background to-accent/5">
                   <CardContent className="p-3">
-                    <div className="aspect-square relative mb-2 bg-muted/20 rounded-lg overflow-hidden">
+                    <div className="aspect-square relative mb-2 bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl overflow-hidden ring-1 ring-accent/20">
                       <Image
                         src={skin.imageUrl || "/images/placeholder-skin.png"}
                         alt={skin.name}
                         fill
-                        className="object-contain group-hover:scale-110 transition-transform duration-200"
+                        className="object-contain group-hover:scale-110 transition-transform duration-300 p-1"
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
                       />
                       {/* Case Badge */}
                       <Badge 
                         variant="secondary" 
-                        className="absolute top-1 left-1 text-xs px-1 py-0"
+                        className="absolute top-1 left-1 text-xs px-2 py-1"
                       >
                         Case
                       </Badge>
                     </div>
-                    <h3 className="font-medium text-xs truncate mb-1 group-hover:text-primary transition-colors">
+                    <h3 className="font-medium text-xs truncate mb-1 group-hover:text-accent transition-colors">
                       {skin.name}
                     </h3>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <p className="text-primary font-bold text-sm">
+                        <p className="text-accent font-bold text-sm">
                           {formatUSD(skin.priceAvg || skin.priceMedian || skin.priceLatest)}
                         </p>
                         <div className="flex gap-1">
                           {skin.isStattrak && (
-                            <Badge variant="secondary" className="text-xs px-1 py-0">ST</Badge>
+                            <Badge variant="secondary" className="text-xs px-2 py-1">ST</Badge>
                           )}
                           {skin.isStar && (
-                            <Badge variant="outline" className="text-xs px-1 py-0">★</Badge>
+                            <Badge variant="outline" className="text-xs px-2 py-1">★</Badge>
                           )}
                         </div>
                       </div>
@@ -200,7 +201,7 @@ export function CaseSection({ skinId }: CaseSectionProps) {
                       {skin.rarity && (
                         <Badge 
                           variant="outline" 
-                          className={`text-xs px-1 py-0 ${
+                          className={`text-xs px-2 py-1 ${
                             skin.rarity === 'Covert' ? 'border-red-500 text-red-500' :
                             skin.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
                             skin.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
@@ -228,38 +229,38 @@ export function CaseSection({ skinId }: CaseSectionProps) {
                       href={`/skins/${skin.id}`}
                       className="group"
                     >
-                      <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 group-hover:scale-105 border-2 hover:border-primary/20">
+                      <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-105 border-2 hover:border-accent/30 bg-gradient-to-br from-background to-accent/5">
                         <CardContent className="p-3">
-                          <div className="aspect-square relative mb-2 bg-muted/20 rounded-lg overflow-hidden">
+                          <div className="aspect-square relative mb-2 bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl overflow-hidden ring-1 ring-accent/20">
                             <Image
                               src={skin.imageUrl || "/images/placeholder-skin.png"}
                               alt={skin.name}
                               fill
-                              className="object-contain group-hover:scale-110 transition-transform duration-200"
+                              className="object-contain group-hover:scale-110 transition-transform duration-300 p-1"
                               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
                             />
                             {/* Case Badge */}
                             <Badge 
                               variant="secondary" 
-                              className="absolute top-1 left-1 text-xs px-1 py-0"
+                              className="absolute top-1 left-1 text-xs px-2 py-1"
                             >
                               Case
                             </Badge>
                           </div>
-                          <h3 className="font-medium text-xs truncate mb-1 group-hover:text-primary transition-colors">
+                          <h3 className="font-medium text-xs truncate mb-1 group-hover:text-accent transition-colors">
                             {skin.name}
                           </h3>
                           <div className="space-y-1">
                             <div className="flex items-center justify-between">
-                              <p className="text-primary font-bold text-sm">
+                              <p className="text-accent font-bold text-sm">
                                 {formatUSD(skin.priceAvg || skin.priceMedian || skin.priceLatest)}
                               </p>
                               <div className="flex gap-1">
                                 {skin.isStattrak && (
-                                  <Badge variant="secondary" className="text-xs px-1 py-0">ST</Badge>
+                                  <Badge variant="secondary" className="text-xs px-2 py-1">ST</Badge>
                                 )}
                                 {skin.isStar && (
-                                  <Badge variant="outline" className="text-xs px-1 py-0">★</Badge>
+                                  <Badge variant="outline" className="text-xs px-2 py-1">★</Badge>
                                 )}
                               </div>
                             </div>
@@ -271,7 +272,7 @@ export function CaseSection({ skinId }: CaseSectionProps) {
                             {skin.rarity && (
                               <Badge
                                 variant="outline"
-                                className={`text-xs px-1 py-0 ${
+                                className={`text-xs px-2 py-1 ${
                                   skin.rarity === 'Covert' ? 'border-red-500 text-red-500' :
                                   skin.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
                                   skin.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
