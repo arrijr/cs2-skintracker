@@ -1,16 +1,16 @@
 // backend/src/routes/caseRoutes.js — [Backend]
-// {/* Case Routes - Handle case/collection endpoints */}
+// {/* Case Routes - Handle case endpoints */}
 
 import express from "express";
-import { getCases, getCaseById } from "../controllers/caseController.js";
+import { getCaseById, getCaseSkins } from "../controllers/caseController.js";
 import { optionalClerkAuth } from "../middleware/clerkAuth.js";
 
 const router = express.Router();
 
-// Get all available cases/collections
-router.get("/", optionalClerkAuth, getCases);
-
-// Get specific case details with all skins
+// Get case by ID
 router.get("/:caseId", optionalClerkAuth, getCaseById);
+
+// Get all skins in a case
+router.get("/:caseId/skins", optionalClerkAuth, getCaseSkins);
 
 export default router;

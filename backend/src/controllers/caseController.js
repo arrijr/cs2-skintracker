@@ -1,58 +1,69 @@
 // backend/src/controllers/caseController.js — [Backend]
-// {/* Case Controller - Handle case/collection information */}
+// {/* Case Controller - Handle case information */}
 
 import prisma from "../prisma/prismaClient.js";
 
-// {/* Get all available cases/collections */}
-export const getCases = async (req, res) => {
-  try {
-    console.log(`[DEBUG] Fetching all real cases/collections`);
-    
-    // Only get actual cases (weaponType = "case")
-    const cases = await prisma.skin.findMany({
-      where: {
-        weaponType: "case"
-      },
-      select: {
-        name: true,
-        weaponType: true
-      },
-      distinct: ['name'],
-      orderBy: {
-        name: 'asc'
-      }
-    });
-    
-    // Format case names for better display
-    const formattedCases = cases.map(caseItem => ({
-      id: caseItem.name,
-      name: caseItem.name,
-      originalWeaponType: caseItem.weaponType,
-      skinCount: 0 // We'll calculate this separately if needed
-    }));
-    
-    console.log(`[DEBUG] Found ${formattedCases.length} real cases`);
-    
-    res.json({
-      cases: formattedCases,
-      total: formattedCases.length
-    });
-  } catch (err) {
-    console.error(`[ERROR] Failed to fetch cases:`, err);
-    res.status(500).json({ error: "Could not fetch cases" });
-  }
-};
-
-// {/* Get specific case details with all skins */}
+// [API] Get Case by ID — used on Skin Detail "Contained in Case" section
 export const getCaseById = async (req, res) => {
   const { caseId } = req.params;
   try {
-    console.log(`[DEBUG] Fetching case details for: ${caseId}`);
+    console.log(`[DEBUG] Fetching case by ID: ${caseId}`);
     
-    // Find all skins in this case/collection
+    // Find the case by name (since we use case names as IDs)
+    const caseItem = await prisma.skin.findFirst({
+      where: {
+        weaponType: "case",
+        name: caseId
+      },
+      select: {
+        id: true,
+        name: true,
+        imageUrl: true,
+        weaponType: true
+      }
+    });
+    
+    if (!caseItem) {
+      console.log(`[DEBUG] Case ${caseId} not found`);
+      return res.status(404).json({ error: 'Case not found' });
+    }
+    
+    // Get count of skins in this case (we'll need to implement proper case-skin mapping)
+    const skinCount = await prisma.skin.count({
+      where: {
+        // For now, we'll use a simple approach - this needs proper case-skin mapping
+        weaponType: { not: "case" } // Exclude other cases
+      }
+    });
+    
+    const caseInfo = {
+      id: caseItem.id,
+      name: caseItem.name,
+      imageUrl: caseItem.imageUrl,
+      weaponType: caseItem.weaponType,
+      skinCount: skinCount
+    };
+    
+    console.log(`[DEBUG] Found case: ${caseItem.name}`);
+    res.json(caseInfo);
+  } catch (err) {
+    console.error(`[ERROR] Failed to fetch case ${caseId}:`, err);
+    res.status(500).json({ error: "Could not fetch case" });
+  }
+};
+
+// [API] List Skins of Case — skin grid on Case pages & Case section
+export const getCaseSkins = async (req, res) => {
+  const { caseId } = req.params;
+  try {
+    console.log(`[DEBUG] Fetching skins for case: ${caseId}`);
+    
+    // For now, we'll return a placeholder since we need proper case-skin mapping
+    // This should be implemented with a proper case-skin relationship table
     const skins = await prisma.skin.findMany({
       where: {
-        weaponType: caseId
+        // Placeholder: return some skins for demonstration
+        weaponType: { not: "case" }
       },
       select: {
         id: true,
@@ -73,55 +84,89 @@ export const getCaseById = async (req, res) => {
       orderBy: [
         { rarity: 'asc' },
         { name: 'asc' }
-      ]
+      ],
+      take: 50 // Limit for now
     });
     
-    if (skins.length === 0) {
-      return res.status(404).json({ error: 'Case not found' });
-    }
-    
-    // Format case name for better display
-    let caseName = caseId;
-    if (caseId.includes("2018") || caseId.includes("2019") || caseId.includes("2020") || 
-        caseId.includes("2021") || caseId.includes("2022") || caseId.includes("2023") || 
-        caseId.includes("2024")) {
-      caseName = caseId.replace(/(\d{4})/, '$1 Major');
-    } else if (caseId.includes("knife") || caseId.includes("gloves")) {
-      caseName = "Knife & Glove Collection";
-    } else if (caseId.includes("souvenir")) {
-      caseName = "Souvenir Collection";
-    }
-    
-    // Calculate case statistics
-    const totalValue = skins.reduce((sum, skin) => {
-      const price = skin.priceAvg || skin.priceMedian || skin.priceLatest || 0;
-      return sum + price;
-    }, 0);
-    
-    const avgPrice = totalValue / skins.length;
-    
-    const rarityCounts = skins.reduce((counts, skin) => {
-      const rarity = skin.rarity || 'Unknown';
-      counts[rarity] = (counts[rarity] || 0) + 1;
-      return counts;
-    }, {});
-    
-    console.log(`[DEBUG] Found ${skins.length} skins in case "${caseName}"`);
-    
-    const caseInfo = {
-      id: caseId,
-      name: caseName,
-      originalWeaponType: caseId,
+    console.log(`[DEBUG] Found ${skins.length} skins for case ${caseId}`);
+    res.json({
       skins: skins,
-      totalSkins: skins.length,
-      totalValue: totalValue,
-      avgPrice: avgPrice,
-      rarityCounts: rarityCounts
-    };
-    
-    res.json(caseInfo);
+      total: skins.length
+    });
   } catch (err) {
-    console.error(`[ERROR] Failed to fetch case details for ${caseId}:`, err);
-    res.status(500).json({ error: "Could not fetch case details" });
+    console.error(`[ERROR] Failed to fetch skins for case ${caseId}:`, err);
+    res.status(500).json({ error: "Could not fetch case skins" });
+  }
+};
+
+// [API] Resolve Case for Skin — used on Skin Detail to show the parent Case
+export const getSkinCase = async (req, res) => {
+  const { skinId } = req.params;
+  try {
+    console.log(`[DEBUG] Resolving case for skin: ${skinId}`);
+    
+    // Get the skin first
+    const skin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      select: { 
+        id: true,
+        name: true,
+        weaponType: true,
+        itemGroup: true
+      }
+    });
+    
+    if (!skin) {
+      return res.status(404).json({ error: 'Skin not found' });
+    }
+    
+    // For now, we'll use a simple approach to determine the case
+    // In a real implementation, this would use a proper case-skin relationship
+    let caseInfo = null;
+    
+    // Check if this skin is from a known case pattern
+    const casePatterns = [
+      'recoil', 'fracture', 'kilowatt', 'revolution', 'snakebite', 
+      'gallery', 'fever', 'clutch', 'cs20', 'shadow', 'prisma', 
+      'dreams', 'falchion', 'danger zone', 'horizon', 'wildfire', 
+      'revolver', 'spectrum'
+    ];
+    
+    for (const pattern of casePatterns) {
+      if (skin.name.toLowerCase().includes(pattern)) {
+        // Find the corresponding case
+        const caseItem = await prisma.skin.findFirst({
+          where: {
+            weaponType: "case",
+            name: { contains: pattern, mode: 'insensitive' }
+          },
+          select: {
+            id: true,
+            name: true,
+            imageUrl: true
+          }
+        });
+        
+        if (caseItem) {
+          caseInfo = {
+            id: caseItem.id,
+            name: caseItem.name,
+            imageUrl: caseItem.imageUrl
+          };
+          break;
+        }
+      }
+    }
+    
+    if (!caseInfo) {
+      console.log(`[DEBUG] No case found for skin ${skinId}`);
+      return res.json({ case: null });
+    }
+    
+    console.log(`[DEBUG] Found case ${caseInfo.name} for skin ${skinId}`);
+    res.json({ case: caseInfo });
+  } catch (err) {
+    console.error(`[ERROR] Failed to resolve case for skin ${skinId}:`, err);
+    res.status(500).json({ error: "Could not resolve case for skin" });
   }
 };

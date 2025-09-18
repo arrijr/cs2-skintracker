@@ -8,6 +8,7 @@ import {
   getSkinMarketStats,
   getRelatedSkins
 } from "../controllers/skinController.js";
+import { getSkinCase as getSkinCaseFromCaseController } from "../controllers/caseController.js";
 import { fetchSkinPrice } from "../services/steamService.js";
 import { optionalClerkAuth } from "../middleware/clerkAuth.js";
 
@@ -570,8 +571,11 @@ router.get("/:skinId/details", getSkinById);
 // Get skin variants (same skin, different wear/quality)
 router.get("/:skinId/variants", getSkinVariants);
 
-// Get case information for a skin
+// Get case information for a skin (old collection-based)
 router.get("/:skinId/case", getSkinCase);
+
+// Get case for a skin (new case-based)
+router.get("/:skinId/case-info", getSkinCaseFromCaseController);
 
 // Get market statistics for a skin (with alias)
 router.get("/:skinId/market-stats", getSkinMarketStats);
