@@ -12,6 +12,7 @@ Features (MVP)
 - Watchlist (free: up to 5 items)
 - One price alert per user (email/push prepared)
 - Skin detail with 30-day price chart (stored history)
+- **Case System** - Display case information and related skins
 - Portfolio overview (positions, P/L, history)
 - Responsive UI (mobile & desktop)
 Planned (Premium / upcoming):
@@ -75,6 +76,31 @@ Im Code **immer**:
 import { apiUrl, fetchJson } from "@/lib/api";
 await fetchJson(apiUrl("/api/v1/skins"));
 ```
+
+## Case System
+
+### Overview
+The Case System displays case information and related skins on skin detail pages. It automatically detects which case a skin belongs to and shows all other skins from that case.
+
+### Features
+- **Case Section Component** - Shows case thumbnail, name, and "View Case" button
+- **Case Detail Page** - Complete case information with all contained skins
+- **Smart Case Mapping** - Automatically resolves cases for skins using pattern matching
+- **Steam Integration** - Direct links to Steam market for cases
+
+### Case Mapping Logic
+1. **Direct Patterns:** "recoil" → "Recoil Case", "fever dream" → "Fever Case"
+2. **Skin Finishes:** "case hardened" → "Operation Bravo Case", "fade" → "Operation Bravo Case"
+3. **Generic Patterns:** Fallback matching for edge cases
+
+### API Endpoints
+- `GET /api/v1/cases/:caseId` - Get case metadata
+- `GET /api/v1/cases/:caseId/skins` - List skins in case
+- `GET /api/v1/skins/:skinId/case-info` - Resolve skin's case
+
+### Components
+- `CaseSection` (`/frontend/src/components/CaseSection.tsx`) - Case display on skin pages
+- Case Detail Page (`/frontend/src/app/cases/[id]/page.tsx`) - Full case information
 
 Niemals relative Pfade wie `fetch("/api/...")`, sonst landen Requests auf der Vercel-Domain und führen zu 502 Bad Gateway.
 

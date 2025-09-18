@@ -378,6 +378,89 @@ Code kopieren
   "wears": ["Factory New", "Minimal Wear", "Field-Tested"],
   "rarities": ["Consumer Grade", "Industrial Grade", "Mil-Spec Grade"]
 }
+
+Cases
+-----
+
+#### GET `/cases/:caseId`
+Get case information by ID.
+
+**Parameters:**
+* `caseId` (string) - Case name or ID (e.g., "recoil-case", "operation-bravo-case")
+
+**Response**
+```json
+{
+  "id": 7624,
+  "name": "Recoil Case",
+  "imageUrl": "https://steamcommunity-a.akamaihd.net/economy/image/...",
+  "weaponType": "case",
+  "skinCount": 24
+}
+```
+
+**404 Not Found** → Case does not exist.
+
+#### GET `/cases/:caseId/skins`
+Get all skins contained in a specific case.
+
+**Parameters:**
+* `caseId` (string) - Case name or ID
+
+**Response**
+```json
+{
+  "skins": [
+    {
+      "id": 123,
+      "name": "AK-47 | Redline (Field-Tested)",
+      "wear": "Field-Tested",
+      "rarity": "Classified",
+      "quality": "Classified",
+      "isStattrak": false,
+      "isStar": false,
+      "priceAvg": 45.50,
+      "priceMedian": 44.20,
+      "priceLatest": 46.80,
+      "imageUrl": "https://steamcommunity-a.akamaihd.net/economy/image/...",
+      "weaponType": "rifle",
+      "sold24h": 12,
+      "offerVolume": 8
+    }
+  ],
+  "total": 24
+}
+```
+
+#### GET `/skins/:skinId/case-info`
+Resolve the case that contains a specific skin.
+
+**Parameters:**
+* `skinId` (number) - Skin ID
+
+**Response**
+```json
+{
+  "case": {
+    "id": 7624,
+    "name": "Recoil Case",
+    "imageUrl": "https://steamcommunity-a.akamaihd.net/economy/image/..."
+  }
+}
+```
+
+**Response (No Case)**
+```json
+{
+  "case": null
+}
+```
+
+**Case Mapping Logic:**
+* **Direct Patterns:** "recoil" → "Recoil Case", "fever dream" → "Fever Case"
+* **Skin Finishes:** "case hardened" → "Operation Bravo Case", "fade" → "Operation Bravo Case"
+* **Generic Patterns:** Fallback matching for edge cases
+
 Watchlist
 ---------
 

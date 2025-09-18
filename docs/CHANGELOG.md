@@ -3,6 +3,27 @@
 ## [Unreleased]
 
 ### Added
+* feat(cases): complete case system implementation for skin detail pages
+  * **Case Section Component** (`/frontend/src/components/CaseSection.tsx`)
+    * Displays the case a skin belongs to with case thumbnail and metadata
+    * Shows grid of all skins contained in the same case
+    * "View Case" button linking to case detail page
+    * "Open on Steam" button for external case market access
+    * Only renders when skin has a valid case association
+  * **Case Detail Page** (`/frontend/src/app/cases/[id]/page.tsx`)
+    * Complete case information display with case header
+    * Grid of all skins in the case with pricing and rarity info
+    * Navigation back to previous page
+    * External Steam market integration
+  * **Backend Case API Endpoints** (`/backend/src/controllers/caseController.js`)
+    * `GET /api/v1/cases/:caseId` - Get case by ID with metadata
+    * `GET /api/v1/cases/:caseId/skins` - List all skins in a case
+    * `GET /api/v1/skins/:skinId/case-info` - Resolve case for a specific skin
+  * **Advanced Case Mapping Logic**
+    * Direct case name pattern matching (e.g., "recoil" → "Recoil Case")
+    * Skin finish to case mapping (e.g., "case hardened" → "Operation Bravo Case")
+    * Support for multiple case types: Fever, Revolution, Recoil, Fracture, etc.
+    * Generic pattern fallback for edge cases
 * feat(skins): enhanced skin detail page with market stats, variants, and case information
   * Market statistics card showing volume, prices, and market activity
   * Skin variants display with wear levels and special features
@@ -15,6 +36,11 @@
 * docs(api): documented new skin detail endpoints and responses
 
 ### Fixed
+* fix(cases): resolve case section display issues
+  * Fixed missing CaseSection component import in skin detail page
+  * Corrected case mapping logic to handle skin finishes (e.g., "Case Hardened")
+  * Resolved JSX syntax errors preventing case section rendering
+  * Updated deprecated case endpoint redirects to new case controller
 * fix(admin): resolved admin access issue by removing unnecessary API call
 * fix(skins): repair skin detail page variants, related skins, and price alerts
   * Fix variants query logic to find actual skin variants by weaponType and name patterns
