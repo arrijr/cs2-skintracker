@@ -1071,7 +1071,6 @@ export default function SkinDetailPage() {
             </p>
           </CardContent>
         </Card>
-        </div>
       </div>
     </TooltipProvider>
   );
