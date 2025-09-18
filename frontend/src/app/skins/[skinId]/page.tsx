@@ -16,11 +16,12 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2, Copy, BarChart3, Users, Clock, DollarSign } from "lucide-react";
+import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2, Copy, BarChart3, Users, Clock, DollarSign, Home } from "lucide-react";
 // {/* Central API helpers */}
 import {
   getPortfolio,
@@ -513,6 +514,38 @@ export default function SkinDetailPage() {
               {/* Skin Info */}
               <div className="flex-1 space-y-4">
                 <div>
+                  {/* Breadcrumb navigation: Cases > Case > Skin */}
+                  <Breadcrumb className="mb-4">
+                    <BreadcrumbList>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink href="/" className="flex items-center gap-1">
+                          <Home className="h-4 w-4" />
+                          Home
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbLink href="/skins">Skins</BreadcrumbLink>
+                      </BreadcrumbItem>
+                      {caseInfo && (
+                        <>
+                          <BreadcrumbSeparator />
+                          <BreadcrumbItem>
+                            <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo.name)}`}>
+                              {caseInfo.name}
+                            </BreadcrumbLink>
+                          </BreadcrumbItem>
+                        </>
+                      )}
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbPage className="font-medium">
+                          {skin.name}
+                        </BreadcrumbPage>
+                      </BreadcrumbItem>
+                    </BreadcrumbList>
+                  </Breadcrumb>
+                  
                   <h1 className="text-3xl font-bold mb-2">{skin.name}</h1>
                   <p className="text-muted-foreground mb-4">{skin.marketHashName}</p>
                   
