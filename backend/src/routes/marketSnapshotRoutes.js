@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import marketSnapshotController from '../controllers/marketSnapshotController.js';
+import { triggerMarketSnapshotJob } from '../cron/marketSnapshotJob.js';
+
 const router = express.Router();
-const marketSnapshotController = require('../controllers/marketSnapshotController');
-const { triggerMarketSnapshotJob } = require('../cron/marketSnapshotJob');
 
 // [API] Quantity History — daily active listings (and volume) for bar chart on Skin Detail
 
@@ -35,4 +36,4 @@ router.get('/snapshots/stats', marketSnapshotController.getSnapshotStats);
  */
 router.post('/snapshots/trigger', triggerMarketSnapshotJob);
 
-module.exports = router;
+export default router;

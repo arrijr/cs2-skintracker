@@ -1,6 +1,6 @@
 // [SERVICE] Market Snapshot Service — fetching and persistence for quantity history
 
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 class MarketSnapshotService {
@@ -289,4 +289,4 @@ class MarketSnapshotService {
   }
 }
 
-module.exports = new MarketSnapshotService();
+export default new MarketSnapshotService();

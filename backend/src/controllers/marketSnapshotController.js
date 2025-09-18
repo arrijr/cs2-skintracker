@@ -1,7 +1,7 @@
 // [API] Quantity History — daily active listings (and volume) for bar chart on Skin Detail
 
-const marketSnapshotService = require('../services/marketSnapshotService');
-const { PrismaClient } = require('@prisma/client');
+import marketSnapshotService from '../services/marketSnapshotService.js';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -192,7 +192,7 @@ const getSnapshotStats = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   getQuantityHistory,
   getPriceAndQuantityHistory,
   getLatestSnapshot,

@@ -1,7 +1,7 @@
 // [CRON] Market Snapshot Job — stores daily active_listings and sold_volume_24h per skin
 
-const marketSnapshotService = require('../services/marketSnapshotService');
-const { PrismaClient } = require('@prisma/client');
+import marketSnapshotService from '../services/marketSnapshotService.js';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -143,7 +143,7 @@ function scheduleMarketSnapshotJob() {
   }, 60 * 60 * 1000); // Check every hour
 }
 
-module.exports = {
+export {
   runMarketSnapshotJob,
   triggerMarketSnapshotJob,
   scheduleMarketSnapshotJob
