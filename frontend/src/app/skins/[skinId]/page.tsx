@@ -974,10 +974,10 @@ export default function SkinDetailPage() {
         )}
 
         {/* P1 - Case Information */}
-        {/* Case Information - verbesserte Darstellung mit mehr Details */}
+        {/* Case Information - nur für echte Cases anzeigen */}
         {loadingEnhanced ? (
           <Skeleton className="h-48 w-full mb-8" />
-        ) : caseInfo && caseInfo.totalSkins > 0 ? (
+        ) : caseInfo && caseInfo.caseName && caseInfo.totalSkins > 0 ? (
           <div className="mb-8">
             <Card>
               <CardHeader>

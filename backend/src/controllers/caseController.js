@@ -6,59 +6,32 @@ import prisma from "../prisma/prismaClient.js";
 // {/* Get all available cases/collections */}
 export const getCases = async (req, res) => {
   try {
-    console.log(`[DEBUG] Fetching all cases/collections`);
+    console.log(`[DEBUG] Fetching all real cases/collections`);
     
-    // Get unique weaponTypes that have multiple skins (actual cases/collections)
-    const cases = await prisma.skin.groupBy({
-      by: ['weaponType'],
+    // Only get actual cases (weaponType = "case")
+    const cases = await prisma.skin.findMany({
       where: {
-        weaponType: { not: null }
+        weaponType: "case"
       },
-      _count: {
-        id: true
+      select: {
+        name: true,
+        weaponType: true
       },
-      having: {
-        id: {
-          _count: {
-            gt: 1 // Only show collections with more than 1 skin
-          }
-        }
-      },
+      distinct: ['name'],
       orderBy: {
-        _count: {
-          id: 'desc'
-        }
-      },
-      take: 50 // Limit to top 50 cases
+        name: 'asc'
+      }
     });
     
     // Format case names for better display
-    const formattedCases = cases.map(caseItem => {
-      let caseName = caseItem.weaponType;
-      
-      // Clean up case name for better display
-      if (caseName.includes("2018") || caseName.includes("2019") || caseName.includes("2020") || 
-          caseName.includes("2021") || caseName.includes("2022") || caseName.includes("2023") || 
-          caseName.includes("2024")) {
-        // Tournament stickers - format nicely
-        caseName = caseName.replace(/(\d{4})/, '$1 Major');
-      } else if (caseName.includes("knife") || caseName.includes("gloves")) {
-        // Knives and gloves - these are usually from cases
-        caseName = "Knife & Glove Collection";
-      } else if (caseName.includes("souvenir")) {
-        // Souvenir items
-        caseName = "Souvenir Collection";
-      }
-      
-      return {
-        id: caseItem.weaponType,
-        name: caseName,
-        originalWeaponType: caseItem.weaponType,
-        skinCount: caseItem._count.id
-      };
-    });
+    const formattedCases = cases.map(caseItem => ({
+      id: caseItem.name,
+      name: caseItem.name,
+      originalWeaponType: caseItem.weaponType,
+      skinCount: 0 // We'll calculate this separately if needed
+    }));
     
-    console.log(`[DEBUG] Found ${formattedCases.length} cases/collections`);
+    console.log(`[DEBUG] Found ${formattedCases.length} real cases`);
     
     res.json({
       cases: formattedCases,
