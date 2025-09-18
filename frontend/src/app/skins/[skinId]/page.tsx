@@ -33,6 +33,7 @@ import {
 import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
 import { useAnalytics } from "@/lib/analytics";
 import { CaseSection } from "@/components/CaseSection";
+import QuantityBarChart from "@/components/QuantityBarChart";
 
 // Chart components are now handled by Shadcn UI Charts
 
@@ -817,6 +818,15 @@ export default function SkinDetailPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Quantity History Section — daily active listings bar chart for this skin */}
+        {skin && (
+          <QuantityBarChart
+            skinId={skin.id}
+            skinName={skin.name}
+            className="mb-8"
+          />
+        )}
 
         {/* P1 - Market Statistics */}
         {/* Market Stats Card — price, orders, listings, volume */}
