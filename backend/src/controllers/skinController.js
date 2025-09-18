@@ -190,39 +190,24 @@ export const getSkinCase = async (req, res) => {
     
     console.log(`[DEBUG] Skin found: itemGroup="${skin.itemGroup}", weaponType="${skin.weaponType}", itemName="${skin.itemName}"`);
     
-    // Only show case information for skins that actually come from cases
-    // Check if this skin is from a real case by looking for case-related patterns
-    const isFromCase = skin.itemGroup && (
-      skin.itemGroup.toLowerCase().includes('case') ||
-      skin.itemGroup.toLowerCase().includes('collection') ||
-      skin.itemGroup.toLowerCase().includes('capsule')
-    );
+    // Show case information for skins that have related items
+    // We'll show "related skins" for most weapon types, but call them "collections"
+    // Only exclude certain types that don't make sense as collections
+    const excludeTypes = [
+      'sealed graffiti',
+      'package',
+      'key',
+      'sticker',
+      'music kit',
+      'agent',
+      'patch'
+    ];
     
-    // Also check if the skin name suggests it's from a case
-    const nameSuggestsCase = skin.name && (
-      skin.name.toLowerCase().includes('recoil') ||
-      skin.name.toLowerCase().includes('fracture') ||
-      skin.name.toLowerCase().includes('kilowatt') ||
-      skin.name.toLowerCase().includes('revolution') ||
-      skin.name.toLowerCase().includes('snakebite') ||
-      skin.name.toLowerCase().includes('gallery') ||
-      skin.name.toLowerCase().includes('fever') ||
-      skin.name.toLowerCase().includes('clutch') ||
-      skin.name.toLowerCase().includes('cs20') ||
-      skin.name.toLowerCase().includes('shadow') ||
-      skin.name.toLowerCase().includes('prisma') ||
-      skin.name.toLowerCase().includes('dreams') ||
-      skin.name.toLowerCase().includes('falchion') ||
-      skin.name.toLowerCase().includes('danger zone') ||
-      skin.name.toLowerCase().includes('horizon') ||
-      skin.name.toLowerCase().includes('wildfire') ||
-      skin.name.toLowerCase().includes('revolver') ||
-      skin.name.toLowerCase().includes('spectrum')
-    );
+    const shouldShowCollection = skin.weaponType && 
+      !excludeTypes.some(type => skin.weaponType.toLowerCase().includes(type));
     
-    // If this skin is not from a case, return empty result
-    if (!isFromCase && !nameSuggestsCase) {
-      console.log(`[DEBUG] Skin ${skinId} is not from a case, returning empty result`);
+    if (!shouldShowCollection) {
+      console.log(`[DEBUG] Skin ${skinId} type "${skin.weaponType}" excluded from collections`);
       return res.json({
         caseName: null,
         skins: [],
@@ -232,41 +217,30 @@ export const getSkinCase = async (req, res) => {
       });
     }
     
-    // Determine case name from itemGroup or skin name patterns
-    let caseName = skin.itemGroup || "Unknown Case";
+    // Determine collection name based on weapon type
+    let caseName = skin.weaponType || "Unknown Collection";
     
-    // Try to extract case name from skin name if itemGroup is not helpful
-    if (!skin.itemGroup || !skin.itemGroup.toLowerCase().includes('case')) {
-      const casePatterns = [
-        'recoil', 'fracture', 'kilowatt', 'revolution', 'snakebite', 
-        'gallery', 'fever', 'clutch', 'cs20', 'shadow', 'prisma', 
-        'dreams', 'falchion', 'danger zone', 'horizon', 'wildfire', 
-        'revolver', 'spectrum'
-      ];
-      
-      for (const pattern of casePatterns) {
-        if (skin.name.toLowerCase().includes(pattern)) {
-          caseName = `${pattern.charAt(0).toUpperCase() + pattern.slice(1)} Case`;
-          break;
-        }
-      }
+    // Format collection name for better display
+    if (caseName.includes("knife") || caseName.includes("gloves")) {
+      caseName = "Knife & Glove Collection";
+    } else if (caseName.includes("2018") || caseName.includes("2019") || caseName.includes("2020") || 
+               caseName.includes("2021") || caseName.includes("2022") || caseName.includes("2023") || 
+               caseName.includes("2024")) {
+      // Tournament stickers - format nicely
+      caseName = caseName.replace(/(\d{4})/, '$1 Major Collection');
+    } else if (caseName.includes("souvenir")) {
+      caseName = "Souvenir Collection";
+    } else {
+      // For regular weapons, create a collection name
+      caseName = `${caseName.charAt(0).toUpperCase() + caseName.slice(1)} Collection`;
     }
     
-    // Find all skins from the same case
-    // For now, we'll use a simple approach - find skins with similar patterns
-    // In a real implementation, you'd need proper case-to-skin mapping
+    // Find all skins from the same collection (weapon type)
     const caseSkins = await prisma.skin.findMany({
       where: {
         AND: [
-          { id: { not: parseInt(skinId) } }, // Exclude current skin
-          {
-            OR: [
-              // Look for skins with similar case patterns
-              { name: { contains: caseName.split(' ')[0] } },
-              // Or skins with the same itemGroup if it's a real case
-              ...(skin.itemGroup ? [{ itemGroup: skin.itemGroup }] : [])
-            ]
-          }
+          { weaponType: skin.weaponType }, // Same weapon type
+          { id: { not: parseInt(skinId) } } // Exclude current skin
         ]
       },
       select: {
