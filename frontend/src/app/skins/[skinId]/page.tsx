@@ -77,14 +77,12 @@ export default function SkinDetailPage() {
   const [skin, setSkin] = useState<Skin | null>(null);
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState<PriceHistory[]>([]);
-  const [variants, setVariants] = useState<any[]>([]);
   const [caseInfo, setCaseInfo] = useState<any>(null);
   const [marketStats, setMarketStats] = useState<any>(null);
   const [relatedSkins, setRelatedSkins] = useState<any[]>([]);
   const [loadingEnhanced, setLoadingEnhanced] = useState(false);
   
   // P1 - URL Sync States
-  const [variant, setVariant] = useState(searchParams.get("variant") || "");
   const [chartRange, setChartRange] = useState<Range>((searchParams.get("range") as Range) || "30d");
   const [chartScale, setChartScale] = useState(searchParams.get("scale") === "log" ? "log" : "linear");
   const [movingAverage, setMovingAverage] = useState(searchParams.get("ma") || "none");
@@ -159,14 +157,11 @@ export default function SkinDetailPage() {
       
       setLoadingEnhanced(true);
       try {
-        const [variantsRes, caseRes, marketRes, relatedRes] = await Promise.all([
-          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/variants`)),
+        const [caseRes, marketRes, relatedRes] = await Promise.all([
           fetchJson(apiUrl(`/api/v1/skins/${skin.id}/case-info`)),
           fetchJson(apiUrl(`/api/v1/skins/${skin.id}/market-stats`)),
           fetchJson(apiUrl(`/api/v1/skins/${skin.id}/related`))
         ]);
-        
-        setVariants(variantsRes || []);
         setCaseInfo(caseRes?.case || null); // New endpoint returns { case: {...} }
         setMarketStats(marketRes || null);
         setRelatedSkins(relatedRes || []);
@@ -976,183 +971,6 @@ export default function SkinDetailPage() {
           </div>
         ) : null}
 
-        {/* P1 - Skin Variants */}
-        {/* Skin Variants Table with shadcn Table and Exterior Badges */}
-        {loadingEnhanced ? (
-          <Skeleton className="h-64 w-full mb-8" />
-        ) : variants.length > 0 ? (
-          <div className="mb-8">
-            <Card className="border-2 border-primary/10 bg-gradient-to-br from-primary/5 to-secondary/5">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-primary" />
-                  Skin Variants
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Wear Condition</TableHead>
-                      <TableHead>Rarity</TableHead>
-                      <TableHead>Special</TableHead>
-                      <TableHead className="text-right">Price</TableHead>
-                      <TableHead className="text-right">Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {variants
-                      .sort((a, b) => {
-                        // Sortierung: FN → MW → FT → WW → BS, pro Wear zuerst StatTrak, dann Normal
-                        const wearOrder = { 'Factory New': 0, 'Minimal Wear': 1, 'Field-Tested': 2, 'Well-Worn': 3, 'Battle-Scarred': 4 };
-                        const aWear = wearOrder[a.wear as keyof typeof wearOrder] ?? 999;
-                        const bWear = wearOrder[b.wear as keyof typeof wearOrder] ?? 999;
-                        
-                        if (aWear !== bWear) return aWear - bWear;
-                        
-                        // StatTrak zuerst
-                        if (a.isStattrak !== b.isStattrak) return a.isStattrak ? -1 : 1;
-                        
-                        return 0;
-                      })
-                      .map((variant: any) => {
-                        const isActive = variant.id === skin?.id;
-                        const isAvailable = variant.priceAvg || variant.priceMedian;
-                        
-                        return (
-                          <TableRow
-                            key={variant.id}
-                            className={`cursor-pointer transition-all ${
-                              isActive 
-                                ? 'bg-primary/10 border-primary/20' 
-                                : isAvailable 
-                                  ? 'hover:bg-muted/50' 
-                                  : 'opacity-60'
-                            }`}
-                            onClick={() => {
-                              if (isAvailable && !isActive) {
-                                setVariant(variant.id.toString());
-                                router.push(`/skins/${variant.id}`);
-                              }
-                            }}
-                          >
-                            <TableCell>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Badge 
-                                      variant={isActive ? "default" : "secondary"}
-                                      className={`text-xs cursor-help ${
-                                        variant.wear === 'Factory New' ? 'bg-green-100 text-green-800 border-green-200' :
-                                        variant.wear === 'Minimal Wear' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-                                        variant.wear === 'Field-Tested' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                                        variant.wear === 'Well-Worn' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                                        variant.wear === 'Battle-Scarred' ? 'bg-red-100 text-red-800 border-red-200' :
-                                        'bg-gray-100 text-gray-800 border-gray-200'
-                                      }`}
-                                      aria-label={`Wear condition: ${variant.wear || 'Unknown'}`}
-                                    >
-                                      {variant.wear || 'Unknown'}
-                                    </Badge>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Wear condition: {variant.wear || 'Unknown'}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </TableCell>
-                            
-                            <TableCell>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Badge 
-                                      variant="outline" 
-                                      className={`text-xs cursor-help ${
-                                        variant.rarity === 'Covert' ? 'border-red-500 text-red-500' :
-                                        variant.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
-                                        variant.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
-                                        variant.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500' :
-                                        'border-gray-500 text-gray-500'
-                                      }`}
-                                      aria-label={`Rarity: ${variant.rarity || 'Unknown'}`}
-                                    >
-                                      {variant.rarity || 'Unknown'}
-                                    </Badge>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Rarity: {variant.rarity || 'Unknown'}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </TableCell>
-                            
-                            <TableCell>
-                              {variant.isStattrak && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Badge 
-                                        variant="secondary" 
-                                        className="text-xs cursor-help bg-orange-100 text-orange-800 border-orange-200"
-                                        aria-label="StatTrak™ enabled"
-                                      >
-                                        ST
-                                      </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>StatTrak™ enabled</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-                            </TableCell>
-                            
-                            <TableCell className="text-right">
-                              {isAvailable ? (
-                                <div>
-                                  <p className="font-semibold text-primary">
-                                    {formatUSD(variant.priceAvg || variant.priceMedian || variant.priceLatest)}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {variant.priceAvg ? 'Avg' : variant.priceMedian ? 'Med' : 'Latest'}
-                                  </p>
-                                </div>
-                              ) : (
-                                <p className="text-sm text-muted-foreground">No data</p>
-                              )}
-                            </TableCell>
-                            
-                            <TableCell className="text-right">
-                              {isActive ? (
-                                <Badge variant="default" className="text-xs">
-                                  Current
-                                </Badge>
-                              ) : isAvailable ? (
-                                <Badge variant="outline" className="text-xs">
-                                  Available
-                                </Badge>
-                              ) : (
-                                <Badge variant="secondary" className="text-xs">
-                                  No data
-                                </Badge>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          <Card className="mb-8">
-            <CardContent className="text-center py-8">
-              <p className="text-muted-foreground">No variants available</p>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Contained in Case — shows the case of this skin + grid of all skins from that case */}
         {skin && <CaseSection skinId={skin.id} />}
