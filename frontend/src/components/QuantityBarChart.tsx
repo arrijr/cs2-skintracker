@@ -232,7 +232,6 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
     if (maxValue === 0) return '0%';
     const percentage = (value / maxValue) * 100;
     const finalHeight = Math.max(percentage, 2); // Minimum 2% height
-    console.log(`[QuantityChart] getBarHeight: value=${value}, maxValue=${maxValue}, percentage=${percentage}, finalHeight=${finalHeight}%`);
     return `${finalHeight}%`;
   };
 
@@ -332,12 +331,12 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
           <div className="flex flex-col gap-3">
             {/* Range and Aggregation - Mobile optimized */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <ToggleGroup 
-                type="single" 
-                value={range} 
-                onValueChange={(value: Range) => value && setRange(value)}
+            <ToggleGroup 
+              type="single" 
+              value={range} 
+              onValueChange={(value: Range) => value && setRange(value)}
                 className="bg-muted/50 p-1 rounded-lg flex-wrap justify-center sm:justify-start"
-              >
+            >
               <ToggleGroupItem value="7d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 7D
               </ToggleGroupItem>
@@ -441,20 +440,20 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
             {/* Data Type and Display Options - Mobile optimized */}
             <div className="flex flex-col sm:flex-row gap-3">
               {stats?.hasVolume && (
-                <ToggleGroup 
-                  type="single" 
-                  value={showVolume ? "volume" : "listings"} 
-                  onValueChange={(value) => setShowVolume(value === "volume")}
+              <ToggleGroup 
+                type="single" 
+                value={showVolume ? "volume" : "listings"} 
+                onValueChange={(value) => setShowVolume(value === "volume")}
                   className="bg-muted/50 p-1 rounded-lg flex-wrap justify-center sm:justify-start"
-                >
-                  <ToggleGroupItem value="listings" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                    Listings
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="volume" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                    Volume
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              )}
+              >
+                <ToggleGroupItem value="listings" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  Listings
+                </ToggleGroupItem>
+                <ToggleGroupItem value="volume" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  Volume
+                </ToggleGroupItem>
+              </ToggleGroup>
+            )}
 
               {/* Smoothing Toggle */}
               <ToggleGroup 
@@ -583,15 +582,6 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                 const height = getBarHeight(value, maxValue);
                 const color = getBarColor(value, maxValue, avgValue);
                 
-                // Debug logging
-                console.log(`[QuantityChart] Bar ${index}:`, {
-                  value,
-                  maxValue,
-                  height,
-                  color,
-                  rawValue,
-                  smoothedValue
-                });
                 
                 // Check if this is min/max value
                 const isMax = value === (showVolume ? stats?.maxVolume : stats?.maxListings);
@@ -601,7 +591,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                   <TooltipProvider key={item.date}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="relative flex flex-col items-center w-full">
+                        <div className="relative flex flex-col items-center w-full h-full">
                           {/* Min/Max badges */}
                           {(isMax || isMin) && (
                             <div className={`absolute -top-6 text-xs font-bold px-1 py-0.5 rounded ${
@@ -613,8 +603,8 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                           
                           {/* Main bar */}
                           <div
-                            className={`${color} rounded-t-sm transition-all duration-200 hover:opacity-80 cursor-pointer min-w-[8px] flex-1 relative`}
-                            style={{ height: `${height}%` }}
+                            className={`${color} rounded-t-sm transition-all duration-200 hover:opacity-80 cursor-pointer min-w-[8px] w-full`}
+                            style={{ height: height }}
                           />
                           
                           {/* Price Overlay - small line at top */}
@@ -723,12 +713,12 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              {lastUpdated && (
-                <div className="flex items-center gap-1 text-xs">
-                  <Info className="h-3 w-3" />
-                  Last updated: {lastUpdated}
-                </div>
-              )}
+            {lastUpdated && (
+              <div className="flex items-center gap-1 text-xs">
+                <Info className="h-3 w-3" />
+                Last updated: {lastUpdated}
+              </div>
+            )}
             </div>
           </div>
         </div>
