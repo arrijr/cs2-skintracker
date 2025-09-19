@@ -237,19 +237,8 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
 
   // Get bar color based on value and outliers
   const getBarColor = (value: number, maxValue: number, avgValue: number) => {
-    const percentage = (value / maxValue) * 100;
-    const isOutlier = value > avgValue * 1.5; // P95+ outlier detection
-    
-    // Base color scheme
-    let baseColor = 'bg-primary/80'; // Default accent color
-    if (percentage >= 80) baseColor = 'bg-green-500/80';
-    else if (percentage >= 60) baseColor = 'bg-blue-500/80';
-    else if (percentage >= 40) baseColor = 'bg-yellow-500/80';
-    else if (percentage >= 20) baseColor = 'bg-orange-500/80';
-    else baseColor = 'bg-red-500/80';
-    
-    // Darker for outliers
-    return isOutlier ? baseColor.replace('/80', '') : baseColor;
+    // Use consistent primary color for all bars
+    return 'bg-primary/80';
   };
 
   if (loading) {
@@ -591,7 +580,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                   <TooltipProvider key={item.date}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="relative flex flex-col items-center w-full h-full">
+                        <div className="relative flex flex-col items-center w-full h-full justify-end">
                           {/* Min/Max badges */}
                           {(isMax || isMin) && (
                             <div className={`absolute -top-6 text-xs font-bold px-1 py-0.5 rounded ${
