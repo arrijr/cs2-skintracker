@@ -229,8 +229,11 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
 
   // Get bar height percentage
   const getBarHeight = (value: number, maxValue: number) => {
-    if (maxValue === 0) return 0;
-    return Math.max((value / maxValue) * 100, 2); // Minimum 2% height
+    if (maxValue === 0) return '0%';
+    const percentage = (value / maxValue) * 100;
+    const finalHeight = Math.max(percentage, 2); // Minimum 2% height
+    console.log(`[QuantityChart] getBarHeight: value=${value}, maxValue=${maxValue}, percentage=${percentage}, finalHeight=${finalHeight}%`);
+    return `${finalHeight}%`;
   };
 
   // Get bar color based on value and outliers
@@ -579,6 +582,16 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                 const avgValue = showVolume ? stats?.avgVolume || 1 : stats?.avgListings || 1;
                 const height = getBarHeight(value, maxValue);
                 const color = getBarColor(value, maxValue, avgValue);
+                
+                // Debug logging
+                console.log(`[QuantityChart] Bar ${index}:`, {
+                  value,
+                  maxValue,
+                  height,
+                  color,
+                  rawValue,
+                  smoothedValue
+                });
                 
                 // Check if this is min/max value
                 const isMax = value === (showVolume ? stats?.maxVolume : stats?.maxListings);
