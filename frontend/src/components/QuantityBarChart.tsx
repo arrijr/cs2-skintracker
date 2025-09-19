@@ -6,7 +6,13 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { BarChart3, TrendingUp, Calendar, Info } from "lucide-react";
+import { BarChart3, TrendingUp, Calendar, Info, Settings } from "lucide-react";
+import { apiUrl } from "@/lib/api";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
 
 // [COMPONENT] Historical Quantity (Listings) Bar Chart — shows daily active listings (and optional 24h volume)
 
@@ -23,7 +29,7 @@ interface QuantityBarChartProps {
   className?: string;
 }
 
-type Range = '7d' | '30d' | '90d' | '1y' | 'all';
+type Range = '7d' | '30d' | '90d' | '1y' | 'all' | 'custom';
 
 const QuantityBarChart: React.FC<QuantityBarChartProps> = ({ 
   skinId, 
@@ -36,6 +42,11 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
   const [range, setRange] = useState<Range>('30d');
   const [showVolume, setShowVolume] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined
+  });
+  const [aggregation, setAggregation] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   // Fetch quantity history data
   useEffect(() => {
@@ -45,7 +56,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
         setError(null);
         
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/skins/${skinId}/history/quantity?range=${range}`
+          apiUrl(`/api/v1/skins/${skinId}/history/quantity?range=${range}`)
         );
         
         if (!response.ok) {
@@ -67,7 +78,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
           if (range !== '90d' && range !== 'all') {
             console.log(`[QuantityChart] No data for ${range}, trying 90d fallback`);
             const fallbackResponse = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/api/v1/skins/${skinId}/history/quantity?range=90d`
+              apiUrl(`/api/v1/skins/${skinId}/history/quantity?range=90d`)
             );
             if (fallbackResponse.ok) {
               const fallbackResult = await fallbackResponse.json();
@@ -220,7 +231,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
             Quantity History
           </CardTitle>
           
-          {/* Quantity Range Toggle — 7D / 30D / 90D / 1Y / ALL */}
+          {/* Quantity Range Toggle — 7D / 30D / 90D / 1Y / ALL / Custom */}
           <div className="flex items-center gap-4">
             <ToggleGroup 
               type="single" 
@@ -242,6 +253,86 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
               </ToggleGroupItem>
               <ToggleGroupItem value="all" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 ALL
+              </ToggleGroupItem>
+              <ToggleGroupItem value="custom" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                Custom
+              </ToggleGroupItem>
+            </ToggleGroup>
+
+            {/* Custom Date Picker */}
+            {range === 'custom' && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Calendar className="h-4 w-4" />
+                    {customDateRange.from ? (
+                      customDateRange.to ? (
+                        `${format(customDateRange.from, 'MMM dd')} - ${format(customDateRange.to, 'MMM dd')}`
+                      ) : (
+                        format(customDateRange.from, 'MMM dd')
+                      )
+                    ) : (
+                      'Select dates'
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <div className="p-4 space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">From</Label>
+                      <CalendarComponent
+                        mode="single"
+                        selected={customDateRange.from}
+                        onSelect={(date) => setCustomDateRange(prev => ({ ...prev, from: date }))}
+                        disabled={(date) => date > new Date() || date < new Date('2020-01-01')}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">To</Label>
+                      <CalendarComponent
+                        mode="single"
+                        selected={customDateRange.to}
+                        onSelect={(date) => setCustomDateRange(prev => ({ ...prev, to: date }))}
+                        disabled={(date) => 
+                          date > new Date() || 
+                          date < new Date('2020-01-01') ||
+                          (customDateRange.from && date < customDateRange.from)
+                        }
+                      />
+                    </div>
+                    <Button 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => {
+                        if (customDateRange.from && customDateRange.to) {
+                          // Trigger data fetch with custom range
+                          console.log('Custom range selected:', customDateRange);
+                        }
+                      }}
+                      disabled={!customDateRange.from || !customDateRange.to}
+                    >
+                      Apply Range
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
+
+            {/* Aggregation Toggle */}
+            <ToggleGroup 
+              type="single" 
+              value={aggregation} 
+              onValueChange={(value: 'daily' | 'weekly' | 'monthly') => value && setAggregation(value)}
+              className="bg-muted/50 p-1 rounded-lg"
+            >
+              <ToggleGroupItem value="daily" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                Daily
+              </ToggleGroupItem>
+              <ToggleGroupItem value="weekly" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                Weekly
+              </ToggleGroupItem>
+              <ToggleGroupItem value="monthly" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                Monthly
               </ToggleGroupItem>
             </ToggleGroup>
 
