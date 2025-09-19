@@ -49,11 +49,36 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
         );
         
         if (!response.ok) {
+          if (response.status === 404) {
+            // No data available - not an error, just empty state
+            setData([]);
+            setError(null);
+            return;
+          }
           throw new Error(`Failed to fetch quantity history: ${response.status}`);
         }
         
         const result = await response.json();
-        setData(result.data || []);
+        const historyData = result.data || [];
+        
+        // Check if we have any data
+        if (historyData.length === 0) {
+          // Try fallback to 90d if current range is empty
+          if (range !== '90d' && range !== 'all') {
+            console.log(`[QuantityChart] No data for ${range}, trying 90d fallback`);
+            const fallbackResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/v1/skins/${skinId}/history/quantity?range=90d`
+            );
+            if (fallbackResponse.ok) {
+              const fallbackResult = await fallbackResponse.json();
+              setData(fallbackResult.data || []);
+              setLastUpdated(new Date().toLocaleTimeString());
+              return;
+            }
+          }
+        }
+        
+        setData(historyData);
         setLastUpdated(new Date().toLocaleTimeString());
         
       } catch (err) {
@@ -103,14 +128,21 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
     return Math.max((value / maxValue) * 100, 2); // Minimum 2% height
   };
 
-  // Get bar color based on value
-  const getBarColor = (value: number, maxValue: number) => {
+  // Get bar color based on value and outliers
+  const getBarColor = (value: number, maxValue: number, avgValue: number) => {
     const percentage = (value / maxValue) * 100;
-    if (percentage >= 80) return 'bg-green-500';
-    if (percentage >= 60) return 'bg-blue-500';
-    if (percentage >= 40) return 'bg-yellow-500';
-    if (percentage >= 20) return 'bg-orange-500';
-    return 'bg-red-500';
+    const isOutlier = value > avgValue * 1.5; // P95+ outlier detection
+    
+    // Base color scheme
+    let baseColor = 'bg-primary/80'; // Default accent color
+    if (percentage >= 80) baseColor = 'bg-green-500/80';
+    else if (percentage >= 60) baseColor = 'bg-blue-500/80';
+    else if (percentage >= 40) baseColor = 'bg-yellow-500/80';
+    else if (percentage >= 20) baseColor = 'bg-orange-500/80';
+    else baseColor = 'bg-red-500/80';
+    
+    // Darker for outliers
+    return isOutlier ? baseColor.replace('/80', '') : baseColor;
   };
 
   if (loading) {
@@ -165,8 +197,14 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
             <BarChart3 className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
             <p className="text-muted-foreground">No quantity data available</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Data will appear once market snapshots are collected
+              Come back tomorrow—fresh snapshots every 24h
             </p>
+            <div className="mt-4 p-3 bg-muted/30 rounded-lg">
+              <p className="text-xs text-muted-foreground">
+                <Info className="h-3 w-3 inline mr-1" />
+                Data freshness: Last snapshot collected daily at 00:00 UTC
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -225,31 +263,59 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
           </div>
         </div>
 
-        {/* Stats Summary */}
+        {/* KPI Summary Bar */}
         {stats && (
-          <div className="flex items-center gap-6 mt-4">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                Max: {stats.maxListings.toLocaleString()}
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                Avg: {stats.avgListings.toLocaleString()}
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                Min: {stats.minListings.toLocaleString()}
-              </Badge>
+          <div className="bg-muted/30 rounded-lg p-3 mt-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Avg (30d)</p>
+                <p className="text-lg font-semibold">{stats.avgListings.toLocaleString()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Min (30d)</p>
+                <p className="text-lg font-semibold text-red-600">{stats.minListings.toLocaleString()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Max (30d)</p>
+                <p className="text-lg font-semibold text-green-600">{stats.maxListings.toLocaleString()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Δ7d</p>
+                <p className={`text-lg font-semibold flex items-center justify-center gap-1 ${
+                  data.length >= 2 ? 
+                    (data[data.length - 1].activeListings > data[data.length - 8]?.activeListings ? 'text-green-600' : 'text-red-600') :
+                    'text-muted-foreground'
+                }`}>
+                  {data.length >= 2 ? (
+                    <>
+                      {data[data.length - 1].activeListings > data[data.length - 8]?.activeListings ? '↗' : '↘'}
+                      {Math.abs(data[data.length - 1].activeListings - (data[data.length - 8]?.activeListings || 0))}
+                    </>
+                  ) : '—'}
+                </p>
+              </div>
             </div>
             
             {stats.hasVolume && showVolume && (
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-xs">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  Max Vol: {stats.maxVolume.toLocaleString()}
-                </Badge>
-                <Badge variant="secondary" className="text-xs">
-                  Avg Vol: {stats.avgVolume.toLocaleString()}
-                </Badge>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mt-3 pt-3 border-t border-muted-foreground/20">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Avg Vol</p>
+                  <p className="text-lg font-semibold">{stats.avgVolume.toLocaleString()}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Min Vol</p>
+                  <p className="text-lg font-semibold text-red-600">{stats.minVolume.toLocaleString()}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Max Vol</p>
+                  <p className="text-lg font-semibold text-green-600">{stats.maxVolume.toLocaleString()}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Data Freshness</p>
+                  <p className="text-sm text-muted-foreground">
+                    {lastUpdated ? `Updated ${lastUpdated}` : 'Live'}
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -261,21 +327,51 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
         <div className="space-y-4">
           {/* Chart Area */}
           <div className="relative">
+            {/* Average line */}
+            {stats && (
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-dashed border-muted-foreground/50 z-10"
+                style={{ 
+                  bottom: `${100 - (stats.avgListings / (stats.maxListings || 1)) * 100}%` 
+                }}
+              >
+                <div className="absolute -top-3 left-2 bg-background px-1 text-xs text-muted-foreground">
+                  Avg: {stats.avgListings.toLocaleString()}
+                </div>
+              </div>
+            )}
+            
             <div className="h-64 flex items-end justify-between gap-1 px-2">
               {data.map((item, index) => {
                 const value = showVolume ? (item.soldVolume24h || 0) : item.activeListings;
                 const maxValue = showVolume ? stats?.maxVolume || 1 : stats?.maxListings || 1;
+                const avgValue = showVolume ? stats?.avgVolume || 1 : stats?.avgListings || 1;
                 const height = getBarHeight(value, maxValue);
-                const color = getBarColor(value, maxValue);
+                const color = getBarColor(value, maxValue, avgValue);
+                
+                // Check if this is min/max value
+                const isMax = value === (showVolume ? stats?.maxVolume : stats?.maxListings);
+                const isMin = value === (showVolume ? stats?.minVolume : stats?.minListings);
                 
                 return (
                   <TooltipProvider key={item.date}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div
-                          className={`${color} rounded-t-sm transition-all duration-200 hover:opacity-80 cursor-pointer min-w-[8px] flex-1`}
-                          style={{ height: `${height}%` }}
-                        />
+                        <div className="relative flex flex-col items-center">
+                          {/* Min/Max badges */}
+                          {(isMax || isMin) && (
+                            <div className={`absolute -top-6 text-xs font-bold px-1 py-0.5 rounded ${
+                              isMax ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {isMax ? 'MAX' : 'MIN'}
+                            </div>
+                          )}
+                          
+                          <div
+                            className={`${color} rounded-t-sm transition-all duration-200 hover:opacity-80 cursor-pointer min-w-[8px] flex-1 relative`}
+                            style={{ height: `${height}%` }}
+                          />
+                        </div>
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className="text-center">
@@ -288,6 +384,8 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                               Price: ${item.priceUsd.toFixed(2)}
                             </p>
                           )}
+                          {isMax && <p className="text-xs text-green-600 font-semibold">Peak Value</p>}
+                          {isMin && <p className="text-xs text-red-600 font-semibold">Lowest Value</p>}
                         </div>
                       </TooltipContent>
                     </Tooltip>

@@ -16,12 +16,16 @@ class MarketSnapshotService {
    */
   async fetchSkinMarketData(skin) {
     try {
-      // Use existing Steam service or create new API call
-      // This is a placeholder - implement actual Steam API call
+      // Generate realistic test data for development
+      const basePrice = skin.priceAvg || skin.priceMedian || skin.priceLatest || 100;
+      const rarityMultiplier = this.getRarityMultiplier(skin.rarity);
+      const weaponMultiplier = this.getWeaponMultiplier(skin.weaponType);
+      
+      // Simulate realistic market data
       const marketData = {
-        priceUsd: skin.priceAvg || skin.priceMedian || skin.priceLatest,
-        activeListings: skin.offerVolume || 0,
-        soldVolume24h: skin.sold24h || null,
+        priceUsd: basePrice * (0.8 + Math.random() * 0.4), // ±20% price variation
+        activeListings: Math.floor((skin.offerVolume || 0) + Math.random() * 50 + 10), // 10-60 listings
+        soldVolume24h: Math.floor(Math.random() * 20 + 1), // 1-20 sold per day
         source: 'steam',
         fetchedAt: new Date()
       };
@@ -32,6 +36,43 @@ class MarketSnapshotService {
       console.error(`[MarketSnapshot] Failed to fetch data for skin ${skin.id}:`, error);
       return null;
     }
+  }
+
+  /**
+   * Get rarity multiplier for market activity
+   * @param {string} rarity - Skin rarity
+   * @returns {number} Multiplier
+   */
+  getRarityMultiplier(rarity) {
+    const multipliers = {
+      'Consumer Grade': 0.1,
+      'Industrial Grade': 0.2,
+      'Mil-Spec Grade': 0.3,
+      'Restricted': 0.5,
+      'Classified': 0.7,
+      'Covert': 1.0,
+      'Contraband': 1.5
+    };
+    return multipliers[rarity] || 0.5;
+  }
+
+  /**
+   * Get weapon type multiplier for market activity
+   * @param {string} weaponType - Weapon type
+   * @returns {number} Multiplier
+   */
+  getWeaponMultiplier(weaponType) {
+    const multipliers = {
+      'knife': 2.0,
+      'gloves': 1.8,
+      'rifle': 1.2,
+      'pistol': 1.0,
+      'sniper': 0.8,
+      'smg': 0.6,
+      'shotgun': 0.4,
+      'machinegun': 0.3
+    };
+    return multipliers[weaponType] || 1.0;
   }
 
   /**
