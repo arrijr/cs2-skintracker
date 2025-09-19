@@ -151,6 +151,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
           }
         }
         
+        console.log('[QuantityChart] Data received:', historyData);
         setData(historyData);
         setLastUpdated(new Date().toLocaleTimeString());
         
@@ -325,13 +326,15 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
           </CardTitle>
           
           {/* Quantity Range Toggle — 7D / 30D / 90D / 1Y / ALL / Custom */}
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
-            <ToggleGroup 
-              type="single" 
-              value={range} 
-              onValueChange={(value: Range) => value && setRange(value)}
-              className="bg-muted/50 p-1 rounded-lg flex-wrap"
-            >
+          <div className="flex flex-col gap-3">
+            {/* Range and Aggregation - Mobile optimized */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <ToggleGroup 
+                type="single" 
+                value={range} 
+                onValueChange={(value: Range) => value && setRange(value)}
+                className="bg-muted/50 p-1 rounded-lg flex-wrap justify-center sm:justify-start"
+              >
               <ToggleGroupItem value="7d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 7D
               </ToggleGroupItem>
@@ -352,130 +355,136 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
               </ToggleGroupItem>
             </ToggleGroup>
 
+              {/* Aggregation Toggle */}
+              <ToggleGroup 
+                type="single" 
+                value={aggregation} 
+                onValueChange={(value: 'daily' | 'weekly' | 'monthly') => value && setAggregation(value)}
+                className="bg-muted/50 p-1 rounded-lg flex-wrap justify-center sm:justify-start"
+              >
+                <ToggleGroupItem value="daily" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  Daily
+                </ToggleGroupItem>
+                <ToggleGroupItem value="weekly" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  Weekly
+                </ToggleGroupItem>
+                <ToggleGroupItem value="monthly" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  Monthly
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
             {/* Custom Date Picker */}
             {range === 'custom' && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {customDateRange.from ? (
-                      customDateRange.to ? (
-                        `${format(customDateRange.from, 'MMM dd')} - ${format(customDateRange.to, 'MMM dd')}`
+              <div className="flex justify-center sm:justify-start">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {customDateRange.from ? (
+                        customDateRange.to ? (
+                          `${format(customDateRange.from, 'MMM dd')} - ${format(customDateRange.to, 'MMM dd')}`
+                        ) : (
+                          format(customDateRange.from, 'MMM dd')
+                        )
                       ) : (
-                        format(customDateRange.from, 'MMM dd')
-                      )
-                    ) : (
-                      'Select dates'
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <div className="p-4 space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">From</Label>
-                      <CalendarComponent
-                        mode="single"
-                        selected={customDateRange.from}
-                        onSelect={(date) => setCustomDateRange(prev => ({ ...prev, from: date }))}
-                        disabled={(date) => date > new Date() || date < new Date('2020-01-01')}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">To</Label>
-                      <CalendarComponent
-                        mode="single"
-                        selected={customDateRange.to}
-                        onSelect={(date) => setCustomDateRange(prev => ({ ...prev, to: date }))}
-                        disabled={(date) => 
-                          date > new Date() || 
-                          date < new Date('2020-01-01') ||
-                          (customDateRange.from && date < customDateRange.from)
-                        }
-                      />
-                    </div>
-                    <Button 
-                      size="sm" 
-                      className="w-full"
-                      onClick={() => {
-                        if (customDateRange.from && customDateRange.to) {
-                          // Trigger data fetch with custom range
-                          console.log('Custom range selected:', customDateRange);
-                        }
-                      }}
-                      disabled={!customDateRange.from || !customDateRange.to}
-                    >
-                      Apply Range
+                        'Select dates'
+                      )}
                     </Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <div className="p-4 space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">From</Label>
+                        <CalendarComponent
+                          mode="single"
+                          selected={customDateRange.from}
+                          onSelect={(date) => setCustomDateRange(prev => ({ ...prev, from: date }))}
+                          disabled={(date) => date > new Date() || date < new Date('2020-01-01')}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">To</Label>
+                        <CalendarComponent
+                          mode="single"
+                          selected={customDateRange.to}
+                          onSelect={(date) => setCustomDateRange(prev => ({ ...prev, to: date }))}
+                          disabled={(date) => 
+                            date > new Date() || 
+                            date < new Date('2020-01-01') ||
+                            (customDateRange.from && date < customDateRange.from)
+                          }
+                        />
+                      </div>
+                      <Button 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => {
+                          if (customDateRange.from && customDateRange.to) {
+                            // Trigger data fetch with custom range
+                            console.log('Custom range selected:', customDateRange);
+                          }
+                        }}
+                        disabled={!customDateRange.from || !customDateRange.to}
+                      >
+                        Apply Range
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
             )}
 
-            {/* Aggregation Toggle */}
-            <ToggleGroup 
-              type="single" 
-              value={aggregation} 
-              onValueChange={(value: 'daily' | 'weekly' | 'monthly') => value && setAggregation(value)}
-              className="bg-muted/50 p-1 rounded-lg"
-            >
-              <ToggleGroupItem value="daily" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                Daily
-              </ToggleGroupItem>
-              <ToggleGroupItem value="weekly" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                Weekly
-              </ToggleGroupItem>
-              <ToggleGroupItem value="monthly" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                Monthly
-              </ToggleGroupItem>
-            </ToggleGroup>
+            {/* Data Type and Display Options - Mobile optimized */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {stats?.hasVolume && (
+                <ToggleGroup 
+                  type="single" 
+                  value={showVolume ? "volume" : "listings"} 
+                  onValueChange={(value) => setShowVolume(value === "volume")}
+                  className="bg-muted/50 p-1 rounded-lg flex-wrap justify-center sm:justify-start"
+                >
+                  <ToggleGroupItem value="listings" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    Listings
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="volume" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    Volume
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              )}
 
-            {stats?.hasVolume && (
+              {/* Smoothing Toggle */}
               <ToggleGroup 
                 type="single" 
-                value={showVolume ? "volume" : "listings"} 
-                onValueChange={(value) => setShowVolume(value === "volume")}
-                className="bg-muted/50 p-1 rounded-lg"
+                value={smoothing ? "smooth" : "raw"} 
+                onValueChange={(value) => setSmoothing(value === "smooth")}
+                className="bg-muted/50 p-1 rounded-lg flex-wrap justify-center sm:justify-start"
               >
-                <ToggleGroupItem value="listings" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                  Listings
+                <ToggleGroupItem value="raw" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  Raw
                 </ToggleGroupItem>
-                <ToggleGroupItem value="volume" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                  Volume
+                <ToggleGroupItem value="smooth" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  3D MA
                 </ToggleGroupItem>
               </ToggleGroup>
-            )}
 
-            {/* Smoothing Toggle */}
-            <ToggleGroup 
-              type="single" 
-              value={smoothing ? "smooth" : "raw"} 
-              onValueChange={(value) => setSmoothing(value === "smooth")}
-              className="bg-muted/50 p-1 rounded-lg"
-            >
-              <ToggleGroupItem value="raw" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                Raw
-              </ToggleGroupItem>
-              <ToggleGroupItem value="smooth" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                3D MA
-              </ToggleGroupItem>
-            </ToggleGroup>
-
-            {/* Price Overlay Toggle */}
-            {stats?.hasPrice && (
-              <ToggleGroup 
-                type="single" 
-                value={showPriceOverlay ? "overlay" : "single"} 
-                onValueChange={(value) => setShowPriceOverlay(value === "overlay")}
-                className="bg-muted/50 p-1 rounded-lg"
-              >
-                <ToggleGroupItem value="single" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                  Single
-                </ToggleGroupItem>
-                <ToggleGroupItem value="overlay" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                  Price Overlay
-                </ToggleGroupItem>
-              </ToggleGroup>
-            )}
+              {/* Price Overlay Toggle */}
+              {stats?.hasPrice && (
+                <ToggleGroup 
+                  type="single" 
+                  value={showPriceOverlay ? "overlay" : "single"} 
+                  onValueChange={(value) => setShowPriceOverlay(value === "overlay")}
+                  className="bg-muted/50 p-1 rounded-lg flex-wrap justify-center sm:justify-start"
+                >
+                  <ToggleGroupItem value="single" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    Single
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="overlay" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    Price Overlay
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              )}
+            </div>
           </div>
         </div>
 
@@ -558,7 +567,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
             )}
             
             <div className="h-64 flex items-end justify-between gap-1 px-2 relative">
-              {data.map((item, index) => {
+              {data.length > 0 ? data.map((item, index) => {
                 // Use smoothed values if smoothing is enabled
                 const rawValue = showVolume ? (item.soldVolume24h || 0) : item.activeListings;
                 const smoothedValue = smoothing ? 
@@ -634,7 +643,14 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                     </Tooltip>
                   </TooltipProvider>
                 );
-              })}
+              }) : (
+                <div className="flex items-center justify-center w-full h-full text-muted-foreground">
+                  <div className="text-center">
+                    <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No data to display</p>
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Y-axis labels */}
