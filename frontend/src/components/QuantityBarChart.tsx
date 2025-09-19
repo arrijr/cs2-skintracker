@@ -14,6 +14,18 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 
+// Debounce utility function
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
 // [COMPONENT] Historical Quantity (Listings) Bar Chart — shows daily active listings (and optional 24h volume)
 
 interface QuantityData {
@@ -47,10 +59,57 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
     to: undefined
   });
   const [aggregation, setAggregation] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [smoothing, setSmoothing] = useState<boolean>(false);
+  const [showPriceOverlay, setShowPriceOverlay] = useState<boolean>(false);
 
-  // Fetch quantity history data
+  // Keyboard shortcuts
   useEffect(() => {
-    const fetchQuantityHistory = async () => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        switch (event.key) {
+          case '1':
+            event.preventDefault();
+            setRange('7d');
+            break;
+          case '2':
+            event.preventDefault();
+            setRange('30d');
+            break;
+          case '3':
+            event.preventDefault();
+            setRange('90d');
+            break;
+          case '4':
+            event.preventDefault();
+            setRange('1y');
+            break;
+          case '5':
+            event.preventDefault();
+            setRange('all');
+            break;
+          case 's':
+            event.preventDefault();
+            setSmoothing(!smoothing);
+            break;
+          case 'p':
+            event.preventDefault();
+            setShowPriceOverlay(!showPriceOverlay);
+            break;
+          case 'v':
+            event.preventDefault();
+            setShowVolume(!showVolume);
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [smoothing, showPriceOverlay, showVolume]);
+
+  // Debounced fetch function for performance
+  const debouncedFetch = useCallback(
+    debounce(async (skinId: number, range: string) => {
       try {
         setLoading(true);
         setError(null);
@@ -102,12 +161,32 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
       } finally {
         setLoading(false);
       }
-    };
+    }, 300), // 300ms debounce
+    []
+  );
 
+  // Fetch quantity history data
+  useEffect(() => {
     if (skinId) {
-      fetchQuantityHistory();
+      debouncedFetch(skinId, range);
     }
-  }, [skinId, range]);
+  }, [skinId, range, debouncedFetch]);
+
+  // Calculate moving average for smoothing
+  const calculateMovingAverage = (values: number[], window: number = 3) => {
+    if (values.length < window) return values;
+    
+    const result = [];
+    for (let i = 0; i < values.length; i++) {
+      if (i < window - 1) {
+        result.push(values[i]);
+      } else {
+        const sum = values.slice(i - window + 1, i + 1).reduce((a, b) => a + b, 0);
+        result.push(Math.round(sum / window));
+      }
+    }
+    return result;
+  };
 
   // Calculate chart statistics
   const stats = useMemo(() => {
@@ -115,6 +194,11 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
 
     const activeListings = data.map(d => d.activeListings);
     const volumes = data.map(d => d.soldVolume24h).filter(v => v !== null) as number[];
+    const prices = data.map(d => d.priceUsd).filter(p => p !== null) as number[];
+
+    // Apply smoothing if enabled
+    const smoothedListings = smoothing ? calculateMovingAverage(activeListings, 3) : activeListings;
+    const smoothedVolumes = smoothing && volumes.length > 0 ? calculateMovingAverage(volumes, 3) : volumes;
 
     return {
       maxListings: Math.max(...activeListings),
@@ -123,9 +207,15 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
       maxVolume: volumes.length > 0 ? Math.max(...volumes) : 0,
       minVolume: volumes.length > 0 ? Math.min(...volumes) : 0,
       avgVolume: volumes.length > 0 ? Math.round(volumes.reduce((a, b) => a + b, 0) / volumes.length) : 0,
-      hasVolume: volumes.length > 0
+      hasVolume: volumes.length > 0,
+      hasPrice: prices.length > 0,
+      maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
+      minPrice: prices.length > 0 ? Math.min(...prices) : 0,
+      avgPrice: prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
+      smoothedListings,
+      smoothedVolumes
     };
-  }, [data]);
+  }, [data, smoothing]);
 
   // Format date for display
   const formatDate = (dateStr: string) => {
@@ -226,21 +316,21 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
   }
 
   return (
-    <Card className={className}>
+    <Card className={className} role="region" aria-label="Quantity History Chart">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
+            <BarChart3 className="h-5 w-5 text-primary" aria-hidden="true" />
             Quantity History
           </CardTitle>
           
           {/* Quantity Range Toggle — 7D / 30D / 90D / 1Y / ALL / Custom */}
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
             <ToggleGroup 
               type="single" 
               value={range} 
               onValueChange={(value: Range) => value && setRange(value)}
-              className="bg-muted/50 p-1 rounded-lg"
+              className="bg-muted/50 p-1 rounded-lg flex-wrap"
             >
               <ToggleGroupItem value="7d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 7D
@@ -354,6 +444,38 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                 </ToggleGroupItem>
               </ToggleGroup>
             )}
+
+            {/* Smoothing Toggle */}
+            <ToggleGroup 
+              type="single" 
+              value={smoothing ? "smooth" : "raw"} 
+              onValueChange={(value) => setSmoothing(value === "smooth")}
+              className="bg-muted/50 p-1 rounded-lg"
+            >
+              <ToggleGroupItem value="raw" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                Raw
+              </ToggleGroupItem>
+              <ToggleGroupItem value="smooth" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                3D MA
+              </ToggleGroupItem>
+            </ToggleGroup>
+
+            {/* Price Overlay Toggle */}
+            {stats?.hasPrice && (
+              <ToggleGroup 
+                type="single" 
+                value={showPriceOverlay ? "overlay" : "single"} 
+                onValueChange={(value) => setShowPriceOverlay(value === "overlay")}
+                className="bg-muted/50 p-1 rounded-lg"
+              >
+                <ToggleGroupItem value="single" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  Single
+                </ToggleGroupItem>
+                <ToggleGroupItem value="overlay" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  Price Overlay
+                </ToggleGroupItem>
+              </ToggleGroup>
+            )}
           </div>
         </div>
 
@@ -435,9 +557,15 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
               </div>
             )}
             
-            <div className="h-64 flex items-end justify-between gap-1 px-2">
+            <div className="h-64 flex items-end justify-between gap-1 px-2 relative">
               {data.map((item, index) => {
-                const value = showVolume ? (item.soldVolume24h || 0) : item.activeListings;
+                // Use smoothed values if smoothing is enabled
+                const rawValue = showVolume ? (item.soldVolume24h || 0) : item.activeListings;
+                const smoothedValue = smoothing ? 
+                  (showVolume ? stats?.smoothedVolumes?.[index] || rawValue : stats?.smoothedListings?.[index] || rawValue) : 
+                  rawValue;
+                
+                const value = smoothedValue;
                 const maxValue = showVolume ? stats?.maxVolume || 1 : stats?.maxListings || 1;
                 const avgValue = showVolume ? stats?.avgVolume || 1 : stats?.avgListings || 1;
                 const height = getBarHeight(value, maxValue);
@@ -451,7 +579,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                   <TooltipProvider key={item.date}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="relative flex flex-col items-center">
+                        <div className="relative flex flex-col items-center w-full">
                           {/* Min/Max badges */}
                           {(isMax || isMin) && (
                             <div className={`absolute -top-6 text-xs font-bold px-1 py-0.5 rounded ${
@@ -461,10 +589,21 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                             </div>
                           )}
                           
+                          {/* Main bar */}
                           <div
                             className={`${color} rounded-t-sm transition-all duration-200 hover:opacity-80 cursor-pointer min-w-[8px] flex-1 relative`}
                             style={{ height: `${height}%` }}
                           />
+                          
+                          {/* Price Overlay - small line at top */}
+                          {showPriceOverlay && item.priceUsd && (
+                            <div 
+                              className="absolute w-full h-0.5 bg-yellow-400 opacity-80"
+                              style={{ 
+                                bottom: `${100 - (item.priceUsd / (stats?.maxPrice || 1)) * 100}%` 
+                              }}
+                            />
+                          )}
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -472,10 +611,20 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                           <p className="font-semibold">{formatDate(item.date)}</p>
                           <p className="text-sm">
                             {showVolume ? 'Volume 24h' : 'Active Listings'}: {value.toLocaleString()}
+                            {smoothing && rawValue !== value && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                (raw: {rawValue.toLocaleString()})
+                              </span>
+                            )}
                           </p>
                           {item.priceUsd && (
                             <p className="text-xs text-muted-foreground">
                               Price: ${item.priceUsd.toFixed(2)}
+                            </p>
+                          )}
+                          {smoothing && (
+                            <p className="text-xs text-blue-600">
+                              3-Day Moving Average
                             </p>
                           )}
                           {isMax && <p className="text-xs text-green-600 font-semibold">Peak Value</p>}
@@ -500,10 +649,19 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-primary rounded-sm" />
-                <span>{showVolume ? '24h Volume' : 'Active Listings'}</span>
+                <div className={`w-3 h-3 rounded-sm ${smoothing ? 'bg-blue-500' : 'bg-primary'}`} />
+                <span>
+                  {showVolume ? '24h Volume' : 'Active Listings'}
+                  {smoothing && ' (3D MA)'}
+                </span>
               </div>
-              {stats?.hasVolume && (
+              {showPriceOverlay && stats?.hasPrice && (
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-0.5 bg-yellow-400" />
+                  <span>Price Overlay</span>
+                </div>
+              )}
+              {stats?.hasVolume && !showPriceOverlay && (
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-muted-foreground rounded-sm" />
                   <span>Price (USD)</span>
@@ -511,12 +669,38 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
               )}
             </div>
             
-            {lastUpdated && (
-              <div className="flex items-center gap-1 text-xs">
-                <Info className="h-3 w-3" />
-                Last updated: {lastUpdated}
-              </div>
-            )}
+            <div className="flex items-center gap-4">
+              {smoothing && (
+                <div className="flex items-center gap-1 text-xs text-blue-600">
+                  <TrendingUp className="h-3 w-3" />
+                  Smoothed
+                </div>
+              )}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-help">
+                      <Info className="h-3 w-3" />
+                      Shortcuts
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-xs space-y-1">
+                      <p><kbd className="px-1 py-0.5 bg-muted rounded">Ctrl+1-5</kbd> Range</p>
+                      <p><kbd className="px-1 py-0.5 bg-muted rounded">Ctrl+S</kbd> Smoothing</p>
+                      <p><kbd className="px-1 py-0.5 bg-muted rounded">Ctrl+P</kbd> Price Overlay</p>
+                      <p><kbd className="px-1 py-0.5 bg-muted rounded">Ctrl+V</kbd> Volume</p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              {lastUpdated && (
+                <div className="flex items-center gap-1 text-xs">
+                  <Info className="h-3 w-3" />
+                  Last updated: {lastUpdated}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
