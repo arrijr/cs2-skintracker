@@ -710,51 +710,6 @@ export default function SkinDetailPage() {
           )}
                 </div>
 
-        {/* Sticky Sub-Header — compact name, price, quick actions on scroll */}
-        {skin && (
-          <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/50 mb-8">
-            <div className="container mx-auto px-4 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted/20">
-                    <Image
-                      src={skin.imageUrl || "/images/placeholder-skin.png"}
-                      alt={skin.name}
-                      fill
-                      className="object-contain p-1"
-                    />
-                  </div>
-                  <div>
-                    <h2 className="font-semibold text-lg truncate max-w-md">{skin.name}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {skin.weaponType} • {skin.wear} • {skin.rarity}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">
-                      {formatUSD(skin.priceAvg || skin.priceMedian || skin.priceLatest)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Current Price</p>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => addToWatchlist()}>
-                      <Heart className="h-4 w-4 mr-1" />
-                      {isInWatchlist ? "✓" : "Watch"}
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => addToPortfolio()}>
-                      <Plus className="h-4 w-4 mr-1" />
-                      {isInPortfolio ? "✓" : "Portfolio"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* P1 - Price History */}
         {/* Price History Chart with ToggleGroup and Tooltip */}
