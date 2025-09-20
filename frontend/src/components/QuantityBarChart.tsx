@@ -429,20 +429,20 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
             {/* Data Type and Display Options - Mobile optimized */}
             <div className="flex flex-col sm:flex-row gap-3">
               {stats?.hasVolume && (
-              <ToggleGroup 
-                type="single" 
-                value={showVolume ? "volume" : "listings"} 
-                onValueChange={(value) => setShowVolume(value === "volume")}
+                <ToggleGroup 
+                  type="single" 
+                  value={showVolume ? "volume" : "listings"} 
+                  onValueChange={(value) => setShowVolume(value === "volume")}
                   className="bg-muted/50 p-1 rounded-lg flex-wrap justify-center sm:justify-start"
-              >
-                <ToggleGroupItem value="listings" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                  Listings
-                </ToggleGroupItem>
-                <ToggleGroupItem value="volume" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                  Volume
-                </ToggleGroupItem>
-              </ToggleGroup>
-            )}
+                >
+                  <ToggleGroupItem value="listings" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    Listings
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="volume" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    Volume
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              )}
 
               {/* Smoothing Toggle */}
               <ToggleGroup 
@@ -475,6 +475,15 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                   </ToggleGroupItem>
                 </ToggleGroup>
               )}
+            </div>
+            
+            {/* Explanation Text */}
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p><strong>Listings:</strong> Items currently listed on market</p>
+              <p><strong>Volume:</strong> Items sold in last 24h</p>
+              <p><strong>3D MA:</strong> 3-day moving average smoothing</p>
+              <p><strong>Price Overlay:</strong> Shows price trend as yellow line</p>
+              <p><strong>Daily/Weekly/Monthly:</strong> Data aggregation level</p>
             </div>
           </div>
         </div>
@@ -611,12 +620,15 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                         <div className="text-center">
                           <p className="font-semibold">{formatDate(item.date)}</p>
                           <p className="text-sm">
-                            {showVolume ? 'Volume 24h' : 'Active Listings'}: {value.toLocaleString()}
+                            {showVolume ? '24h Volume' : 'Active Listings'}: <span className="font-bold text-primary">{value.toLocaleString()}</span>
                             {smoothing && rawValue !== value && (
                               <span className="text-xs text-muted-foreground ml-1">
                                 (raw: {rawValue.toLocaleString()})
                               </span>
                             )}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {showVolume ? 'Items sold in last 24h' : 'Items currently listed on market'}
                           </p>
                           {item.priceUsd && (
                             <p className="text-xs text-muted-foreground">
@@ -650,6 +662,20 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
               <span>{stats?.maxListings.toLocaleString()}</span>
               <span>{Math.round((stats?.maxListings || 0) * 0.5).toLocaleString()}</span>
               <span>0</span>
+            </div>
+            
+            {/* X-axis labels - Date labels under bars */}
+            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-2 text-xs text-muted-foreground">
+              {data.map((item, index) => (
+                <div key={item.date} className="text-center">
+                  <div className="text-xs font-medium">
+                    {showVolume ? item.soldVolume24h?.toLocaleString() || '0' : item.activeListings.toLocaleString()}
+                  </div>
+                  <div className="text-xs opacity-70">
+                    {format(new Date(item.date), 'MMM dd')}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
