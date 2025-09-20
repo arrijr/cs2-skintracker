@@ -81,6 +81,7 @@ export default function SkinDetailPage() {
   const [caseInfo, setCaseInfo] = useState<any>(null);
   const [marketStats, setMarketStats] = useState<any>(null);
   const [relatedSkins, setRelatedSkins] = useState<any[]>([]);
+  const [variants, setVariants] = useState<any[]>([]);
   const [loadingEnhanced, setLoadingEnhanced] = useState(false);
   
   // P1 - URL Sync States
@@ -150,14 +151,16 @@ export default function SkinDetailPage() {
       
       setLoadingEnhanced(true);
       try {
-        const [caseRes, marketRes, relatedRes] = await Promise.all([
+        const [caseRes, marketRes, relatedRes, variantsRes] = await Promise.all([
           fetchJson(apiUrl(`/api/v1/skins/${skin.id}/case-info`)),
           fetchJson(apiUrl(`/api/v1/skins/${skin.id}/market-stats`)),
-          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/related`))
+          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/related`)),
+          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/variants`))
         ]);
         setCaseInfo(caseRes?.case || null); // New endpoint returns { case: {...} }
         setMarketStats(marketRes || null);
         setRelatedSkins(relatedRes || []);
+        setVariants(variantsRes?.variants || []);
       } catch (error) {
         console.error("Failed to load enhanced data:", error);
       } finally {
@@ -832,15 +835,29 @@ export default function SkinDetailPage() {
         {/* P1 - Market Statistics */}
         {/* Market Stats Card — price, orders, listings, volume */}
         {loadingEnhanced ? (
-          <Skeleton className="h-32 w-full mb-8" />
+          <Skeleton className="h-32 w-full mb-12" />
         ) : marketStats ? (
-          <div className="mb-8">
+          <div className="mb-12">
             <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl hover:shadow-2xl transition-all duration-300">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-primary" />
                     Market Statistics
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <div className="text-center">
+                            <p className="font-semibold">Live Market Data</p>
+                            <p className="text-sm">Real-time statistics from Steam Market</p>
+                            <p className="text-xs text-muted-foreground mt-1">Updated every few minutes</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </CardTitle>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
@@ -1221,6 +1238,106 @@ export default function SkinDetailPage() {
               </Card>
             )}
           </div>
+
+        {/* P1 - Skin Variants Table */}
+        {/* Skin Variants - Same skins in different wear conditions */}
+        {loadingEnhanced ? (
+          <Skeleton className="h-64 w-full mb-12" />
+        ) : variants && variants.length > 0 ? (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Eye className="h-6 w-6 text-primary" />
+              Skin Variants
+            </h2>
+            <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b border-accent/20">
+                      <TableHead className="font-semibold text-primary">Wear Condition</TableHead>
+                      <TableHead className="font-semibold text-primary">Price</TableHead>
+                      <TableHead className="font-semibold text-primary">Change 24h</TableHead>
+                      <TableHead className="font-semibold text-primary">Volume</TableHead>
+                      <TableHead className="font-semibold text-primary">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {variants.map((variant) => (
+                      <TableRow key={variant.id} className="hover:bg-accent/5 transition-colors">
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant="outline" 
+                              className={`font-semibold ${
+                                variant.wear === 'Factory New' ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300' :
+                                variant.wear === 'Minimal Wear' ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300' :
+                                variant.wear === 'Field-Tested' ? 'border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300' :
+                                variant.wear === 'Well-Worn' ? 'border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300' :
+                                variant.wear === 'Battle-Scarred' ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300' :
+                                'border-gray-500 bg-gray-50 text-gray-700 dark:bg-gray-950 dark:text-gray-300'
+                              }`}
+                            >
+                              {variant.wear}
+                            </Badge>
+                            {variant.isStattrak && (
+                              <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                                ST
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-bold text-lg text-primary">
+                            {formatUSD(variant.priceAvg || variant.priceMedian || variant.priceLatest)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {variant.priceChange24h ? (
+                            <div className="flex items-center gap-1">
+                              {variant.priceChange24h > 0 ? (
+                                <TrendingUp className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <TrendingDown className="h-4 w-4 text-red-500" />
+                              )}
+                              <span className={variant.priceChange24h > 0 ? "text-green-500" : "text-red-500"}>
+                                {Math.abs(variant.priceChange24h).toFixed(1)}%
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">N/A</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-muted-foreground">
+                            {variant.volume24h || variant.volume7d || 'N/A'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(`/skins/${variant.id}`, '_blank')}
+                            >
+                              View
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => console.log("Add to watchlist:", variant.id)}
+                            >
+                              <Heart className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+        ) : null}
 
         {/* P1 - Price Alerts & Watchlist */}
         {/* Price Alerts & Watchlist - Preisalarm sauber integrieren */}

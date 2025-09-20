@@ -248,6 +248,17 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
     return `${finalHeight}%`;
   };
 
+  // Calculate delta for tooltip
+  const getDelta = (current: number, previous: number) => {
+    if (!previous || previous === 0) return null;
+    const delta = ((current - previous) / previous) * 100;
+    return {
+      value: Math.abs(delta),
+      isPositive: delta > 0,
+      isSignificant: Math.abs(delta) > 5
+    };
+  };
+
   // Get bar color based on value and outliers
   const getBarColor = (value: number, maxValue: number, avgValue: number) => {
     // Use consistent primary color for all bars
@@ -602,6 +613,13 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                 const isMax = value === (showVolume ? stats?.maxVolume : stats?.maxListings);
                 const isMin = value === (showVolume ? stats?.minVolume : stats?.minListings);
                 
+                // Calculate delta for this bar
+                const previousItem = index > 0 ? data[index - 1] : null;
+                const delta = previousItem ? getDelta(
+                  value, 
+                  showVolume ? (previousItem.soldVolume24h || 0) : previousItem.activeListings
+                ) : null;
+
                 return (
                   <TooltipProvider key={item.date}>
                     <Tooltip>
@@ -644,6 +662,17 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                               </span>
                             )}
                           </p>
+                          
+                          {/* Delta information */}
+                          {delta && (
+                            <p className={`text-xs font-semibold mt-1 ${
+                              delta.isPositive ? 'text-green-500' : 'text-red-500'
+                            }`}>
+                              {delta.isPositive ? '↗' : '↘'} {delta.value.toFixed(1)}% vs yesterday
+                              {delta.isSignificant && ' ⚡'}
+                            </p>
+                          )}
+                          
                           <p className="text-xs text-muted-foreground mt-1">
                             {showVolume ? 'Items sold in last 24h' : 'Items currently listed on market'}
                           </p>
