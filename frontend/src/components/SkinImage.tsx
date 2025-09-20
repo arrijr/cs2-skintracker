@@ -101,13 +101,7 @@ export default function SkinImage({
 
   return (
     <div 
-      className={cn(
-        'relative overflow-hidden rounded-lg group',
-        gradientBackground,
-        'hover:shadow-xl transition-all duration-300',
-        onClick && 'cursor-pointer',
-        className
-      )}
+      className={`relative overflow-hidden rounded-lg group ${gradientBackground} hover:shadow-xl transition-all duration-300 ${onClick ? 'cursor-pointer' : ''} ${fill ? 'w-full h-full' : ''} ${className || ''}`}
       onClick={onClick}
       {...props}
     >
@@ -119,7 +113,7 @@ export default function SkinImage({
       </div>
 
       {/* Main image */}
-      <div className="relative z-10">
+      <div className="relative z-10 w-full h-full">
         <Image
           src={src}
           alt={alt}
