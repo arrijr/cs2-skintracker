@@ -822,32 +822,48 @@ export default function SkinDetailPage() {
           <Skeleton className="h-32 w-full mb-8" />
         ) : marketStats ? (
           <div className="mb-8">
-            <Card className="border-2 border-primary/10 bg-gradient-to-br from-primary/5 to-secondary/5">
+            <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl hover:shadow-2xl transition-all duration-300">
               <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-primary" />
-                  Market Statistics
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                    Market Statistics
+                  </CardTitle>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    <span>Live Data</span>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Top Row */}
                   <div className="space-y-4">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                          <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
-                            <div className="p-2 rounded-full bg-primary/10">
-                              <DollarSign className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <p className="text-2xl font-bold text-primary">{formatUSD(marketStats.medianPrice || 0)}</p>
-                          <p className="text-sm text-muted-foreground">Median Price</p>
-                            </div>
-                        </div>
+                          <Card className="border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 transition-all duration-200 cursor-help group">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3">
+                                <div className="p-3 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors">
+                                  <DollarSign className="h-6 w-6 text-primary" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform">
+                                    {formatUSD(marketStats.medianPrice || 0)}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground font-medium">Median Price</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Median price over the last 30 days</p>
+                        <div className="text-center">
+                          <p className="font-semibold">Median Price</p>
+                          <p className="text-sm">Median price over the last 30 days</p>
+                          <p className="text-xs text-muted-foreground mt-1">Based on Steam Market data</p>
+                        </div>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -855,18 +871,28 @@ export default function SkinDetailPage() {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                          <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
-                            <div className="p-2 rounded-full bg-green-500/10">
-                              <TrendingUp className="h-5 w-5 text-green-500" />
-                            </div>
-                            <div>
-                              <p className="text-2xl font-bold text-green-600">{marketStats.buyOrders || 0}</p>
-                          <p className="text-sm text-muted-foreground">Buy Orders</p>
-                            </div>
-                        </div>
+                          <Card className="border border-green-500/20 bg-gradient-to-r from-green-500/5 to-green-500/10 hover:from-green-500/10 hover:to-green-500/15 transition-all duration-200 cursor-help group">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3">
+                                <div className="p-3 rounded-full bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
+                                  <TrendingUp className="h-6 w-6 text-green-500" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-3xl font-bold text-green-500 group-hover:scale-105 transition-transform">
+                                    {marketStats.buyOrders || 0}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground font-medium">Buy Orders</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Current buy orders on the Steam Market</p>
+                        <div className="text-center">
+                          <p className="font-semibold">Buy Orders</p>
+                          <p className="text-sm">Current buy orders on the Steam Market</p>
+                          <p className="text-xs text-muted-foreground mt-1">People waiting to buy at this price</p>
+                        </div>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -877,18 +903,28 @@ export default function SkinDetailPage() {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                          <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
-                            <div className="p-2 rounded-full bg-blue-500/10">
-                              <Users className="h-5 w-5 text-blue-500" />
-                            </div>
-                            <div>
-                              <p className="text-2xl font-bold text-blue-600">{marketStats.activeListings || 0}</p>
-                          <p className="text-sm text-muted-foreground">Active Listings</p>
-                            </div>
-                        </div>
+                          <Card className="border border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-blue-500/10 hover:from-blue-500/10 hover:to-blue-500/15 transition-all duration-200 cursor-help group">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3">
+                                <div className="p-3 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
+                                  <Users className="h-6 w-6 text-blue-500" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-3xl font-bold text-blue-500 group-hover:scale-105 transition-transform">
+                                    {marketStats.activeListings || 0}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground font-medium">Active Listings</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Currently active sell listings on Steam Market</p>
+                        <div className="text-center">
+                          <p className="font-semibold">Active Listings</p>
+                          <p className="text-sm">Currently active sell listings on Steam Market</p>
+                          <p className="text-xs text-muted-foreground mt-1">Items available for purchase</p>
+                        </div>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -896,18 +932,28 @@ export default function SkinDetailPage() {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                          <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-help">
-                            <div className="p-2 rounded-full bg-orange-500/10">
-                              <Clock className="h-5 w-5 text-orange-500" />
-                            </div>
-                            <div>
-                              <p className="text-2xl font-bold text-orange-600">{marketStats.volume24h || 0}</p>
-                          <p className="text-sm text-muted-foreground">Volume 24h</p>
-                            </div>
-                        </div>
+                          <Card className="border border-orange-500/20 bg-gradient-to-r from-orange-500/5 to-orange-500/10 hover:from-orange-500/10 hover:to-orange-500/15 transition-all duration-200 cursor-help group">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3">
+                                <div className="p-3 rounded-full bg-orange-500/20 group-hover:bg-orange-500/30 transition-colors">
+                                  <Clock className="h-6 w-6 text-orange-500" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-3xl font-bold text-orange-500 group-hover:scale-105 transition-transform">
+                                    {marketStats.volume24h || 0}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground font-medium">Volume 24h</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Number of items sold in the last 24 hours</p>
+                        <div className="text-center">
+                          <p className="font-semibold">Volume 24h</p>
+                          <p className="text-sm">Items sold in the last 24 hours</p>
+                          <p className="text-xs text-muted-foreground mt-1">Market activity indicator</p>
+                        </div>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
