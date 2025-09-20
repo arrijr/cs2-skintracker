@@ -45,6 +45,13 @@ export default function SkinImage({
   // Extract rarity from alt text or skin name
   const getRarityFromAlt = (altText: string) => {
     const lowerAlt = altText.toLowerCase();
+    
+    // Operator skin rarities
+    if (lowerAlt.includes('exceptional')) return 'exceptional';
+    if (lowerAlt.includes('master')) return 'master';
+    if (lowerAlt.includes('superior')) return 'superior';
+    
+    // Weapon skin rarities
     if (lowerAlt.includes('covert')) return 'covert';
     if (lowerAlt.includes('classified')) return 'classified';
     if (lowerAlt.includes('restricted')) return 'restricted';
@@ -56,6 +63,11 @@ export default function SkinImage({
   // Extract weapon type from alt text
   const getWeaponTypeFromAlt = (altText: string) => {
     const lowerAlt = altText.toLowerCase();
+    
+    // Operator skins (character skins)
+    if (lowerAlt.includes('buckshot') || lowerAlt.includes('crasswater') || lowerAlt.includes('romanov') || lowerAlt.includes('mccoy') || lowerAlt.includes('operator') || lowerAlt.includes('character')) return 'operator';
+    
+    // Weapon skins
     if (lowerAlt.includes('knife') || lowerAlt.includes('bayonet') || lowerAlt.includes('karambit') || lowerAlt.includes('m9') || lowerAlt.includes('flip') || lowerAlt.includes('gut') || lowerAlt.includes('huntsman') || lowerAlt.includes('falchion') || lowerAlt.includes('bowie') || lowerAlt.includes('butterfly') || lowerAlt.includes('shadow') || lowerAlt.includes('ursus') || lowerAlt.includes('navaja') || lowerAlt.includes('stiletto') || lowerAlt.includes('talon') || lowerAlt.includes('classic') || lowerAlt.includes('paracord') || lowerAlt.includes('survival') || lowerAlt.includes('nomad') || lowerAlt.includes('skeleton')) return 'knife';
     if (lowerAlt.includes('ak-47') || lowerAlt.includes('m4a4') || lowerAlt.includes('m4a1') || lowerAlt.includes('awp') || lowerAlt.includes('ak47')) return 'rifle';
     if (lowerAlt.includes('glock') || lowerAlt.includes('usp') || lowerAlt.includes('p250') || lowerAlt.includes('tec-9') || lowerAlt.includes('five-seven') || lowerAlt.includes('cz75') || lowerAlt.includes('p2000') || lowerAlt.includes('dual') || lowerAlt.includes('r8') || lowerAlt.includes('deagle') || lowerAlt.includes('p250')) return 'pistol';
@@ -72,6 +84,12 @@ export default function SkinImage({
   // Define gradient backgrounds based on rarity and weapon type
   const getGradientBackground = () => {
     const baseGradients = {
+      // Operator skin rarities
+      exceptional: 'from-amber-500/25 via-amber-400/15 to-amber-600/25',
+      master: 'from-orange-500/25 via-orange-400/15 to-orange-600/25',
+      superior: 'from-cyan-500/25 via-cyan-400/15 to-cyan-600/25',
+      
+      // Weapon skin rarities
       covert: 'from-red-500/20 via-red-400/10 to-red-600/20',
       classified: 'from-purple-500/20 via-purple-400/10 to-purple-600/20',
       restricted: 'from-pink-500/20 via-pink-400/10 to-pink-600/20',
@@ -81,6 +99,7 @@ export default function SkinImage({
     };
 
     const weaponAccents = {
+      operator: 'via-violet-400/20 to-purple-500/25',
       knife: 'via-yellow-400/15 to-orange-500/20',
       rifle: 'via-green-400/15 to-emerald-500/20',
       pistol: 'via-blue-400/15 to-cyan-500/20',
