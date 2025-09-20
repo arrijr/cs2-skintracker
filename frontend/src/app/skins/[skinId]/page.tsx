@@ -489,14 +489,28 @@ export default function SkinDetailPage() {
             <div className="flex flex-col md:flex-row gap-8">
               {/* Skin Image */}
               <div className="flex-shrink-0">
-                <SkinImage
-                  src={skinImageUrl}
-                  alt={skin.name}
-                  className="w-64 h-64 mx-auto md:mx-0"
-                  fill
-                  priority
-                  quality={90}
-                />
+                <div className="relative w-64 h-64 mx-auto md:mx-0">
+                  {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
+                    <SkinImage
+                      src={skinImageUrl}
+                      alt={skin.name}
+                      fill
+                      priority
+                      quality={90}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-primary/30 rounded-lg flex items-center justify-center">
+                      <Image
+                        src={skinImageUrl}
+                        alt={skin.name}
+                        fill
+                        className="object-contain p-4"
+                        priority
+                        quality={90}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
            
               {/* Skin Info */}

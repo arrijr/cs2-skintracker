@@ -103,6 +103,7 @@ export default function SkinImage({
     <div 
       className={`relative overflow-hidden rounded-lg group ${gradientBackground} hover:shadow-xl transition-all duration-300 ${onClick ? 'cursor-pointer' : ''} ${fill ? 'w-full h-full' : ''} ${className || ''}`}
       onClick={onClick}
+      style={fill ? { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 } : {}}
       {...props}
     >
       {/* Animated background pattern */}
