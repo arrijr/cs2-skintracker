@@ -1,5 +1,19 @@
 "use client"
 
+/**
+ * QuantityBarChart Component
+ * 
+ * Displays historical quantity data (active listings or volume) as a bar chart
+ * with various controls for range, smoothing, and overlays.
+ * 
+ * ⚠️  IMPORTANT: Currently using TEST DATA only!
+ * - Only 7 days of mock data are available
+ * - Real implementation requires backend market snapshot service
+ * - Time ranges (30d, 90d, 1y) will show full data when implemented
+ * 
+ * TODO: Replace with real market data from /api/v1/skins/:id/history/quantity
+ */
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -58,7 +72,6 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
     from: undefined,
     to: undefined
   });
-  const [aggregation, setAggregation] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [smoothing, setSmoothing] = useState<boolean>(false);
   const [showPriceOverlay, setShowPriceOverlay] = useState<boolean>(false);
 
@@ -346,23 +359,6 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
               </ToggleGroupItem>
             </ToggleGroup>
 
-              {/* Aggregation Toggle */}
-              <ToggleGroup 
-                type="single" 
-                value={aggregation} 
-                onValueChange={(value: 'daily' | 'weekly' | 'monthly') => value && setAggregation(value)}
-                className="bg-muted/50 p-1 rounded-lg flex-wrap justify-center sm:justify-start"
-              >
-                <ToggleGroupItem value="daily" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                  Daily
-                </ToggleGroupItem>
-                <ToggleGroupItem value="weekly" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                  Weekly
-                </ToggleGroupItem>
-                <ToggleGroupItem value="monthly" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                  Monthly
-                </ToggleGroupItem>
-              </ToggleGroup>
             </div>
 
             {/* Custom Date Picker */}
@@ -477,13 +473,34 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
               )}
             </div>
             
-            {/* Explanation Text */}
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p><strong>Listings:</strong> Items currently listed on market</p>
-              <p><strong>Volume:</strong> Items sold in last 24h</p>
-              <p><strong>3D MA:</strong> 3-day moving average smoothing</p>
-              <p><strong>Price Overlay:</strong> Shows price trend as yellow line</p>
-              <p><strong>Daily/Weekly/Monthly:</strong> Data aggregation level</p>
+            {/* Help Button with Tooltip */}
+            <div className="flex justify-center sm:justify-start">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Info className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <div className="space-y-2 text-sm">
+                      <p className="font-semibold">Chart Controls Explained:</p>
+                      <div className="space-y-1">
+                        <p><strong>Listings:</strong> Items currently listed on market</p>
+                        <p><strong>Volume:</strong> Items sold in last 24h</p>
+                        <p><strong>3D MA:</strong> 3-day moving average smoothing</p>
+                        <p><strong>Price Overlay:</strong> Shows price trend as yellow line</p>
+                      </div>
+                      <div className="pt-2 border-t border-border">
+                        <p className="text-xs text-muted-foreground">
+                          <strong>Note:</strong> Currently showing test data (7 days). 
+                          Real data will show full time ranges.
+                        </p>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>
@@ -658,7 +675,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
             </div>
             
             {/* Y-axis labels */}
-            <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-muted-foreground">
+            <div className="absolute -left-8 top-0 h-full flex flex-col justify-between text-xs text-muted-foreground">
               <span>{stats?.maxListings.toLocaleString()}</span>
               <span>{Math.round((stats?.maxListings || 0) * 0.5).toLocaleString()}</span>
               <span>0</span>
@@ -695,6 +712,10 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                   <span>Price Overlay</span>
                 </div>
               )}
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-muted-foreground rounded-sm" />
+                <span>Stückzahl</span>
+              </div>
               {stats?.hasVolume && !showPriceOverlay && (
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-muted-foreground rounded-sm" />
