@@ -305,11 +305,25 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
 
   if (data.length === 0) {
     return (
-      <Card className={className}>
-        <CardHeader>
+      <Card className={`${className} border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl`}>
+        <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
             Quantity History
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="text-center">
+                    <p className="font-semibold">Quantity History Chart</p>
+                    <p className="text-sm">Daily market snapshots showing active listings and volume</p>
+                    <p className="text-xs text-muted-foreground mt-1">Updated daily at 00:00 UTC</p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -332,12 +346,26 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
   }
 
   return (
-    <Card className={className} role="region" aria-label="Quantity History Chart">
-      <CardHeader>
+    <Card className={`${className} border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl`} role="region" aria-label="Quantity History Chart">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" aria-hidden="true" />
             Quantity History
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="text-center">
+                    <p className="font-semibold">Quantity History Chart</p>
+                    <p className="text-sm">Daily market snapshots showing active listings and volume</p>
+                    <p className="text-xs text-muted-foreground mt-1">Updated daily at 00:00 UTC</p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </CardTitle>
           
           {/* Quantity Range Toggle — 7D / 30D / 90D / 1Y / ALL / Custom */}

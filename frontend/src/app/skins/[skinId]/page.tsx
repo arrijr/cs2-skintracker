@@ -23,7 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2, Copy, BarChart3, Users, Clock, DollarSign, Home } from "lucide-react";
+import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2, Copy, BarChart3, Users, Clock, DollarSign, Home, RefreshCw, HelpCircle, Eye, Shield, Settings } from "lucide-react";
 // {/* Central API helpers */}
 import {
   getPortfolio,
@@ -556,15 +556,17 @@ export default function SkinDetailPage() {
                   
                   {/* P1 - Badges - farbcodiert und konsistent */}
                   <div className="flex items-center gap-2 mb-4">
-                    {/* Rarity Badge - farbcodiert */}
+                    {/* Rarity Badge - farbcodiert mit abgestufter Palette */}
                     <Badge 
                       variant="outline" 
-                      className={`text-sm ${
-                        skin.rarity === 'Covert' ? 'border-red-500 text-red-500 bg-red-500/10' :
-                        skin.rarity === 'Classified' ? 'border-purple-500 text-purple-500 bg-purple-500/10' :
-                        skin.rarity === 'Restricted' ? 'border-pink-500 text-pink-500 bg-pink-500/10' :
-                        skin.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500 bg-blue-500/10' :
-                        'border-gray-500 text-gray-500 bg-gray-500/10'
+                      className={`text-sm font-semibold ${
+                        skin.rarity === 'Covert' ? 'border-red-500 text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-300 shadow-red-200 dark:shadow-red-900' :
+                        skin.rarity === 'Classified' ? 'border-purple-500 text-purple-600 bg-purple-50 dark:bg-purple-950 dark:text-purple-300 shadow-purple-200 dark:shadow-purple-900' :
+                        skin.rarity === 'Restricted' ? 'border-pink-500 text-pink-600 bg-pink-50 dark:bg-pink-950 dark:text-pink-300 shadow-pink-200 dark:shadow-pink-900' :
+                        skin.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950 dark:text-blue-300 shadow-blue-200 dark:shadow-blue-900' :
+                        skin.rarity === 'Industrial' ? 'border-cyan-500 text-cyan-600 bg-cyan-50 dark:bg-cyan-950 dark:text-cyan-300 shadow-cyan-200 dark:shadow-cyan-900' :
+                        skin.rarity === 'Consumer' ? 'border-green-500 text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-300 shadow-green-200 dark:shadow-green-900' :
+                        'border-gray-500 text-gray-600 bg-gray-50 dark:bg-gray-950 dark:text-gray-300 shadow-gray-200 dark:shadow-gray-900'
                       }`}
                     >
                       {skin.rarity || 'Unknown'}
@@ -729,10 +731,27 @@ export default function SkinDetailPage() {
 
         {/* P1 - Price History */}
         {/* Price History Chart with ToggleGroup and Tooltip */}
-        <Card className="mb-8">
-          <CardHeader>
+        <Card className="mb-12 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle>Price History</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Price History
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="text-center">
+                        <p className="font-semibold">Price History Chart</p>
+                        <p className="text-sm">Historical price data from Steam Market</p>
+                        <p className="text-xs text-muted-foreground mt-1">Updated every few minutes</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </CardTitle>
               <div className="flex items-center gap-4">
                 <ToggleGroup 
                   type="single" 
@@ -1129,12 +1148,14 @@ export default function SkinDetailPage() {
                                 {relatedSkin.rarity && (
                                   <Badge 
                                     variant="outline" 
-                                    className={`text-xs ${
-                                      relatedSkin.rarity === 'Covert' ? 'border-red-500 text-red-500' :
-                                      relatedSkin.rarity === 'Classified' ? 'border-purple-500 text-purple-500' :
-                                      relatedSkin.rarity === 'Restricted' ? 'border-pink-500 text-pink-500' :
-                                      relatedSkin.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-500' :
-                                      'border-gray-500 text-gray-500'
+                                    className={`text-xs font-semibold ${
+                                      relatedSkin.rarity === 'Covert' ? 'border-red-500 text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-300' :
+                                      relatedSkin.rarity === 'Classified' ? 'border-purple-500 text-purple-600 bg-purple-50 dark:bg-purple-950 dark:text-purple-300' :
+                                      relatedSkin.rarity === 'Restricted' ? 'border-pink-500 text-pink-600 bg-pink-50 dark:bg-pink-950 dark:text-pink-300' :
+                                      relatedSkin.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950 dark:text-blue-300' :
+                                      relatedSkin.rarity === 'Industrial' ? 'border-cyan-500 text-cyan-600 bg-cyan-50 dark:bg-cyan-950 dark:text-cyan-300' :
+                                      relatedSkin.rarity === 'Consumer' ? 'border-green-500 text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-300' :
+                                      'border-gray-500 text-gray-600 bg-gray-50 dark:bg-gray-950 dark:text-gray-300'
                                     }`}
                                   >
                                     {relatedSkin.rarity}
@@ -1229,11 +1250,25 @@ export default function SkinDetailPage() {
               </div>
               </>
             ) : (
-              <Card className="border-2 border-dashed border-muted-foreground/25">
-                <CardContent className="text-center py-12">
-                  <Heart className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                  <p className="text-muted-foreground text-lg">No related skins found</p>
-                  <p className="text-sm text-muted-foreground/70 mt-1">Try exploring different weapon types or collections</p>
+              <Card className="border-2 border-dashed border-muted-foreground/25 bg-gradient-to-br from-muted/5 to-muted/10">
+                <CardContent className="text-center py-16">
+                  <div className="mx-auto w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mb-6">
+                    <Heart className="h-8 w-8 text-muted-foreground/60" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No Related Skins Found</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    We couldn't find any related skins for this item. Try exploring different weapon types or collections.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Go Back
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
