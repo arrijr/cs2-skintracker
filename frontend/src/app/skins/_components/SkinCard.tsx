@@ -3,6 +3,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import SkinImage from "@/components/SkinImage";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -266,24 +267,18 @@ export function SkinCard({
         aria-label={`View details for ${skin.name}`}
       >
         {/* Image */}
-        <div className="aspect-square relative bg-muted">
+        <div className="aspect-square relative">
                   {skin.imageUrl ? (
-                    <Image
+                    <SkinImage
                       src={skin.imageUrl}
                       alt={skin.name}
                       fill
-                      className="object-cover transition-transform duration-200 group-hover:scale-105"
-                      loading="lazy"
+                      className="transition-transform duration-200 group-hover:scale-105"
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                      placeholder="blur"
-                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-                      // P2: Performance optimizations
-                      priority={false}
                       quality={85}
-                      unoptimized={false}
                     />
                   ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <div className="w-full h-full bg-muted flex items-center justify-center rounded-lg">
                       <span className="text-muted-foreground text-sm">No Image</span>
                     </div>
                   )}

@@ -5,6 +5,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import SkinImage from "@/components/SkinImage";
 import { SimplePriceChart } from "@/components/charts/simple-price-chart";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -488,17 +489,15 @@ export default function SkinDetailPage() {
             <div className="flex flex-col md:flex-row gap-8">
               {/* Skin Image */}
               <div className="flex-shrink-0">
-                <div className="relative w-64 h-64 mx-auto md:mx-0">
-                  <Image
-                    src={skinImageUrl}
-            alt={skin.name}
-                    fill
-                    className="object-contain rounded-xl bg-muted"
-                    priority
-                    quality={90}
-                  />
-                </div>
-           </div>
+                <SkinImage
+                  src={skinImageUrl}
+                  alt={skin.name}
+                  className="w-64 h-64 mx-auto md:mx-0"
+                  fill
+                  priority
+                  quality={90}
+                />
+              </div>
            
               {/* Skin Info */}
               <div className="flex-1 space-y-4">
@@ -998,12 +997,12 @@ export default function SkinDetailPage() {
                     >
                       <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-2 hover:border-primary/30 bg-gradient-to-br from-background to-muted/20">
                         <CardContent className="p-4">
-                          <div className="aspect-square relative mb-3 overflow-hidden rounded-lg">
-                            <Image
+                          <div className="aspect-square relative mb-3">
+                            <SkinImage
                               src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
                               alt={relatedSkin.name}
                               fill
-                              className="object-contain group-hover:scale-110 transition-transform duration-300"
+                              className="group-hover:scale-110 transition-transform duration-300"
                             />
                             {/* Quick Actions Overlay */}
                             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -1138,12 +1137,12 @@ export default function SkinDetailPage() {
                   >
                               <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-2 hover:border-primary/30 bg-gradient-to-br from-background to-muted/20">
                                 <CardContent className="p-3">
-                                  <div className="aspect-square relative mb-2 overflow-hidden rounded-lg">
-                          <Image
+                                  <div className="aspect-square relative mb-2">
+                          <SkinImage
                             src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
                             alt={relatedSkin.name}
                             fill
-                                      className="object-contain group-hover:scale-110 transition-transform duration-300"
+                            className="group-hover:scale-110 transition-transform duration-300"
                           />
                         </div>
                                   

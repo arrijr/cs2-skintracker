@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import SkinImage from "@/components/SkinImage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -160,12 +161,12 @@ export function CaseSection({ skinId }: CaseSectionProps) {
               >
                 <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-105 border-2 hover:border-accent/30 bg-gradient-to-br from-background to-accent/5">
                   <CardContent className="p-3">
-                    <div className="aspect-square relative mb-2 bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl overflow-hidden ring-1 ring-accent/20">
-                      <Image
+                    <div className="aspect-square relative mb-2">
+                      <SkinImage
                         src={skin.imageUrl || "/images/placeholder-skin.png"}
                         alt={skin.name}
                         fill
-                        className="object-contain group-hover:scale-110 transition-transform duration-300 p-1"
+                        className="group-hover:scale-110 transition-transform duration-300 p-1"
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
                       />
                       {/* Case Badge */}
@@ -231,12 +232,12 @@ export function CaseSection({ skinId }: CaseSectionProps) {
                     >
                       <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-105 border-2 hover:border-accent/30 bg-gradient-to-br from-background to-accent/5">
                         <CardContent className="p-3">
-                          <div className="aspect-square relative mb-2 bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl overflow-hidden ring-1 ring-accent/20">
-                            <Image
+                          <div className="aspect-square relative mb-2">
+                            <SkinImage
                               src={skin.imageUrl || "/images/placeholder-skin.png"}
                               alt={skin.name}
                               fill
-                              className="object-contain group-hover:scale-110 transition-transform duration-300 p-1"
+                              className="group-hover:scale-110 transition-transform duration-300 p-1"
                               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
                             />
                             {/* Case Badge */}
