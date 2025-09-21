@@ -227,15 +227,17 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 mt-8">
+    <div className="min-h-screen bg-neutral-950 text-white">
+      <div className="container-cs2 section-cs2">
+        <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Profile</h1>
         <p className="text-zinc-400">Manage your account settings and preferences</p>
       </div>
 
-      {/* Overview Section */}
-      <div className="bg-zinc-900 rounded-xl p-6 mb-8">
+          {/* Overview Section */}
+          <div className="card-brand card-enhanced hover-lift mb-8 animate-slide-up">
         <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
           <User2 className="w-5 h-5" />
           Overview
@@ -257,15 +259,15 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="bg-zinc-800 rounded-lg p-4 text-center">
-            <Star className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
-            <div className="text-lg font-bold">{kpiData?.portfolioCount || 0}</div>
-            <div className="text-xs text-zinc-400">Portfolio Skins</div>
-          </div>
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
+                <Star className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
+                <div className="text-lg font-bold">{kpiData?.portfolioCount || 0}</div>
+                <div className="text-xs text-zinc-400">Portfolio Skins</div>
+              </div>
           
-          <div className="bg-zinc-800 rounded-lg p-4 text-center">
+              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
             <div className="text-lg font-bold text-green-400">
               ${kpiData?.portfolioValue?.toFixed(2) || "0.00"}
             </div>
@@ -279,14 +281,14 @@ export default function ProfilePage() {
             </div>
           </div>
           
-          <div className="bg-zinc-800 rounded-lg p-4 text-center">
+              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
             <div className="text-lg font-bold text-blue-400">
               ${kpiData?.totalInvested?.toFixed(2) || "0.00"}
             </div>
             <div className="text-xs text-zinc-400">Total Invested</div>
           </div>
           
-          <div className="bg-zinc-800 rounded-lg p-4 text-center">
+              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
             <div className="text-lg font-bold text-purple-400">
               ${kpiData?.unrealizedPL?.toFixed(2) || "0.00"}
             </div>
@@ -300,13 +302,13 @@ export default function ProfilePage() {
             </div>
           </div>
           
-          <div className="bg-zinc-800 rounded-lg p-4 text-center">
+              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
             <Eye className="w-6 h-6 text-blue-400 mx-auto mb-2" />
             <div className="text-lg font-bold">{kpiData?.watchlistCount || 0}</div>
             <div className="text-xs text-zinc-400">Watchlist</div>
           </div>
           
-          <div className="bg-zinc-800 rounded-lg p-4 text-center">
+              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
             <AlertTriangle className="w-6 h-6 text-amber-400 mx-auto mb-2" />
             <div className="text-lg font-bold">{kpiData?.activeAlerts || 0}</div>
             <div className="text-xs text-zinc-400">Active Alerts</div>
@@ -345,8 +347,8 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* Settings Section */}
-      <div className="bg-zinc-900 rounded-xl p-6 mb-8">
+          {/* Settings Section */}
+          <div className="card-brand card-enhanced hover-lift mb-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
         <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
           <Settings className="w-5 h-5" />
           Settings
@@ -409,21 +411,21 @@ export default function ProfilePage() {
           </div>
         )}
         
-        <button
-          onClick={saveSettings}
-          disabled={savingSettings}
-          className="btn-main mt-4 flex items-center gap-2"
-        >
+            <button
+              onClick={saveSettings}
+              disabled={savingSettings}
+              className="btn-main btn-enhanced mt-4 flex items-center gap-2"
+            >
           {savingSettings ? "Saving..." : "Save Settings"}
         </button>
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-wrap gap-4 justify-center mb-8">
-        <button
-          onClick={() => setShowPwModal(true)}
-          className="btn-main flex items-center gap-2"
-        >
+          {/* Actions */}
+          <div className="flex flex-wrap gap-4 justify-center mb-8 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+            <button
+              onClick={() => setShowPwModal(true)}
+              className="btn-main btn-enhanced flex items-center gap-2"
+            >
           <Shield className="w-5 h-5" />
           Change Password
         </button>
@@ -572,8 +574,10 @@ export default function ProfilePage() {
               </button>
             </div>
           </div>
+          </div>
+        )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

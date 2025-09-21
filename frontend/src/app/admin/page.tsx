@@ -73,9 +73,9 @@ export default function AdminPage() {
         fetchJson(apiUrl("/api/v1/admin/logs"))
       ]);
 
-      setOverview(overviewRes);
-      setJobs(jobsRes.jobs);
-      setAdminLogs(logsRes.logs);
+      setOverview(overviewRes as AdminOverview);
+      setJobs((jobsRes as any).jobs);
+      setAdminLogs((logsRes as any).logs);
     } catch (err) {
       setError("Failed to load admin data");
     } finally {
@@ -155,8 +155,9 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-neutral-950 text-white">
+      <div className="container-cs2 section-cs2">
+        <div className="max-w-6xl mx-auto animate-fade-in">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -178,38 +179,38 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setActiveTab("overview")}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              activeTab === "overview"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-            }`}
-          >
+          {/* Tab Navigation */}
+          <div className="flex gap-2 mb-6 animate-slide-up">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`px-4 py-2 rounded-lg transition-all duration-200 btn-enhanced ${
+                activeTab === "overview"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              }`}
+            >
             <Activity className="inline w-4 h-4 mr-2" />
             Overview
           </button>
-          <button
-            onClick={() => setActiveTab("jobs")}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              activeTab === "jobs"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-            }`}
-          >
-            <Clock className="inline w-4 h-4 mr-2" />
-            Jobs
-          </button>
-          <button
-            onClick={() => setActiveTab("logs")}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              activeTab === "logs"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-            }`}
-          >
+            <button
+              onClick={() => setActiveTab("jobs")}
+              className={`px-4 py-2 rounded-lg transition-all duration-200 btn-enhanced ${
+                activeTab === "jobs"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              }`}
+            >
+              <Clock className="inline w-4 h-4 mr-2" />
+              Jobs
+            </button>
+            <button
+              onClick={() => setActiveTab("logs")}
+              className={`px-4 py-2 rounded-lg transition-all duration-200 btn-enhanced ${
+                activeTab === "logs"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              }`}
+            >
             <Database className="inline w-4 h-4 mr-2" />
             Logs
           </button>
@@ -252,7 +253,7 @@ export default function AdminPage() {
             
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-gray-900 rounded-lg p-6">
+              <div className="card-brand card-enhanced hover-lift p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <Clock className="w-5 h-5 text-blue-400" />
                   <h3 className="font-medium">Last Price Update</h3>
@@ -262,7 +263,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="bg-gray-900 rounded-lg p-6">
+              <div className="card-brand card-enhanced hover-lift p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <Database className="w-5 h-5 text-green-400" />
                   <h3 className="font-medium">Prices (24h)</h3>
@@ -272,7 +273,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="bg-gray-900 rounded-lg p-6">
+              <div className="card-brand card-enhanced hover-lift p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <Activity className="w-5 h-5 text-purple-400" />
                   <h3 className="font-medium">Price Coverage</h3>
@@ -282,7 +283,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="bg-gray-900 rounded-lg p-6">
+              <div className="card-brand card-enhanced hover-lift p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <Shield className="w-5 h-5 text-amber-400" />
                   <h3 className="font-medium">Portfolio Snapshot</h3>
@@ -295,7 +296,7 @@ export default function AdminPage() {
 
             {/* Alerts Summary */}
             {overview && (
-              <div className="bg-gray-900 rounded-lg p-6">
+              <div className="card-brand card-enhanced hover-lift p-6">
                 <h3 className="text-lg font-medium mb-4">Alerts (24h)</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center">
@@ -449,6 +450,7 @@ export default function AdminPage() {
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

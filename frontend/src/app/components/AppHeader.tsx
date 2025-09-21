@@ -23,16 +23,12 @@ export default function AppHeader() {
     ...(isSignedIn ? [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'Portfolio', href: '/portfolio' },
-    ] : []),
-  ];
-
-  const mobileNavigation = [
-    ...navigation,
-    ...(isSignedIn ? [
       { name: 'Profile', href: '/profile' },
       ...(isAdmin ? [{ name: 'Admin', href: '/admin' }] : []),
     ] : []),
   ];
+
+  const mobileNavigation = navigation;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-neutral-800 bg-neutral-950/95 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
