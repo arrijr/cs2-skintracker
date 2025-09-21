@@ -35,6 +35,7 @@ import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
 import { useAnalytics } from "@/lib/analytics";
 import { CaseSection } from "@/components/CaseSection";
 import QuantityBarChart from "@/components/QuantityBarChart";
+import OverlayPriceQuantityChart from "@/components/OverlayPriceQuantityChart";
 
 // Chart components are now handled by Shadcn UI Charts
 
@@ -89,6 +90,7 @@ export default function SkinDetailPage() {
   const [chartScale, setChartScale] = useState(searchParams.get("scale") === "log" ? "log" : "linear");
   const [movingAverage, setMovingAverage] = useState(searchParams.get("ma") || "none");
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
+  const [overlayMode, setOverlayMode] = useState(searchParams.get("overlay") === "true");
 
   // Watchlist & Portfolio
   const [watchlist, setWatchlist] = useState<any[]>([]);
@@ -105,10 +107,16 @@ export default function SkinDetailPage() {
     if (chartScale !== "linear") params.set("scale", chartScale);
     if (movingAverage && movingAverage !== "none") params.set("ma", movingAverage);
     if (activeTab !== "overview") params.set("tab", activeTab);
+    if (overlayMode) params.set("overlay", "true");
     
     const newURL = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
     router.replace(newURL, { scroll: false });
-  }, [chartRange, chartScale, movingAverage, activeTab, router]);
+  }, [chartRange, chartScale, movingAverage, activeTab, overlayMode, router]);
+
+  // Update URL when overlay mode changes
+  useEffect(() => {
+    updateURL();
+  }, [overlayMode, updateURL]);
 
   // P3 - Analytics: Track parameter changes
   const [previousParams, setPreviousParams] = useState({
@@ -736,7 +744,7 @@ export default function SkinDetailPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                Price History
+                {overlayMode ? "Price & Quantity Overlay" : "Price History"}
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -744,8 +752,8 @@ export default function SkinDetailPage() {
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="text-center">
-                        <p className="font-semibold">Price History Chart</p>
-                        <p className="text-sm">Historical price data from Steam Market</p>
+                        <p className="font-semibold">{overlayMode ? "Overlay Chart" : "Price History Chart"}</p>
+                        <p className="text-sm">{overlayMode ? "Combined price line and quantity bars" : "Historical price data from Steam Market"}</p>
                         <p className="text-xs text-muted-foreground mt-1">Updated every few minutes</p>
                       </div>
                     </TooltipContent>
@@ -753,6 +761,23 @@ export default function SkinDetailPage() {
                 </TooltipProvider>
               </CardTitle>
               <div className="flex items-center gap-4">
+                {/* Overlay Mode Toggle */}
+                <ToggleGroup 
+                  type="single" 
+                  value={overlayMode ? "overlay" : "separate"} 
+                  onValueChange={(value) => setOverlayMode(value === "overlay")}
+                  className="bg-muted/50 p-1 rounded-lg"
+                >
+                  <ToggleGroupItem value="separate" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    <BarChart3 className="h-4 w-4 mr-1" />
+                    Separate
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="overlay" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                    Overlay
+                  </ToggleGroupItem>
+                </ToggleGroup>
+
                 <ToggleGroup 
                   type="single" 
                   value={chartRange} 
@@ -773,6 +798,9 @@ export default function SkinDetailPage() {
                   </ToggleGroupItem>
                   <ToggleGroupItem value="1y" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                     1y
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="all" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                    All
                   </ToggleGroupItem>
                 </ToggleGroup>
                 
@@ -831,19 +859,27 @@ export default function SkinDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="h-96">
-              <SimplePriceChart
-                data={filteredHistory}
-                range={chartRange}
-                scale={chartScale}
-                movingAverage={movingAverage as "7" | "30" | "none"}
-                className="w-full h-full"
-              />
+              {overlayMode ? (
+                <OverlayPriceQuantityChart
+                  skinId={skin?.id || 0}
+                  skinName={skin?.name || ""}
+                  className="w-full h-full"
+                />
+              ) : (
+                <SimplePriceChart
+                  data={filteredHistory}
+                  range={chartRange}
+                  scale={chartScale}
+                  movingAverage={movingAverage as "7" | "30" | "none"}
+                  className="w-full h-full"
+                />
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Quantity History Section — daily active listings bar chart for this skin */}
-        {skin && (
+        {/* Quantity History Section — only show in separate mode */}
+        {!overlayMode && skin && (
           <QuantityBarChart
             skinId={skin.id}
             skinName={skin.name}
