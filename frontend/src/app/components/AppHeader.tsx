@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import SkinSearchBar from "./SkinSearchBar";
+import ProfileDropdown from "./ProfileDropdown";
 import { useUserRole } from "@/hooks/useUserRole";
 
 export default function AppHeader() {
@@ -23,8 +24,6 @@ export default function AppHeader() {
     ...(isSignedIn ? [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'Portfolio', href: '/portfolio' },
-      { name: 'Profile', href: '/profile' },
-      ...(isAdmin ? [{ name: 'Admin', href: '/admin' }] : []),
     ] : []),
   ];
 
@@ -74,29 +73,8 @@ export default function AppHeader() {
           <div className="hidden md:flex items-center space-x-3">
             {!isLoaded ? (
               <div className="h-8 w-8 animate-pulse bg-neutral-700 rounded-full" />
-            ) : isSignedIn ? (
-              <div className="flex items-center space-x-3">
-                {isAdmin && (
-                  <Badge variant="outline" className="border-brand-orange/20 text-brand-orange">
-                    <Shield className="w-3 h-3 mr-1" />
-                    Admin
-                  </Badge>
-                )}
-                <div className="flex items-center space-x-2">
-                  <div className="text-sm text-neutral-300">
-                    {user?.fullName || user?.emailAddresses?.[0]?.emailAddress}
-                  </div>
-                </div>
-              </div>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Button asChild variant="outline" size="sm">
-                  <Link href="/sign-in">Sign In</Link>
-                </Button>
-                <Button asChild size="sm">
-                  <Link href="/sign-up">Sign Up</Link>
-                </Button>
-              </div>
+              <ProfileDropdown />
             )}
           </div>
 
@@ -145,20 +123,10 @@ export default function AppHeader() {
                     ))}
                   </nav>
 
-                  {/* Mobile Auth Status */}
-                  {isLoaded && isSignedIn && (
+                  {/* Mobile Profile Dropdown */}
+                  {isLoaded && (
                     <div className="pt-4 border-t border-neutral-800">
-                      <div className="flex items-center space-x-2">
-                        {isAdmin && (
-                          <Badge variant="outline" className="border-brand-orange/20 text-brand-orange">
-                            <Shield className="w-3 h-3 mr-1" />
-                            Admin
-                          </Badge>
-                        )}
-                        <div className="text-sm text-neutral-300">
-                          {user?.fullName || user?.emailAddresses?.[0]?.emailAddress}
-                        </div>
-                      </div>
+                      <ProfileDropdown />
                     </div>
                   )}
                 </div>
