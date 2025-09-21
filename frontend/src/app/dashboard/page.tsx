@@ -64,6 +64,15 @@ export default function Dashboard() {
   const { getToken } = useAuth();
   const router = useRouter();
   const { data, error, isLoading, mutate, portfolio, history, kpis } = usePortfolioData();
+
+  // Debug logging
+  console.log('Dashboard Debug:', {
+    isLoading,
+    error,
+    portfolio: portfolio?.length || 0,
+    history: history?.length || 0,
+    kpis: kpis ? 'loaded' : 'null'
+  });
   
   // Dashboard state
   const [chartRange, setChartRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all'>('7d');
@@ -245,6 +254,27 @@ export default function Dashboard() {
     return null;
   }
 
+  // Debug error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-neutral-950 text-white">
+        <div className="container-cs2 section-cs2">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl font-bold mb-4">Dashboard Error</h1>
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 mb-6">
+              <p className="text-red-400 mb-2">Failed to load dashboard data:</p>
+              <p className="text-muted-foreground text-sm">{error.toString()}</p>
+            </div>
+            <Button onClick={refreshAll} className="btn-enhanced">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Show loading while data is being fetched
   if (isLoading) {
     return (
@@ -253,13 +283,18 @@ export default function Dashboard() {
           <div className="space-y-6 animate-fade-in">
             <div className="flex items-center justify-between">
               <div className="space-y-2">
-                <Skeleton className="h-8 w-48 skeleton-shimmer" />
-                <div className="flex items-center gap-4">
-                  <Skeleton className="h-8 w-32 skeleton-shimmer" />
-                  <Skeleton className="h-6 w-20 skeleton-shimmer" />
+                <h1 className="text-4xl font-bold">Dashboard</h1>
+                <div className="text-muted-foreground">
+                  Loading portfolio data... 
+                  {portfolioLoading && <span className="text-blue-400 ml-2">(Portfolio)</span>}
+                  {historyLoading && <span className="text-green-400 ml-2">(History)</span>}
+                  {kpisLoading && <span className="text-purple-400 ml-2">(KPIs)</span>}
                 </div>
               </div>
-              <Skeleton className="h-10 w-24 skeleton-shimmer" />
+              <Button disabled className="btn-enhanced">
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Loading...
+              </Button>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
