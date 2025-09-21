@@ -3,7 +3,7 @@
 "use client";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
 import { PortfolioValueChart } from "@/components/charts/PortfolioValueChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -197,9 +197,8 @@ export default function Dashboard() {
   const change7d = kpis?.portfolioChange7d || 0;
   const change24h = kpis?.portfolioChange24h || 0;
 
-  // Filter history data based on selected range
-  const getFilteredHistory = useCallback(() => {
-    // Early return if no data
+  // Filter history data based on selected range - simple approach without hooks
+  const getFilteredHistory = () => {
     if (!history || !Array.isArray(history) || history.length === 0) {
       return [];
     }
@@ -226,9 +225,7 @@ export default function Dashboard() {
       console.error('Error filtering history:', error);
       return [];
     }
-  }, [history, chartRange]);
-
-  const filteredHistory = getFilteredHistory();
+  };
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
@@ -296,12 +293,14 @@ export default function Dashboard() {
               <CardContent>
                 {/* Portfolio Value Chart */}
                 <div className="h-48 mb-6">
-                  {filteredHistory.length > 0 ? (
-                    <PortfolioValueChart 
-                      data={filteredHistory} 
-                      className="w-full h-full"
-                    />
-                  ) : (
+                  {(() => {
+                    const filteredData = getFilteredHistory();
+                    return filteredData.length > 0 ? (
+                      <PortfolioValueChart 
+                        data={filteredData} 
+                        className="w-full h-full"
+                      />
+                    ) : (
                     <div className="h-full bg-muted/20 rounded-lg flex items-center justify-center">
                       <div className="text-center text-muted-foreground">
                         <BarChart3 className="h-12 w-12 mx-auto mb-2" />
@@ -309,7 +308,8 @@ export default function Dashboard() {
                         <p className="text-sm">Add skins to your portfolio to see the chart</p>
                       </div>
                     </div>
-                  )}
+                    );
+                  })()}
                 </div>
 
                 {/* KPI Row */}
