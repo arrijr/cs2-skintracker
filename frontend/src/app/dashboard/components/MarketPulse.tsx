@@ -62,7 +62,7 @@ export default function MarketPulse({
   }
 
   return (
-    <Card className="card-brand">
+    <Card className={`card-brand ${isPremium ? 'card-premium' : 'card-enhanced'} hover-lift`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -166,7 +166,7 @@ export default function MarketPulse({
                 </div>
                 <Button 
                   size="sm"
-                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+                  className="btn-premium btn-enhanced"
                 >
                   <Crown className="h-4 w-4 mr-2" />
                   Upgrade to Premium

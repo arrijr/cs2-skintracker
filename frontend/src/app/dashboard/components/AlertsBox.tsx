@@ -74,7 +74,7 @@ export default function AlertsBox({
   }
 
   return (
-    <Card className="card-brand">
+    <Card className="card-brand card-enhanced hover-lift">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -138,7 +138,7 @@ export default function AlertsBox({
             onClick={onAddAlert}
             variant="outline" 
             size="sm" 
-            className="w-full border-brand-blue/30 text-brand-blue hover:bg-brand-blue/10"
+            className="w-full border-brand-blue/30 text-brand-blue hover:bg-brand-blue/10 btn-enhanced"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Alert
@@ -165,7 +165,7 @@ export default function AlertsBox({
           {watchlist.length > 0 ? (
             <div className="space-y-2">
               {watchlist.slice(0, 3).map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg hover:bg-muted/30 transition-colors">
+                <div key={item.id} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg hover:bg-muted/30 transition-all duration-200 hover-scale">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
                       <Heart className="h-4 w-4 text-muted-foreground" />

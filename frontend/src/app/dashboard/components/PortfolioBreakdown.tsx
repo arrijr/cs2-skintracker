@@ -129,7 +129,7 @@ export default function PortfolioBreakdown({
   }
 
   return (
-    <Card className="card-brand">
+    <Card className="card-brand card-enhanced hover-lift">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -197,9 +197,9 @@ export default function PortfolioBreakdown({
                   </div>
                   
                   {/* Progress Bar */}
-                  <div className="w-full bg-muted/20 rounded-full h-2">
+                  <div className="progress-bar w-full h-2">
                     <div 
-                      className="h-2 rounded-full transition-all duration-300"
+                      className="progress-fill h-2 rounded-full"
                       style={{ 
                         width: `${item.percentage}%`,
                         backgroundColor: item.color 

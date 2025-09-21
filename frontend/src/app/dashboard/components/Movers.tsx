@@ -69,7 +69,7 @@ export default function Movers({
   };
 
   const renderMoverList = (items: MoverItem[], title: string, icon: React.ReactNode, color: string) => (
-    <Card className="card-brand">
+    <Card className="card-brand card-enhanced hover-lift">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -113,7 +113,7 @@ export default function Movers({
               return (
                 <div 
                   key={item.id} 
-                  className="flex items-center justify-between p-3 bg-muted/20 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer group"
+                  className="flex items-center justify-between p-3 bg-muted/20 rounded-lg hover:bg-muted/30 transition-all duration-200 cursor-pointer group hover-scale"
                   onClick={() => onItemClick?.(item)}
                 >
                   <div className="flex items-center gap-3">
@@ -217,18 +217,22 @@ export default function Movers({
 
       {/* Movers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {renderMoverList(
-          gainers, 
-          "Top Gainers", 
-          <TrendingUp className="h-5 w-5" />, 
-          "text-green-400"
-        )}
-        {renderMoverList(
-          losers, 
-          "Top Losers", 
-          <TrendingDown className="h-5 w-5" />, 
-          "text-red-400"
-        )}
+        <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          {renderMoverList(
+            gainers, 
+            "Top Gainers", 
+            <TrendingUp className="h-5 w-5" />, 
+            "text-green-400"
+          )}
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          {renderMoverList(
+            losers, 
+            "Top Losers", 
+            <TrendingDown className="h-5 w-5" />, 
+            "text-red-400"
+          )}
+        </div>
       </div>
     </div>
   );

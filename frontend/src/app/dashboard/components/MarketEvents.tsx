@@ -119,7 +119,7 @@ export default function MarketEvents({
   }
 
   return (
-    <Card className="card-brand">
+    <Card className="card-brand card-enhanced hover-lift">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export default function MarketEvents({
         {events.length > 0 ? (
           <div className="space-y-3">
             {events.map((event) => (
-              <div key={event.id} className="p-3 bg-muted/20 rounded-lg hover:bg-muted/30 transition-colors">
+              <div key={event.id} className="p-3 bg-muted/20 rounded-lg hover:bg-muted/30 transition-all duration-200 hover-scale">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 flex-1">
                     <div className={`mt-0.5 ${getEventColor(event.type)}`}>

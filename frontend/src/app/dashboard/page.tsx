@@ -250,20 +250,33 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-neutral-950 text-white">
         <div className="container-cs2 section-cs2">
-          <div className="space-y-6">
-            <Skeleton className="h-16 w-full" />
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-48 skeleton-shimmer" />
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-8 w-32 skeleton-shimmer" />
+                  <Skeleton className="h-6 w-20 skeleton-shimmer" />
+                </div>
+              </div>
+              <Skeleton className="h-10 w-24 skeleton-shimmer" />
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
-                <Skeleton className="h-80 w-full" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Skeleton className="h-64 w-full" />
-                  <Skeleton className="h-64 w-full" />
+                <Skeleton className="h-80 w-full skeleton-shimmer" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Skeleton className="h-64 w-full skeleton-shimmer" />
+                  <Skeleton className="h-64 w-full skeleton-shimmer" />
+                  <Skeleton className="h-64 w-full skeleton-shimmer" />
                 </div>
               </div>
               <div className="space-y-6">
-                <Skeleton className="h-64 w-full" />
-                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-64 w-full skeleton-shimmer" />
               </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Skeleton className="h-64 w-full skeleton-shimmer" />
+              <Skeleton className="h-64 w-full skeleton-shimmer" />
             </div>
           </div>
         </div>
@@ -326,10 +339,10 @@ export default function Dashboard() {
                 </div>
                 <Badge 
                   variant={change7d >= 0 ? "default" : "destructive"}
-                  className={`text-sm px-3 py-1 ${
+                  className={`text-sm px-3 py-1 badge-enhanced ${
                     change7d >= 0 
-                      ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-                      : 'bg-red-500/20 text-red-400 border-red-500/30'
+                      ? 'bg-green-500/20 text-green-400 border-green-500/30 badge-glow green' 
+                      : 'bg-red-500/20 text-red-400 border-red-500/30 badge-glow red'
                   }`}
                 >
                   {change7d >= 0 ? '+' : ''}{safeToFixed(change7d, 1)}% (7d)
@@ -341,6 +354,7 @@ export default function Dashboard() {
               variant="outline" 
               size="sm"
               disabled={isLoading}
+              className="btn-enhanced hover-glow"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh All
@@ -349,13 +363,13 @@ export default function Dashboard() {
         </div>
 
         {/* Main Content Grid - New Structure */}
-        <div className="space-y-8">
+        <div className="space-y-6 md:space-y-8 animate-fade-in mobile-optimized desktop-optimized">
           {/* Top Row - Portfolio Overview + Alerts & Watchlist */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 animate-slide-up">
             {/* Portfolio Overview - Left Side */}
             <div className="lg:col-span-2 space-y-6">
               {/* Portfolio Overview Card */}
-              <Card className="card-brand">
+              <Card className="card-brand card-enhanced hover-lift">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -528,7 +542,7 @@ export default function Dashboard() {
           </div>
 
           {/* Middle Row - Breakdown + Market Pulse + Events */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <PortfolioBreakdown
               portfolio={portfolio}
               lastUpdated={lastUpdated.breakdown || undefined}
@@ -549,7 +563,8 @@ export default function Dashboard() {
           </div>
 
           {/* Bottom Row - Top Movers */}
-          <Movers
+          <div className="animate-slide-up" style={{ animationDelay: '0.4s' }}>
+            <Movers
             gainers={movers.gainers}
             losers={movers.losers}
             lastUpdated={lastUpdated.movers || undefined}
@@ -559,7 +574,8 @@ export default function Dashboard() {
             scope="portfolio"
             onScopeChange={(scope) => console.log('Scope changed to:', scope)}
             onItemClick={(item) => console.log('Item clicked:', item)}
-          />
+            />
+          </div>
         </div>
       </div>
     </div>
