@@ -25,6 +25,7 @@ import {
   Scale,
   Activity
 } from "lucide-react";
+import { apiFetch } from "@/lib/http";
 import { apiUrl } from "@/lib/api";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -147,16 +148,14 @@ const OverlayPriceQuantityChart: React.FC<OverlayPriceQuantityChartProps> = ({
         setLoading(true);
         setError(null);
         
-        const apiBaseUrl = 'https://cs2-skintracker.onrender.com';
-        
-        // Fetch both price and quantity data in parallel
+        // Fetch both price and quantity data in parallel using apiFetch helper
         const [priceResponse, quantityResponse] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/skins/${skinId}/history/price?range=${range}`),
-          fetch(`${apiBaseUrl}/api/v1/skins/${skinId}/history/quantity?range=${range}`)
+          apiFetch(apiUrl(`/api/v1/skins/${skinId}/history/price?range=${range}`)),
+          apiFetch(apiUrl(`/api/v1/skins/${skinId}/history/quantity?range=${range}`))
         ]);
         
-        const priceResult = priceResponse.ok ? await priceResponse.json() : { data: [] };
-        const quantityResult = quantityResponse.ok ? await quantityResponse.json() : { data: [] };
+        const priceResult = await priceResponse.json();
+        const quantityResult = await quantityResponse.json();
         
         setPriceData(priceResult.data || []);
         setQuantityData(quantityResult.data || []);
@@ -342,11 +341,11 @@ const OverlayPriceQuantityChart: React.FC<OverlayPriceQuantityChartProps> = ({
     return `${finalHeight}%`;
   };
 
-  // Get line position percentage
+  // Get line position percentage (from bottom)
   const getLinePosition = (value: number | null, maxValue: number) => {
     if (!value || maxValue === 0) return '0%';
     const percentage = (value / maxValue) * 100;
-    return `${100 - percentage}%`;
+    return `${Math.max(percentage, 2)}%`; // Minimum 2% from bottom
   };
 
   if (loading) {
@@ -622,24 +621,35 @@ const OverlayPriceQuantityChart: React.FC<OverlayPriceQuantityChartProps> = ({
                 <TooltipProvider key={item.date}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="relative flex flex-col items-center w-full h-full justify-end">
-                        {/* Price Line */}
-                        {showPrice && item.price && (
+                      <div className="relative flex flex-col items-center w-full h-full justify-end group">
+                        {/* Listings Bar (background) */}
+                        {showListings && item.activeListings && (
                           <div
-                            className="absolute w-1 bg-primary rounded-full"
+                            className="bg-accent/60 rounded-t-sm transition-all duration-200 hover:opacity-80 cursor-pointer min-w-[8px] w-full"
                             style={{ 
-                              height: getLinePosition(item.price, stats.maxPrice),
-                              bottom: 0
+                              height: getBarHeight(item.activeListings, stats.maxListings)
                             }}
                           />
                         )}
                         
-                        {/* Listings Bar */}
-                        {showListings && item.activeListings && (
+                        {/* Price Line (overlay on top) */}
+                        {showPrice && item.price && (
                           <div
-                            className="bg-accent/80 rounded-t-sm transition-all duration-200 hover:opacity-80 cursor-pointer min-w-[8px] w-full"
+                            className="absolute w-full h-0.5 bg-primary rounded-full z-10"
                             style={{ 
-                              height: getBarHeight(item.activeListings, stats.maxListings)
+                              bottom: getLinePosition(item.price, stats.maxPrice)
+                            }}
+                          />
+                        )}
+                        
+                        {/* Price Dot (for better visibility) */}
+                        {showPrice && item.price && (
+                          <div
+                            className="absolute w-2 h-2 bg-primary rounded-full z-20 opacity-0 group-hover:opacity-100 transition-opacity"
+                            style={{ 
+                              bottom: `calc(${getLinePosition(item.price, stats.maxPrice)} - 4px)`,
+                              left: '50%',
+                              transform: 'translateX(-50%)'
                             }}
                           />
                         )}
