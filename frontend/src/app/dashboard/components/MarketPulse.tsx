@@ -63,13 +63,13 @@ export default function MarketPulse({
 
   return (
     <Card className={`card-brand ${isPremium ? 'card-premium' : 'card-enhanced'} hover-lift`}>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle className="flex items-center gap-2 text-base font-semibold">
-              <BarChart3 className="h-5 w-5 text-brand-blue" />
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+              <BarChart3 className="h-4 w-4 text-brand-blue" />
               Market Pulse
-              {isPremium && <Crown className="h-4 w-4 text-yellow-500" />}
+              {isPremium && <Crown className="h-3 w-3 text-yellow-500" />}
             </CardTitle>
             {lastUpdated && (
               <span className="text-xs text-muted-foreground">
