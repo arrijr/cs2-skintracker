@@ -57,14 +57,6 @@ export default function Dashboard() {
   const router = useRouter();
   const { data, error, isLoading, mutate, portfolio, history, kpis } = usePortfolioData();
   
-  // Debug logging
-  console.log('Dashboard Debug:', {
-    isLoading,
-    error,
-    historyLength: history?.length || 0,
-    kpis,
-    portfolioLength: portfolio?.length || 0
-  });
   
   // Dashboard state
   const [chartRange, setChartRange] = useState<'7d' | '30d'>('7d');
@@ -72,6 +64,68 @@ export default function Dashboard() {
   const [movers, setMovers] = useState<{ gainers: MoverItem[]; losers: MoverItem[] }>({ gainers: [], losers: [] });
   const [loadingWatchlist, setLoadingWatchlist] = useState(false);
   const [loadingMovers, setLoadingMovers] = useState(false);
+  
+  // Last updated timestamps
+  const [lastUpdated, setLastUpdated] = useState<{
+    portfolio: string | null;
+    watchlist: string | null;
+    movers: string | null;
+  }>({
+    portfolio: null,
+    watchlist: null,
+    movers: null
+  });
+
+  // Refresh functions
+  const refreshPortfolio = async () => {
+    try {
+      await mutate(); // Refresh portfolio data
+      setLastUpdated(prev => ({ ...prev, portfolio: new Date().toLocaleTimeString() }));
+    } catch (err) {
+      console.error('Failed to refresh portfolio:', err);
+    }
+  };
+
+  const refreshWatchlist = async () => {
+    setLoadingWatchlist(true);
+    try {
+      const token = await getToken({ template: "backend" });
+      const data = await fetchJson(apiUrl('/api/v1/watchlist'), {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      setWatchlist(data.slice(0, 3));
+      setLastUpdated(prev => ({ ...prev, watchlist: new Date().toLocaleTimeString() }));
+    } catch (err) {
+      console.error('Failed to refresh watchlist:', err);
+    } finally {
+      setLoadingWatchlist(false);
+    }
+  };
+
+  const refreshMovers = async () => {
+    setLoadingMovers(true);
+    try {
+      // Simulate movers data for now
+      const mockMovers = {
+        gainers: [
+          { id: 1, name: "AK-47 | Redline", imageUrl: "/placeholder.jpg", priceLatest: 45.50, priceChange24h: 12.5 },
+          { id: 2, name: "AWP | Dragon Lore", imageUrl: "/placeholder.jpg", priceLatest: 1250.00, priceChange24h: 8.3 },
+          { id: 3, name: "M4A4 | Howl", imageUrl: "/placeholder.jpg", priceLatest: 890.00, priceChange24h: 5.7 }
+        ],
+        losers: [
+          { id: 4, name: "Glock-18 | Fade", imageUrl: "/placeholder.jpg", priceLatest: 12.30, priceChange24h: -3.2 },
+          { id: 5, name: "USP-S | Kill Confirmed", imageUrl: "/placeholder.jpg", priceLatest: 8.90, priceChange24h: -7.1 },
+          { id: 6, name: "Desert Eagle | Blaze", imageUrl: "/placeholder.jpg", priceLatest: 15.40, priceChange24h: -2.8 }
+        ]
+      };
+      setMovers(mockMovers);
+      setLastUpdated(prev => ({ ...prev, movers: new Date().toLocaleTimeString() }));
+    } catch (err) {
+      console.error('Failed to refresh movers:', err);
+    } finally {
+      setLoadingMovers(false);
+    }
+  };
 
   // Client-side guard - redirect if not signed in
   useEffect(() => {
@@ -92,6 +146,7 @@ export default function Dashboard() {
           headers: { "Authorization": `Bearer ${token}` }
         });
         setWatchlist(data.slice(0, 3)); // Top 3 items
+        setLastUpdated(prev => ({ ...prev, watchlist: new Date().toLocaleTimeString() }));
       } catch (err) {
         console.error('Failed to load watchlist:', err);
         setWatchlist([]); // Set empty array on error
@@ -122,6 +177,7 @@ export default function Dashboard() {
         ];
         
         setMovers({ gainers: mockGainers, losers: mockLosers });
+        setLastUpdated(prev => ({ ...prev, movers: new Date().toLocaleTimeString() }));
       } catch (err) {
         console.error('Failed to load movers:', err);
       } finally {
@@ -131,6 +187,13 @@ export default function Dashboard() {
 
     loadMovers();
   }, []);
+
+  // Set portfolio last updated when data changes
+  useEffect(() => {
+    if (kpis && !isLoading) {
+      setLastUpdated(prev => ({ ...prev, portfolio: new Date().toLocaleTimeString() }));
+    }
+  }, [kpis, isLoading]);
 
   // Show loading while auth state is being determined
   if (!isLoaded) {
@@ -280,23 +343,41 @@ export default function Dashboard() {
             <Card className="card-brand">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-brand-blue" />
-                    Portfolio Overview
-                  </CardTitle>
-                  <ToggleGroup 
-                    type="single" 
-                    value={chartRange}
-                    onValueChange={(value: '7d' | '30d') => value && setChartRange(value)}
-                    className="bg-muted/50 p-1 rounded-lg"
-                  >
-                    <ToggleGroupItem value="7d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                      7D
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="30d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                      30D
-                    </ToggleGroupItem>
-                  </ToggleGroup>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-brand-blue" />
+                      Portfolio Overview
+                    </CardTitle>
+                    {lastUpdated.portfolio && (
+                      <span className="text-xs text-muted-foreground">
+                        Updated {lastUpdated.portfolio}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={refreshPortfolio}
+                      disabled={isLoading}
+                      className="h-8 w-8 p-0"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                    </Button>
+                    <ToggleGroup 
+                      type="single" 
+                      value={chartRange}
+                      onValueChange={(value: '7d' | '30d') => value && setChartRange(value)}
+                      className="bg-muted/50 p-1 rounded-lg"
+                    >
+                      <ToggleGroupItem value="7d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                        7D
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="30d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                        30D
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -346,10 +427,28 @@ export default function Dashboard() {
               {/* Top Gainers */}
               <Card className="card-brand">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-green-400">
-                    <TrendingUp className="h-5 w-5" />
-                    Top Gainers
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2 text-green-400">
+                        <TrendingUp className="h-5 w-5" />
+                        Top Gainers
+                      </CardTitle>
+                      {lastUpdated.movers && (
+                        <span className="text-xs text-muted-foreground">
+                          Updated {lastUpdated.movers}
+                        </span>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={refreshMovers}
+                      disabled={loadingMovers}
+                      className="h-8 w-8 p-0"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${loadingMovers ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {loadingMovers ? (
@@ -388,10 +487,28 @@ export default function Dashboard() {
               {/* Top Losers */}
               <Card className="card-brand">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-red-400">
-                    <TrendingDown className="h-5 w-5" />
-                    Top Losers
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2 text-red-400">
+                        <TrendingDown className="h-5 w-5" />
+                        Top Losers
+                      </CardTitle>
+                      {lastUpdated.movers && (
+                        <span className="text-xs text-muted-foreground">
+                          Updated {lastUpdated.movers}
+                        </span>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={refreshMovers}
+                      disabled={loadingMovers}
+                      className="h-8 w-8 p-0"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${loadingMovers ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {loadingMovers ? (
@@ -434,10 +551,28 @@ export default function Dashboard() {
             {/* Alerts & Watchlist Preview */}
             <Card className="card-brand">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-brand-orange" />
-                  Alerts & Watchlist
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertCircle className="h-5 w-5 text-brand-orange" />
+                      Alerts & Watchlist
+                    </CardTitle>
+                    {lastUpdated.watchlist && (
+                      <span className="text-xs text-muted-foreground">
+                        Updated {lastUpdated.watchlist}
+                      </span>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={refreshWatchlist}
+                    disabled={loadingWatchlist}
+                    className="h-8 w-8 p-0"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${loadingWatchlist ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Active Alerts */}
