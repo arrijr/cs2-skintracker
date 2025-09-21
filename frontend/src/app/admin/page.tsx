@@ -3,11 +3,17 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle, RefreshCw, BarChart3, Settings, FileText } from "lucide-react";
 import BuildInfo from "../components/BuildInfo";
 import AdminMiniMetrics from "../components/AdminMiniMetrics";
 import { safeLower } from "@/lib/strings";
 import { apiUrl, fetchJson } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { formatUSD, safeToFixed } from "@/lib/num";
 
 type AdminTab = "overview" | "jobs" | "logs";
 
@@ -42,6 +48,7 @@ interface AdminLog {
 
 export default function AdminPage() {
   const { isSignedIn, isLoaded, user } = useUser();
+  const { isAdmin } = useUserRole();
 
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const [overview, setOverview] = useState<AdminOverview | null>(null);
@@ -49,23 +56,17 @@ export default function AdminPage() {
   const [logs, setAdminLogs] = useState<AdminLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Use centralized role hook
-  const { isAdmin } = useUserRole();
 
-  // Load admin data if user is admin
   useEffect(() => {
-    if (!isLoaded) return;
-    
-    if (!isAdmin) {
-      setLoading(false);
-      return;
+    if (isLoaded && isSignedIn && isAdmin) {
+      loadAdminData();
     }
-
-    loadAdminData();
-  }, [isLoaded, isAdmin]);
+  }, [isLoaded, isSignedIn, isAdmin]);
 
   const loadAdminData = async () => {
+    setLoading(true);
+    setError(null);
+    
     try {
       const [overviewRes, jobsRes, logsRes] = await Promise.all([
         fetchJson(apiUrl("/api/v1/admin/overview")),
@@ -74,8 +75,8 @@ export default function AdminPage() {
       ]);
 
       setOverview(overviewRes as AdminOverview);
-      setJobs((jobsRes as any).jobs);
-      setAdminLogs((logsRes as any).logs);
+      setJobs((jobsRes as any).jobs); // Type assertion for jobs
+      setAdminLogs((logsRes as any).logs); // Type assertion for logs
     } catch (err) {
       setError("Failed to load admin data");
     } finally {
@@ -89,66 +90,40 @@ export default function AdminPage() {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (safeLower(status)) {
-      case "completed":
+    switch (status.toLowerCase()) {
       case "success":
         return <CheckCircle className="w-4 h-4 text-green-400" />;
-      case "failed":
       case "error":
         return <XCircle className="w-4 h-4 text-red-400" />;
-      case "running":
-        return <Activity className="w-4 h-4 text-blue-400" />;
       default:
         return <Clock className="w-4 h-4 text-yellow-400" />;
     }
   };
 
   const getStatusColor = (status: string) => {
-    switch (safeLower(status)) {
-      case "completed":
+    switch (status.toLowerCase()) {
       case "success":
         return "text-green-400";
-      case "failed":
       case "error":
         return "text-red-400";
-      case "running":
-        return "text-blue-400";
       default:
         return "text-yellow-400";
     }
   };
 
-  // Show access denied for non-admins
-  if (!loading && !isAdmin) {
-    return (
-      <div className="min-h-screen bg-gray-950 text-white p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center py-16">
-            <Shield className="w-24 h-24 mx-auto mb-6 text-red-400" />
-            <h1 className="text-3xl font-bold mb-4">Access Denied</h1>
-            <p className="text-gray-400 mb-6">
-              You don't have permission to access the admin area.
-            </p>
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-300">
-                {error}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
+  // Show loading state while auth is being checked
+  if (!isLoaded) {
+    return <div className="text-white p-6">Loading...</div>;
   }
 
-  // Show loading
-  if (!isLoaded || loading) {
+  // Redirect if not signed in or not admin
+  if (!isSignedIn || !isAdmin) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center py-16">
-            <Activity className="w-12 h-12 mx-auto mb-4 text-blue-400 animate-spin" />
-            <p>Checking admin access...</p>
-          </div>
+      <div className="min-h-screen bg-neutral-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+          <p className="text-gray-400">You need admin privileges to access this page.</p>
         </div>
       </div>
     );
@@ -158,298 +133,311 @@ export default function AdminPage() {
     <div className="min-h-screen bg-neutral-950 text-white">
       <div className="container-cs2 section-cs2">
         <div className="max-w-6xl mx-auto animate-fade-in">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="w-8 h-8 text-blue-400" />
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <span className="bg-blue-600/20 text-blue-400 px-2 py-1 rounded text-sm">
-              Admin Only
-            </span>
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <Shield className="w-8 h-8 text-brand-orange" />
+              <h1 className="text-3xl font-bold">Admin Panel</h1>
+            </div>
+            <p className="text-gray-400">
+              System monitoring and administration (read-only)
+            </p>
           </div>
-          <p className="text-gray-400">
-            System monitoring and administration (read-only)
-          </p>
-        </div>
 
-        {/* Error Banner */}
-        {error && (
-          <div className="mb-6 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-300">
-            {error}
-          </div>
-        )}
+          {/* Error Banner */}
+          {error && (
+            <div className="mb-6 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-300">
+              {error}
+            </div>
+          )}
 
           {/* Tab Navigation */}
-          <div className="flex gap-2 mb-6 animate-slide-up">
-            <button
-              onClick={() => setActiveTab("overview")}
-              className={`px-4 py-2 rounded-lg transition-all duration-200 btn-enhanced ${
-                activeTab === "overview"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-              }`}
-            >
-            <Activity className="inline w-4 h-4 mr-2" />
-            Overview
-          </button>
-            <button
-              onClick={() => setActiveTab("jobs")}
-              className={`px-4 py-2 rounded-lg transition-all duration-200 btn-enhanced ${
-                activeTab === "jobs"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-              }`}
-            >
-              <Clock className="inline w-4 h-4 mr-2" />
-              Jobs
-            </button>
-            <button
-              onClick={() => setActiveTab("logs")}
-              className={`px-4 py-2 rounded-lg transition-all duration-200 btn-enhanced ${
-                activeTab === "logs"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-              }`}
-            >
-            <Database className="inline w-4 h-4 mr-2" />
-            Logs
-          </button>
-        </div>
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as AdminTab)} className="w-full animate-slide-up">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview" className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="jobs" className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Jobs
+              </TabsTrigger>
+              <TabsTrigger value="logs" className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Logs
+              </TabsTrigger>
+            </TabsList>
 
-        {/* Tab Content */}
-        {activeTab === "overview" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-semibold">System Overview</h2>
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-6 mt-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-semibold">System Overview</h2>
+                <Button
+                  onClick={loadAdminData}
+                  disabled={loading}
+                  variant="outline"
+                  size="sm"
+                  className="btn-enhanced"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
             
-            {/* Build Info */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <BuildInfo showDetails={true} />
-              <div className="card-brand">
-                <div className="p-4">
-                  <h3 className="text-sm font-medium mb-3 flex items-center space-x-2">
-                    <Shield className="h-4 w-4" />
-                    <span>System Status</span>
-                  </h3>
-                  <div className="space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-neutral-400">API Status:</span>
-                      <span className="text-brand-green">Online</span>
+              {/* Build Info */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <BuildInfo showDetails={true} />
+                <Card className="card-enhanced hover-lift">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      System Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">API Status:</span>
+                        <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500/30">
+                          Online
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Database:</span>
+                        <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500/30">
+                          Connected
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Clerk Auth:</span>
+                        <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500/30">
+                          Active
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-400">Database:</span>
-                      <span className="text-brand-green">Connected</span>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Admin Mini Metrics */}
+              <AdminMiniMetrics showDetails={true} />
+              
+              {/* KPI Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="card-enhanced hover-lift">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Clock className="w-5 h-5 text-blue-400" />
+                      <h3 className="font-medium">Last Price Update</h3>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-400">Clerk Auth:</span>
-                      <span className="text-brand-green">Active</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Admin Mini Metrics */}
-            <AdminMiniMetrics showDetails={true} />
-            
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="card-brand card-enhanced hover-lift p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Clock className="w-5 h-5 text-blue-400" />
-                  <h3 className="font-medium">Last Price Update</h3>
-                </div>
-                <div className="text-2xl font-bold text-blue-400">
-                  {overview ? formatTimestamp(overview.lastPriceUpdate) : "—"}
-                </div>
-              </div>
-
-              <div className="card-brand card-enhanced hover-lift p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Database className="w-5 h-5 text-green-400" />
-                  <h3 className="font-medium">Prices (24h)</h3>
-                </div>
-                <div className="text-2xl font-bold text-green-400">
-                  {overview?.pricesWritten24h || "—"}
-                </div>
-              </div>
-
-              <div className="card-brand card-enhanced hover-lift p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Activity className="w-5 h-5 text-purple-400" />
-                  <h3 className="font-medium">Price Coverage</h3>
-                </div>
-                <div className="text-2xl font-bold text-purple-400">
-                  {overview ? `${overview.priceCoverage}%` : "—"}
-                </div>
-              </div>
-
-              <div className="card-brand card-enhanced hover-lift p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Shield className="w-5 h-5 text-amber-400" />
-                  <h3 className="font-medium">Portfolio Snapshot</h3>
-                </div>
-                <div className="text-2xl font-bold text-amber-400">
-                  {overview ? formatTimestamp(overview.portfolioSnapshotLastRun) : "—"}
-                </div>
-              </div>
-            </div>
-
-            {/* Alerts Summary */}
-            {overview && (
-              <div className="card-brand card-enhanced hover-lift p-6">
-                <h3 className="text-lg font-medium mb-4">Alerts (24h)</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center">
                     <div className="text-2xl font-bold text-blue-400">
-                      {overview.alerts24h.alertsChecked24h}
+                      {overview ? formatTimestamp(overview.lastPriceUpdate) : "—"}
                     </div>
-                    <div className="text-sm text-gray-400">Checked</div>
-                  </div>
-                  <div className="text-center">
+                  </CardContent>
+                </Card>
+
+                <Card className="card-enhanced hover-lift">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Database className="w-5 h-5 text-green-400" />
+                      <h3 className="font-medium">Prices (24h)</h3>
+                    </div>
                     <div className="text-2xl font-bold text-green-400">
-                      {overview.alerts24h.alertsSent24h}
+                      {overview?.pricesWritten24h || "—"}
                     </div>
-                    <div className="text-sm text-gray-400">Sent</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-yellow-400">
-                      {overview.alerts24h.alertsSkipped24h}
-                    </div>
-                    <div className="text-sm text-gray-400">Skipped</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+                  </CardContent>
+                </Card>
 
-        {activeTab === "jobs" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-semibold">Cron Jobs</h2>
-            
-            <div className="bg-gray-900 rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-800">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Job Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Last Run
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Duration
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Results
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                  {jobs.map((job, index) => (
-                    <tr key={index} className="hover:bg-gray-800/50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium">{job.name}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-300">
-                        {formatTimestamp(job.lastRun)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          {getStatusIcon(job.status)}
-                          <span className={getStatusColor(job.status)}>
-                            {job.status}
-                          </span>
+                <Card className="card-enhanced hover-lift">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <BarChart3 className="w-5 h-5 text-purple-400" />
+                      <h3 className="font-medium">Coverage</h3>
+                    </div>
+                    <div className="text-2xl font-bold text-purple-400">
+                      {overview?.priceCoverage || "—"}%
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="card-enhanced hover-lift">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Activity className="w-5 h-5 text-orange-400" />
+                      <h3 className="font-medium">Portfolio Snapshot</h3>
+                    </div>
+                    <div className="text-2xl font-bold text-orange-400">
+                      {overview ? formatTimestamp(overview.portfolioSnapshotLastRun) : "—"}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Alerts Summary */}
+              {overview?.alerts24h && (
+                <Card className="card-enhanced hover-lift">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5" />
+                      Alerts Summary (24h)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-400">
+                          {overview.alerts24h.alertsChecked24h}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-300">
-                        {job.duration}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm">
-                          {Object.entries(job.resultCounts).map(([key, value]) => (
-                            <div key={key} className="text-gray-300">
-                              {key}: {value}
+                        <div className="text-sm text-muted-foreground">Checked</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-400">
+                          {overview.alerts24h.alertsSent24h}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Sent</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-yellow-400">
+                          {overview.alerts24h.alertsSkipped24h}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Skipped</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Jobs Tab */}
+            <TabsContent value="jobs" className="space-y-6 mt-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-semibold">Cron Jobs</h2>
+                <Button
+                  onClick={loadAdminData}
+                  disabled={loading}
+                  variant="outline"
+                  size="sm"
+                  className="btn-enhanced"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
+            
+              <Card>
+                <CardHeader>
+                  <CardTitle>Job Status</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {jobs.map((job, index) => (
+                      <Card key={index} className="card-enhanced hover-lift">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="font-medium">{job.name}</h3>
+                            <Badge
+                              variant={job.status === "success" ? "default" : job.status === "error" ? "destructive" : "secondary"}
+                              className={
+                                job.status === "success"
+                                  ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                  : job.status === "error"
+                                  ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                  : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                              }
+                            >
+                              {job.status}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">Last Run</p>
+                              <p className="font-medium">{formatTimestamp(job.lastRun)}</p>
                             </div>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+                            <div>
+                              <p className="text-muted-foreground">Duration</p>
+                              <p className="font-medium">{job.duration}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Results</p>
+                              <div className="space-y-1">
+                                {Object.entries(job.resultCounts).map(([key, value]) => (
+                                  <div key={key} className="text-xs">
+                                    {key}: {value}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-        {activeTab === "logs" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-semibold">Audit Logs</h2>
-            
-            <div className="bg-gray-900 rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-800">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Timestamp
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      User
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Action
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Resource
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Details
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                  {logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-gray-800/50">
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-300">
-                        {formatTimestamp(log.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium">{log.user.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          log.action === 'view' ? 'bg-blue-600/20 text-blue-400' :
-                          log.action === 'create' ? 'bg-green-600/20 text-green-400' :
-                          log.action === 'update' ? 'bg-yellow-600/20 text-yellow-400' :
-                          'bg-red-600/20 text-red-400'
-                        }`}>
-                          {log.action}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-300">
-                        {log.resource}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-300 max-w-xs truncate">
-                          {log.details || "—"}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {logs.length === 0 && (
-              <div className="text-center py-8 text-gray-400">
-                No logs available
+            {/* Logs Tab */}
+            <TabsContent value="logs" className="space-y-6 mt-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-semibold">Audit Logs</h2>
+                <Button
+                  onClick={loadAdminData}
+                  disabled={loading}
+                  variant="outline"
+                  size="sm"
+                  className="btn-enhanced"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
               </div>
-            )}
-          </div>
-        )}
+            
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {logs.map((log) => (
+                      <Card key={log.id} className="card-enhanced hover-lift">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-xs">
+                                {log.action}
+                              </Badge>
+                              <span className="text-sm text-muted-foreground">
+                                {log.resource}
+                              </span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {formatTimestamp(log.createdAt)}
+                            </span>
+                          </div>
+                          <div className="text-sm">
+                            <p className="text-muted-foreground mb-1">
+                              User: {log.user.email}
+                            </p>
+                            {log.details && (
+                              <p className="text-muted-foreground">
+                                {log.details}
+                              </p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                  
+                  {logs.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No logs available
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
