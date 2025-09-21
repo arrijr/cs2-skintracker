@@ -22,7 +22,6 @@ export default function AppHeader() {
     { name: 'Skins', href: '/skins' },
     ...(isSignedIn ? [
       { name: 'Dashboard', href: '/dashboard' },
-      { name: 'Watchlist', href: '/watchlist' },
       { name: 'Portfolio', href: '/portfolio' },
     ] : []),
   ];
