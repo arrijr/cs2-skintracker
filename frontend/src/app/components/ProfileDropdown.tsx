@@ -9,8 +9,7 @@ import {
   User, 
   Settings, 
   Shield, 
-  LogOut, 
-  ChevronDown,
+  LogOut,
   User2,
   BarChart3,
   Heart
@@ -93,7 +92,6 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-brand-blue to-brand-green flex items-center justify-center text-white font-semibold text-sm group-hover:shadow-lg group-hover:shadow-brand-blue/25 transition-all duration-200">
               {getInitials()}
             </div>
-            <ChevronDown className="h-3 w-3 absolute -bottom-1 -right-1 text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-64">
