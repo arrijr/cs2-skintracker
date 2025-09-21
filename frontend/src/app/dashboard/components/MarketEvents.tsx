@@ -120,10 +120,10 @@ export default function MarketEvents({
 
   return (
     <Card className="card-brand card-enhanced hover-lift">
-      <CardHeader>
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Calendar className="h-5 w-5 text-brand-blue" />
               Market Events
             </CardTitle>

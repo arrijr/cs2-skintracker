@@ -118,8 +118,8 @@ export default function PortfolioBreakdown({
             <Skeleton className="h-8 w-8" />
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+      <CardContent className="pt-2">
+        <div className="space-y-4">
             <Skeleton className="h-8 w-full" />
             <Skeleton className="h-32 w-full" />
           </div>
@@ -130,10 +130,10 @@ export default function PortfolioBreakdown({
 
   return (
     <Card className="card-brand card-enhanced hover-lift">
-      <CardHeader>
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <PieChart className="h-5 w-5 text-brand-blue" />
               Portfolio Breakdown
             </CardTitle>
