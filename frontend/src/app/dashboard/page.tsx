@@ -280,42 +280,40 @@ export default function Dashboard() {
 
   // Show loading while data is being fetched
   if (isLoading) {
-  return (
-    <div className="min-h-screen bg-neutral-950 text-white">
+    return (
       <div className="min-h-screen bg-gray-950 text-white p-2 sm:p-4">
         <main className="max-w-6xl mx-auto flex flex-col gap-8">
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <h1 className="text-4xl font-bold">Dashboard</h1>
-                <div className="text-muted-foreground">
-                  Loading portfolio data... 
-                  {portfolioLoading && <span className="text-blue-400 ml-2">(Portfolio)</span>}
-                  {historyLoading && <span className="text-green-400 ml-2">(History)</span>}
-                  {kpisLoading && <span className="text-purple-400 ml-2">(KPIs)</span>}
-                </div>
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold">Dashboard</h1>
+              <div className="text-muted-foreground">
+                Loading portfolio data... 
+                {portfolioLoading && <span className="text-blue-400 ml-2">(Portfolio)</span>}
+                {historyLoading && <span className="text-green-400 ml-2">(History)</span>}
+                {kpisLoading && <span className="text-purple-400 ml-2">(KPIs)</span>}
               </div>
-              <Button disabled className="btn-enhanced">
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                Loading...
-              </Button>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                <Skeleton className="h-80 w-full skeleton-shimmer" />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Skeleton className="h-64 w-full skeleton-shimmer" />
-                  <Skeleton className="h-64 w-full skeleton-shimmer" />
-                  <Skeleton className="h-64 w-full skeleton-shimmer" />
-                </div>
-              </div>
-              <div className="space-y-6">
+            <Button disabled className="btn-enhanced">
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              Loading...
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Skeleton className="h-80 w-full skeleton-shimmer" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Skeleton className="h-64 w-full skeleton-shimmer" />
+                <Skeleton className="h-64 w-full skeleton-shimmer" />
                 <Skeleton className="h-64 w-full skeleton-shimmer" />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-              <Skeleton className="h-64 w-full skeleton-shimmer" />
+            <div className="space-y-6">
               <Skeleton className="h-64 w-full skeleton-shimmer" />
             </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            <Skeleton className="h-64 w-full skeleton-shimmer" />
+            <Skeleton className="h-64 w-full skeleton-shimmer" />
           </div>
         </main>
       </div>
