@@ -261,8 +261,8 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="min-h-screen bg-neutral-950 text-white">
-      <div className="container-cs2 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto text-center">
+      <div className="py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto text-center">
             <h1 className="text-4xl font-bold mb-4">Dashboard Error</h1>
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 mb-6">
               <p className="text-red-400 mb-2">Failed to load dashboard data:</p>
@@ -282,8 +282,8 @@ export default function Dashboard() {
   if (isLoading) {
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
-      <div className="container-cs2 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
+      <div className="py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
             <div className="flex items-center justify-between">
               <div className="space-y-2">
                 <h1 className="text-4xl font-bold">Dashboard</h1>
@@ -401,18 +401,18 @@ export default function Dashboard() {
         </div>
 
         {/* Main Content Grid - New Structure */}
-        <div className="space-y-6 md:space-y-8 animate-fade-in mobile-optimized desktop-optimized">
+        <div className="space-y-4 md:space-y-6 animate-fade-in mobile-optimized desktop-optimized">
           {/* Top Row - Portfolio Overview + Alerts & Watchlist */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 animate-slide-up">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 animate-slide-up">
             {/* Portfolio Overview - Left Side */}
             <div className="lg:col-span-2 space-y-6">
               {/* Portfolio Overview Card */}
               <Card className="card-brand card-enhanced hover-lift">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <BarChart3 className="h-5 w-5 text-brand-blue" />
+                      <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                        <BarChart3 className="h-4 w-4 text-brand-blue" />
                         Portfolio Overview
                       </CardTitle>
                       {lastUpdated.portfolio && (
@@ -456,9 +456,9 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-1">
+                <CardContent className="pt-0">
                   {/* Portfolio Value Chart */}
-                  <div className="h-40 mb-4">
+                  <div className="h-32 mb-3">
                     {(() => {
                       const filteredData = getFilteredHistory();
                       return filteredData.length > 0 ? (
@@ -580,7 +580,7 @@ export default function Dashboard() {
           </div>
 
           {/* Middle Row - Breakdown + Market Pulse + Events */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <PortfolioBreakdown
               portfolio={portfolio}
               lastUpdated={lastUpdated.breakdown || undefined}

@@ -75,11 +75,11 @@ export default function AlertsBox({
 
   return (
     <Card className="card-brand card-enhanced hover-lift">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <AlertCircle className="h-5 w-5 text-brand-orange" />
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+              <AlertCircle className="h-4 w-4 text-brand-orange" />
               Alerts & Watchlist
             </CardTitle>
             {lastUpdated && (
