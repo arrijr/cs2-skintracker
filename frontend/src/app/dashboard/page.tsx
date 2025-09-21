@@ -3,8 +3,9 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
+import { PortfolioValueChart } from "@/components/charts/PortfolioValueChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -166,6 +167,22 @@ export default function Dashboard() {
   const change7d = kpis?.portfolioChange7d || 0;
   const change24h = kpis?.portfolioChange24h || 0;
 
+  // Filter history data based on selected range
+  const filteredHistory = useMemo(() => {
+    if (!history.length) return [];
+    
+    const now = new Date();
+    const cutoffDate = new Date();
+    
+    if (chartRange === '7d') {
+      cutoffDate.setDate(now.getDate() - 7);
+    } else if (chartRange === '30d') {
+      cutoffDate.setDate(now.getDate() - 30);
+    }
+    
+    return history.filter(item => new Date(item.date) >= cutoffDate);
+  }, [history, chartRange]);
+
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
       <div className="container-cs2 section-cs2">
@@ -230,13 +247,22 @@ export default function Dashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                {/* Mini Chart Placeholder */}
-                <div className="h-48 bg-muted/20 rounded-lg flex items-center justify-center mb-6">
-                  <div className="text-center text-muted-foreground">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-2" />
-                    <p>Portfolio Chart ({chartRange})</p>
-                    <p className="text-sm">Coming soon...</p>
-                  </div>
+                {/* Portfolio Value Chart */}
+                <div className="h-48 mb-6">
+                  {filteredHistory.length > 0 ? (
+                    <PortfolioValueChart 
+                      data={filteredHistory} 
+                      className="w-full h-full"
+                    />
+                  ) : (
+                    <div className="h-full bg-muted/20 rounded-lg flex items-center justify-center">
+                      <div className="text-center text-muted-foreground">
+                        <BarChart3 className="h-12 w-12 mx-auto mb-2" />
+                        <p>No portfolio history data</p>
+                        <p className="text-sm">Add skins to your portfolio to see the chart</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* KPI Row */}
