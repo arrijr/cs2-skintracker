@@ -429,6 +429,60 @@ export default function Dashboard() {
                   })()}
                 </div>
 
+                {/* Mini P&L Bar */}
+                <div className="bg-muted/20 rounded-lg p-4 space-y-3">
+                  <h4 className="text-sm font-medium text-muted-foreground">P&L Overview</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Day P&L */}
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground mb-1">Day P&L</p>
+                      <div className="flex items-center justify-center gap-1">
+                        <Badge 
+                          variant={change24h >= 0 ? "default" : "destructive"}
+                          className={change24h >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}
+                        >
+                          {change24h >= 0 ? '+' : ''}{safeToFixed(change24h, 2)}%
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatUSD(totalValue * (change24h / 100))}
+                      </p>
+                    </div>
+
+                    {/* 7d P&L */}
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground mb-1">7d P&L</p>
+                      <div className="flex items-center justify-center gap-1">
+                        <Badge 
+                          variant={change7d >= 0 ? "default" : "destructive"}
+                          className={change7d >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}
+                        >
+                          {change7d >= 0 ? '+' : ''}{safeToFixed(change7d, 2)}%
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatUSD(totalValue * (change7d / 100))}
+                      </p>
+                    </div>
+
+                    {/* Total P&L */}
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground mb-1">Total P&L</p>
+                      <div className="flex items-center justify-center gap-1">
+                        <Badge 
+                          variant={(kpis?.unrealizedPL || 0) >= 0 ? "default" : "destructive"}
+                          className={(kpis?.unrealizedPL || 0) >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}
+                        >
+                          {formatUSD(kpis?.unrealizedPL || 0)}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {kpis?.totalInvested ? `${safeToFixed(((kpis?.unrealizedPL || 0) / kpis.totalInvested) * 100, 1)}%` : '0%'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* KPI Row */}
                 <div className="grid grid-cols-3 gap-4">
                   <div className="text-center">
