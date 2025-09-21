@@ -392,10 +392,21 @@ export default function Dashboard() {
                       />
                     ) : (
                     <div className="h-full bg-muted/20 rounded-lg flex items-center justify-center">
-                      <div className="text-center text-muted-foreground">
-                        <BarChart3 className="h-12 w-12 mx-auto mb-2" />
-                        <p>No portfolio history data</p>
-                        <p className="text-sm">Add skins to your portfolio to see the chart</p>
+                      <div className="text-center text-muted-foreground space-y-4">
+                        <div className="space-y-2">
+                          <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground/50" />
+                          <h3 className="text-lg font-medium">No Portfolio Data</h3>
+                          <p className="text-sm max-w-sm">
+                            Start building your CS2 skin collection to see your portfolio performance over time.
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={() => router.push('/skins')}
+                          className="bg-brand-blue hover:bg-brand-blue/90"
+                        >
+                          <Package className="h-4 w-4 mr-2" />
+                          Browse Skins
+                        </Button>
                       </div>
                     </div>
                     );
@@ -457,7 +468,7 @@ export default function Dashboard() {
                         <Skeleton key={i} className="h-16 w-full" />
                       ))}
                     </div>
-                  ) : (
+                  ) : movers.gainers.length > 0 ? (
                     <div className="space-y-3">
                       {movers.gainers.map((item) => (
                         <div key={item.id} className="flex items-center justify-between p-3 bg-green-500/5 rounded-lg border border-green-500/20">
@@ -479,6 +490,16 @@ export default function Dashboard() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-muted-foreground space-y-3">
+                      <div className="space-y-2">
+                        <TrendingUp className="h-10 w-10 mx-auto opacity-50" />
+                        <h4 className="font-medium">No Market Data</h4>
+                        <p className="text-sm max-w-xs">
+                          Market data will appear here when available.
+                        </p>
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -517,7 +538,7 @@ export default function Dashboard() {
                         <Skeleton key={i} className="h-16 w-full" />
                       ))}
                     </div>
-                  ) : (
+                  ) : movers.losers.length > 0 ? (
                     <div className="space-y-3">
                       {movers.losers.map((item) => (
                         <div key={item.id} className="flex items-center justify-between p-3 bg-red-500/5 rounded-lg border border-red-500/20">
@@ -539,6 +560,16 @@ export default function Dashboard() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-muted-foreground space-y-3">
+                      <div className="space-y-2">
+                        <TrendingDown className="h-10 w-10 mx-auto opacity-50" />
+                        <h4 className="font-medium">No Market Data</h4>
+                        <p className="text-sm max-w-xs">
+                          Market data will appear here when available.
+                        </p>
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -631,11 +662,22 @@ export default function Dashboard() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-4 text-muted-foreground">
-                      <Heart className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No watchlist items</p>
-                      <Button asChild variant="ghost" size="sm" className="mt-2">
-                        <a href="/skins">Browse Skins</a>
+                    <div className="text-center py-6 text-muted-foreground space-y-3">
+                      <div className="space-y-2">
+                        <Heart className="h-10 w-10 mx-auto opacity-50" />
+                        <h4 className="font-medium">No Watchlist Items</h4>
+                        <p className="text-sm max-w-xs">
+                          Add skins to your watchlist to track price changes and set alerts.
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={() => router.push('/skins')}
+                        variant="outline" 
+                        size="sm"
+                        className="border-brand-blue/30 text-brand-blue hover:bg-brand-blue/10"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Browse Skins
                       </Button>
                     </div>
                   )}
