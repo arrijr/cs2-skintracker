@@ -117,6 +117,9 @@ export function usePortfolioData() {
     },
     error,
     isLoading,
+    portfolioLoading,
+    historyLoading,
+    kpisLoading,
     mutate: () => {
       // Revalidate all data
       if (typeof window !== 'undefined') {

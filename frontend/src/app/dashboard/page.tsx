@@ -63,7 +63,7 @@ export default function Dashboard() {
   const { isSignedIn, user, isLoaded } = useUser();
   const { getToken } = useAuth();
   const router = useRouter();
-  const { data, error, isLoading, mutate, portfolio, history, kpis } = usePortfolioData();
+  const { data, error, isLoading, mutate, portfolio, history, kpis, portfolioLoading, historyLoading, kpisLoading } = usePortfolioData();
 
   // Debug logging
   console.log('Dashboard Debug:', {
@@ -71,7 +71,10 @@ export default function Dashboard() {
     error,
     portfolio: portfolio?.length || 0,
     history: history?.length || 0,
-    kpis: kpis ? 'loaded' : 'null'
+    kpis: kpis ? 'loaded' : 'null',
+    portfolioLoading,
+    historyLoading,
+    kpisLoading
   });
   
   // Dashboard state
