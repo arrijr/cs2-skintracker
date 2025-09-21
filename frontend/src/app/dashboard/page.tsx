@@ -59,7 +59,7 @@ export default function Dashboard() {
   
   
   // Dashboard state
-  const [chartRange, setChartRange] = useState<'7d' | '30d'>('7d');
+  const [chartRange, setChartRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all'>('7d');
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [movers, setMovers] = useState<{ gainers: MoverItem[]; losers: MoverItem[] }>({ gainers: [], losers: [] });
   const [loadingWatchlist, setLoadingWatchlist] = useState(false);
@@ -283,6 +283,13 @@ export default function Dashboard() {
         cutoffDate.setDate(now.getDate() - 7);
       } else if (chartRange === '30d') {
         cutoffDate.setDate(now.getDate() - 30);
+      } else if (chartRange === '90d') {
+        cutoffDate.setDate(now.getDate() - 90);
+      } else if (chartRange === '1y') {
+        cutoffDate.setFullYear(now.getFullYear() - 1);
+      } else if (chartRange === 'all') {
+        // Return all data for 'all' timeframe
+        return history;
       }
       
       return history.filter(item => {
@@ -367,14 +374,23 @@ export default function Dashboard() {
                     <ToggleGroup 
                       type="single" 
                       value={chartRange}
-                      onValueChange={(value: '7d' | '30d') => value && setChartRange(value)}
+                      onValueChange={(value: '7d' | '30d' | '90d' | '1y' | 'all') => value && setChartRange(value)}
                       className="bg-muted/50 p-1 rounded-lg"
                     >
-                      <ToggleGroupItem value="7d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                      <ToggleGroupItem value="7d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
                         7D
                       </ToggleGroupItem>
-                      <ToggleGroupItem value="30d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                      <ToggleGroupItem value="30d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
                         30D
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="90d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
+                        90D
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="1y" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
+                        1Y
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="all" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
+                        ALL
                       </ToggleGroupItem>
                     </ToggleGroup>
                   </div>
