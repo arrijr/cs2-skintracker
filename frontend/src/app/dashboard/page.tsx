@@ -1,7 +1,7 @@
 // /frontend/src/app/dashboard/page.tsx — [Frontend]
 // {/* Enhanced Dashboard with Portfolio Overview, Alerts, Watchlist Preview, and Movers */}
 "use client";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { formatUSD, safeToFixed } from "@/lib/num";
 import { apiFetch } from "@/lib/http";
-import { apiUrl } from "@/lib/api";
+import { apiUrl, fetchJson } from "@/lib/api";
 
 interface WatchlistItem {
   id: number;
@@ -53,6 +53,7 @@ interface MoverItem {
 
 export default function Dashboard() {
   const { isSignedIn, user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
   const { data, error, isLoading, mutate, portfolio, history, kpis } = usePortfolioData();
   
@@ -72,23 +73,26 @@ export default function Dashboard() {
 
   // Load watchlist data
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (!isSignedIn || !user) return;
     
     const loadWatchlist = async () => {
       setLoadingWatchlist(true);
       try {
-        const response = await apiFetch(apiUrl('/api/v1/watchlist'));
-        const data = await response.json();
+        const token = await getToken({ template: "backend" });
+        const data = await fetchJson(apiUrl('/api/v1/watchlist'), {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
         setWatchlist(data.slice(0, 3)); // Top 3 items
       } catch (err) {
         console.error('Failed to load watchlist:', err);
+        setWatchlist([]); // Set empty array on error
       } finally {
         setLoadingWatchlist(false);
       }
     };
 
     loadWatchlist();
-  }, [isSignedIn]);
+  }, [isSignedIn, user, getToken]);
 
   // Load movers data (mock for now)
   useEffect(() => {
@@ -195,21 +199,33 @@ export default function Dashboard() {
 
   // Filter history data based on selected range
   const filteredHistory = useMemo(() => {
-    if (!history || !Array.isArray(history) || history.length === 0) return [];
-    
-    const now = new Date();
-    const cutoffDate = new Date();
-    
-    if (chartRange === '7d') {
-      cutoffDate.setDate(now.getDate() - 7);
-    } else if (chartRange === '30d') {
-      cutoffDate.setDate(now.getDate() - 30);
+    // Early return if no data
+    if (!history || !Array.isArray(history) || history.length === 0) {
+      return [];
     }
     
-    return history.filter(item => {
-      if (!item || !item.date) return false;
-      return new Date(item.date) >= cutoffDate;
-    });
+    try {
+      const now = new Date();
+      const cutoffDate = new Date();
+      
+      if (chartRange === '7d') {
+        cutoffDate.setDate(now.getDate() - 7);
+      } else if (chartRange === '30d') {
+        cutoffDate.setDate(now.getDate() - 30);
+      }
+      
+      return history.filter(item => {
+        if (!item || !item.date) return false;
+        try {
+          return new Date(item.date) >= cutoffDate;
+        } catch (e) {
+          return false;
+        }
+      });
+    } catch (error) {
+      console.error('Error filtering history:', error);
+      return [];
+    }
   }, [history, chartRange]);
 
   return (
