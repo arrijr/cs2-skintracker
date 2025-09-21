@@ -136,6 +136,32 @@ export default function Dashboard() {
     return null;
   }
 
+  // Show loading while data is being fetched
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-neutral-950 text-white">
+        <div className="container-cs2 section-cs2">
+          <div className="space-y-6">
+            <Skeleton className="h-16 w-full" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <Skeleton className="h-80 w-full" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Skeleton className="h-64 w-full" />
+                  <Skeleton className="h-64 w-full" />
+                </div>
+              </div>
+              <div className="space-y-6">
+                <Skeleton className="h-64 w-full" />
+                <Skeleton className="h-32 w-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Error state
   if (error) {
     return (
@@ -169,7 +195,7 @@ export default function Dashboard() {
 
   // Filter history data based on selected range
   const filteredHistory = useMemo(() => {
-    if (!history.length) return [];
+    if (!history || !Array.isArray(history) || history.length === 0) return [];
     
     const now = new Date();
     const cutoffDate = new Date();
@@ -180,7 +206,10 @@ export default function Dashboard() {
       cutoffDate.setDate(now.getDate() - 30);
     }
     
-    return history.filter(item => new Date(item.date) >= cutoffDate);
+    return history.filter(item => {
+      if (!item || !item.date) return false;
+      return new Date(item.date) >= cutoffDate;
+    });
   }, [history, chartRange]);
 
   return (
