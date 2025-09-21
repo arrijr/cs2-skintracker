@@ -3,7 +3,7 @@
 "use client";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
 import { PortfolioValueChart } from "@/components/charts/PortfolioValueChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -198,7 +198,7 @@ export default function Dashboard() {
   const change24h = kpis?.portfolioChange24h || 0;
 
   // Filter history data based on selected range
-  const filteredHistory = useMemo(() => {
+  const getFilteredHistory = useCallback(() => {
     // Early return if no data
     if (!history || !Array.isArray(history) || history.length === 0) {
       return [];
@@ -227,6 +227,8 @@ export default function Dashboard() {
       return [];
     }
   }, [history, chartRange]);
+
+  const filteredHistory = getFilteredHistory();
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
