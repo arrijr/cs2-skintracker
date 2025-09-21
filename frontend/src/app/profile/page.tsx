@@ -2,9 +2,18 @@
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useRequireAuth } from "../hooks/useRequireAuth";
 import Link from "next/link";
-import { LogOut, User2, Star, Eye, Trash2, Settings, Shield, AlertTriangle } from "lucide-react";
+import { LogOut, User2, Star, Eye, Trash2, Settings, Shield, AlertTriangle, Save, Calendar, Mail, Bell, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 import { apiUrl, fetchJson } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { formatUSD, safeToFixed } from "@/lib/num";
 
 interface ProfileData {
   id: number;
@@ -253,67 +262,90 @@ export default function ProfilePage() {
               {profileData?.displayName || user.firstName || "User"}
             </div>
             <div className="text-zinc-400">{profileData?.email || user.primaryEmailAddress?.emailAddress}</div>
-            <div className="text-sm text-zinc-500">
-              Member since {profileData?.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : "Unknown"}
+            <div className="text-sm text-zinc-500 flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              Member since {profileData?.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "Recently"}
             </div>
           </div>
         </div>
 
             {/* KPI Cards */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
-                <Star className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
-                <div className="text-lg font-bold">{kpiData?.portfolioCount || 0}</div>
-                <div className="text-xs text-zinc-400">Portfolio Skins</div>
-              </div>
+              <Card className="card-enhanced hover-lift">
+                <CardContent className="p-4 text-center">
+                  <Star className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
+                  <div className="text-lg font-bold">{kpiData?.portfolioCount || 0}</div>
+                  <div className="text-xs text-muted-foreground">Portfolio Skins</div>
+                </CardContent>
+              </Card>
           
-              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
-            <div className="text-lg font-bold text-green-400">
-              ${kpiData?.portfolioValue?.toFixed(2) || "0.00"}
-            </div>
-            <div className="text-xs text-zinc-400">Total Value</div>
-            <div className="text-xs text-zinc-500">
-              {kpiData?.portfolioChange24h !== 0 && kpiData && (
-                <span className={kpiData.portfolioChange24h > 0 ? "text-green-400" : "red-400"}>
-                  {kpiData.portfolioChange24h > 0 ? "+" : ""}{kpiData.portfolioChange24h.toFixed(1)}% 24h
-                </span>
-              )}
-            </div>
-          </div>
+              <Card className="card-enhanced hover-lift">
+                <CardContent className="p-4 text-center">
+                  <div className="text-lg font-bold text-green-400">
+                    {formatUSD(kpiData?.portfolioValue || 0)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Total Value</div>
+                  {kpiData?.portfolioChange24h !== 0 && kpiData && (
+                    <Badge 
+                      variant={kpiData.portfolioChange24h > 0 ? "default" : "destructive"}
+                      className={`text-xs mt-1 ${
+                        kpiData.portfolioChange24h > 0 
+                          ? "bg-green-500/20 text-green-400 border-green-500/30" 
+                          : "bg-red-500/20 text-red-400 border-red-500/30"
+                      }`}
+                    >
+                      {kpiData.portfolioChange24h > 0 ? "+" : ""}{safeToFixed(kpiData.portfolioChange24h, 1)}% 24h
+                    </Badge>
+                  )}
+                </CardContent>
+              </Card>
           
-              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
-            <div className="text-lg font-bold text-blue-400">
-              ${kpiData?.totalInvested?.toFixed(2) || "0.00"}
-            </div>
-            <div className="text-xs text-zinc-400">Total Invested</div>
-          </div>
+              <Card className="card-enhanced hover-lift">
+                <CardContent className="p-4 text-center">
+                  <div className="text-lg font-bold text-blue-400">
+                    {formatUSD(kpiData?.totalInvested || 0)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Total Invested</div>
+                </CardContent>
+              </Card>
           
-              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
-            <div className="text-lg font-bold text-purple-400">
-              ${kpiData?.unrealizedPL?.toFixed(2) || "0.00"}
-            </div>
-            <div className="text-xs text-zinc-400">Unrealized P/L</div>
-            <div className="text-xs text-zinc-500">
-              {kpiData?.portfolioChange7d !== 0 && kpiData && (
-                <span className={kpiData.portfolioChange7d > 0 ? "text-green-400" : "text-red-400"}>
-                  {kpiData.portfolioChange7d > 0 ? "+" : ""}{kpiData.portfolioChange7d.toFixed(1)}% 7d
-                </span>
-              )}
-            </div>
-          </div>
+              <Card className="card-enhanced hover-lift">
+                <CardContent className="p-4 text-center">
+                  <div className="text-lg font-bold text-purple-400">
+                    {formatUSD(kpiData?.unrealizedPL || 0)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Unrealized P/L</div>
+                  {kpiData?.portfolioChange7d !== 0 && kpiData && (
+                    <Badge 
+                      variant={kpiData.portfolioChange7d > 0 ? "default" : "destructive"}
+                      className={`text-xs mt-1 ${
+                        kpiData.portfolioChange7d > 0 
+                          ? "bg-green-500/20 text-green-400 border-green-500/30" 
+                          : "bg-red-500/20 text-red-400 border-red-500/30"
+                      }`}
+                    >
+                      {kpiData.portfolioChange7d > 0 ? "+" : ""}{safeToFixed(kpiData.portfolioChange7d, 1)}% 7d
+                    </Badge>
+                  )}
+                </CardContent>
+              </Card>
           
-              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
-            <Eye className="w-6 h-6 text-blue-400 mx-auto mb-2" />
-            <div className="text-lg font-bold">{kpiData?.watchlistCount || 0}</div>
-            <div className="text-xs text-zinc-400">Watchlist</div>
-          </div>
+              <Card className="card-enhanced hover-lift">
+                <CardContent className="p-4 text-center">
+                  <Eye className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+                  <div className="text-lg font-bold">{kpiData?.watchlistCount || 0}</div>
+                  <div className="text-xs text-muted-foreground">Watchlist</div>
+                </CardContent>
+              </Card>
           
-              <div className="bg-zinc-800 rounded-lg p-4 text-center hover-scale transition-all duration-200">
-            <AlertTriangle className="w-6 h-6 text-amber-400 mx-auto mb-2" />
-            <div className="text-lg font-bold">{kpiData?.activeAlerts || 0}</div>
-            <div className="text-xs text-zinc-400">Active Alerts</div>
-          </div>
-        </div>
+              <Card className="card-enhanced hover-lift">
+                <CardContent className="p-4 text-center">
+                  <AlertTriangle className="w-6 h-6 text-amber-400 mx-auto mb-2" />
+                  <div className="text-lg font-bold">{kpiData?.activeAlerts || 0}</div>
+                  <div className="text-xs text-muted-foreground">Active Alerts</div>
+                </CardContent>
+              </Card>
+            </div>
 
         {/* Last Updated */}
         {kpiData?.lastUpdated && (
@@ -348,234 +380,337 @@ export default function ProfilePage() {
       </div>
 
           {/* Settings Section */}
-          <div className="card-brand card-enhanced hover-lift mb-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <Settings className="w-5 h-5" />
-          Settings
-        </h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Display Name</label>
-            <input
-              type="text"
-              className="input-main w-full"
-              value={settings.displayName}
-              onChange={(e) => setSettings({...settings, displayName: e.target.value})}
-              placeholder="Enter display name"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Timezone</label>
-            <select
-              className="input-main w-full"
-              value={settings.timezone}
-              onChange={(e) => setSettings({...settings, timezone: e.target.value})}
-            >
-              <option value="">Select timezone</option>
-              {Intl.supportedValuesOf('timeZone').map(tz => (
-                <option key={tz} value={tz}>{tz}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        
-        <div className="mt-4 space-y-3">
-          <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={settings.emailAlerts}
-              onChange={(e) => setSettings({...settings, emailAlerts: e.target.checked})}
-              className="rounded"
-            />
-            <span>Receive email alerts for price changes</span>
-          </label>
-          
-          <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={settings.pushAlerts}
-              onChange={(e) => setSettings({...settings, pushAlerts: e.target.checked})}
-              className="rounded"
-            />
-            <span>Receive push notifications</span>
-          </label>
-        </div>
-        
-        {settingsMessage && (
-          <div className={`mt-4 p-3 rounded ${
-            settingsMessage.type === 'success' ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200'
-          }`}>
-            {settingsMessage.text}
-          </div>
-        )}
-        
-            <button
-              onClick={saveSettings}
-              disabled={savingSettings}
-              className="btn-main btn-enhanced mt-4 flex items-center gap-2"
-            >
-          {savingSettings ? "Saving..." : "Save Settings"}
-        </button>
-      </div>
+          <Card className="card-enhanced hover-lift mb-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="displayName">Display Name</Label>
+                  <Input
+                    id="displayName"
+                    type="text"
+                    value={settings.displayName}
+                    onChange={(e) => setSettings({...settings, displayName: e.target.value})}
+                    placeholder="Enter display name"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="timezone">Timezone</Label>
+                  <Select
+                    value={settings.timezone}
+                    onValueChange={(value) => setSettings({...settings, timezone: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select timezone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Intl.supportedValuesOf('timeZone').map(tz => (
+                        <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-muted-foreground">Notification Preferences</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="emailAlerts"
+                      checked={settings.emailAlerts}
+                      onCheckedChange={(checked) => setSettings({...settings, emailAlerts: checked as boolean})}
+                    />
+                    <Label htmlFor="emailAlerts" className="flex items-center gap-2">
+                      <Mail className="w-4 h-4" />
+                      Receive email alerts for price changes
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="pushAlerts"
+                      checked={settings.pushAlerts}
+                      onCheckedChange={(checked) => setSettings({...settings, pushAlerts: checked as boolean})}
+                    />
+                    <Label htmlFor="pushAlerts" className="flex items-center gap-2">
+                      <Bell className="w-4 h-4" />
+                      Receive push notifications
+                    </Label>
+                  </div>
+                </div>
+              </div>
+              
+              {settingsMessage && (
+                <div className={`p-3 rounded-md flex items-center gap-2 ${
+                  settingsMessage.type === 'success' 
+                    ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+                    : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                }`}>
+                  {settingsMessage.type === 'success' ? (
+                    <Save className="w-4 h-4" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4" />
+                  )}
+                  {settingsMessage.text}
+                </div>
+              )}
+              
+              <Button
+                onClick={saveSettings}
+                disabled={savingSettings}
+                className="btn-enhanced w-full sm:w-auto"
+              >
+                {savingSettings ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Settings
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
 
           {/* Actions */}
-          <div className="flex flex-wrap gap-4 justify-center mb-8 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-            <button
-              onClick={() => setShowPwModal(true)}
-              className="btn-main btn-enhanced flex items-center gap-2"
-            >
-          <Shield className="w-5 h-5" />
-          Change Password
-        </button>
-        
-        <Link
-          href="/portfolio"
-          className="btn-main flex items-center gap-2"
-        >
-          <Star className="w-5 h-5" />
-          My Portfolio
-        </Link>
-        
-        <Link
-          href="/sign-in"
-          className="btn-main bg-red-700 hover:bg-red-800 flex items-center gap-2"
-        >
-          <LogOut className="w-5 h-5" />
-          Sign Out
-        </Link>
-      </div>
+          <Card className="card-enhanced hover-lift mb-8 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Button
+                  onClick={() => setShowPwModal(true)}
+                  variant="outline"
+                  className="btn-enhanced hover-lift flex items-center gap-2"
+                >
+                  <Shield className="w-4 h-4" />
+                  Change Password
+                </Button>
+                
+                <Button asChild variant="outline" className="btn-enhanced hover-lift flex items-center gap-2">
+                  <Link href="/portfolio">
+                    <Star className="w-4 h-4" />
+                    My Portfolio
+                  </Link>
+                </Button>
+                
+                <Button asChild variant="destructive" className="btn-enhanced hover-lift flex items-center gap-2">
+                  <Link href="/sign-in">
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
       {/* Danger Zone */}
-      <div className="bg-red-900/20 border border-red-800 rounded-xl p-6">
-        <h2 className="text-xl font-semibold mb-4 text-red-400 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5" />
-          Danger Zone
-        </h2>
-        
-        <p className="text-zinc-300 mb-4">
-          Once you delete your account, there is no going back. Please be certain.
-        </p>
-        
-        <button
-          onClick={() => setShowDelete(true)}
-          className="btn-main bg-red-700 hover:bg-red-800 flex items-center gap-2"
-        >
-          <Trash2 className="w-5 h-5" />
-          Delete Account
-        </button>
-      </div>
+      <Card className="border-red-500/20 bg-red-500/5 hover-lift animate-slide-up" style={{ animationDelay: '0.6s' }}>
+        <CardHeader>
+          <CardTitle className="text-red-400 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5" />
+            Danger Zone
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            Once you delete your account, there is no going back. Please be certain.
+          </p>
+          
+          <Button
+            onClick={() => setShowDelete(true)}
+            variant="destructive"
+            className="btn-enhanced hover-lift flex items-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete Account
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Password Change Modal */}
       {showPwModal && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
-          <div className="bg-zinc-900 rounded-xl p-8 shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4 text-blue-400">Change Password</h2>
-            
-            <div className="space-y-4">
-              <input
-                type="password"
-                placeholder="Current password"
-                className="input-main w-full"
-                value={passwordData.currentPassword}
-                onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-              />
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-400">
+                <Shield className="w-5 h-5" />
+                Change Password
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    placeholder="Enter current password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    placeholder="Enter new password (min. 6 chars)"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                    minLength={6}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm new password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                    minLength={6}
+                  />
+                </div>
+              </div>
               
-              <input
-                type="password"
-                placeholder="New password (min. 6 chars)"
-                className="input-main w-full"
-                value={passwordData.newPassword}
-                onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                minLength={6}
-              />
+              {pwError && (
+                <div className="p-3 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  {pwError}
+                </div>
+              )}
+              {pwSuccess && (
+                <div className="p-3 rounded-md bg-green-500/10 text-green-400 border border-green-500/20 flex items-center gap-2">
+                  <Save className="w-4 h-4" />
+                  {pwSuccess}
+                </div>
+              )}
               
-              <input
-                type="password"
-                placeholder="Confirm new password"
-                className="input-main w-full"
-                value={passwordData.confirmPassword}
-                onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                minLength={6}
-              />
-            </div>
-            
-            {pwError && <div className="text-red-400 mt-3 text-sm">{pwError}</div>}
-            {pwSuccess && <div className="text-green-400 mt-3 text-sm">{pwSuccess}</div>}
-            
-            <div className="flex gap-4 justify-center mt-6">
-              <button
-                onClick={changePassword}
-                disabled={pwLoading}
-                className="btn-main min-w-[100px]"
-              >
-                {pwLoading ? "Changing..." : "Change Password"}
-              </button>
-              <button
-                onClick={() => {
-                  setShowPwModal(false);
-                  setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
-                  setPwError("");
-                  setPwSuccess("");
-                }}
-                disabled={pwLoading}
-                className="btn-main"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+              <div className="flex gap-4 justify-center pt-4">
+                <Button
+                  onClick={changePassword}
+                  disabled={pwLoading}
+                  className="btn-enhanced min-w-[120px]"
+                >
+                  {pwLoading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Changing...
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="w-4 h-4 mr-2" />
+                      Change Password
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowPwModal(false);
+                    setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                    setPwError("");
+                    setPwSuccess("");
+                  }}
+                  disabled={pwLoading}
+                  variant="outline"
+                  className="btn-enhanced"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Delete Account Modal */}
       {showDelete && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
-          <div className="bg-zinc-900 rounded-xl p-8 shadow-lg w-full max-w-md text-center">
-            <h2 className="text-xl font-bold mb-4 text-red-400">Delete Account</h2>
-            <p className="mb-4 text-zinc-300">
-              This action cannot be undone. This will permanently delete your account and remove all your data.
-            </p>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
-                Type <span className="text-red-400 font-mono">DELETE</span> to confirm:
-              </label>
-              <input
-                type="text"
-                className="input-main w-full text-center font-mono"
-                value={deleteConfirmation}
-                onChange={(e) => setDeleteConfirmation(e.target.value)}
-                placeholder="DELETE"
-              />
-            </div>
-            
-            {pwError && <div className="text-red-400 mb-3 text-sm">{pwError}</div>}
-            
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={deleteAccount}
-                disabled={isDeleting || deleteConfirmation !== "DELETE"}
-                className="btn-main bg-red-700 hover:bg-red-800 min-w-[100px]"
-              >
-                {isDeleting ? "Deleting..." : "Delete Account"}
-              </button>
-              <button
-                onClick={() => {
-                  setShowDelete(false);
-                  setDeleteConfirmation("");
-                  setPwError("");
-                }}
-                disabled={isDeleting}
-                className="btn-main"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-          </div>
-        )}
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md border-red-500/20 bg-red-500/5">
+            <CardHeader className="text-center">
+              <CardTitle className="text-red-400 flex items-center justify-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Delete Account
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-center">
+              <p className="text-muted-foreground">
+                This action cannot be undone. This will permanently delete your account and remove all your data.
+              </p>
+              
+              <div className="space-y-2">
+                <Label htmlFor="deleteConfirmation" className="text-sm font-medium">
+                  Type <span className="text-red-400 font-mono">DELETE</span> to confirm:
+                </Label>
+                <Input
+                  id="deleteConfirmation"
+                  type="text"
+                  className="text-center font-mono"
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  placeholder="DELETE"
+                />
+              </div>
+              
+              {pwError && (
+                <div className="p-3 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 flex items-center justify-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  {pwError}
+                </div>
+              )}
+              
+              <div className="flex gap-4 justify-center pt-4">
+                <Button
+                  onClick={deleteAccount}
+                  disabled={isDeleting || deleteConfirmation !== "DELETE"}
+                  variant="destructive"
+                  className="btn-enhanced min-w-[120px]"
+                >
+                  {isDeleting ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Account
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowDelete(false);
+                    setDeleteConfirmation("");
+                    setPwError("");
+                  }}
+                  disabled={isDeleting}
+                  variant="outline"
+                  className="btn-enhanced"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
         </div>
       </div>
     </div>
