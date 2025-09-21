@@ -43,37 +43,90 @@ interface PortfolioData {
 export function usePortfolioData() {
   const { getToken } = useAuth();
 
-  const fetcher = async (url: string): Promise<PortfolioData> => {
+  // Fetcher for portfolio data
+  const portfolioFetcher = async (url: string) => {
     const token = await getToken({ template: "backend" });
-    
-    return await fetchJson<PortfolioData>(url, {
+    return await fetchJson(url, {
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
       },
     });
   };
 
-  const { data, error, isLoading, mutate } = useSWR<PortfolioData>(
-    apiUrl('/api/v1/portfolio/history'),
-    fetcher,
+  // Fetcher for portfolio history
+  const historyFetcher = async (url: string) => {
+    const token = await getToken({ template: "backend" });
+    return await fetchJson(url, {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+  };
+
+  // Fetcher for portfolio KPIs
+  const kpisFetcher = async (url: string) => {
+    const token = await getToken({ template: "backend" });
+    return await fetchJson(url, {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+  };
+
+  // Fetch portfolio data
+  const { data: portfolioData, error: portfolioError, isLoading: portfolioLoading } = useSWR(
+    apiUrl('/api/v1/portfolio'),
+    portfolioFetcher,
     {
-      refreshInterval: 30000, // Refresh every 30 seconds
+      refreshInterval: 30000,
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
-      errorRetryCount: 3,
-      errorRetryInterval: 5000,
     }
   );
 
+  // Fetch portfolio history
+  const { data: historyData, error: historyError, isLoading: historyLoading } = useSWR(
+    apiUrl('/api/v1/portfolio/history'),
+    historyFetcher,
+    {
+      refreshInterval: 30000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    }
+  );
+
+  // Fetch portfolio KPIs
+  const { data: kpisData, error: kpisError, isLoading: kpisLoading } = useSWR(
+    apiUrl('/api/v1/portfolio/kpis'),
+    kpisFetcher,
+    {
+      refreshInterval: 30000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    }
+  );
+
+  const isLoading = portfolioLoading || historyLoading || kpisLoading;
+  const error = portfolioError || historyError || kpisError;
+
   return {
-    data,
+    data: {
+      portfolio: portfolioData || [],
+      history: historyData || [],
+      kpis: kpisData || null,
+    },
     error,
     isLoading,
-    mutate,
+    mutate: () => {
+      // Revalidate all data
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
+    },
     // Derived data for easier access
-    portfolio: data?.portfolio || [],
-    history: data?.history || [],
-    kpis: data?.kpis || null,
+    portfolio: portfolioData || [],
+    history: historyData || [],
+    kpis: kpisData || null,
   };
 }
 

@@ -57,6 +57,15 @@ export default function Dashboard() {
   const router = useRouter();
   const { data, error, isLoading, mutate, portfolio, history, kpis } = usePortfolioData();
   
+  // Debug logging
+  console.log('Dashboard Debug:', {
+    isLoading,
+    error,
+    historyLength: history?.length || 0,
+    kpis,
+    portfolioLength: portfolio?.length || 0
+  });
+  
   // Dashboard state
   const [chartRange, setChartRange] = useState<'7d' | '30d'>('7d');
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
