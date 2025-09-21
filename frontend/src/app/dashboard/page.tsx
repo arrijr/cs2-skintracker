@@ -317,7 +317,7 @@ export default function Dashboard() {
               <Skeleton className="h-64 w-full skeleton-shimmer" />
             </div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
