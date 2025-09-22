@@ -35,12 +35,12 @@ export default function AppHeader() {
       <div className="container-cs2">
         <div className="flex h-24 items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center h-full">
             <Logo size="lg" />
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden md:flex items-center h-full space-x-1">
             {navigation.map((item) => (
               <Link
                 key={item.name}
