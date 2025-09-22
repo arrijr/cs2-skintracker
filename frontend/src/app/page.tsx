@@ -1,43 +1,44 @@
+// /frontend/src/app/page.tsx — [Frontend]
+// {/* Landing Page - Main entry point */}
 "use client";
-import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import HeroSection from "@/components/landing/HeroSection";
+import FeaturesSection from "@/components/landing/FeaturesSection";
+import PricingSection from "@/components/landing/PricingSection";
+import Footer from "@/components/landing/Footer";
 
 export default function Home() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (isLoaded && user) {
-      router.push("/portfolio");
+    setMounted(true);
+  }, []);
+
+  // If user is logged in, redirect to dashboard after a short delay
+  useEffect(() => {
+    if (isLoaded && user && mounted) {
+      const timer = setTimeout(() => {
+        router.push("/dashboard");
+      }, 2000); // 2 second delay to show landing page
+      
+      return () => clearTimeout(timer);
     }
-  }, [isLoaded, user, router]);
+  }, [isLoaded, user, router, mounted]);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
-    <div className="dashboard-bg flex flex-col items-center justify-center text-white">
-      <div className="text-center relative z-10">
-        <h1 className="text-4xl font-bold mb-2 animate-slide-in-left">CS2 Skin Price Tracker</h1>
-        <p className="mb-8 text-slate-400 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
-          Verwalte und beobachte dein Skin-Portfolio – kostenlos!
-        </p>
-        {isLoaded && !user && (
-          <div className="flex gap-4 animate-slide-in-left" style={{ animationDelay: '0.2s' }}>
-            <Link
-              href="/sign-in"
-              className="px-6 py-2 bg-blue-600 rounded hover:bg-blue-700 btn-enhanced"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/sign-up"
-              className="px-6 py-2 bg-green-600 rounded hover:bg-green-700 btn-enhanced"
-            >
-              Sign Up
-            </Link>
-          </div>
-        )}
-      </div>
+    <div className="min-h-screen">
+      <HeroSection />
+      <FeaturesSection />
+      <PricingSection />
+      <Footer />
     </div>
   );
 }

@@ -296,6 +296,15 @@
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 /* Hover Effects */
 @layer utilities {
   .hover-lift {
@@ -329,6 +338,10 @@
   
   .hover-rotate:hover {
     transform: rotate(2deg);
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
   }
 }
 
