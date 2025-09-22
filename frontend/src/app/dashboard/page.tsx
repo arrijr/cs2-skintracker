@@ -1,16 +1,16 @@
-// /frontend/src/app/dashboard/page-new.tsx — [Frontend]
-// {/* Enhanced Dashboard with New Structure - Portfolio Overview, Alerts, Watchlist Preview, and Movers */}
+// /frontend/src/app/dashboard/page-redesigned.tsx — [Frontend]
+// {/* Redesigned Dashboard with Visual Hierarchy and Conversion Focus */}
 "use client";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
 import { PortfolioValueChart } from "@/components/charts/PortfolioValueChart";
-import PortfolioBreakdown from "./components/PortfolioBreakdown";
+import { EnhancedPortfolioBreakdown } from "./components/EnhancedPortfolioBreakdown";
 import MarketPulse from "./components/MarketPulse";
 import MarketEvents from "./components/MarketEvents";
 import AlertsBox from "./components/AlertsBox";
-import Movers from "./components/Movers";
+import { EnhancedMovers } from "./components/EnhancedMovers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,14 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Eye,
-  Clock
+  Clock,
+  Lock,
+  Crown,
+  Star,
+  Zap,
+  Target,
+  Activity,
+  Globe
 } from "lucide-react";
 import { formatUSD, safeToFixed } from "@/lib/num";
 import { apiFetch } from "@/lib/http";
@@ -65,24 +72,14 @@ export default function Dashboard() {
   const router = useRouter();
   const { data, error, isLoading, mutate, portfolio, history, kpis, portfolioLoading, historyLoading, kpisLoading } = usePortfolioData();
 
-  // Debug logging
-  console.log('Dashboard Debug:', {
-    isLoading,
-    error,
-    portfolio: portfolio?.length || 0,
-    history: history?.length || 0,
-    kpis: kpis ? 'loaded' : 'null',
-    portfolioLoading,
-    historyLoading,
-    kpisLoading
-  });
-  
   // Dashboard state
   const [chartRange, setChartRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all'>('7d');
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [movers, setMovers] = useState<{ gainers: MoverItem[]; losers: MoverItem[] }>({ gainers: [], losers: [] });
   const [loadingWatchlist, setLoadingWatchlist] = useState(false);
   const [loadingMovers, setLoadingMovers] = useState(false);
+  const [moverTimeframe, setMoverTimeframe] = useState<'24h' | '7d'>('24h');
+  const [showGlobalMovers, setShowGlobalMovers] = useState(false);
   
   // Last updated timestamps
   const [lastUpdated, setLastUpdated] = useState<{
@@ -98,133 +95,67 @@ export default function Dashboard() {
     movers: null,
     breakdown: null,
     marketPulse: null,
-    events: null
+    events: null,
   });
 
-  // Premium status (mock for now)
-  const [isPremium] = useState(false);
-
-  // Refresh functions
-  const refreshPortfolio = async () => {
-    try {
-      await mutate(); // Refresh portfolio data
-      setLastUpdated(prev => ({ ...prev, portfolio: new Date().toLocaleTimeString() }));
-    } catch (err) {
-      console.error('Failed to refresh portfolio:', err);
-    }
-  };
-
-  const refreshWatchlist = async () => {
-    setLoadingWatchlist(true);
-    try {
-      const token = await getToken({ template: "backend" });
-      const data = await fetchJson(apiUrl('/api/v1/watchlist'), {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      setWatchlist(data.slice(0, 3));
-      setLastUpdated(prev => ({ ...prev, watchlist: new Date().toLocaleTimeString() }));
-    } catch (err) {
-      console.error('Failed to refresh watchlist:', err);
-    } finally {
-      setLoadingWatchlist(false);
-    }
-  };
-
-  const refreshMovers = async () => {
-    setLoadingMovers(true);
-    try {
-      // Simulate movers data for now
-      const mockMovers = {
-        gainers: [
-          { id: 1, name: "AK-47 | Redline", imageUrl: "/placeholder.jpg", priceLatest: 45.50, priceChange24h: 12.5, priceChange7d: 8.2 },
-          { id: 2, name: "AWP | Dragon Lore", imageUrl: "/placeholder.jpg", priceLatest: 1250.00, priceChange24h: 8.3, priceChange7d: 15.3 },
-          { id: 3, name: "M4A4 | Howl", imageUrl: "/placeholder.jpg", priceLatest: 890.00, priceChange24h: 5.7, priceChange7d: 7.1 }
-        ],
-        losers: [
-          { id: 4, name: "Glock-18 | Fade", imageUrl: "/placeholder.jpg", priceLatest: 12.30, priceChange24h: -3.2, priceChange7d: -5.1 },
-          { id: 5, name: "USP-S | Kill Confirmed", imageUrl: "/placeholder.jpg", priceLatest: 8.90, priceChange24h: -7.1, priceChange7d: -12.3 },
-          { id: 6, name: "Desert Eagle | Blaze", imageUrl: "/placeholder.jpg", priceLatest: 15.40, priceChange24h: -2.8, priceChange7d: -4.5 }
-        ]
-      };
-      setMovers(mockMovers);
-      setLastUpdated(prev => ({ ...prev, movers: new Date().toLocaleTimeString() }));
-    } catch (err) {
-      console.error('Failed to refresh movers:', err);
-    } finally {
-      setLoadingMovers(false);
-    }
-  };
-
-  // Refresh all data
-  const refreshAll = async () => {
-    await Promise.all([
-      refreshPortfolio(),
-      refreshWatchlist(),
-      refreshMovers()
-    ]);
-    // Set timestamps for other components
-    const now = new Date().toLocaleTimeString();
-    setLastUpdated(prev => ({
-      ...prev,
-      breakdown: now,
-      marketPulse: now,
-      events: now
-    }));
-  };
-
-  // Client-side guard - redirect if not signed in
+  // Keyboard shortcuts
   useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push("/");
-    }
-  }, [isLoaded, isSignedIn, router]);
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) return;
+      
+      switch (e.key.toLowerCase()) {
+        case 'd':
+          e.preventDefault();
+          handleRefresh();
+          break;
+        case 'a':
+          e.preventDefault();
+          // Open add alert modal
+          break;
+        case 'w':
+          e.preventDefault();
+          router.push('/portfolio?tab=watchlist');
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   // Load watchlist data
   useEffect(() => {
-    if (!isSignedIn || !user) return;
+    if (!isSignedIn) return;
     
     const loadWatchlist = async () => {
       setLoadingWatchlist(true);
       try {
-        const token = await getToken({ template: "backend" });
-        const data = await fetchJson(apiUrl('/api/v1/watchlist'), {
-          headers: { "Authorization": `Bearer ${token}` }
+        const token = await getToken();
+        const response = await fetchJson<WatchlistItem[]>(apiUrl('/api/v1/watchlist'), {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        setWatchlist(data.slice(0, 3)); // Top 3 items
-        setLastUpdated(prev => ({ ...prev, watchlist: new Date().toLocaleTimeString() }));
-      } catch (err) {
-        console.error('Failed to load watchlist:', err);
-        setWatchlist([]); // Set empty array on error
+        setWatchlist(response);
+        setLastUpdated(prev => ({ ...prev, watchlist: new Date().toISOString() }));
+      } catch (error) {
+        console.error('Failed to load watchlist:', error);
       } finally {
         setLoadingWatchlist(false);
       }
     };
 
     loadWatchlist();
-  }, [isSignedIn, user, getToken]);
+  }, [isSignedIn, getToken]);
 
-  // Load movers data (mock for now)
+  // Load movers data
   useEffect(() => {
     const loadMovers = async () => {
       setLoadingMovers(true);
       try {
-        // Mock data - replace with real API call
-        const mockGainers: MoverItem[] = [
-          { id: 1, name: "AK-47 | Redline", imageUrl: "/placeholder.jpg", priceLatest: 45.50, priceChange24h: 12.5, priceChange7d: 8.2 },
-          { id: 2, name: "AWP | Dragon Lore", imageUrl: "/placeholder.jpg", priceLatest: 1250.00, priceChange24h: 5.8, priceChange7d: 15.3 },
-          { id: 3, name: "M4A4 | Howl", imageUrl: "/placeholder.jpg", priceLatest: 890.00, priceChange24h: 3.2, priceChange7d: 7.1 }
-        ];
-        
-        const mockLosers: MoverItem[] = [
-          { id: 4, name: "Glock-18 | Fade", imageUrl: "/placeholder.jpg", priceLatest: 125.00, priceChange24h: -8.5, priceChange7d: -12.3 },
-          { id: 5, name: "Karambit | Fade", imageUrl: "/placeholder.jpg", priceLatest: 2100.00, priceChange24h: -4.2, priceChange7d: -6.8 },
-          { id: 6, name: "AK-47 | Fire Serpent", imageUrl: "/placeholder.jpg", priceLatest: 320.00, priceChange24h: -2.1, priceChange7d: -4.5 }
-        ];
-        
-        setMovers({ gainers: mockGainers, losers: mockLosers });
-        setLastUpdated(prev => ({ ...prev, movers: new Date().toLocaleTimeString() }));
-      } catch (err) {
-        console.error('Failed to load movers:', err);
+        const response = await fetchJson<{ gainers: MoverItem[]; losers: MoverItem[] }>(apiUrl('/api/v1/skins/movers'));
+        setMovers(response);
+        setLastUpdated(prev => ({ ...prev, movers: new Date().toISOString() }));
+      } catch (error) {
+        console.error('Failed to load movers:', error);
       } finally {
         setLoadingMovers(false);
       }
@@ -233,384 +164,343 @@ export default function Dashboard() {
     loadMovers();
   }, []);
 
-  // Set portfolio last updated when data changes
-  useEffect(() => {
-    if (kpis && !isLoading) {
-      setLastUpdated(prev => ({ ...prev, portfolio: new Date().toLocaleTimeString() }));
-    }
-  }, [kpis, isLoading]);
+  const handleRefresh = async () => {
+    await mutate();
+    setLastUpdated(prev => ({ ...prev, portfolio: new Date().toISOString() }));
+  };
 
-  // Show loading while auth state is being determined
+  const getChangeColor = (change: number) => {
+    if (Math.abs(change) < 1) return 'text-slate-400';
+    if (Math.abs(change) < 3) return change >= 0 ? 'text-green-300' : 'text-red-300';
+    if (Math.abs(change) < 5) return change >= 0 ? 'text-green-400' : 'text-red-400';
+    return change >= 0 ? 'text-green-500' : 'text-red-500';
+  };
+
+  const getChangeBadgeVariant = (change: number) => {
+    if (Math.abs(change) < 1) return 'secondary';
+    if (Math.abs(change) < 3) return change >= 0 ? 'default' : 'destructive';
+    return change >= 0 ? 'default' : 'destructive';
+  };
+
+  const getChangeBadgeClass = (change: number) => {
+    if (Math.abs(change) < 1) return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+    if (Math.abs(change) < 3) return change >= 0 ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30';
+    return change >= 0 ? 'bg-green-600/20 text-green-500 border-green-600/30' : 'bg-red-600/20 text-red-500 border-red-600/30';
+  };
+
   if (!isLoaded) {
-    return (
-      <div className="dashboard-bg flex items-center justify-center text-white">
-        <div className="text-center relative z-10">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue mx-auto mb-4"></div>
-          <p className="text-slate-400">Loading...</p>
-        </div>
-      </div>
-    );
+    return <div className="text-white p-6">Loading...</div>;
   }
 
-  // Don't render anything if not signed in (will redirect)
   if (!isSignedIn) {
-    return null;
-  }
-
-  // Debug error state
-  if (error) {
-    return (
-      <div className="dashboard-bg text-white p-2 sm:p-4">
-        <div className="max-w-2xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl font-bold mb-4">Dashboard Error</h1>
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 mb-6">
-            <p className="text-red-400 mb-2">Failed to load dashboard data:</p>
-            <p className="text-slate-400 text-sm">{error.toString()}</p>
-          </div>
-          <Button onClick={refreshAll} className="btn-enhanced">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Show loading while data is being fetched
-  if (isLoading) {
-    return (
-      <div className="dashboard-bg text-white p-2 sm:p-4">
-        <main className="max-w-6xl mx-auto flex flex-col gap-8 relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <h1 className="text-4xl font-bold">Dashboard</h1>
-              <div className="text-slate-400">
-                Loading portfolio data... 
-                {portfolioLoading && <span className="text-blue-400 ml-2">(Portfolio)</span>}
-                {historyLoading && <span className="text-green-400 ml-2">(History)</span>}
-                {kpisLoading && <span className="text-purple-400 ml-2">(KPIs)</span>}
-              </div>
-            </div>
-            <Button disabled className="btn-enhanced">
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              Loading...
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Skeleton className="h-80 w-full skeleton-shimmer" />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Skeleton className="h-64 w-full skeleton-shimmer" />
-                <Skeleton className="h-64 w-full skeleton-shimmer" />
-                <Skeleton className="h-64 w-full skeleton-shimmer" />
-              </div>
-            </div>
-            <div className="space-y-6">
-              <Skeleton className="h-64 w-full skeleton-shimmer" />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            <Skeleton className="h-64 w-full skeleton-shimmer" />
-            <Skeleton className="h-64 w-full skeleton-shimmer" />
-          </div>
-        </main>
-      </div>
-    );
+    return <div className="text-white p-6">Please sign in to view your dashboard.</div>;
   }
 
   const totalValue = kpis?.portfolioValue || 0;
-  const change7d = kpis?.portfolioChange7d || 0;
   const change24h = kpis?.portfolioChange24h || 0;
-
-  // Filter history data based on selected range - simple approach without hooks
-  const getFilteredHistory = () => {
-    if (!history || !Array.isArray(history) || history.length === 0) {
-      return [];
-    }
-    
-    try {
-      const now = new Date();
-      const cutoffDate = new Date();
-      
-      if (chartRange === '7d') {
-        cutoffDate.setDate(now.getDate() - 7);
-      } else if (chartRange === '30d') {
-        cutoffDate.setDate(now.getDate() - 30);
-      } else if (chartRange === '90d') {
-        cutoffDate.setDate(now.getDate() - 90);
-      } else if (chartRange === '1y') {
-        cutoffDate.setFullYear(now.getFullYear() - 1);
-      } else if (chartRange === 'all') {
-        // Return all data for 'all' timeframe
-        return history;
-      }
-      
-      return history.filter(item => {
-        if (!item || !item.date) return false;
-        try {
-          return new Date(item.date) >= cutoffDate;
-        } catch (e) {
-          return false;
-        }
-      });
-    } catch (error) {
-      console.error('Error filtering history:', error);
-      return [];
-    }
-  };
+  const change7d = kpis?.portfolioChange7d || 0;
+  const totalInvested = kpis?.totalInvested || 0;
+  const unrealizedPL = totalValue - totalInvested;
+  const plPercentage = totalInvested > 0 ? (unrealizedPL / totalInvested) * 100 : 0;
+  const avgPerSkin = portfolio?.length ? totalValue / portfolio.length : 0;
+  const bestPerformer = portfolio?.reduce((best, skin) => {
+    const skinPL = (skin.skin.priceLatest || 0) - (skin.avgPrice || 0);
+    const bestPL = (best.skin.priceLatest || 0) - (best.avgPrice || 0);
+    return skinPL > bestPL ? skin : best;
+  }, portfolio[0]);
 
   return (
     <div className="dashboard-bg text-white">
       <div className="container-cs2 section-cs2 relative z-10">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-bold mb-2 animate-slide-in-left">Dashboard</h1>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                  <div className="value-large text-brand-green animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+        {/* Header with Global Refresh */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-white animate-slide-in-left">Dashboard</h1>
+            <p className="text-slate-300 mt-1 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+              Track your CS2 skin portfolio performance
+            </p>
+          </div>
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            size="sm"
+            className="btn-enhanced flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh All
+            <span className="text-xs text-slate-400">(D)</span>
+          </Button>
+        </div>
+
+        {/* Row 1: Portfolio Overview (left large) + Alerts (right narrow) */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+          {/* Portfolio Overview - Large Card */}
+          <div className="lg:col-span-3">
+            <Card className="card-enhanced h-full">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-2xl font-bold text-white">Portfolio Overview</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs text-slate-400">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {lastUpdated.portfolio ? new Date(lastUpdated.portfolio).toLocaleTimeString() : 'Never'}
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Portfolio Value - Very Large Typography */}
+                <div className="text-center">
+                  <div className="text-6xl font-bold text-white mb-2 animate-slide-in-left">
                     {formatUSD(totalValue)}
                   </div>
-                  <Badge 
-                    variant={change7d >= 0 ? "default" : "destructive"}
-                    className={`text-sm px-3 py-1 badge-enhanced w-fit animate-slide-in-right ${
-                      change7d >= 0 
-                        ? 'bg-green-500/20 text-green-400 border-green-500/30 badge-glow green' 
-                        : 'bg-red-500/20 text-red-400 border-red-500/30 badge-glow red'
-                    }`}
-                    style={{ animationDelay: '0.2s' }}
-                  >
-                    {change7d >= 0 ? '+' : ''}{safeToFixed(change7d, 1)}% (7d)
-                  </Badge>
+                  <div className="flex items-center justify-center gap-3">
+                    <Badge 
+                      variant={getChangeBadgeVariant(change24h)}
+                      className={`text-lg px-4 py-2 ${getChangeBadgeClass(change24h)}`}
+                    >
+                      {change24h >= 0 ? '+' : ''}{safeToFixed(change24h, 2)}% (24h)
+                    </Badge>
+                    <Badge 
+                      variant={getChangeBadgeVariant(change7d)}
+                      className={`text-lg px-4 py-2 ${getChangeBadgeClass(change7d)}`}
+                    >
+                      {change7d >= 0 ? '+' : ''}{safeToFixed(change7d, 2)}% (7d)
+                    </Badge>
+                  </div>
                 </div>
-              </div>
-            <Button 
-              onClick={refreshAll} 
-              variant="outline" 
-              size="sm"
-              disabled={isLoading}
-              className="btn-enhanced hover-glow w-fit"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh All
-            </Button>
+
+                {/* Portfolio Chart */}
+                <div className="h-64">
+                  <PortfolioValueChart 
+                    data={history || []} 
+                    range={chartRange}
+                    showProfitShading={true}
+                    showTooltips={true}
+                  />
+                </div>
+
+                {/* Chart Range Toggle */}
+                <div className="flex justify-center">
+                  <ToggleGroup value={chartRange} onValueChange={(value) => setChartRange(value as any)}>
+                    <ToggleGroupItem value="7d">7D</ToggleGroupItem>
+                    <ToggleGroupItem value="30d">30D</ToggleGroupItem>
+                    <ToggleGroupItem value="90d">90D</ToggleGroupItem>
+                    <ToggleGroupItem value="1y">1Y</ToggleGroupItem>
+                    <ToggleGroupItem value="all">All</ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Alerts & Watchlist - Narrow Card */}
+          <div className="lg:col-span-1">
+            <Card className="card-enhanced h-full">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-brand-orange" />
+                  Alerts & Watchlist
+                  <Lock className="h-4 w-4 text-slate-400" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Premium Upsell */}
+                <div className="text-center p-4 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg">
+                  <Crown className="h-8 w-8 mx-auto mb-2 text-yellow-400" />
+                  <h3 className="font-semibold text-white mb-1">Premium Required</h3>
+                  <p className="text-sm text-slate-300 mb-3">Unlock alerts and watchlist features</p>
+                  <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold">
+                    Upgrade to Premium
+                  </Button>
+                </div>
+
+                {/* Near Threshold Values */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-slate-300">Near Threshold</h4>
+                  {watchlist.slice(0, 3).map((item) => (
+                    <div 
+                      key={item.id} 
+                      className="p-2 bg-slate-800/50 rounded-lg hover:bg-slate-700/50 cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-white truncate">{item.skin.name}</span>
+                        <span className="text-xs text-slate-400">{formatUSD(item.skin.priceLatest)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quick Actions */}
+                <div className="space-y-2">
+                  <Button variant="outline" size="sm" className="w-full btn-enhanced">
+                    <Target className="h-4 w-4 mr-2" />
+                    Add Alert
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full btn-enhanced">
+                    <Heart className="h-4 w-4 mr-2" />
+                    Manage Watchlist
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        {/* Main Content Grid - New Structure */}
-        <div className="space-y-6 animate-fade-in mobile-optimized desktop-optimized">
-          {/* Top Row - Portfolio Overview + Alerts & Watchlist */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-slide-up">
-            {/* Portfolio Overview - Left Side */}
-            <div className="xl:col-span-2 space-y-6">
-              {/* Portfolio Overview Card */}
-              <Card className="card-brand card-enhanced hover-lift interactive-card">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                        <BarChart3 className="h-5 w-5 text-brand-blue" />
-                        Portfolio Overview
-                      </CardTitle>
-                      {lastUpdated.portfolio && (
-                        <span className="text-xs text-muted-foreground">
-                          Updated {lastUpdated.portfolio}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={refreshPortfolio}
-                        disabled={isLoading}
-                        className="h-8 w-8 p-0"
-                      >
-                        <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                      </Button>
-                      <ToggleGroup 
-                        type="single" 
-                        value={chartRange}
-                        onValueChange={(value: '7d' | '30d' | '90d' | '1y' | 'all') => value && setChartRange(value)}
-                        className="bg-muted/50 p-1 rounded-lg"
-                      >
-                        <ToggleGroupItem value="7d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
-                          7D
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="30d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
-                          30D
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="90d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
-                          90D
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="1y" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
-                          1Y
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="all" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
-                          ALL
-                        </ToggleGroupItem>
-                      </ToggleGroup>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-2">
-                  {/* Portfolio Value Chart */}
-                  <div className="h-40 mb-4">
-                    {(() => {
-                      const filteredData = getFilteredHistory();
-                      return filteredData.length > 0 ? (
-                        <PortfolioValueChart 
-                          data={filteredData} 
-                          className="w-full h-full"
-                        />
-                      ) : (
-                        <div className="h-full bg-muted/20 rounded-lg flex items-center justify-center">
-                          <div className="text-center text-muted-foreground space-y-4">
-                            <div className="space-y-2">
-                              <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground/50" />
-                              <h3 className="text-lg font-medium">No Portfolio Data</h3>
-                              <p className="text-sm max-w-sm">
-                                Start building your CS2 skin collection to see your portfolio performance over time.
-                              </p>
-                            </div>
-                            <Button 
-                              onClick={() => router.push('/skins')}
-                              className="bg-brand-blue hover:bg-brand-blue/90"
-                            >
-                              <Package className="h-4 w-4 mr-2" />
-                              Browse Skins
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
+        {/* Row 2: P&L KPIs under Portfolio Overview */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+          <Card className="card-enhanced">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-white">{formatUSD(unrealizedPL)}</div>
+              <div className="text-sm text-slate-400">Total P&L</div>
+              <div className={`text-xs mt-1 ${getChangeColor(plPercentage)}`}>
+                {plPercentage >= 0 ? '+' : ''}{safeToFixed(plPercentage, 1)}%
+              </div>
+            </CardContent>
+          </Card>
 
-                  {/* Mini P&L Bar */}
-                  <div className="bg-muted/20 rounded-lg p-4 space-y-3">
-                    <h4 className="text-sm font-medium text-muted-foreground">P&L Overview</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
-                      {/* Day P&L */}
-                      <div className="text-center stat-card p-3 rounded-lg">
-                        <p className="text-xs text-slate-400 mb-1">Day P&L</p>
-                        <div className="flex items-center justify-center gap-1">
-                          <Badge 
-                            variant={change24h >= 0 ? "default" : "destructive"}
-                            className={`badge-enhanced ${change24h >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30 badge-glow green" : "bg-red-500/20 text-red-400 border-red-500/30 badge-glow red"}`}
-                          >
-                            {change24h >= 0 ? '+' : ''}{safeToFixed(change24h, 2)}%
-                          </Badge>
-                        </div>
-                        <p className={`text-xs mt-1 ${change24h >= 0 ? 'value-positive' : 'value-negative'}`}>
-                          {formatUSD(totalValue * (change24h / 100))}
-                        </p>
-                      </div>
+          <Card className="card-enhanced">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-white">{formatUSD(avgPerSkin)}</div>
+              <div className="text-sm text-slate-400">Avg per Skin</div>
+            </CardContent>
+          </Card>
 
-                      {/* 7d P&L */}
-                      <div className="text-center stat-card p-3 rounded-lg">
-                        <p className="text-xs text-slate-400 mb-1">7d P&L</p>
-                        <div className="flex items-center justify-center gap-1">
-                          <Badge 
-                            variant={change7d >= 0 ? "default" : "destructive"}
-                            className={`badge-enhanced ${change7d >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30 badge-glow green" : "bg-red-500/20 text-red-400 border-red-500/30 badge-glow red"}`}
-                          >
-                            {change7d >= 0 ? '+' : ''}{safeToFixed(change7d, 2)}%
-                          </Badge>
-                        </div>
-                        <p className={`text-xs mt-1 ${change7d >= 0 ? 'value-positive' : 'value-negative'}`}>
-                          {formatUSD(totalValue * (change7d / 100))}
-                        </p>
-                      </div>
+          <Card className="card-enhanced">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-white">{portfolio?.length || 0}</div>
+              <div className="text-sm text-slate-400"># Skins</div>
+            </CardContent>
+          </Card>
 
-                      {/* Total P&L */}
-                      <div className="text-center stat-card p-3 rounded-lg">
-                        <p className="text-xs text-slate-400 mb-1">Total P&L</p>
-                        <div className="flex items-center justify-center gap-1">
-                          <Badge 
-                            variant={(kpis?.unrealizedPL || 0) >= 0 ? "default" : "destructive"}
-                            className={`badge-enhanced ${(kpis?.unrealizedPL || 0) >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30 badge-glow green" : "bg-red-500/20 text-red-400 border-red-500/30 badge-glow red"}`}
-                          >
-                            {formatUSD(kpis?.unrealizedPL || 0)}
-                          </Badge>
-                        </div>
-                        <p className={`text-xs mt-1 ${(kpis?.unrealizedPL || 0) >= 0 ? 'value-positive' : 'value-negative'}`}>
-                          {kpis?.totalInvested ? `${safeToFixed(((kpis?.unrealizedPL || 0) / kpis.totalInvested) * 100, 1)}%` : '0%'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+          <Card className="card-enhanced">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-white">{formatUSD(totalInvested)}</div>
+              <div className="text-sm text-slate-400">Total Invested</div>
+            </CardContent>
+          </Card>
 
-                  {/* KPI Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mt-6">
-                    <div className="text-center stat-card p-4 rounded-lg">
-                      <p className="text-sm text-slate-400 mb-2">Avg Value per Skin</p>
-                      <p className="value-medium text-brand-blue">
-                        {kpis?.portfolioCount ? formatUSD(totalValue / kpis.portfolioCount) : '$0'}
-                      </p>
-                    </div>
-                    <div className="text-center stat-card p-4 rounded-lg">
-                      <p className="text-sm text-slate-400 mb-2"># of Skins</p>
-                      <p className="value-medium text-slate-300">{kpis?.portfolioCount || 0}</p>
-                    </div>
-                    <div className="text-center stat-card p-4 rounded-lg">
-                      <p className="text-sm text-slate-400 mb-2">Best Performer</p>
-                      <p className="value-medium value-positive">+12.5%</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          <Card className="card-enhanced">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-white">{formatUSD(change24h * totalValue / 100)}</div>
+              <div className="text-sm text-slate-400">Day P&L</div>
+            </CardContent>
+          </Card>
 
-            {/* Alerts & Watchlist - Right Side */}
-            <div className="space-y-6">
-              <AlertsBox
-                watchlist={watchlist}
-                activeAlerts={kpis?.activeAlerts || 0}
-                nearAlerts={2} // Mock data
-                lastUpdated={lastUpdated.watchlist || undefined}
-                onRefresh={refreshWatchlist}
-                onAddAlert={() => router.push('/watchlist')}
-                onViewAll={() => router.push('/watchlist')}
-                isLoading={loadingWatchlist}
+          <Card className="card-enhanced">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-white">{formatUSD(change7d * totalValue / 100)}</div>
+              <div className="text-sm text-slate-400">7d P&L</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Row 3: Breakdown, Market Pulse, Events in a row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <Card className="card-enhanced">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold text-white">Portfolio Breakdown</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EnhancedPortfolioBreakdown portfolio={portfolio || []} />
+            </CardContent>
+          </Card>
+
+          <Card className="card-enhanced">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold text-white">Market Pulse</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <MarketPulse />
+            </CardContent>
+          </Card>
+
+          <Card className="card-enhanced">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold text-white">Market Events</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <MarketEvents />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Row 4: Movers over full width, Gainers left, Losers right */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <Card className="card-enhanced">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-green-400" />
+                  Top Gainers
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <ToggleGroup value={moverTimeframe} onValueChange={(value) => setMoverTimeframe(value as any)}>
+                    <ToggleGroupItem value="24h">24h</ToggleGroupItem>
+                    <ToggleGroupItem value="7d">7d</ToggleGroupItem>
+                  </ToggleGroup>
+                  {isSignedIn && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowGlobalMovers(!showGlobalMovers)}
+                      className="btn-enhanced"
+                    >
+                      <Globe className="h-4 w-4 mr-1" />
+                      Global
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <EnhancedMovers 
+                type="gainers" 
+                data={movers.gainers} 
+                timeframe={moverTimeframe}
+                showHoverCharts={true}
+                showQuickPreview={true}
               />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Middle Row - Breakdown + Market Pulse + Events */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            <PortfolioBreakdown
-              portfolio={portfolio}
-              lastUpdated={lastUpdated.breakdown || undefined}
-              onRefresh={refreshPortfolio}
-              isLoading={isLoading}
-            />
-            <MarketPulse
-              lastUpdated={lastUpdated.marketPulse || undefined}
-              onRefresh={refreshAll}
-              isLoading={isLoading}
-              isPremium={isPremium}
-            />
-            <MarketEvents
-              lastUpdated={lastUpdated.events || undefined}
-              onRefresh={refreshAll}
-              isLoading={isLoading}
-            />
-          </div>
+          <Card className="card-enhanced">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                <TrendingDown className="h-5 w-5 text-red-400" />
+                Top Losers
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EnhancedMovers 
+                type="losers" 
+                data={movers.losers} 
+                timeframe={moverTimeframe}
+                showHoverCharts={true}
+                showQuickPreview={true}
+              />
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Bottom Row - Top Movers */}
-          <div className="animate-slide-up" style={{ animationDelay: '0.4s' }}>
-            <Movers
-            gainers={movers.gainers}
-            losers={movers.losers}
-            lastUpdated={lastUpdated.movers || undefined}
-            onRefresh={refreshMovers}
-            isLoading={loadingMovers}
-            isPremium={isPremium}
-            scope="portfolio"
-            onScopeChange={(scope) => console.log('Scope changed to:', scope)}
-            onItemClick={(item) => console.log('Item clicked:', item)}
-            />
-          </div>
+        {/* Quick Actions - Compact Button Block */}
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Button variant="outline" className="btn-enhanced">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            View Portfolio
+          </Button>
+          <Button variant="outline" className="btn-enhanced">
+            <Package className="h-4 w-4 mr-2" />
+            Browse Skins
+          </Button>
+          <Button variant="outline" className="btn-enhanced">
+            <Heart className="h-4 w-4 mr-2" />
+            Manage Watchlist
+          </Button>
+          <Button variant="outline" className="btn-enhanced">
+            <Target className="h-4 w-4 mr-2" />
+            Create Alert
+          </Button>
         </div>
       </div>
     </div>
