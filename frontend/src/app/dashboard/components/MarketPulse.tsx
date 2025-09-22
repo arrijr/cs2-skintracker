@@ -98,14 +98,14 @@ export default function MarketPulse({
             <h3 className="text-lg font-semibold">CS2 Market Index</h3>
             <div className="flex items-center justify-center gap-2">
               {marketData.index24h >= 0 ? (
-                <TrendingUp className="h-5 w-5 text-green-400" />
+                <TrendingUp className="h-5 w-5 text-green-400 animate-pulse" />
               ) : (
-                <TrendingDown className="h-5 w-5 text-red-400" />
+                <TrendingDown className="h-5 w-5 text-red-400 animate-pulse" />
               )}
-              <span className="text-2xl font-bold">
+              <span className={`text-2xl font-bold ${marketData.index24h >= 0 ? 'value-positive' : 'value-negative'}`}>
                 {marketData.index24h >= 0 ? '+' : ''}{safeToFixed(marketData.index24h, 2)}%
               </span>
-              <span className="text-sm text-muted-foreground">24h</span>
+              <span className="text-sm text-slate-400">24h</span>
             </div>
           </div>
 

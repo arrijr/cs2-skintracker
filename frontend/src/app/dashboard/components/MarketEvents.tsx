@@ -151,7 +151,7 @@ export default function MarketEvents({
         {events.length > 0 ? (
           <div className="space-y-3">
             {events.map((event) => (
-              <div key={event.id} className="p-3 bg-muted/20 rounded-lg hover:bg-muted/30 transition-all duration-200 hover-scale">
+              <div key={event.id} className="p-3 bg-slate-800/20 rounded-lg hover:bg-slate-700/30 transition-all duration-200 hover-scale interactive-card">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 flex-1">
                     <div className={`mt-0.5 ${getEventColor(event.type)}`}>

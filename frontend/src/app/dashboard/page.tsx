@@ -365,24 +365,25 @@ export default function Dashboard() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold mb-2">Dashboard</h1>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                <div className="text-2xl sm:text-3xl font-bold text-brand-green">
-                  {formatUSD(totalValue)}
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold mb-2 animate-slide-in-left">Dashboard</h1>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <div className="value-large text-brand-green animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+                    {formatUSD(totalValue)}
+                  </div>
+                  <Badge 
+                    variant={change7d >= 0 ? "default" : "destructive"}
+                    className={`text-sm px-3 py-1 badge-enhanced w-fit animate-slide-in-right ${
+                      change7d >= 0 
+                        ? 'bg-green-500/20 text-green-400 border-green-500/30 badge-glow green' 
+                        : 'bg-red-500/20 text-red-400 border-red-500/30 badge-glow red'
+                    }`}
+                    style={{ animationDelay: '0.2s' }}
+                  >
+                    {change7d >= 0 ? '+' : ''}{safeToFixed(change7d, 1)}% (7d)
+                  </Badge>
                 </div>
-                <Badge 
-                  variant={change7d >= 0 ? "default" : "destructive"}
-                  className={`text-sm px-3 py-1 badge-enhanced w-fit ${
-                    change7d >= 0 
-                      ? 'bg-green-500/20 text-green-400 border-green-500/30 badge-glow green' 
-                      : 'bg-red-500/20 text-red-400 border-red-500/30 badge-glow red'
-                  }`}
-                >
-                  {change7d >= 0 ? '+' : ''}{safeToFixed(change7d, 1)}% (7d)
-                </Badge>
               </div>
-            </div>
             <Button 
               onClick={refreshAll} 
               variant="outline" 
@@ -403,7 +404,7 @@ export default function Dashboard() {
             {/* Portfolio Overview - Left Side */}
             <div className="xl:col-span-2 space-y-6">
               {/* Portfolio Overview Card */}
-              <Card className="card-brand card-enhanced hover-lift">
+              <Card className="card-brand card-enhanced hover-lift interactive-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -490,49 +491,49 @@ export default function Dashboard() {
                     <h4 className="text-sm font-medium text-muted-foreground">P&L Overview</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
                       {/* Day P&L */}
-                      <div className="text-center">
-                        <p className="text-xs text-muted-foreground mb-1">Day P&L</p>
+                      <div className="text-center stat-card p-3 rounded-lg">
+                        <p className="text-xs text-slate-400 mb-1">Day P&L</p>
                         <div className="flex items-center justify-center gap-1">
                           <Badge 
                             variant={change24h >= 0 ? "default" : "destructive"}
-                            className={change24h >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}
+                            className={`badge-enhanced ${change24h >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30 badge-glow green" : "bg-red-500/20 text-red-400 border-red-500/30 badge-glow red"}`}
                           >
                             {change24h >= 0 ? '+' : ''}{safeToFixed(change24h, 2)}%
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className={`text-xs mt-1 ${change24h >= 0 ? 'value-positive' : 'value-negative'}`}>
                           {formatUSD(totalValue * (change24h / 100))}
                         </p>
                       </div>
 
                       {/* 7d P&L */}
-                      <div className="text-center">
-                        <p className="text-xs text-muted-foreground mb-1">7d P&L</p>
+                      <div className="text-center stat-card p-3 rounded-lg">
+                        <p className="text-xs text-slate-400 mb-1">7d P&L</p>
                         <div className="flex items-center justify-center gap-1">
                           <Badge 
                             variant={change7d >= 0 ? "default" : "destructive"}
-                            className={change7d >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}
+                            className={`badge-enhanced ${change7d >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30 badge-glow green" : "bg-red-500/20 text-red-400 border-red-500/30 badge-glow red"}`}
                           >
                             {change7d >= 0 ? '+' : ''}{safeToFixed(change7d, 2)}%
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className={`text-xs mt-1 ${change7d >= 0 ? 'value-positive' : 'value-negative'}`}>
                           {formatUSD(totalValue * (change7d / 100))}
                         </p>
                       </div>
 
                       {/* Total P&L */}
-                      <div className="text-center">
-                        <p className="text-xs text-muted-foreground mb-1">Total P&L</p>
+                      <div className="text-center stat-card p-3 rounded-lg">
+                        <p className="text-xs text-slate-400 mb-1">Total P&L</p>
                         <div className="flex items-center justify-center gap-1">
                           <Badge 
                             variant={(kpis?.unrealizedPL || 0) >= 0 ? "default" : "destructive"}
-                            className={(kpis?.unrealizedPL || 0) >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}
+                            className={`badge-enhanced ${(kpis?.unrealizedPL || 0) >= 0 ? "bg-green-500/20 text-green-400 border-green-500/30 badge-glow green" : "bg-red-500/20 text-red-400 border-red-500/30 badge-glow red"}`}
                           >
                             {formatUSD(kpis?.unrealizedPL || 0)}
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className={`text-xs mt-1 ${(kpis?.unrealizedPL || 0) >= 0 ? 'value-positive' : 'value-negative'}`}>
                           {kpis?.totalInvested ? `${safeToFixed(((kpis?.unrealizedPL || 0) / kpis.totalInvested) * 100, 1)}%` : '0%'}
                         </p>
                       </div>
@@ -541,19 +542,19 @@ export default function Dashboard() {
 
                   {/* KPI Row */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mt-6">
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground">Avg Value per Skin</p>
-                      <p className="text-lg font-semibold">
+                    <div className="text-center stat-card p-4 rounded-lg">
+                      <p className="text-sm text-slate-400 mb-2">Avg Value per Skin</p>
+                      <p className="value-medium text-brand-blue">
                         {kpis?.portfolioCount ? formatUSD(totalValue / kpis.portfolioCount) : '$0'}
                       </p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground"># of Skins</p>
-                      <p className="text-lg font-semibold">{kpis?.portfolioCount || 0}</p>
+                    <div className="text-center stat-card p-4 rounded-lg">
+                      <p className="text-sm text-slate-400 mb-2"># of Skins</p>
+                      <p className="value-medium text-slate-300">{kpis?.portfolioCount || 0}</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground">Best Performer</p>
-                      <p className="text-lg font-semibold text-brand-green">+12.5%</p>
+                    <div className="text-center stat-card p-4 rounded-lg">
+                      <p className="text-sm text-slate-400 mb-2">Best Performer</p>
+                      <p className="value-medium value-positive">+12.5%</p>
                     </div>
                   </div>
                 </CardContent>
