@@ -804,10 +804,6 @@
 
 /* Dark Mode Enhancements */
 @media (prefers-color-scheme: dark) {
-  .card-enhanced {
-    @apply hover:shadow-blue-500/20;
-  }
-  
   .btn-glow::before {
     @apply from-transparent via-white/10 to-transparent;
   }
@@ -823,6 +819,33 @@
     @apply absolute w-px h-px p-0 -m-px overflow-hidden;
     @apply whitespace-nowrap border-0;
     clip: rect(0, 0, 0, 0);
+  }
+}
+
+/* Final Card Overrides - Clean & Modern */
+@layer components {
+  .card-enhanced {
+    @apply bg-gray-900 !important;
+    @apply border-gray-700/50 !important;
+    @apply transition-all duration-300 ease-in-out;
+    @apply hover:shadow-xl hover:shadow-gray-500/10;
+    @apply hover:border-gray-600/50;
+  }
+
+  .card-primary {
+    @apply bg-gray-950 !important;
+    @apply border-gray-700/50 !important;
+    @apply transition-all duration-300 ease-in-out;
+    @apply hover:shadow-xl hover:shadow-gray-500/10;
+    @apply hover:border-gray-600/50;
+  }
+
+  .card-secondary {
+    @apply bg-gray-800 !important;
+    @apply border-gray-700/50 !important;
+    @apply transition-all duration-300 ease-in-out;
+    @apply hover:shadow-xl hover:shadow-gray-500/10;
+    @apply hover:border-gray-600/50;
   }
 }
 
