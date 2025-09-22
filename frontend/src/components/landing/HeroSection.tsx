@@ -4,9 +4,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Play, Star, Users, TrendingUp } from "lucide-react";
+import { ArrowRight, Play, Star, Users, TrendingUp, BarChart3 } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 
 export default function HeroSection() {
+  const { user, isLoaded } = useUser();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Effects */}
@@ -57,27 +60,57 @@ export default function HeroSection() {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg" 
-                  className="bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 text-lg font-semibold btn-enhanced"
-                  asChild
-                >
-                  <Link href="/sign-up">
-                    Get Started Free
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-4 text-lg font-semibold btn-enhanced"
-                  asChild
-                >
-                  <Link href="/skins">
-                    Browse Skins
-                    <Play className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
+                {isLoaded && user ? (
+                  // Logged in user CTAs
+                  <>
+                    <Button 
+                      size="lg" 
+                      className="bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 text-lg font-semibold btn-enhanced"
+                      asChild
+                    >
+                      <Link href="/dashboard">
+                        Go to Dashboard
+                        <BarChart3 className="ml-2 h-5 w-5" />
+                      </Link>
+                    </Button>
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-4 text-lg font-semibold btn-enhanced"
+                      asChild
+                    >
+                      <Link href="/portfolio">
+                        View Portfolio
+                        <Play className="ml-2 h-5 w-5" />
+                      </Link>
+                    </Button>
+                  </>
+                ) : (
+                  // Guest user CTAs
+                  <>
+                    <Button 
+                      size="lg" 
+                      className="bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 text-lg font-semibold btn-enhanced"
+                      asChild
+                    >
+                      <Link href="/sign-up">
+                        Get Started Free
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                      </Link>
+                    </Button>
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-4 text-lg font-semibold btn-enhanced"
+                      asChild
+                    >
+                      <Link href="/skins">
+                        Browse Skins
+                        <Play className="ml-2 h-5 w-5" />
+                      </Link>
+                    </Button>
+                  </>
+                )}
               </div>
 
               {/* Social Proof */}

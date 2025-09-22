@@ -18,16 +18,8 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  // If user is logged in, redirect to dashboard after a short delay
-  useEffect(() => {
-    if (isLoaded && user && mounted) {
-      const timer = setTimeout(() => {
-        router.push("/dashboard");
-      }, 2000); // 2 second delay to show landing page
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isLoaded, user, router, mounted]);
+  // Landing page should always show - no automatic redirect
+  // Users can manually navigate to dashboard via header or CTAs
 
   if (!mounted) {
     return null;
