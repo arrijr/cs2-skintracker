@@ -242,7 +242,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
           {/* Portfolio Overview - Large Card */}
           <div className="lg:col-span-3">
-            <Card className="card-enhanced h-full">
+            <Card className="card-primary h-full">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-2xl font-bold text-white">Portfolio Overview</CardTitle>
@@ -302,36 +302,36 @@ export default function Dashboard() {
 
           {/* Alerts & Watchlist - Narrow Card */}
           <div className="lg:col-span-1">
-            <Card className="card-enhanced h-full">
+            <Card className="card-secondary h-full">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-brand-orange" />
+                  <AlertCircle className="h-5 w-5 text-brand-warning" />
                   Alerts & Watchlist
-                  <Lock className="h-4 w-4 text-slate-400" />
+                  <Lock className="h-4 w-4 text-gray-400" />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Premium Upsell */}
-                <div className="text-center p-4 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg">
-                  <Crown className="h-8 w-8 mx-auto mb-2 text-yellow-400" />
+                <div className="text-center p-4 bg-gradient-to-r from-brand-premium/10 to-brand-warning/10 border border-brand-premium/30 rounded-lg">
+                  <Crown className="h-8 w-8 mx-auto mb-2 text-brand-premium" />
                   <h3 className="font-semibold text-white mb-1">Premium Required</h3>
-                  <p className="text-sm text-slate-300 mb-3">Unlock alerts and watchlist features</p>
-                  <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold">
+                  <p className="text-sm text-gray-300 mb-3">Unlock alerts and watchlist features</p>
+                  <Button className="w-full bg-gradient-to-r from-brand-premium to-brand-warning hover:from-brand-premium/90 hover:to-brand-warning/90 text-white font-semibold">
                     Upgrade to Premium
                   </Button>
                 </div>
 
                 {/* Near Threshold Values */}
                 <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-slate-300">Near Threshold</h4>
+                  <h4 className="text-sm font-semibold text-gray-300">Near Threshold</h4>
                   {watchlist.slice(0, 3).map((item) => (
                     <div 
                       key={item.id} 
-                      className="p-2 bg-slate-800/50 rounded-lg hover:bg-slate-700/50 cursor-pointer transition-colors"
+                      className="p-2 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 cursor-pointer transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-white truncate">{item.skin.name}</span>
-                        <span className="text-xs text-slate-400">{formatUSD(item.skin.priceLatest)}</span>
+                        <span className="text-xs text-gray-400">{formatUSD(item.skin.priceLatest)}</span>
                       </div>
                     </div>
                   ))}
@@ -339,11 +339,11 @@ export default function Dashboard() {
 
                 {/* Quick Actions */}
                 <div className="space-y-2">
-                  <Button variant="outline" size="sm" className="w-full btn-enhanced">
+                  <Button variant="outline" size="sm" className="w-full border-brand-premium text-brand-premium hover:bg-brand-premium hover:text-black">
                     <Target className="h-4 w-4 mr-2" />
                     Add Alert
                   </Button>
-                  <Button variant="outline" size="sm" className="w-full btn-enhanced">
+                  <Button variant="outline" size="sm" className="w-full border-brand-premium text-brand-premium hover:bg-brand-premium hover:text-black">
                     <Heart className="h-4 w-4 mr-2" />
                     Manage Watchlist
                   </Button>
@@ -355,55 +355,61 @@ export default function Dashboard() {
 
         {/* Row 2: P&L KPIs under Portfolio Overview */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-          <Card className="card-enhanced">
+          <Card className="card-primary">
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-white">{formatUSD(unrealizedPL)}</div>
-              <div className="text-sm text-slate-400">Total P&L</div>
-              <div className={`text-xs mt-1 ${getChangeColor(plPercentage)}`}>
+              <div className={`text-2xl font-bold ${unrealizedPL >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
+                {formatUSD(unrealizedPL)}
+              </div>
+              <div className="text-sm text-gray-400">Total P&L</div>
+              <div className={`text-xs mt-1 ${unrealizedPL >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
                 {plPercentage >= 0 ? '+' : ''}{safeToFixed(plPercentage, 1)}%
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-enhanced">
+          <Card className="card-primary">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-white">{formatUSD(avgPerSkin)}</div>
-              <div className="text-sm text-slate-400">Avg per Skin</div>
+              <div className="text-sm text-gray-400">Avg per Skin</div>
             </CardContent>
           </Card>
 
-          <Card className="card-enhanced">
+          <Card className="card-primary">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-white">{portfolio?.length || 0}</div>
-              <div className="text-sm text-slate-400"># Skins</div>
+              <div className="text-sm text-gray-400"># Skins</div>
             </CardContent>
           </Card>
 
-          <Card className="card-enhanced">
+          <Card className="card-primary">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-white">{formatUSD(totalInvested)}</div>
-              <div className="text-sm text-slate-400">Total Invested</div>
+              <div className="text-sm text-gray-400">Total Invested</div>
             </CardContent>
           </Card>
 
-          <Card className="card-enhanced">
+          <Card className="card-primary">
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-white">{formatUSD(change24h * totalValue / 100)}</div>
-              <div className="text-sm text-slate-400">Day P&L</div>
+              <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
+                {formatUSD(change24h * totalValue / 100)}
+              </div>
+              <div className="text-sm text-gray-400">Day P&L</div>
             </CardContent>
           </Card>
 
-          <Card className="card-enhanced">
+          <Card className="card-primary">
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-white">{formatUSD(change7d * totalValue / 100)}</div>
-              <div className="text-sm text-slate-400">7d P&L</div>
+              <div className={`text-2xl font-bold ${change7d >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
+                {formatUSD(change7d * totalValue / 100)}
+              </div>
+              <div className="text-sm text-gray-400">7d P&L</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Row 3: Breakdown, Market Pulse, Events in a row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <Card className="card-enhanced">
+          <Card className="card-secondary">
             <CardHeader>
               <CardTitle className="text-lg font-bold text-white">Portfolio Breakdown</CardTitle>
             </CardHeader>
@@ -412,18 +418,26 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="card-enhanced">
+          <Card className="card-secondary">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-white">Market Pulse</CardTitle>
+              <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                <Activity className="h-5 w-5 text-brand-info" />
+                Market Pulse
+                <Lock className="h-4 w-4 text-gray-400" />
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <MarketPulse />
             </CardContent>
           </Card>
 
-          <Card className="card-enhanced">
+          <Card className="card-secondary">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-white">Market Events</CardTitle>
+              <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                <Globe className="h-5 w-5 text-brand-warning" />
+                Market Events
+                <Lock className="h-4 w-4 text-gray-400" />
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <MarketEvents />
@@ -433,11 +447,11 @@ export default function Dashboard() {
 
         {/* Row 4: Movers over full width, Gainers left, Losers right */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <Card className="card-enhanced">
+          <Card className="card-secondary">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-400" />
+                  <TrendingUp className="h-5 w-5 text-brand-green" />
                   Top Gainers
                 </CardTitle>
                 <div className="flex items-center gap-2">
@@ -470,10 +484,10 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="card-enhanced">
+          <Card className="card-secondary">
             <CardHeader>
               <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                <TrendingDown className="h-5 w-5 text-red-400" />
+                <TrendingDown className="h-5 w-5 text-brand-red" />
                 Top Losers
               </CardTitle>
             </CardHeader>
@@ -491,19 +505,19 @@ export default function Dashboard() {
 
         {/* Quick Actions - Compact Button Block */}
         <div className="flex flex-wrap gap-3 justify-center">
-          <Button variant="outline" className="btn-enhanced">
+          <Button variant="outline" className="border-brand-info text-brand-info hover:bg-brand-info hover:text-white">
             <BarChart3 className="h-4 w-4 mr-2" />
             View Portfolio
           </Button>
-          <Button variant="outline" className="btn-enhanced">
+          <Button variant="outline" className="border-brand-info text-brand-info hover:bg-brand-info hover:text-white">
             <Package className="h-4 w-4 mr-2" />
             Browse Skins
           </Button>
-          <Button variant="outline" className="btn-enhanced">
+          <Button variant="outline" className="border-brand-premium text-brand-premium hover:bg-brand-premium hover:text-black">
             <Heart className="h-4 w-4 mr-2" />
             Manage Watchlist
           </Button>
-          <Button variant="outline" className="btn-enhanced">
+          <Button variant="outline" className="border-brand-premium text-brand-premium hover:bg-brand-premium hover:text-black">
             <Target className="h-4 w-4 mr-2" />
             Create Alert
           </Button>

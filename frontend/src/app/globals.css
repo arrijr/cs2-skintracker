@@ -31,6 +31,25 @@
     --chart-5: 27 87% 67%;
   }
 
+  /* SkinTrackr Custom Color Palette - Clean & Modern */
+  :root {
+    --bg-primary: #0f0f23;
+    --bg-secondary: #1A1A1A;
+    --bg-tertiary: #222222;
+    --bg-hover: #2A2A2A;
+    --text-primary: #FFFFFF;
+    --text-secondary: #A1A1AA;
+    --text-muted: #71717A;
+    --brand-green: #00E599;
+    --brand-red: #EF4444;
+    --brand-warning: #FACC15;
+    --brand-info: #3B82F6;
+    --brand-premium: #F59E0B;
+    --brand-orange: #F59E0B;
+    --brand-purple: #9C27B0;
+    --brand-yellow: #FFC107;
+  }
+
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -383,12 +402,28 @@
   }
   
   .card-enhanced {
-    @apply bg-slate-800/30 backdrop-blur-sm;
-    @apply border border-slate-700/50;
+    background-color: var(--bg-secondary);
+    @apply border border-gray-800/50;
     @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-slate-500/10;
-    @apply hover:border-slate-600/50;
-    @apply hover:bg-gradient-to-br hover:from-slate-700/40 hover:to-slate-800/40;
+    @apply hover:shadow-xl hover:shadow-gray-500/10;
+    @apply hover:border-gray-700/50;
+    @apply hover:bg-gray-800/40;
+  }
+
+  .card-primary {
+    background-color: var(--bg-secondary);
+    @apply border border-gray-800/50;
+    @apply transition-all duration-300 ease-in-out;
+    @apply hover:shadow-xl hover:shadow-gray-500/10;
+    @apply hover:border-gray-700/50;
+  }
+
+  .card-secondary {
+    background-color: var(--bg-tertiary);
+    @apply border border-gray-800/50;
+    @apply transition-all duration-300 ease-in-out;
+    @apply hover:shadow-xl hover:shadow-gray-500/10;
+    @apply hover:border-gray-700/50;
   }
   
   .card-interactive {
@@ -553,6 +588,87 @@
   .value-large {
     @apply text-2xl sm:text-3xl font-bold;
     @apply animate-count-up;
+  }
+
+  /* SkinTrackr Color Utilities */
+  .text-brand-green {
+    color: var(--brand-green);
+  }
+
+  .text-brand-red {
+    color: var(--brand-red);
+  }
+
+  .text-brand-warning {
+    color: var(--brand-warning);
+  }
+
+  .text-brand-info {
+    color: var(--brand-info);
+  }
+
+  .text-brand-premium {
+    color: var(--brand-premium);
+  }
+
+  .bg-brand-green {
+    background-color: var(--brand-green);
+  }
+
+  .bg-brand-red {
+    background-color: var(--brand-red);
+  }
+
+  .bg-brand-warning {
+    background-color: var(--brand-warning);
+  }
+
+  .bg-brand-info {
+    background-color: var(--brand-info);
+  }
+
+  .bg-brand-premium {
+    background-color: var(--brand-premium);
+  }
+
+  .border-brand-green {
+    border-color: var(--brand-green);
+  }
+
+  .border-brand-red {
+    border-color: var(--brand-red);
+  }
+
+  .border-brand-warning {
+    border-color: var(--brand-warning);
+  }
+
+  .border-brand-info {
+    border-color: var(--brand-info);
+  }
+
+  .border-brand-premium {
+    border-color: var(--brand-premium);
+  }
+
+  .hover\:bg-brand-green:hover {
+    background-color: var(--brand-green);
+  }
+
+  .hover\:bg-brand-red:hover {
+    background-color: var(--brand-red);
+  }
+
+  .hover\:bg-brand-warning:hover {
+    background-color: var(--brand-warning);
+  }
+
+  .hover\:bg-brand-info:hover {
+    background-color: var(--brand-info);
+  }
+
+  .hover\:bg-brand-premium:hover {
+    background-color: var(--brand-premium);
   }
   
   .value-medium {
