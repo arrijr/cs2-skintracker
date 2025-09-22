@@ -387,6 +387,35 @@
   }
 }
 
+/* Container and Layout */
+@layer components {
+  .container-cs2 {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply w-full;
+  }
+  
+  .section-cs2 {
+    @apply py-6 sm:py-8;
+  }
+  
+  .container-fluid {
+    @apply w-full px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Responsive Grid Improvements */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+  
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6;
+  }
+  
+  .grid-responsive-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6;
+  }
+}
+
 /* Responsive Enhancements */
 @layer utilities {
   .mobile-optimized {

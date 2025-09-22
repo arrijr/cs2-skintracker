@@ -61,7 +61,7 @@ export default function AppHeader() {
           </nav>
 
           {/* Desktop Search Bar */}
-          <div className="hidden lg:flex flex-1 max-w-md mx-8">
+          <div className="hidden lg:flex flex-1 max-w-lg mx-4">
             <SkinSearchBar
               onSelect={(skinId) => {
                 window.location.href = `/skins/${skinId}`;

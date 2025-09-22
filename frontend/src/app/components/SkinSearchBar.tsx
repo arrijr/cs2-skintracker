@@ -81,7 +81,7 @@ export default function SkinSearchBar<T = number | Skin>({
   }
 
   return (
-    <div className="relative w-full max-w-md">
+    <div className="relative w-full">
       {/* Skin Search Input */}
       <input
         value={q}

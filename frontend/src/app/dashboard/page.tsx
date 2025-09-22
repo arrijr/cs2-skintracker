@@ -366,16 +366,16 @@ export default function Dashboard() {
       <div className="container-cs2 section-cs2">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
-              <div className="flex items-center gap-4">
-                <div className="text-3xl font-bold text-brand-green">
+              <h1 className="text-3xl sm:text-4xl font-bold mb-2">Dashboard</h1>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <div className="text-2xl sm:text-3xl font-bold text-brand-green">
                   {formatUSD(totalValue)}
                 </div>
                 <Badge 
                   variant={change7d >= 0 ? "default" : "destructive"}
-                  className={`text-sm px-3 py-1 badge-enhanced ${
+                  className={`text-sm px-3 py-1 badge-enhanced w-fit ${
                     change7d >= 0 
                       ? 'bg-green-500/20 text-green-400 border-green-500/30 badge-glow green' 
                       : 'bg-red-500/20 text-red-400 border-red-500/30 badge-glow red'
@@ -390,7 +390,7 @@ export default function Dashboard() {
               variant="outline" 
               size="sm"
               disabled={isLoading}
-              className="btn-enhanced hover-glow"
+              className="btn-enhanced hover-glow w-fit"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh All
@@ -401,9 +401,9 @@ export default function Dashboard() {
         {/* Main Content Grid - New Structure */}
         <div className="space-y-6 animate-fade-in mobile-optimized desktop-optimized">
           {/* Top Row - Portfolio Overview + Alerts & Watchlist */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-slide-up">
             {/* Portfolio Overview - Left Side */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="xl:col-span-2 space-y-6">
               {/* Portfolio Overview Card */}
               <Card className="card-brand card-enhanced hover-lift">
                 <CardHeader className="pb-3">
@@ -490,7 +490,7 @@ export default function Dashboard() {
                   {/* Mini P&L Bar */}
                   <div className="bg-muted/20 rounded-lg p-4 space-y-3">
                     <h4 className="text-sm font-medium text-muted-foreground">P&L Overview</h4>
-                    <div className="grid grid-cols-3 gap-4 lg:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
                       {/* Day P&L */}
                       <div className="text-center">
                         <p className="text-xs text-muted-foreground mb-1">Day P&L</p>
@@ -542,7 +542,7 @@ export default function Dashboard() {
                   </div>
 
                   {/* KPI Row */}
-                  <div className="grid grid-cols-3 gap-4 lg:gap-6 mt-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mt-6">
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground">Avg Value per Skin</p>
                       <p className="text-lg font-semibold">
@@ -578,7 +578,7 @@ export default function Dashboard() {
           </div>
 
           {/* Middle Row - Breakdown + Market Pulse + Events */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <PortfolioBreakdown
               portfolio={portfolio}
               lastUpdated={lastUpdated.breakdown || undefined}
