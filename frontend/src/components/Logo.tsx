@@ -29,13 +29,8 @@ export default function Logo({
 
   return (
     <Link href="/" className={`flex items-center space-x-3 ${className}`}>
-      {/* Logo Image with Fallback */}
+      {/* Logo Image */}
       <div className={`${sizeClasses[size]} relative flex-shrink-0`}>
-        <div className="w-full h-full bg-gradient-to-br from-brand-green to-brand-blue rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-xs">CS</span>
-        </div>
-        {/* TODO: Replace with actual logo image when available */}
-        {/* 
         <Image
           src="/logo.png"
           alt="SKINTRACKR Logo"
@@ -44,7 +39,6 @@ export default function Logo({
           className="w-full h-full object-contain"
           priority
         />
-        */}
       </div>
       
       {/* Logo Text */}
