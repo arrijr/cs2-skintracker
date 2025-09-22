@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import SkinSearchBar from "./SkinSearchBar";
 import ProfileDropdown from "./ProfileDropdown";
+import Logo from "@/components/Logo";
 import { useUserRole } from "@/hooks/useUserRole";
 
 export default function AppHeader() {
@@ -35,16 +36,7 @@ export default function AppHeader() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-brand-green to-brand-blue flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">CS</span>
-                </div>
-                <span className="text-xl font-bold text-white">
-                  SKIN<span className="text-brand-green">TRACKER</span>
-                </span>
-              </div>
-            </Link>
+            <Logo size="md" />
           </div>
 
           {/* Desktop Navigation */}
@@ -90,14 +82,7 @@ export default function AppHeader() {
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <div className="flex flex-col space-y-6">
                   {/* Mobile Logo */}
-                  <div className="flex items-center space-x-2">
-                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-brand-green to-brand-blue flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">CS</span>
-                    </div>
-                    <span className="text-xl font-bold text-white">
-                      SKIN<span className="text-brand-green">TRACKER</span>
-                    </span>
-                  </div>
+                  <Logo size="md" />
 
                   {/* Mobile Search */}
                   <div className="w-full">
