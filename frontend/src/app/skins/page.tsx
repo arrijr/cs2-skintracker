@@ -16,8 +16,8 @@ export default function SkinsPage() {
 
 function SkinsPageSkeleton() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+    <div className="dashboard-bg">
+      <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex gap-6">
           {/* Left Sidebar Skeleton */}
           <div className="w-80 space-y-6">

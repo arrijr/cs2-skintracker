@@ -464,8 +464,9 @@ export default function SkinDetailPage() {
     "/images/placeholder-skin.png";
 
   return (
-    <TooltipProvider>
-      <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
+    <div className="dashboard-bg">
+      <TooltipProvider>
+        <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8 relative z-10">
         {/* P1 - Skin Header */}
         {/* Skin Header - Preis + 24h/7d-Change, konsistente Badges & Quick-Actions */}
         <div className="mb-8">
@@ -1443,7 +1444,8 @@ export default function SkinDetailPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
-    </TooltipProvider>
+        </div>
+      </TooltipProvider>
+    </div>
   );
 }

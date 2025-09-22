@@ -767,8 +767,8 @@ export function SkinsPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+    <div className="dashboard-bg">
+      <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Sidebar - Filters */}
           <div className="w-full lg:w-80 space-y-6">

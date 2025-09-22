@@ -76,7 +76,7 @@ export default function PortfolioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-2 sm:p-4">
+    <div className="dashboard-bg text-white p-2 sm:p-4">
       {/* Error Banner */}
       {error && (
         <Card className="mb-6 border-destructive">
@@ -87,7 +87,7 @@ export default function PortfolioPage() {
       )}
 
       {/* Main */}
-      <main className="max-w-6xl mx-auto flex flex-col gap-8">
+      <main className="max-w-6xl mx-auto flex flex-col gap-8 relative z-10">
         {/* Header KPIs Section */}
         <Card>
           <CardHeader>
