@@ -411,19 +411,19 @@
   }
 
   .card-primary {
-    @apply bg-gray-900;
-    @apply border border-gray-800/50;
+    @apply bg-gray-950;
+    @apply border border-gray-700/50;
     @apply transition-all duration-300 ease-in-out;
     @apply hover:shadow-xl hover:shadow-gray-500/10;
-    @apply hover:border-gray-700/50;
+    @apply hover:border-gray-600/50;
   }
 
   .card-secondary {
     @apply bg-gray-800;
-    @apply border border-gray-800/50;
+    @apply border border-gray-700/50;
     @apply transition-all duration-300 ease-in-out;
     @apply hover:shadow-xl hover:shadow-gray-500/10;
-    @apply hover:border-gray-700/50;
+    @apply hover:border-gray-600/50;
   }
   
   .card-interactive {
