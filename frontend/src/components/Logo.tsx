@@ -16,9 +16,9 @@ export default function Logo({
   size = 'md'
 }: LogoProps) {
   const sizeClasses = {
-    sm: 'h-16 w-16',
-    md: 'h-20 w-20',
-    lg: 'h-24 w-24'
+    sm: 'h-24 w-24',
+    md: 'h-28 w-28',
+    lg: 'h-32 w-32'
   };
 
   const textSizeClasses = {
@@ -34,8 +34,8 @@ export default function Logo({
         <Image
           src="/logo.png"
           alt="SKINTRACKR Logo"
-          width={size === 'sm' ? 64 : size === 'md' ? 80 : 96}
-          height={size === 'sm' ? 64 : size === 'md' ? 80 : 96}
+          width={size === 'sm' ? 96 : size === 'md' ? 112 : 128}
+          height={size === 'sm' ? 96 : size === 'md' ? 112 : 128}
           className="w-full h-full object-contain"
           priority
         />
