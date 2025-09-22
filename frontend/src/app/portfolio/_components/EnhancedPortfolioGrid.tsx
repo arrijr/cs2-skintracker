@@ -259,7 +259,7 @@ export function EnhancedPortfolioGrid({
   if (entries.length === 0) {
     return (
       <div className={cn("text-center py-12", className)}>
-        <Card className="bg-slate-800/30 border-slate-700/50">
+        <Card className="card-enhanced">
           <CardContent className="p-8">
             <Frown className="h-12 w-12 mx-auto mb-4 text-slate-400" />
             <h3 className="text-xl font-semibold text-white mb-2">No Portfolio Items</h3>
@@ -315,7 +315,7 @@ export function EnhancedPortfolioGrid({
       {/* Stats */}
       {showStats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-slate-800/30 border-slate-700/50">
+          <Card className="card-enhanced">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-white">
                 ${stats.totalValue.toLocaleString()}
@@ -324,7 +324,7 @@ export function EnhancedPortfolioGrid({
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-800/30 border-slate-700/50">
+          <Card className="card-enhanced">
             <CardContent className="p-4 text-center">
               <div className={cn(
                 "text-2xl font-bold",
@@ -336,7 +336,7 @@ export function EnhancedPortfolioGrid({
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-800/30 border-slate-700/50">
+          <Card className="card-enhanced">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-white">
                 {stats.totalItems}
@@ -345,7 +345,7 @@ export function EnhancedPortfolioGrid({
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-800/30 border-slate-700/50">
+          <Card className="card-enhanced">
             <CardContent className="p-4 text-center">
               <div className={cn(
                 "text-2xl font-bold",
@@ -361,7 +361,7 @@ export function EnhancedPortfolioGrid({
 
       {/* Filters */}
       {enableFilters && (
-        <Card className="bg-slate-800/30 border-slate-700/50">
+        <Card className="card-enhanced">
           <CardContent className="p-4">
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Search */}
@@ -504,7 +504,7 @@ export function EnhancedPortfolioGrid({
       {/* Empty State */}
       {sortedEntries.length === 0 && hasActiveFilters && (
         <div className="text-center py-12">
-          <Card className="bg-slate-800/30 border-slate-700/50">
+          <Card className="card-enhanced">
             <CardContent className="p-8">
               <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-slate-400" />
               <h3 className="text-xl font-semibold text-white mb-2">No Results Found</h3>

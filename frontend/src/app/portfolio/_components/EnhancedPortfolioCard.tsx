@@ -117,10 +117,7 @@ export function EnhancedPortfolioCard({
     return (
       <Card 
         className={cn(
-          "group cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-slate-500/10",
-          "border-slate-700/50 hover:border-slate-600/50",
-          "bg-slate-800/30 hover:bg-slate-700/40",
-          "backdrop-blur-sm",
+          "card-enhanced group cursor-pointer",
           showHoverEffects && "hover:scale-[1.02] hover:-translate-y-1",
           className
         )}
@@ -257,10 +254,7 @@ export function EnhancedPortfolioCard({
   return (
     <Card 
       className={cn(
-        "group cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-slate-500/10",
-        "border-slate-700/50 hover:border-slate-600/50",
-        "bg-slate-800/30 hover:bg-slate-700/40",
-        "backdrop-blur-sm",
+        "card-enhanced group cursor-pointer",
         showHoverEffects && "hover:scale-105 hover:-translate-y-2",
         className
       )}

@@ -383,11 +383,12 @@
   }
   
   .card-enhanced {
+    @apply bg-slate-800/30 backdrop-blur-sm;
+    @apply border border-slate-700/50;
     @apply transition-all duration-300 ease-in-out;
     @apply hover:shadow-xl hover:shadow-slate-500/10;
-    @apply border border-slate-600/30;
-    @apply hover:border-slate-500/50;
-    @apply hover:bg-gradient-to-br hover:from-slate-700/30 hover:to-slate-800/30;
+    @apply hover:border-slate-600/50;
+    @apply hover:bg-gradient-to-br hover:from-slate-700/40 hover:to-slate-800/40;
   }
   
   .card-interactive {
