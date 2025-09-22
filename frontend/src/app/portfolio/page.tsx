@@ -20,6 +20,7 @@ import SmartAlerts from "./SmartAlerts";
 import TransactionAnalytics from "./TransactionAnalytics";
 import PortfolioHealthScore from "./PortfolioHealthScore";
 import MarketIntelligence from "./MarketIntelligence";
+import { EnhancedPortfolioGrid } from "./_components/EnhancedPortfolioGrid";
 
 
 // {/* Authentifizierte Hooks */}
@@ -89,10 +90,10 @@ export default function PortfolioPage() {
       {/* Main */}
       <main className="max-w-6xl mx-auto flex flex-col gap-8 relative z-10">
         {/* Header KPIs Section */}
-        <Card>
+        <Card className="card-enhanced">
           <CardHeader>
-            <CardTitle className="text-3xl sm:text-4xl font-extrabold">Your Portfolio</CardTitle>
-            <CardDescription className="text-base">
+            <CardTitle className="text-3xl sm:text-4xl font-extrabold text-white animate-slide-in-left">Your Portfolio</CardTitle>
+            <CardDescription className="text-base text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
               Overview of your skins, value history & watchlist
             </CardDescription>
           </CardHeader>
@@ -100,67 +101,83 @@ export default function PortfolioPage() {
           
           {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-            <Card className="text-center">
+            <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
               <CardContent className="p-4">
-                <div className="text-lg font-bold text-yellow-400">
+                <div className="text-2xl font-bold text-brand-yellow animate-slide-in-left">
                   {kpiData?.portfolioCount || portfolioSkins.length}
                 </div>
-                <div className="text-xs text-muted-foreground">Portfolio Skins</div>
+                <div className="text-sm text-slate-300">Portfolio Skins</div>
               </CardContent>
             </Card>
             
-            <Card className="text-center">
+            <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
               <CardContent className="p-4">
-                <div className="text-lg font-bold text-green-400">
+                <div className="text-2xl font-bold text-brand-green animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
                   ${kpiData?.portfolioValue?.toFixed(2) || "0.00"}
                 </div>
-                <div className="text-xs text-muted-foreground">Total Value</div>
+                <div className="text-sm text-slate-300">Total Value</div>
                 {kpiData?.portfolioChange24h !== 0 && kpiData && (
-                  <Badge variant={kpiData.portfolioChange24h > 0 ? "default" : "destructive"} className="text-xs mt-1">
+                  <Badge 
+                    variant={kpiData.portfolioChange24h > 0 ? "default" : "destructive"} 
+                    className={`text-xs mt-2 badge-enhanced ${
+                      kpiData.portfolioChange24h > 0 
+                        ? 'bg-green-500/20 text-green-400 border-green-500/30 badge-glow green' 
+                        : 'bg-red-500/20 text-red-400 border-red-500/30 badge-glow red'
+                    }`}
+                  >
                     {kpiData.portfolioChange24h > 0 ? "+" : ""}{kpiData.portfolioChange24h.toFixed(1)}% 24h
                   </Badge>
                 )}
               </CardContent>
             </Card>
             
-            <Card className="text-center">
+            <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
               <CardContent className="p-4">
-                <div className="text-lg font-bold text-blue-400">
+                <div className="text-2xl font-bold text-brand-blue animate-slide-in-left" style={{ animationDelay: '0.2s' }}>
                   ${kpiData?.totalInvested?.toFixed(2) || "0.00"}
                 </div>
-                <div className="text-xs text-muted-foreground">Total Invested</div>
+                <div className="text-sm text-slate-300">Total Invested</div>
               </CardContent>
             </Card>
             
-            <Card className="text-center">
+            <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
               <CardContent className="p-4">
-                <div className="text-lg font-bold text-purple-400">
+                <div className={`text-2xl font-bold animate-slide-in-left ${
+                  (kpiData?.unrealizedPL || 0) >= 0 ? 'text-brand-green' : 'text-red-400'
+                }`} style={{ animationDelay: '0.3s' }}>
                   ${kpiData?.unrealizedPL?.toFixed(2) || "0.00"}
                 </div>
-                <div className="text-xs text-muted-foreground">Unrealized P/L</div>
+                <div className="text-sm text-slate-300">Unrealized P/L</div>
                 {kpiData?.portfolioChange7d !== 0 && kpiData && (
-                  <Badge variant={kpiData.portfolioChange7d > 0 ? "default" : "destructive"} className="text-xs mt-1">
+                  <Badge 
+                    variant={kpiData.portfolioChange7d > 0 ? "default" : "destructive"} 
+                    className={`text-xs mt-2 badge-enhanced ${
+                      kpiData.portfolioChange7d > 0 
+                        ? 'bg-green-500/20 text-green-400 border-green-500/30 badge-glow green' 
+                        : 'bg-red-500/20 text-red-400 border-red-500/30 badge-glow red'
+                    }`}
+                  >
                     {kpiData.portfolioChange7d > 0 ? "+" : ""}{kpiData.portfolioChange7d.toFixed(1)}% 7d
                   </Badge>
                 )}
               </CardContent>
             </Card>
             
-            <Card className="text-center">
+            <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
               <CardContent className="p-4">
-                <div className="text-lg font-bold text-blue-400">
+                <div className="text-2xl font-bold text-brand-blue animate-slide-in-left" style={{ animationDelay: '0.4s' }}>
                   {kpiData?.watchlistCount || watchlist.length}
                 </div>
-                <div className="text-xs text-muted-foreground">Watchlist</div>
+                <div className="text-sm text-slate-300">Watchlist</div>
               </CardContent>
             </Card>
             
-            <Card className="text-center">
+            <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
               <CardContent className="p-4">
-                <div className="text-lg font-bold text-amber-400">
+                <div className="text-2xl font-bold text-brand-orange animate-slide-in-left" style={{ animationDelay: '0.5s' }}>
                   {kpiData?.activeAlerts || 0}
                 </div>
-                <div className="text-xs text-muted-foreground">Active Alerts</div>
+                <div className="text-sm text-slate-300">Active Alerts</div>
               </CardContent>
             </Card>
           </div>
@@ -173,10 +190,10 @@ export default function PortfolioPage() {
         </Card>
 
         {/* Portfolio Chart Section */}
-        <Card>
+        <Card className="card-enhanced">
           <CardHeader>
-            <CardTitle>Portfolio Value History</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-white animate-slide-in-left">Portfolio Value History</CardTitle>
+            <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
               Track your portfolio performance over time
             </CardDescription>
           </CardHeader>
@@ -205,10 +222,10 @@ export default function PortfolioPage() {
 
         {/* Smart Alerts */}
         <PremiumFeatureFlag feature="smart-alerts">
-          <Card>
+          <Card className="card-enhanced">
             <CardHeader>
-              <CardTitle>Smart Alerts</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-white animate-slide-in-left">Smart Alerts</CardTitle>
+              <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
                 Intelligent price alerts and notifications
               </CardDescription>
             </CardHeader>
@@ -224,10 +241,10 @@ export default function PortfolioPage() {
 
         {/* Transaction Analytics */}
         <PremiumFeatureFlag feature="transaction-analytics">
-          <Card>
+          <Card className="card-enhanced">
             <CardHeader>
-              <CardTitle>Transaction Analytics</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-white animate-slide-in-left">Transaction Analytics</CardTitle>
+              <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
                 Detailed analysis of your trading activity
               </CardDescription>
             </CardHeader>
@@ -243,10 +260,10 @@ export default function PortfolioPage() {
 
         {/* Portfolio Health Score */}
         <PremiumFeatureFlag feature="portfolio-health-score">
-          <Card>
+          <Card className="card-enhanced">
             <CardHeader>
-              <CardTitle>Portfolio Health Score</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-white animate-slide-in-left">Portfolio Health Score</CardTitle>
+              <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
                 Assess the health and risk of your portfolio
               </CardDescription>
             </CardHeader>
@@ -262,10 +279,10 @@ export default function PortfolioPage() {
 
         {/* Market Intelligence */}
         <PremiumFeatureFlag feature="market-intelligence">
-          <Card>
+          <Card className="card-enhanced">
             <CardHeader>
-              <CardTitle>Market Intelligence</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-white animate-slide-in-left">Market Intelligence</CardTitle>
+              <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
                 Market insights and trends analysis
               </CardDescription>
             </CardHeader>
@@ -280,10 +297,10 @@ export default function PortfolioPage() {
         </PremiumFeatureFlag>
 
         {/* Portfolio Allocation */}
-        <Card>
+        <Card className="card-enhanced">
           <CardHeader>
-            <CardTitle>Portfolio Allocation</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-white animate-slide-in-left">Portfolio Allocation</CardTitle>
+            <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
               See how your skins are distributed
             </CardDescription>
           </CardHeader>
@@ -300,35 +317,39 @@ export default function PortfolioPage() {
 
         {/* Portfolio and Watchlist Tabs */}
         <Tabs defaultValue="portfolio" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
-            <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-slate-800/50 border-slate-700/50">
+            <TabsTrigger 
+              value="portfolio" 
+              className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
+            >
+              Portfolio
+            </TabsTrigger>
+            <TabsTrigger 
+              value="watchlist"
+              className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
+            >
+              Watchlist
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="portfolio" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Skins</CardTitle>
-                <CardDescription>
-                  Manage your skin collection and track performance
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PortfolioTable
-                  skins={portfolioSkins}
-                  watchlist={watchlist}
-                  onDataChange={() => mutate()}
-                  activeFilter={activeFilter}
-                />
-              </CardContent>
-            </Card>
+            <EnhancedPortfolioGrid
+              entries={portfolioSkins}
+              onDataChange={() => mutate()}
+              enableFilters={true}
+              enableSorting={true}
+              enableSearch={true}
+              showStats={false}
+              showSkeleton={isLoading}
+              skeletonCount={8}
+            />
           </TabsContent>
           
           <TabsContent value="watchlist" className="space-y-6">
-            <Card>
+            <Card className="card-enhanced">
               <CardHeader>
-                <CardTitle>Watchlist</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-white animate-slide-in-left">Watchlist</CardTitle>
+                <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
                   Track skins you're interested in
                 </CardDescription>
               </CardHeader>
