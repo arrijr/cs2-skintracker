@@ -10,14 +10,14 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export default function Logo({ 
-  className = "", 
-  showText = true, 
-  size = 'md' 
+export default function Logo({
+  className = "",
+  showText = false,
+  size = 'md'
 }: LogoProps) {
   const sizeClasses = {
     sm: 'h-6 w-6',
-    md: 'h-8 w-8', 
+    md: 'h-8 w-8',
     lg: 'h-12 w-12'
   };
 
@@ -40,8 +40,8 @@ export default function Logo({
           priority
         />
       </div>
-      
-      {/* Logo Text */}
+
+      {/* Logo Text - Only show if explicitly requested */}
       {showText && (
         <span className={`font-bold text-white ${textSizeClasses[size]}`}>
           SKIN<span className="text-brand-green">TRACKR</span>

@@ -11,7 +11,7 @@ Place your logo file in the `frontend/public/` directory as `logo.png`
 - Name: `logo.png`
 
 ### 2. Logo is now active! ✅
-The logo has been automatically activated in `frontend/src/components/Logo.tsx`. Your custom logo will now be displayed in the header.
+The logo has been automatically activated in `frontend/src/components/Logo.tsx`. Your custom logo will now be displayed in the header without any text - just the clean logo image.
 
 ### 3. Logo is already integrated
 The logo component is already integrated in:
