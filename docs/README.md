@@ -8,6 +8,7 @@ This folder contains all documentation for the CS2 Skin Price Tracker.
 - **ARCHITECTURE.md** – High-level design & flows (with Mermaid diagrams)
 - **API.md** – REST endpoints, auth, request/response, errors
 - **DATA_MODEL.md** – Prisma schema overview, relations, constraints
+- **DESIGN_SYSTEM.md** – UI/UX design guidelines and component patterns
 - **DECISIONS.md** – Architectural Decision Records (ADR)
 - **TROUBLESHOOTING.md** – Known issues, fixes, prevention
 
