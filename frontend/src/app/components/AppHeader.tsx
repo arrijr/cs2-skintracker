@@ -36,7 +36,7 @@ export default function AppHeader() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Logo size="md" />
+            <Logo size="lg" />
           </div>
 
           {/* Desktop Navigation */}
@@ -82,7 +82,7 @@ export default function AppHeader() {
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <div className="flex flex-col space-y-6">
                   {/* Mobile Logo */}
-                  <Logo size="md" />
+                  <Logo size="lg" />
 
                   {/* Mobile Search */}
                   <div className="w-full">
