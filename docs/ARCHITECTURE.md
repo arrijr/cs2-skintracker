@@ -7,9 +7,10 @@ System Components
 ### Frontend (Next.js App Router)
 * **Hosting:** Vercel
 * **Framework:** Next.js 15.4.3 with App Router
-* **Styling:** Tailwind CSS + Shadcn UI
+* **Styling:** Tailwind CSS + Shadcn UI + Custom Responsive System
 * **Authentication:** Clerk
 * **State Management:** React hooks (useState, useEffect, useMemo)
+* **Layout System:** Mobile-first responsive design with custom CSS utilities
 
 ### Backend (Node.js/Express)
 * **Hosting:** Render
@@ -25,6 +26,35 @@ System Components
 
 Data Flow
 ---------
+
+### Responsive Layout System Flow
+
+```mermaid
+flowchart TD
+    A[User Device] --> B{Screen Size?}
+    B -->|Mobile < 640px| C[Single Column Layout]
+    B -->|Tablet 640px-1024px| D[Two Column Layout]
+    B -->|Desktop 1024px-1280px| E[Three Column Layout]
+    B -->|Large Desktop > 1280px| F[Four Column Layout]
+    
+    C --> G[container-cs2 with mobile padding]
+    D --> H[container-cs2 with tablet padding]
+    E --> I[container-cs2 with desktop padding]
+    F --> J[container-cs2 with large desktop padding]
+    
+    G --> K[grid-responsive-2 for components]
+    H --> L[grid-responsive-3 for components]
+    I --> M[grid-responsive-3 for components]
+    J --> N[grid-responsive for components]
+    
+    K --> O[Mobile Navigation Sheet]
+    L --> P[Desktop Navigation Bar]
+    M --> P
+    N --> P
+    
+    O --> Q[Touch-Optimized Interactions]
+    P --> R[Mouse-Optimized Interactions]
+```
 
 ### Case System Flow
 
@@ -80,6 +110,42 @@ Components
 ----------
 
 ### Frontend Components
+
+#### Layout System (`/frontend/src/app/globals.css`)
+* **Purpose:** Responsive layout utilities and container system
+* **Features:**
+  - `container-cs2`: Main content container with max-width constraints
+  - `section-cs2`: Section spacing with responsive vertical padding
+  - `grid-responsive`: Responsive grid utilities (1-4 columns)
+  - Mobile-first breakpoints and responsive design patterns
+  - Custom CSS utilities for consistent spacing and layout
+
+#### Dashboard Layout (`/frontend/src/app/dashboard/page.tsx`)
+* **Purpose:** Main dashboard with responsive grid system
+* **Features:**
+  - Responsive header with flexible layout for mobile/desktop
+  - Three-tier grid system (Portfolio + Alerts, Breakdown + Market + Events, Movers)
+  - Mobile-optimized P&L and KPI sections
+  - Responsive text sizing and component spacing
+  - Animation system with staggered loading
+
+#### AppHeader (`/frontend/src/app/components/AppHeader.tsx`)
+* **Purpose:** Responsive navigation header with search integration
+* **Features:**
+  - Desktop/mobile navigation patterns
+  - Responsive search bar with proper width constraints
+  - Mobile sheet navigation for small screens
+  - Profile dropdown integration
+  - Sticky positioning with backdrop blur
+
+#### SkinSearchBar (`/frontend/src/app/components/SkinSearchBar.tsx`)
+* **Purpose:** Responsive search component with dropdown results
+* **Features:**
+  - Full-width responsive design
+  - Debounced search with loading states
+  - Dropdown results with skin images
+  - Mobile-optimized touch interactions
+  - Flexible container constraints
 
 #### CaseSection (`/frontend/src/components/CaseSection.tsx`)
 * **Purpose:** Display case info and skins grid on skin detail page

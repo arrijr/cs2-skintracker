@@ -18,6 +18,7 @@ All feature-specific documentation should live under `/docs/features/`.
 
 - `enhanced-skins-filters.md`
 - `skin-filtering-system.md`
+- `responsive-layout-system.md`
 - (add more as features are built)
 
 ---

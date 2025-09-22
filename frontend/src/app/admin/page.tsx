@@ -119,19 +119,19 @@ export default function AdminPage() {
   // Redirect if not signed in or not admin
   if (!isSignedIn || !isAdmin) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-white flex items-center justify-center">
-        <div className="text-center">
+      <div className="dashboard-bg text-white flex items-center justify-center">
+        <div className="text-center relative z-10">
           <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-          <p className="text-gray-400">You need admin privileges to access this page.</p>
+          <p className="text-slate-400">You need admin privileges to access this page.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
-      <div className="container-cs2 section-cs2">
+    <div className="dashboard-bg text-white">
+      <div className="container-cs2 section-cs2 relative z-10">
         <div className="max-w-6xl mx-auto animate-fade-in">
           {/* Header */}
           <div className="mb-8">

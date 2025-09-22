@@ -243,10 +243,10 @@ export default function Dashboard() {
   // Show loading while auth state is being determined
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950 text-white">
-        <div className="text-center">
+      <div className="dashboard-bg flex items-center justify-center text-white">
+        <div className="text-center relative z-10">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue mx-auto mb-4"></div>
-          <p className="text-neutral-400">Loading...</p>
+          <p className="text-slate-400">Loading...</p>
         </div>
       </div>
     );
@@ -260,19 +260,17 @@ export default function Dashboard() {
   // Debug error state
   if (error) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-white">
-      <div className="min-h-screen bg-gray-950 text-white p-2 sm:p-4">
-        <div className="max-w-2xl mx-auto text-center">
-            <h1 className="text-4xl font-bold mb-4">Dashboard Error</h1>
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 mb-6">
-              <p className="text-red-400 mb-2">Failed to load dashboard data:</p>
-              <p className="text-muted-foreground text-sm">{error.toString()}</p>
-            </div>
-            <Button onClick={refreshAll} className="btn-enhanced">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Retry
-            </Button>
+      <div className="dashboard-bg text-white p-2 sm:p-4">
+        <div className="max-w-2xl mx-auto text-center relative z-10">
+          <h1 className="text-4xl font-bold mb-4">Dashboard Error</h1>
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 mb-6">
+            <p className="text-red-400 mb-2">Failed to load dashboard data:</p>
+            <p className="text-slate-400 text-sm">{error.toString()}</p>
           </div>
+          <Button onClick={refreshAll} className="btn-enhanced">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
         </div>
       </div>
     );
@@ -281,12 +279,12 @@ export default function Dashboard() {
   // Show loading while data is being fetched
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white p-2 sm:p-4">
-        <main className="max-w-6xl mx-auto flex flex-col gap-8">
+      <div className="dashboard-bg text-white p-2 sm:p-4">
+        <main className="max-w-6xl mx-auto flex flex-col gap-8 relative z-10">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <h1 className="text-4xl font-bold">Dashboard</h1>
-              <div className="text-muted-foreground">
+              <div className="text-slate-400">
                 Loading portfolio data... 
                 {portfolioLoading && <span className="text-blue-400 ml-2">(Portfolio)</span>}
                 {historyLoading && <span className="text-green-400 ml-2">(History)</span>}
@@ -362,8 +360,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
-      <div className="container-cs2 section-cs2">
+    <div className="dashboard-bg text-white">
+      <div className="container-cs2 section-cs2 relative z-10">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

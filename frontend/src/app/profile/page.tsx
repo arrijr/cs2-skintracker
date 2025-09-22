@@ -236,8 +236,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
-      <div className="container-cs2 section-cs2">
+    <div className="dashboard-bg text-white">
+      <div className="container-cs2 section-cs2 relative z-10">
         <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Header */}
       <div className="text-center mb-8">

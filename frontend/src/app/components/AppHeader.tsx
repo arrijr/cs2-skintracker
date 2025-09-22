@@ -30,7 +30,7 @@ export default function AppHeader() {
   const mobileNavigation = navigation;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-neutral-800 bg-neutral-950/95 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-700/50 bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-slate-900/60">
       <div className="container-cs2">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -53,7 +53,7 @@ export default function AppHeader() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="px-3 py-2 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors"
+                className="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
               >
                 {item.name}
               </Link>
@@ -72,7 +72,7 @@ export default function AppHeader() {
           {/* Desktop Auth Controls */}
           <div className="hidden md:flex items-center space-x-3">
             {!isLoaded ? (
-              <div className="h-8 w-8 animate-pulse bg-neutral-700 rounded-full" />
+              <div className="h-8 w-8 animate-pulse bg-slate-700 rounded-full" />
             ) : (
               <ProfileDropdown />
             )}
@@ -115,7 +115,7 @@ export default function AppHeader() {
                       <Link
                         key={item.name}
                         href={item.href}
-                        className="px-3 py-2 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors"
+                        className="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {item.name}

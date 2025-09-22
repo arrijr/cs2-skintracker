@@ -76,6 +76,18 @@
   --brand-red: #F44336;
   --brand-purple: #9C27B0;
   --brand-yellow: #FFC107;
+  
+  /* Enhanced Color Palette */
+  --bg-primary: #0f0f23;
+  --bg-secondary: #1a1a2e;
+  --bg-tertiary: #16213e;
+  --accent-primary: #4A9EFF;
+  --accent-secondary: #4CAF50;
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --border-primary: #374151;
+  --border-secondary: #4b5563;
 }
 
 /* Smooth Animations */
@@ -266,15 +278,19 @@
 
 /* Card Enhancements */
 @layer components {
-  .card-enhanced {
-    @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-blue-500/10;
-    @apply border border-transparent;
+  .card-brand {
+    @apply bg-gradient-to-br from-slate-800/50 to-slate-900/50;
+    @apply border border-slate-700/50;
+    @apply backdrop-blur-sm;
+    @apply shadow-lg shadow-slate-900/20;
   }
   
-  .card-enhanced:hover {
-    @apply border-blue-500/20;
-    @apply bg-gradient-to-br from-blue-500/5 to-transparent;
+  .card-enhanced {
+    @apply transition-all duration-300 ease-in-out;
+    @apply hover:shadow-xl hover:shadow-slate-500/10;
+    @apply border border-slate-600/30;
+    @apply hover:border-slate-500/50;
+    @apply hover:bg-gradient-to-br hover:from-slate-700/30 hover:to-slate-800/30;
   }
   
   .card-interactive {
@@ -285,8 +301,9 @@
   
   .card-premium {
     @apply relative overflow-hidden;
-    @apply bg-gradient-to-br from-yellow-500/10 via-orange-500/5 to-transparent;
-    @apply border border-yellow-500/20;
+    @apply bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent;
+    @apply border border-amber-500/20;
+    @apply shadow-lg shadow-amber-500/10;
   }
   
   .card-premium::before {
@@ -302,6 +319,42 @@
       transparent
     );
     animation: shimmer 3s infinite;
+  }
+  
+  .card-glass {
+    @apply bg-slate-800/30;
+    @apply border border-slate-600/20;
+    @apply backdrop-blur-md;
+    @apply shadow-xl shadow-slate-900/30;
+  }
+  
+  .card-elegant {
+    @apply bg-gradient-to-br from-slate-800/40 to-slate-900/60;
+    @apply border border-slate-600/40;
+    @apply shadow-lg shadow-slate-900/25;
+    @apply hover:shadow-xl hover:shadow-slate-700/20;
+  }
+  
+  .card-glow {
+    @apply relative overflow-hidden;
+    @apply bg-gradient-to-br from-slate-800/60 to-slate-900/80;
+    @apply border border-slate-600/50;
+    @apply shadow-xl shadow-slate-900/30;
+  }
+  
+  .card-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+      rgba(74, 158, 255, 0.05) 0%, 
+      transparent 50%, 
+      rgba(76, 175, 80, 0.05) 100%
+    );
+    pointer-events: none;
   }
 }
 
@@ -400,6 +453,25 @@
   
   .container-fluid {
     @apply w-full px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Dashboard Background */
+  .dashboard-bg {
+    @apply min-h-screen;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    @apply relative;
+  }
+  
+  .dashboard-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(74, 158, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(76, 175, 80, 0.1) 0%, transparent 50%);
+    pointer-events: none;
   }
   
   /* Responsive Grid Improvements */

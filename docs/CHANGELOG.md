@@ -3,6 +3,24 @@
 ## [Unreleased]
 
 ### Added
+* feat(layout): comprehensive responsive layout improvements
+  * **CSS Container System** (`/frontend/src/app/globals.css`)
+    * Added `container-cs2` class with max-width and responsive padding
+    * Added `section-cs2` class with responsive vertical spacing
+    * Added responsive grid utilities (`grid-responsive`, `grid-responsive-2`, `grid-responsive-3`)
+    * Improved mobile-first design with proper breakpoints
+  * **Dashboard Layout Enhancements** (`/frontend/src/app/dashboard/page.tsx`)
+    * Responsive header with flexible layout for mobile/desktop
+    * Improved grid system with `xl:grid-cols-3` for better large screen usage
+    * Mobile-optimized P&L and KPI sections with `grid-cols-1 sm:grid-cols-3`
+    * Better responsive text sizing (`text-3xl sm:text-4xl`)
+  * **Search Bar Improvements** (`/frontend/src/app/components/SkinSearchBar.tsx`)
+    * Removed fixed `max-w-md` constraint for better flexibility
+    * Full-width responsive design with proper container constraints
+  * **Header Layout Optimization** (`/frontend/src/app/components/AppHeader.tsx`)
+    * Increased search bar max-width from `max-w-md` to `max-w-lg`
+    * Reduced horizontal margins from `mx-8` to `mx-4` for better space utilization
+    * Improved responsive navigation layout
 * feat(cases): complete case system implementation for skin detail pages
   * **Case Section Component** (`/frontend/src/components/CaseSection.tsx`)
     * Displays the case a skin belongs to with case thumbnail and metadata
@@ -36,6 +54,12 @@
 * docs(api): documented new skin detail endpoints and responses
 
 ### Fixed
+* fix(layout): resolve dashboard width and responsive layout issues
+  * Fixed missing CSS classes `container-cs2` and `section-cs2` causing layout breaks
+  * Resolved dashboard grid overflow on large screens with proper breakpoints
+  * Fixed header layout stretching issues with improved flexbox configuration
+  * Corrected search bar width constraints causing menu layout problems
+  * Improved mobile responsiveness across all dashboard components
 * fix(cases): resolve case section display issues
   * Fixed missing CaseSection component import in skin detail page
   * Corrected case mapping logic to handle skin finishes (e.g., "Case Hardened")
