@@ -402,7 +402,7 @@
   }
   
   .card-enhanced {
-    background-color: var(--bg-secondary);
+    @apply bg-gray-900;
     @apply border border-gray-800/50;
     @apply transition-all duration-300 ease-in-out;
     @apply hover:shadow-xl hover:shadow-gray-500/10;
@@ -411,7 +411,7 @@
   }
 
   .card-primary {
-    background-color: var(--bg-secondary);
+    @apply bg-gray-900;
     @apply border border-gray-800/50;
     @apply transition-all duration-300 ease-in-out;
     @apply hover:shadow-xl hover:shadow-gray-500/10;
@@ -419,7 +419,7 @@
   }
 
   .card-secondary {
-    background-color: var(--bg-tertiary);
+    @apply bg-gray-800;
     @apply border border-gray-800/50;
     @apply transition-all duration-300 ease-in-out;
     @apply hover:shadow-xl hover:shadow-gray-500/10;
@@ -590,85 +590,85 @@
     @apply animate-count-up;
   }
 
-  /* SkinTrackr Color Utilities */
+  /* SkinTrackr Color Utilities - Direct Tailwind Classes */
   .text-brand-green {
-    color: var(--brand-green);
+    @apply text-emerald-400;
   }
 
   .text-brand-red {
-    color: var(--brand-red);
+    @apply text-red-500;
   }
 
   .text-brand-warning {
-    color: var(--brand-warning);
+    @apply text-yellow-400;
   }
 
   .text-brand-info {
-    color: var(--brand-info);
+    @apply text-blue-500;
   }
 
   .text-brand-premium {
-    color: var(--brand-premium);
+    @apply text-amber-500;
   }
 
   .bg-brand-green {
-    background-color: var(--brand-green);
+    @apply bg-emerald-400;
   }
 
   .bg-brand-red {
-    background-color: var(--brand-red);
+    @apply bg-red-500;
   }
 
   .bg-brand-warning {
-    background-color: var(--brand-warning);
+    @apply bg-yellow-400;
   }
 
   .bg-brand-info {
-    background-color: var(--brand-info);
+    @apply bg-blue-500;
   }
 
   .bg-brand-premium {
-    background-color: var(--brand-premium);
+    @apply bg-amber-500;
   }
 
   .border-brand-green {
-    border-color: var(--brand-green);
+    @apply border-emerald-400;
   }
 
   .border-brand-red {
-    border-color: var(--brand-red);
+    @apply border-red-500;
   }
 
   .border-brand-warning {
-    border-color: var(--brand-warning);
+    @apply border-yellow-400;
   }
 
   .border-brand-info {
-    border-color: var(--brand-info);
+    @apply border-blue-500;
   }
 
   .border-brand-premium {
-    border-color: var(--brand-premium);
+    @apply border-amber-500;
   }
 
   .hover\:bg-brand-green:hover {
-    background-color: var(--brand-green);
+    @apply bg-emerald-400;
   }
 
   .hover\:bg-brand-red:hover {
-    background-color: var(--brand-red);
+    @apply bg-red-500;
   }
 
   .hover\:bg-brand-warning:hover {
-    background-color: var(--brand-warning);
+    @apply bg-yellow-400;
   }
 
   .hover\:bg-brand-info:hover {
-    background-color: var(--brand-info);
+    @apply bg-blue-500;
   }
 
   .hover\:bg-brand-premium:hover {
-    background-color: var(--brand-premium);
+    @apply bg-amber-500;
   }
   
   .value-medium {
