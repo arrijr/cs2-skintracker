@@ -17,7 +17,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, X, Save, Share2, Trash2, Clock, CheckSquare, Square, Plus, Heart, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
-import SkinGrid from "../SkinGrid";
+import { EnhancedSkinGrid } from "./EnhancedSkinGrid";
+import { EnhancedFilterSidebar } from "./EnhancedFilterSidebar";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { saveFiltersToSession, loadFiltersFromSession, clearFiltersFromSession } from "@/lib/storage";
 import { useInfiniteSkins } from "@/hooks/useInfiniteSkins";
@@ -770,346 +771,45 @@ export function SkinsPageContent() {
     <div className="dashboard-bg">
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left Sidebar - Filters */}
-          <div className="w-full lg:w-80 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Filters</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Enhanced Search with Debouncing */}
-                <div className="space-y-2">
-                  <Label htmlFor="search">Search</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                      id="search"
-                      placeholder="e.g. AK-47"
-                      value={q}
-                      onChange={(e) => handleSearchChange(e.target.value)}
-                      className="pl-10 focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                      aria-label="Search skins"
-                      aria-describedby="search-description"
-                    />
-                  </div>
-                  {SKINS_FILTERS_ENHANCED && (
-                    <p className="text-xs text-muted-foreground">
-                      {q !== debouncedQ ? "Typing..." : "Ready"}
-                    </p>
-                  )}
-                </div>
-
-                {/* Price Range */}
-                <div className="space-y-4">
-                  <Label>Price Range</Label>
-                  <div className="space-y-4">
-                    <Slider
-                      value={[min ? Number(min) : 0, max ? Number(max) : 5000]}
-                      onValueChange={([minVal, maxVal]) => {
-                        setMin(minVal.toString());
-                        setMax(maxVal.toString());
-                      }}
-                      max={5000}
-                      step={10}
-                      className="w-full"
-                    />
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Min"
-                        value={min}
-                        onChange={(e) => handleMinPriceChange(e.target.value)}
-                        className="w-20"
-                      />
-                      <Input
-                        placeholder="Max"
-                        value={max}
-                        onChange={(e) => handleMaxPriceChange(e.target.value)}
-                        className="w-20"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Wear */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-1">
-                    <Label>Wear</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">
-                            <strong>Wear</strong> indicates the condition of the skin. 
-                            <br />• <strong>Factory New (FN)</strong>: Perfect condition
-                            <br />• <strong>Minimal Wear (MW)</strong>: Slight scratches
-                            <br />• <strong>Field-Tested (FT)</strong>: Visible wear
-                            <br />• <strong>Well-Worn (WW)</strong>: Heavy wear
-                            <br />• <strong>Battle-Scarred (BS)</strong>: Maximum wear
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { id: "fn", name: "FN", fullName: "Factory New" },
-                      { id: "mw", name: "MW", fullName: "Minimal Wear" },
-                      { id: "ft", name: "FT", fullName: "Field-Tested" },
-                      { id: "ww", name: "WW", fullName: "Well-Worn" },
-                      { id: "bs", name: "BS", fullName: "Battle-Scarred" }
-                    ].map((wearOption) => (
-                      <Button
-                        key={wearOption.id}
-                        variant={wear === wearOption.id ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setWear(wear === wearOption.id ? "" : wearOption.id)}
-                      >
-                        {wearOption.name}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Rarity */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-1">
-                    <Label>Rarity</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">
-                            <strong>Rarity</strong> determines how rare and valuable a skin is.
-                            <br />• <strong>Covert</strong>: Red - Extremely rare, highest value
-                            <br />• <strong>Classified</strong>: Pink - Very rare, high value
-                            <br />• <strong>Restricted</strong>: Purple - Rare, medium-high value
-                            <br />• <strong>Mil-Spec</strong>: Blue - Uncommon, medium value
-                            <br />• <strong>Industrial</strong>: Light blue - Common, low value
-                            <br />• <strong>Consumer</strong>: Gray - Most common, lowest value
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <div className="space-y-2">
-                    {[
-                      "Covert",
-                      "Classified", 
-                      "Restricted",
-                      "Mil-Spec"
-                    ].map((rarityOption) => (
-                      <div key={rarityOption} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={rarityOption}
-                          checked={rarity === rarityOption}
-                          onCheckedChange={(checked) => {
-                            setRarity(checked ? rarityOption : "");
-                          }}
-                        />
-                        <Label htmlFor={rarityOption} className="text-sm">
-                          {rarityOption}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* StatTrak */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <Label htmlFor="stattrak">StatTrak™</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">
-                            <strong>StatTrak™</strong> skins track your kills with that weapon.
-                            <br />• Shows kill counter on the weapon
-                            <br />• More expensive than regular skins
-                            <br />• Orange StatTrak™ logo on the skin
-                            <br />• Counter resets when traded/sold
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <Switch
-                    id="stattrak"
-                    checked={stattrak}
-                    onCheckedChange={setStattrak}
-                  />
-                </div>
-
-                {/* Special */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <Label htmlFor="special">Special (Star)</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">
-                            <strong>Special (Star)</strong> items are unique collectibles.
-                            <br />• <strong>Knives</strong>: ★ Karambit, ★ Butterfly, etc.
-                            <br />• <strong>Gloves</strong>: Special hand coverings
-                            <br />• <strong>Music Kits</strong>: Custom round music
-                            <br />• <strong>Stickers</strong>: Team/player stickers
-                            <br />• Usually very expensive and rare
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <Switch
-                    id="special"
-                    checked={special}
-                    onCheckedChange={setSpecial}
-                  />
-                </div>
-
-                {/* Souvenir */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <Label htmlFor="souvenir">Souvenir</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">
-                            <strong>Souvenir</strong> items are special tournament drops.
-                            <br />• Dropped during professional CS2 matches
-                            <br />• Have unique tournament stickers
-                            <br />• Usually more expensive than regular skins
-                            <br />• Limited availability and collectible value
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <Switch
-                    id="souvenir"
-                    checked={q.includes("Souvenir")}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setQ(q ? `${q} Souvenir` : "Souvenir");
-                      } else {
-                        setQ(q.replace(/\bSouvenir\b/g, "").trim());
-                      }
-                    }}
-                  />
-                </div>
-
-                {/* P3: Advanced Filters Toggle */}
-                <div className="space-y-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    className="w-full justify-between"
-                  >
-                    Advanced Filters
-                    <span className={`transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`}>
-                      ▼
-                    </span>
-                  </Button>
-                  
-                  {showAdvancedFilters && (
-                    <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
-                      {/* Weapon Type */}
-                      <div className="space-y-2">
-                        <Label htmlFor="weaponType">Weapon Type</Label>
-                        <Select value={weaponType} onValueChange={setWeaponType}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select weapon type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="">All Weapons</SelectItem>
-                            {WEAPON_TYPES.map((weapon) => (
-                              <SelectItem key={weapon} value={weapon}>
-                                {weapon}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Collection */}
-                      <div className="space-y-2">
-                        <Label htmlFor="collection">Collection</Label>
-                        <Select value={collection} onValueChange={setCollection}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select collection" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="">All Collections</SelectItem>
-                            {COLLECTIONS.map((col) => (
-                              <SelectItem key={col} value={col}>
-                                {col}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Finish */}
-                      <div className="space-y-2">
-                        <Label htmlFor="finish">Finish</Label>
-                        <Select value={finish} onValueChange={setFinish}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select finish" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="">All Finishes</SelectItem>
-                            {FINISHES.map((fin) => (
-                              <SelectItem key={fin} value={fin}>
-                                {fin}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* P3: Export/Import Filters */}
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Button onClick={copyCurrentLink} variant="outline" size="sm" className="flex-1">
-                      Copy Link
-                    </Button>
-                    <Button onClick={exportFilters} variant="outline" size="sm" className="flex-1">
-                      Export
-                    </Button>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept=".json"
-                      onChange={importFilters}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <Button variant="outline" size="sm" className="w-full">
-                      Import Filters
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Clear Filters Button */}
-                <Button onClick={clearFilters} variant="outline" className="w-full">
-                  Clear All
-                </Button>
-              </CardContent>
-            </Card>
+          {/* Left Sidebar - Enhanced Filters */}
+          <div className="w-full lg:w-80">
+            <EnhancedFilterSidebar
+              filters={{
+                q,
+                min,
+                max,
+                rarity,
+                wear,
+                quality,
+                stattrak,
+                special,
+                sort,
+                category,
+                weaponType,
+                collection,
+                finish,
+              }}
+              onFilterChange={(key, value) => {
+                switch (key) {
+                  case 'q': setQ(value); break;
+                  case 'min': setMin(value); break;
+                  case 'max': setMax(value); break;
+                  case 'rarity': setRarity(value); break;
+                  case 'wear': setWear(value); break;
+                  case 'quality': setQuality(value); break;
+                  case 'stattrak': setStattrak(value); break;
+                  case 'special': setSpecial(value); break;
+                  case 'sort': setSort(value); break;
+                  case 'category': setCategory(value); break;
+                  case 'weaponType': setWeaponType(value); break;
+                  case 'collection': setCollection(value); break;
+                  case 'finish': setFinish(value); break;
+                }
+              }}
+              onClearFilters={clearFilters}
+              onSavePreset={() => setShowPresetDialog(true)}
+              onShareFilters={shareCurrentFilters}
+            />
           </div>
 
           {/* Main Content */}
@@ -1473,7 +1173,7 @@ export function SkinsPageContent() {
             </div>
 
             {/* Enhanced Skin Grid with Better Empty State */}
-            <SkinGrid 
+            <EnhancedSkinGrid 
               filters={{
                 q: debouncedQ,
                 min: min ? Number(min) : undefined,
