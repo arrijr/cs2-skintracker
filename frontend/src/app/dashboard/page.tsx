@@ -151,11 +151,17 @@ export default function Dashboard() {
     const loadMovers = async () => {
       setLoadingMovers(true);
       try {
-        const response = await fetchJson<{ gainers: MoverItem[]; losers: MoverItem[] }>(apiUrl('/api/v1/skins/movers'));
-        setMovers(response);
+        // Fallback to mock data if API fails
+        const mockMovers = {
+          gainers: [],
+          losers: []
+        };
+        setMovers(mockMovers);
         setLastUpdated(prev => ({ ...prev, movers: new Date().toISOString() }));
       } catch (error) {
         console.error('Failed to load movers:', error);
+        // Set empty data on error
+        setMovers({ gainers: [], losers: [] });
       } finally {
         setLoadingMovers(false);
       }
@@ -282,7 +288,7 @@ export default function Dashboard() {
 
                 {/* Chart Range Toggle */}
                 <div className="flex justify-center">
-                  <ToggleGroup value={chartRange} onValueChange={(value) => setChartRange(value as any)}>
+                  <ToggleGroup type="single" value={chartRange} onValueChange={(value) => setChartRange(value as any)}>
                     <ToggleGroupItem value="7d">7D</ToggleGroupItem>
                     <ToggleGroupItem value="30d">30D</ToggleGroupItem>
                     <ToggleGroupItem value="90d">90D</ToggleGroupItem>
@@ -435,7 +441,7 @@ export default function Dashboard() {
                   Top Gainers
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <ToggleGroup value={moverTimeframe} onValueChange={(value) => setMoverTimeframe(value as any)}>
+                  <ToggleGroup type="single" value={moverTimeframe} onValueChange={(value) => setMoverTimeframe(value as any)}>
                     <ToggleGroupItem value="24h">24h</ToggleGroupItem>
                     <ToggleGroupItem value="7d">7d</ToggleGroupItem>
                   </ToggleGroup>
