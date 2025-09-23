@@ -31,20 +31,20 @@
     --chart-5: 27 87% 67%;
   }
 
-  /* SkinTrackr Design System - Clean & Simple */
+  /* SkinTrackr Design System - Clean & Light */
   :root {
-    /* Surface System - Clean Grays */
-    --surface-0: #0a0a0a;  /* Body background */
-    --surface-1: #1a1a1a;  /* Primary cards */
-    --surface-2: #222222;  /* Secondary cards */
-    --surface-3: #2a2a2a;  /* Hover/Active states */
-    --border: #333333;     /* Subtle borders */
-    --hover: #2a2a2a;      /* Hover state */
+    /* Surface System - Lighter Grays */
+    --surface-0: #1a1a1a;  /* Body background */
+    --surface-1: #2a2a2a;  /* Primary cards */
+    --surface-2: #333333;  /* Secondary cards */
+    --surface-3: #3a3a3a;  /* Hover/Active states */
+    --border: #444444;     /* Subtle borders */
+    --hover: #3a3a3a;      /* Hover state */
     
     /* Typography */
     --text-primary: #ffffff;    /* Main text */
-    --text-secondary: #a0a0a0;  /* Labels, secondary text */
-    --text-muted: #666666;      /* Captions, timestamps */
+    --text-secondary: #cccccc;  /* Labels, secondary text */
+    --text-muted: #888888;      /* Captions, timestamps */
     
     /* Accent Colors - Simple & Clean */
     --accent-positive: #00d4aa;  /* Up/Positive */
@@ -788,9 +788,9 @@
     @apply relative;
   }
 
-  /* Gradient Header Area - Clean */
+  /* Gradient Header Area - Light */
   .dashboard-header-gradient {
-    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
     @apply relative;
   }
   
