@@ -31,26 +31,28 @@
     --chart-5: 27 87% 67%;
   }
 
-  /* SkinTrackr Design System - Clean & Light */
+  /* SkinTrackr Design System - Dynamic & Exciting */
   :root {
-    /* Surface System - Lighter Grays */
-    --surface-0: #1a1a1a;  /* Body background */
-    --surface-1: #2a2a2a;  /* Primary cards */
-    --surface-2: #333333;  /* Secondary cards */
-    --surface-3: #3a3a3a;  /* Hover/Active states */
-    --border: #444444;     /* Subtle borders */
-    --hover: #3a3a3a;      /* Hover state */
+    /* Surface System - Vibrant Dark */
+    --surface-0: #0f0f23;  /* Body background - deep blue */
+    --surface-1: #1a1a2e;  /* Primary cards - dark blue */
+    --surface-2: #16213e;  /* Secondary cards - darker blue */
+    --surface-3: #2a2a3e;  /* Hover/Active states - lighter blue */
+    --border: #4a4a6a;     /* Glowing borders */
+    --hover: #2a2a3e;      /* Hover state */
     
     /* Typography */
     --text-primary: #ffffff;    /* Main text */
-    --text-secondary: #cccccc;  /* Labels, secondary text */
-    --text-muted: #888888;      /* Captions, timestamps */
+    --text-secondary: #b8c5d1;  /* Labels, secondary text */
+    --text-muted: #7a8a9a;      /* Captions, timestamps */
     
-    /* Accent Colors - Simple & Clean */
-    --accent-positive: #00d4aa;  /* Up/Positive */
-    --accent-negative: #ff4757;  /* Down/Negative */
-    --accent-premium: #ffa502;   /* Premium/Highlight */
-    --accent-info: #3742fa;      /* Info */
+    /* Accent Colors - Vibrant & Exciting */
+    --accent-positive: #00ff88;  /* Up/Positive - neon green */
+    --accent-negative: #ff3366;  /* Down/Negative - neon red */
+    --accent-premium: #ffaa00;   /* Premium/Highlight - neon orange */
+    --accent-info: #00aaff;      /* Info - neon blue */
+    --accent-purple: #aa44ff;    /* Purple accent */
+    --accent-cyan: #00ffff;      /* Cyan accent */
     
     /* Legacy support */
     --bg-primary: var(--surface-0);
@@ -788,9 +790,9 @@
     @apply relative;
   }
 
-  /* Gradient Header Area - Light */
+  /* Gradient Header Area - Dynamic */
   .dashboard-header-gradient {
-    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #0f0f23 100%);
     @apply relative;
   }
   
@@ -857,59 +859,114 @@
   }
 }
 
-/* Final Card Overrides - Clean & Simple */
+/* Final Card Overrides - Dynamic & Exciting */
 @layer components {
   .card-enhanced {
-    background: var(--surface-1) !important;
+    background: linear-gradient(135deg, var(--surface-1) 0%, var(--surface-2) 100%) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-    transition: all 200ms ease-out !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    transition: all 300ms ease-out !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .card-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+  }
+
+  .card-enhanced:hover::before {
+    left: 100%;
   }
 
   .card-enhanced:hover {
-    background: var(--hover) !important;
+    background: linear-gradient(135deg, var(--hover) 0%, var(--surface-3) 100%) !important;
     cursor: pointer !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(102, 126, 234, 0.3) !important;
+    transform: translateY(-2px) !important;
   }
 
   .card-primary {
-    background: var(--surface-1) !important;
+    background: linear-gradient(135deg, var(--surface-1) 0%, var(--surface-2) 100%) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-    transition: all 200ms ease-out !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    transition: all 300ms ease-out !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .card-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+  }
+
+  .card-primary:hover::before {
+    left: 100%;
   }
 
   .card-primary:hover {
-    background: var(--hover) !important;
+    background: linear-gradient(135deg, var(--hover) 0%, var(--surface-3) 100%) !important;
     cursor: pointer !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(102, 126, 234, 0.3) !important;
+    transform: translateY(-2px) !important;
   }
 
   .card-secondary {
-    background: var(--surface-2) !important;
+    background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-3) 100%) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-    transition: all 200ms ease-out !important;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+    transition: all 300ms ease-out !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .card-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    transition: left 0.5s;
+  }
+
+  .card-secondary:hover::before {
+    left: 100%;
   }
 
   .card-secondary:hover {
-    background: var(--hover) !important;
+    background: linear-gradient(135deg, var(--hover) 0%, var(--surface-3) 100%) !important;
     cursor: pointer !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 15px rgba(102, 126, 234, 0.2) !important;
+    transform: translateY(-1px) !important;
   }
 
   .card-inset {
     background: var(--surface-3) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 8px !important;
+    border-radius: 12px !important;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2) !important;
   }
 
-  /* Chart Background - Clean */
+  /* Chart Background - Dynamic */
   .chart-bg {
-    background: var(--surface-0) !important;
+    background: linear-gradient(135deg, var(--surface-0) 0%, var(--surface-1) 100%) !important;
   }
 }
 
