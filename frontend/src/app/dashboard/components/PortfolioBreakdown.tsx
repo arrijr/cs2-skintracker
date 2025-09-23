@@ -90,7 +90,7 @@ export default function PortfolioBreakdown({
       console.log('Portfolio item:', item); // Debug log
       
       // Calculate value based on current market price
-      const currentPrice = item.skin?.marketPrice || item.skin?.priceLatest || 0;
+      const currentPrice = item.skin?.marketPrice || item.skin?.priceLatest || item.skin?.priceAvg || item.skin?.priceMedian || 0;
       const amount = item.amount || 0;
       const itemValue = currentPrice * amount;
       
