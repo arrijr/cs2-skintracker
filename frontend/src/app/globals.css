@@ -31,26 +31,32 @@
     --chart-5: 27 87% 67%;
   }
 
-  /* SkinTrackr Design System - Gradient Header + Neutral Body */
+  /* SkinTrackr Design System - Flat Design Colors */
   :root {
-    /* Surface System - Neutral Dark Grays */
-    --surface-0: #0D0D0D;  /* Body background */
-    --surface-1: #1A1A1A;  /* Primary cards (Portfolio, KPIs) */
-    --surface-2: #222222;  /* Secondary cards (Events, Market Pulse) */
-    --surface-3: #2A2A2A;  /* Hover/Active states */
-    --border: #2A2A2A;     /* Subtle borders */
-    --hover: #2A2A2A;      /* Hover state */
+    /* Surface System - Flat Design Grays */
+    --surface-0: #2c3e50;  /* Body background - darkest gray */
+    --surface-1: #34495e;  /* Primary cards (Portfolio, KPIs) - wet asphalt */
+    --surface-2: #7f8c8d;  /* Secondary cards (Events, Market Pulse) - concrete */
+    --surface-3: #95a5a6;  /* Hover/Active states - silver */
+    --border: #bdc3c7;     /* Subtle borders - clouds */
+    --hover: #95a5a6;      /* Hover state - silver */
     
     /* Typography */
-    --text-primary: #F8FAFC;    /* Main text */
-    --text-secondary: #A1A7B3;  /* Labels, secondary text */
-    --text-muted: #6B7280;      /* Captions, timestamps */
+    --text-primary: #ecf0f1;    /* Main text - clouds */
+    --text-secondary: #bdc3c7;  /* Labels, secondary text - clouds */
+    --text-muted: #95a5a6;      /* Captions, timestamps - silver */
     
-    /* Accent Colors */
-    --accent-positive: #00E599;  /* Up/Positive */
-    --accent-negative: #EF4444;  /* Down/Negative */
-    --accent-premium: #F59E0B;   /* Premium/Highlight */
-    --accent-info: #60A5FA;      /* Info (Icons/Badges only) */
+    /* Accent Colors - Flat Design */
+    --accent-positive: #2ecc71;  /* Up/Positive - emerald */
+    --accent-positive-dark: #27ae60;  /* Dark emerald */
+    --accent-negative: #e74c3c;  /* Down/Negative - alizarin */
+    --accent-negative-dark: #c0392b;  /* Dark alizarin */
+    --accent-premium: #e67e22;   /* Premium/Highlight - carrot */
+    --accent-premium-dark: #d35400;   /* Dark carrot */
+    --accent-info: #3498db;      /* Info - peter river */
+    --accent-info-dark: #2980b9;      /* Dark peter river */
+    --accent-warning: #f1c40f;   /* Warning - sun flower */
+    --accent-warning-dark: #f39c12;   /* Dark sun flower */
     
     /* Legacy support */
     --bg-primary: var(--surface-0);
@@ -788,9 +794,9 @@
     @apply relative;
   }
 
-  /* Gradient Header Area */
+  /* Gradient Header Area - Flat Design */
   .dashboard-header-gradient {
-    background: linear-gradient(135deg, #1e3a8a 0%, #0d0d0d 100%);
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
     @apply relative;
   }
   
@@ -904,9 +910,9 @@
     border-radius: 12px !important;
   }
 
-  /* Chart Background */
+  /* Chart Background - Flat Design */
   .chart-bg {
-    background: #111111 !important;
+    background: #2c3e50 !important;
   }
 }
 
