@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
 import { PortfolioValueChart } from "@/components/charts/PortfolioValueChart";
-import { SimplePieChart } from "./components/SimplePieChart";
+import { PortfolioPieChart } from "./components/PortfolioPieChart";
 import MarketPulse from "./components/MarketPulse";
 import MarketEvents from "./components/MarketEvents";
 import AlertsBox from "./components/AlertsBox";
@@ -449,7 +449,7 @@ export default function Dashboard() {
               <CardTitle className="text-lg font-bold text-white">Portfolio Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
-              <SimplePieChart />
+              <PortfolioPieChart portfolio={portfolio || []} />
             </CardContent>
           </Card>
 

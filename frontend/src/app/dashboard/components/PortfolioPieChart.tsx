@@ -105,15 +105,24 @@ export function PortfolioPieChart({
     console.log('PortfolioPieChart: Portfolio data:', portfolio);
 
     const grouped = portfolio.reduce((acc, item) => {
-      // Use currentValue if available, otherwise calculate from currentPrice
-      const value = item.currentValue || (item.currentPrice * item.amount);
+      // Use currentValue if available and > 0, otherwise calculate from currentPrice
+      let value = item.currentValue;
+      if (!value || value <= 0) {
+        value = item.currentPrice * item.amount;
+      }
+      
+      // If still no value, use buyPrice as fallback
+      if (!value || value <= 0) {
+        value = item.buyPrice * item.amount;
+      }
+      
       const category = type === 'rarity' 
         ? (item.skin.rarity || 'Unknown')
         : type === 'weapon'
         ? (item.skin.weaponType || 'Unknown')
         : (item.skin.exterior || 'Unknown');
       
-      console.log(`PortfolioPieChart: Item ${item.id} - Value: ${value}, Category: ${category}, Type: ${type}`);
+      console.log(`PortfolioPieChart: Item ${item.id} - currentValue: ${item.currentValue}, currentPrice: ${item.currentPrice}, buyPrice: ${item.buyPrice}, amount: ${item.amount}, finalValue: ${value}, Category: ${category}, Type: ${type}`);
       
       if (!acc[category]) {
         acc[category] = { value: 0, count: 0 };
@@ -210,14 +219,16 @@ export function PortfolioPieChart({
   console.log('PortfolioPieChart: Portfolio length:', portfolio?.length || 0);
   console.log('PortfolioPieChart: Chart data length:', chartData.length);
 
-  // Always show test data for now to verify chart works
+  // Use real data if available, otherwise show test data
   const testData = [
     { name: 'Covert', value: 500, count: 2, percentage: 50, color: '#ff6b6b' },
     { name: 'Classified', value: 300, count: 3, percentage: 30, color: '#ff9ff3' },
     { name: 'Restricted', value: 200, count: 5, percentage: 20, color: '#a8e6cf' }
   ];
 
-  const displayData = testData; // Force test data for now
+  // If we have real data with values > 0, use it, otherwise use test data
+  const hasRealData = chartData.length > 0 && chartData.some(item => item.value > 0);
+  const displayData = hasRealData ? chartData : testData;
 
   return (
     <div className={className}>
