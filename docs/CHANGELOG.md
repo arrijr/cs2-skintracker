@@ -3,6 +3,24 @@
 ## [Unreleased]
 
 ### Added
+* feat(dashboard): real pie chart for Portfolio Breakdown
+  * **New Component** (`/frontend/src/app/dashboard/components/PortfolioPieChart.tsx`)
+    * Implemented interactive pie chart using Recharts library
+    * Added tabs for Rarity, Weapon Type, and Exterior breakdowns
+    * Custom tooltips with detailed information (value, count, percentage)
+    * Responsive design with mobile-optimized legend
+    * CS2-themed color scheme matching rarity and weapon types
+  * **Dashboard Integration** (`/frontend/src/app/dashboard/page.tsx`)
+    * Replaced EnhancedPortfolioBreakdown with new PortfolioPieChart component
+    * Maintains same data structure and API compatibility
+  * **Features**
+    * Interactive hover tooltips with skin details
+    * Responsive chart sizing (h-64 sm:h-72 lg:h-80)
+    * Color-coded segments based on CS2 rarity system
+    * Summary statistics (Total Items, Total Value)
+    * Mobile-friendly legend with truncated text
+
+### Fixed
 * feat(layout): comprehensive responsive layout improvements
   * **CSS Container System** (`/frontend/src/app/globals.css`)
     * Added `container-cs2` class with max-width and responsive padding
