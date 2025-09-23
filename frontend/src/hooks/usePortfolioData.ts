@@ -24,6 +24,9 @@ interface PortfolioData {
       name: string;
       marketHashName: string;
       imageUrl: string;
+      rarity?: string;
+      weaponType?: string;
+      exterior?: string;
     };
   }>;
   history: PortfolioHistoryEntry[];

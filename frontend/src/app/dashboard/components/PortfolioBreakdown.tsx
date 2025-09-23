@@ -65,24 +65,40 @@ const WEAPON_COLORS = {
   'Other': '#a55eea'
 };
 
+const EXTERIOR_COLORS = {
+  'Factory New': '#4ecdc4',
+  'Minimal Wear': '#45b7d1',
+  'Field-Tested': '#96ceb4',
+  'Well-Worn': '#feca57',
+  'Battle-Scarred': '#ff6b6b',
+  'Other': '#a55eea'
+};
+
 export default function PortfolioBreakdown({ 
   portfolio, 
   lastUpdated, 
   onRefresh, 
   isLoading = false 
 }: PortfolioBreakdownProps) {
-  const [breakdownType, setBreakdownType] = useState<'rarity' | 'weapon'>('rarity');
+  const [breakdownType, setBreakdownType] = useState<'rarity' | 'weapon' | 'exterior'>('rarity');
 
   // Calculate breakdown data
   const getBreakdownData = (): BreakdownData[] => {
     if (!portfolio || portfolio.length === 0) return [];
 
     console.log('Portfolio data:', portfolio); // Debug log
+    console.log('Breakdown type:', breakdownType); // Debug log
 
     const grouped = portfolio.reduce((acc, item) => {
+      console.log('Processing item:', item); // Debug log
+      
       const category = breakdownType === 'rarity' 
         ? (item.skin?.rarity || 'Unknown')
-        : (item.skin?.weaponType || 'Unknown');
+        : breakdownType === 'weapon'
+        ? (item.skin?.weaponType || 'Unknown')
+        : (item.skin?.exterior || 'Unknown');
+      
+      console.log('Category:', category, 'Current value:', item.currentValue, 'Amount:', item.amount); // Debug log
       
       if (!acc[category]) {
         acc[category] = { value: 0, count: 0 };
@@ -94,6 +110,8 @@ export default function PortfolioBreakdown({
       return acc;
     }, {} as Record<string, { value: number; count: number }>);
 
+    console.log('Grouped data:', grouped); // Debug log
+
     const totalValue = Object.values(grouped).reduce((sum, item) => sum + item.value, 0);
     
     return Object.entries(grouped).map(([category, data]) => ({
@@ -103,7 +121,9 @@ export default function PortfolioBreakdown({
       percentage: totalValue > 0 ? (data.value / totalValue) * 100 : 0,
       color: breakdownType === 'rarity' 
         ? RARITY_COLORS[category as keyof typeof RARITY_COLORS] || '#6b7280'
-        : WEAPON_COLORS[category as keyof typeof WEAPON_COLORS] || '#6b7280'
+        : breakdownType === 'weapon'
+        ? WEAPON_COLORS[category as keyof typeof WEAPON_COLORS] || '#6b7280'
+        : EXTERIOR_COLORS[category as keyof typeof EXTERIOR_COLORS] || '#6b7280'
     })).sort((a, b) => b.value - a.value);
   };
 
@@ -172,7 +192,7 @@ export default function PortfolioBreakdown({
             <ToggleGroup 
               type="single" 
               value={breakdownType}
-              onValueChange={(value: 'rarity' | 'weapon') => value && setBreakdownType(value)}
+              onValueChange={(value: 'rarity' | 'weapon' | 'exterior') => value && setBreakdownType(value)}
               className="bg-muted/50 p-1 rounded-lg"
             >
               <ToggleGroupItem value="rarity" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
@@ -180,6 +200,9 @@ export default function PortfolioBreakdown({
               </ToggleGroupItem>
               <ToggleGroupItem value="weapon" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
                 Weapon
+              </ToggleGroupItem>
+              <ToggleGroupItem value="exterior" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs px-2">
+                Exterior
               </ToggleGroupItem>
             </ToggleGroup>
 
