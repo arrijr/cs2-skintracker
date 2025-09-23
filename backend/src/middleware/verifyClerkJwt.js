@@ -48,7 +48,7 @@ function getKey(header, cb) {
   });
 }
 
-export function verifyClerkJwt(req, res, next) {
+export async function verifyClerkJwt(req, res, next) {
   try {
     const auth = req.headers.authorization || "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
