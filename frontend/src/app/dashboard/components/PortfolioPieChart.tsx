@@ -103,33 +103,47 @@ export function PortfolioPieChart({
     }
 
     console.log('PortfolioPieChart: Portfolio data:', portfolio);
+    console.log('PortfolioPieChart: First item structure:', portfolio[0]);
 
     const grouped = portfolio.reduce((acc, item) => {
-      // Use currentValue if available and > 0, otherwise calculate from currentPrice
-      let value = item.currentValue;
-      if (!value || value <= 0) {
-        value = item.currentPrice * item.amount;
+      console.log('PortfolioPieChart: Processing item:', item);
+      
+      // Check all possible value fields
+      let value = item.currentValue || item.currentPrice || item.buyPrice || item.avgPrice || 0;
+      
+      // If we have a price but no amount, assume amount is 1
+      const amount = item.amount || 1;
+      
+      // Calculate total value
+      if (value > 0) {
+        value = value * amount;
       }
       
-      // If still no value, use buyPrice as fallback
-      if (!value || value <= 0) {
-        value = item.buyPrice * item.amount;
+      // If still no value, try to get from skin data
+      if (value <= 0) {
+        const skinPrice = item.skin?.priceLatest || item.skin?.marketPrice || item.skin?.priceAvg || 0;
+        value = skinPrice * amount;
+      }
+      
+      // Final fallback: use a small default value to show something
+      if (value <= 0) {
+        value = 1; // Minimum value to show in chart
       }
       
       const category = type === 'rarity' 
-        ? (item.skin.rarity || 'Unknown')
+        ? (item.skin?.rarity || 'Unknown')
         : type === 'weapon'
-        ? (item.skin.weaponType || 'Unknown')
-        : (item.skin.exterior || 'Unknown');
+        ? (item.skin?.weaponType || 'Unknown')
+        : (item.skin?.exterior || 'Unknown');
       
-      console.log(`PortfolioPieChart: Item ${item.id} - currentValue: ${item.currentValue}, currentPrice: ${item.currentPrice}, buyPrice: ${item.buyPrice}, amount: ${item.amount}, finalValue: ${value}, Category: ${category}, Type: ${type}`);
+      console.log(`PortfolioPieChart: Item - currentValue: ${item.currentValue}, currentPrice: ${item.currentPrice}, buyPrice: ${item.buyPrice}, avgPrice: ${item.avgPrice}, skinPrice: ${item.skin?.priceLatest}, amount: ${amount}, finalValue: ${value}, Category: ${category}, Type: ${type}`);
       
       if (!acc[category]) {
         acc[category] = { value: 0, count: 0 };
       }
       
       acc[category].value += value;
-      acc[category].count += item.amount;
+      acc[category].count += amount;
       
       return acc;
     }, {} as Record<string, { value: number; count: number }>);
