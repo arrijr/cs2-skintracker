@@ -2,6 +2,7 @@
 // {/* JWT-Verifikation für Clerk Tokens mit JWKS */}
 import jwksClient from "jwks-rsa";
 import jwt from "jsonwebtoken";
+import prisma from "../prisma/prismaClient.js";
 
 const {
   CLERK_JWKS_URL,
@@ -120,8 +121,6 @@ export async function verifyClerkJwt(req, res, next) {
         if (clerkUserId) {
           // Look up the actual user ID from the database
           try {
-            const prisma = (await import('../prisma/prismaClient.js')).default;
-            
             const user = await prisma.user.findFirst({
               where: { clerkId: clerkUserId },
               select: { id: true }
