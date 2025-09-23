@@ -755,7 +755,7 @@
   /* Dashboard Background */
   .dashboard-bg {
     @apply min-h-screen;
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    background: #0a0a0a;
     @apply relative;
   }
   
@@ -822,30 +822,30 @@
   }
 }
 
-/* Final Card Overrides - Back to Blue Design */
+/* Final Card Overrides - Clean & Modern */
 @layer components {
   .card-enhanced {
-    @apply bg-slate-800/60 !important;
-    @apply border-slate-600/50 !important;
+    @apply bg-neutral-900 !important;
+    @apply border-neutral-800/50 !important;
     @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-slate-500/10;
-    @apply hover:border-slate-500/50;
+    @apply hover:shadow-xl hover:shadow-neutral-500/10;
+    @apply hover:border-neutral-700/50;
   }
 
   .card-primary {
-    @apply bg-slate-900/80 !important;
-    @apply border-slate-700/50 !important;
+    @apply bg-neutral-950 !important;
+    @apply border-neutral-800/50 !important;
     @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-slate-500/10;
-    @apply hover:border-slate-600/50;
+    @apply hover:shadow-xl hover:shadow-neutral-500/10;
+    @apply hover:border-neutral-700/50;
   }
 
   .card-secondary {
-    @apply bg-slate-800/40 !important;
-    @apply border-slate-600/40 !important;
+    @apply bg-neutral-800 !important;
+    @apply border-neutral-700/50 !important;
     @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-slate-500/10;
-    @apply hover:border-slate-500/50;
+    @apply hover:shadow-xl hover:shadow-neutral-500/10;
+    @apply hover:border-neutral-600/50;
   }
 }
 
