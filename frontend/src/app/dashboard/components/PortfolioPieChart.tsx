@@ -24,16 +24,21 @@ import { formatUSD } from "@/lib/num";
 
 interface PortfolioItem {
   id: number;
+  skinId: number;
   amount: number;
-  avgPrice: number;
+  buyPrice: number;
+  buyDate: string;
+  currentPrice: number;
+  currentValue: number;
+  unrealizedPL: number;
   skin: {
     id: number;
     name: string;
-    imageUrl?: string;
-    weaponType?: string;
+    marketHashName: string;
+    imageUrl: string;
     rarity?: string;
-    wear?: string;
-    priceLatest?: number;
+    weaponType?: string;
+    exterior?: string;
   };
 }
 
@@ -92,15 +97,23 @@ export function PortfolioPieChart({
 
   // Calculate breakdown data
   const getBreakdownData = (type: 'rarity' | 'weapon' | 'exterior'): ChartData[] => {
-    if (!portfolio || portfolio.length === 0) return [];
+    if (!portfolio || portfolio.length === 0) {
+      console.log('PortfolioPieChart: No portfolio data');
+      return [];
+    }
+
+    console.log('PortfolioPieChart: Portfolio data:', portfolio);
 
     const grouped = portfolio.reduce((acc, item) => {
-      const value = (item.skin.priceLatest || 0) * item.amount;
+      // Use currentValue if available, otherwise calculate from currentPrice
+      const value = item.currentValue || (item.currentPrice * item.amount);
       const category = type === 'rarity' 
         ? (item.skin.rarity || 'Unknown')
         : type === 'weapon'
         ? (item.skin.weaponType || 'Unknown')
-        : (item.skin.wear || 'Unknown');
+        : (item.skin.exterior || 'Unknown');
+      
+      console.log(`PortfolioPieChart: Item ${item.id} - Value: ${value}, Category: ${category}, Type: ${type}`);
       
       if (!acc[category]) {
         acc[category] = { value: 0, count: 0 };
@@ -112,9 +125,11 @@ export function PortfolioPieChart({
       return acc;
     }, {} as Record<string, { value: number; count: number }>);
 
+    console.log('PortfolioPieChart: Grouped data:', grouped);
+
     const totalValue = Object.values(grouped).reduce((sum, item) => sum + item.value, 0);
     
-    return Object.entries(grouped)
+    const chartData = Object.entries(grouped)
       .map(([category, data]) => ({
         name: category,
         value: data.value,
@@ -128,6 +143,11 @@ export function PortfolioPieChart({
       }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 8); // Limit to top 8 categories for better readability
+
+    console.log('PortfolioPieChart: Final chart data:', chartData);
+    console.log('PortfolioPieChart: Total value:', totalValue);
+    
+    return chartData;
   };
 
   const getIcon = (type: 'rarity' | 'weapon' | 'exterior', name: string) => {
@@ -183,19 +203,21 @@ export function PortfolioPieChart({
   const chartData = getBreakdownData(activeTab);
   const totalValue = chartData.reduce((sum, item) => sum + item.value, 0);
 
-  if (chartData.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <div className="text-slate-400 mb-4">
-          <PieChart className="h-12 w-12 mx-auto" />
-        </div>
-        <h3 className="text-lg font-semibold text-white mb-2">No Data Available</h3>
-        <p className="text-sm text-slate-400">
-          Your skins will show here once you add them to your portfolio
-        </p>
-      </div>
-    );
-  }
+  console.log('PortfolioPieChart: Rendering with chartData:', chartData);
+  console.log('PortfolioPieChart: Total value for display:', totalValue);
+
+  // Debug info
+  console.log('PortfolioPieChart: Portfolio length:', portfolio?.length || 0);
+  console.log('PortfolioPieChart: Chart data length:', chartData.length);
+
+  // Always show test data for now to verify chart works
+  const testData = [
+    { name: 'Covert', value: 500, count: 2, percentage: 50, color: '#ff6b6b' },
+    { name: 'Classified', value: 300, count: 3, percentage: 30, color: '#ff9ff3' },
+    { name: 'Restricted', value: 200, count: 5, percentage: 20, color: '#a8e6cf' }
+  ];
+
+  const displayData = testData; // Force test data for now
 
   return (
     <div className={className}>
@@ -226,7 +248,7 @@ export function PortfolioPieChart({
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={chartData}
+                  data={displayData}
                   cx="50%"
                   cy="50%"
                   innerRadius={40}
@@ -234,7 +256,7 @@ export function PortfolioPieChart({
                   paddingAngle={2}
                   dataKey="value"
                 >
-                  {chartData.map((entry, index) => (
+                  {displayData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -250,7 +272,7 @@ export function PortfolioPieChart({
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={chartData}
+                  data={displayData}
                   cx="50%"
                   cy="50%"
                   innerRadius={40}
@@ -258,7 +280,7 @@ export function PortfolioPieChart({
                   paddingAngle={2}
                   dataKey="value"
                 >
-                  {chartData.map((entry, index) => (
+                  {displayData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -274,7 +296,7 @@ export function PortfolioPieChart({
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={chartData}
+                  data={displayData}
                   cx="50%"
                   cy="50%"
                   innerRadius={40}
@@ -282,7 +304,7 @@ export function PortfolioPieChart({
                   paddingAngle={2}
                   dataKey="value"
                 >
-                  {chartData.map((entry, index) => (
+                  {displayData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
