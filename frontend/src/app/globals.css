@@ -31,32 +31,26 @@
     --chart-5: 27 87% 67%;
   }
 
-  /* SkinTrackr Design System - Flat Design Colors */
+  /* SkinTrackr Design System - Clean & Simple */
   :root {
-    /* Surface System - Flat Design Grays */
-    --surface-0: #2c3e50;  /* Body background - darkest gray */
-    --surface-1: #34495e;  /* Primary cards (Portfolio, KPIs) - wet asphalt */
-    --surface-2: #7f8c8d;  /* Secondary cards (Events, Market Pulse) - concrete */
-    --surface-3: #95a5a6;  /* Hover/Active states - silver */
-    --border: #bdc3c7;     /* Subtle borders - clouds */
-    --hover: #95a5a6;      /* Hover state - silver */
+    /* Surface System - Clean Grays */
+    --surface-0: #0a0a0a;  /* Body background */
+    --surface-1: #1a1a1a;  /* Primary cards */
+    --surface-2: #222222;  /* Secondary cards */
+    --surface-3: #2a2a2a;  /* Hover/Active states */
+    --border: #333333;     /* Subtle borders */
+    --hover: #2a2a2a;      /* Hover state */
     
     /* Typography */
-    --text-primary: #ecf0f1;    /* Main text - clouds */
-    --text-secondary: #bdc3c7;  /* Labels, secondary text - clouds */
-    --text-muted: #95a5a6;      /* Captions, timestamps - silver */
+    --text-primary: #ffffff;    /* Main text */
+    --text-secondary: #a0a0a0;  /* Labels, secondary text */
+    --text-muted: #666666;      /* Captions, timestamps */
     
-    /* Accent Colors - Flat Design */
-    --accent-positive: #2ecc71;  /* Up/Positive - emerald */
-    --accent-positive-dark: #27ae60;  /* Dark emerald */
-    --accent-negative: #e74c3c;  /* Down/Negative - alizarin */
-    --accent-negative-dark: #c0392b;  /* Dark alizarin */
-    --accent-premium: #e67e22;   /* Premium/Highlight - carrot */
-    --accent-premium-dark: #d35400;   /* Dark carrot */
-    --accent-info: #3498db;      /* Info - peter river */
-    --accent-info-dark: #2980b9;      /* Dark peter river */
-    --accent-warning: #f1c40f;   /* Warning - sun flower */
-    --accent-warning-dark: #f39c12;   /* Dark sun flower */
+    /* Accent Colors - Simple & Clean */
+    --accent-positive: #00d4aa;  /* Up/Positive */
+    --accent-negative: #ff4757;  /* Down/Negative */
+    --accent-premium: #ffa502;   /* Premium/Highlight */
+    --accent-info: #3742fa;      /* Info */
     
     /* Legacy support */
     --bg-primary: var(--surface-0);
@@ -794,9 +788,9 @@
     @apply relative;
   }
 
-  /* Gradient Header Area - Flat Design */
+  /* Gradient Header Area - Clean */
   .dashboard-header-gradient {
-    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
     @apply relative;
   }
   
@@ -863,56 +857,59 @@
   }
 }
 
-/* Final Card Overrides - Gradient Header + Neutral Cards */
+/* Final Card Overrides - Clean & Simple */
 @layer components {
   .card-enhanced {
     background: var(--surface-1) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
-    transition: all 300ms ease-out !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    transition: all 200ms ease-out !important;
   }
 
   .card-enhanced:hover {
     background: var(--hover) !important;
     cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
   }
 
   .card-primary {
     background: var(--surface-1) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
-    transition: all 300ms ease-out !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    transition: all 200ms ease-out !important;
   }
 
   .card-primary:hover {
     background: var(--hover) !important;
     cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
   }
 
   .card-secondary {
     background: var(--surface-2) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
-    transition: all 300ms ease-out !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    transition: all 200ms ease-out !important;
   }
 
   .card-secondary:hover {
     background: var(--hover) !important;
     cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
   }
 
   .card-inset {
     background: var(--surface-3) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
+    border-radius: 8px !important;
   }
 
-  /* Chart Background - Flat Design */
+  /* Chart Background - Clean */
   .chart-bg {
-    background: #2c3e50 !important;
+    background: var(--surface-0) !important;
   }
 }
 
