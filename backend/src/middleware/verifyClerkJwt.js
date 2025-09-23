@@ -116,19 +116,40 @@ export function verifyClerkJwt(req, res, next) {
         req.clerkJwt = payload;
         
         // Extract user ID from JWT payload
-        // For now, we'll use a hash of the sub to get a consistent integer ID
         const clerkUserId = payload?.sub;
         if (clerkUserId) {
-          // Simple hash function to convert string to integer
-          let hash = 0;
-          for (let i = 0; i < clerkUserId.length; i++) {
-            const char = clerkUserId.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // Convert to 32-bit integer
+          // Look up the actual user ID from the database
+          try {
+            const { PrismaClient } = await import('@prisma/client');
+            const prisma = new PrismaClient();
+            
+            const user = await prisma.user.findFirst({
+              where: { clerkId: clerkUserId },
+              select: { id: true }
+            });
+            
+            if (user) {
+              req.userId = user.id;
+              req.auth = { userId: user.id };
+              console.log("[JWT VERIFY] User ID found:", req.userId, "from clerk:", clerkUserId);
+            } else {
+              console.error("[JWT VERIFY] User not found in database for clerk ID:", clerkUserId);
+              return res.status(401).json({ 
+                ok: false, 
+                code: "USER_NOT_FOUND", 
+                message: "User not found in database" 
+              });
+            }
+            
+            await prisma.$disconnect();
+          } catch (dbError) {
+            console.error("[JWT VERIFY] Database error:", dbError);
+            return res.status(500).json({ 
+              ok: false, 
+              code: "DATABASE_ERROR", 
+              message: "Database lookup failed" 
+            });
           }
-          req.userId = Math.abs(hash) % 1000000; // Keep it reasonable
-          req.auth = { userId: req.userId };
-          console.log("[JWT VERIFY] User ID extracted:", req.userId, "from clerk:", clerkUserId);
         }
         
         next();
