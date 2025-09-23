@@ -41,6 +41,7 @@ import {
 import { formatUSD, safeToFixed } from "@/lib/num";
 import { apiFetch } from "@/lib/http";
 import { apiUrl, fetchJson } from "@/lib/api";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface WatchlistItem {
   id: number;
@@ -355,56 +356,86 @@ export default function Dashboard() {
 
         {/* Row 2: P&L KPIs under Portfolio Overview */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-          <Card className="card-primary">
-            <CardContent className="p-4 text-center">
-              <div className={`text-2xl font-bold ${unrealizedPL >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
-                {formatUSD(unrealizedPL)}
-              </div>
-              <div className="text-sm text-gray-400">Total P&L</div>
-              <div className={`text-xs mt-1 ${unrealizedPL >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
-                {plPercentage >= 0 ? '+' : ''}{safeToFixed(plPercentage, 1)}%
-              </div>
-            </CardContent>
-          </Card>
+          <Tooltip 
+            content="Your total unrealized profit or loss. This is the difference between what you paid for all skins and their current market value."
+            position="top"
+          >
+            <Card className="card-primary cursor-help">
+              <CardContent className="p-4 text-center">
+                <div className={`text-2xl font-bold ${unrealizedPL >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
+                  {formatUSD(unrealizedPL)}
+                </div>
+                <div className="text-sm text-gray-400">Total P&L</div>
+                <div className={`text-xs mt-1 ${unrealizedPL >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
+                  {plPercentage >= 0 ? '+' : ''}{safeToFixed(plPercentage, 1)}%
+                </div>
+              </CardContent>
+            </Card>
+          </Tooltip>
 
-          <Card className="card-primary">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-white">{formatUSD(avgPerSkin)}</div>
-              <div className="text-sm text-gray-400">Avg per Skin</div>
-            </CardContent>
-          </Card>
+          <Tooltip 
+            content="Average value per skin in your portfolio. Calculated by dividing total portfolio value by number of skins."
+            position="top"
+          >
+            <Card className="card-primary cursor-help">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-white">{formatUSD(avgPerSkin)}</div>
+                <div className="text-sm text-gray-400">Avg per Skin</div>
+              </CardContent>
+            </Card>
+          </Tooltip>
 
-          <Card className="card-primary">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-white">{portfolio?.length || 0}</div>
-              <div className="text-sm text-gray-400"># Skins</div>
-            </CardContent>
-          </Card>
+          <Tooltip 
+            content="Total number of different skins in your portfolio. Each unique skin counts as one, regardless of quantity."
+            position="top"
+          >
+            <Card className="card-primary cursor-help">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-white">{portfolio?.length || 0}</div>
+                <div className="text-sm text-gray-400"># Skins</div>
+              </CardContent>
+            </Card>
+          </Tooltip>
 
-          <Card className="card-primary">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-white">{formatUSD(totalInvested)}</div>
-              <div className="text-sm text-gray-400">Total Invested</div>
-            </CardContent>
-          </Card>
+          <Tooltip 
+            content="Total amount you originally paid for all skins in your portfolio. This is your cost basis for calculating profits and losses."
+            position="top"
+          >
+            <Card className="card-primary cursor-help">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-white">{formatUSD(totalInvested)}</div>
+                <div className="text-sm text-gray-400">Total Invested</div>
+              </CardContent>
+            </Card>
+          </Tooltip>
 
-          <Card className="card-primary">
-            <CardContent className="p-4 text-center">
-              <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
-                {formatUSD(change24h * totalValue / 100)}
-              </div>
-              <div className="text-sm text-gray-400">Day P&L</div>
-            </CardContent>
-          </Card>
+          <Tooltip 
+            content="Profit or loss from the last 24 hours. Shows how much your portfolio value changed in the past day."
+            position="top"
+          >
+            <Card className="card-primary cursor-help">
+              <CardContent className="p-4 text-center">
+                <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
+                  {formatUSD(change24h * totalValue / 100)}
+                </div>
+                <div className="text-sm text-gray-400">Day P&L</div>
+              </CardContent>
+            </Card>
+          </Tooltip>
 
-          <Card className="card-primary">
-            <CardContent className="p-4 text-center">
-              <div className={`text-2xl font-bold ${change7d >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
-                {formatUSD(change7d * totalValue / 100)}
-              </div>
-              <div className="text-sm text-gray-400">7d P&L</div>
-            </CardContent>
-          </Card>
+          <Tooltip 
+            content="Profit or loss from the last 7 days. Shows how much your portfolio value changed in the past week."
+            position="top"
+          >
+            <Card className="card-primary cursor-help">
+              <CardContent className="p-4 text-center">
+                <div className={`text-2xl font-bold ${change7d >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
+                  {formatUSD(change7d * totalValue / 100)}
+                </div>
+                <div className="text-sm text-gray-400">7d P&L</div>
+              </CardContent>
+            </Card>
+          </Tooltip>
         </div>
 
         {/* Row 3: Breakdown, Market Pulse, Events in a row */}
@@ -420,11 +451,16 @@ export default function Dashboard() {
 
           <Card className="card-secondary">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                <Activity className="h-5 w-5 text-brand-info" />
-                Market Pulse
-                <Lock className="h-4 w-4 text-gray-400" />
-              </CardTitle>
+              <Tooltip 
+                content="Real-time market activity and trends. Shows current market conditions, trading volume, and price movements across all skins."
+                position="top"
+              >
+                <CardTitle className="text-lg font-bold text-white flex items-center gap-2 cursor-help">
+                  <Activity className="h-5 w-5 text-brand-info" />
+                  Market Pulse
+                  <Lock className="h-4 w-4 text-gray-400" />
+                </CardTitle>
+              </Tooltip>
             </CardHeader>
             <CardContent>
               <MarketPulse />
@@ -433,11 +469,16 @@ export default function Dashboard() {
 
           <Card className="card-secondary">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                <Globe className="h-5 w-5 text-brand-warning" />
-                Market Events
-                <Lock className="h-4 w-4 text-gray-400" />
-              </CardTitle>
+              <Tooltip 
+                content="Important market events and announcements that could affect skin prices. Includes major updates, tournaments, and market news."
+                position="top"
+              >
+                <CardTitle className="text-lg font-bold text-white flex items-center gap-2 cursor-help">
+                  <Globe className="h-5 w-5 text-brand-warning" />
+                  Market Events
+                  <Lock className="h-4 w-4 text-gray-400" />
+                </CardTitle>
+              </Tooltip>
             </CardHeader>
             <CardContent>
               <MarketEvents />
@@ -450,10 +491,15 @@ export default function Dashboard() {
           <Card className="card-secondary">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-brand-green" />
-                  Top Gainers
-                </CardTitle>
+                <Tooltip 
+                  content="Skins with the highest price increases in the selected timeframe. Great for spotting trending items and potential investment opportunities."
+                  position="top"
+                >
+                  <CardTitle className="text-lg font-bold text-white flex items-center gap-2 cursor-help">
+                    <TrendingUp className="h-5 w-5 text-brand-green" />
+                    Top Gainers
+                  </CardTitle>
+                </Tooltip>
                 <div className="flex items-center gap-2">
                   <ToggleGroup type="single" value={moverTimeframe} onValueChange={(value) => setMoverTimeframe(value as any)}>
                     <ToggleGroupItem value="24h">24h</ToggleGroupItem>
@@ -486,10 +532,15 @@ export default function Dashboard() {
 
           <Card className="card-secondary">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                <TrendingDown className="h-5 w-5 text-brand-red" />
-                Top Losers
-              </CardTitle>
+              <Tooltip 
+                content="Skins with the highest price decreases in the selected timeframe. Useful for identifying potential buying opportunities or items to avoid."
+                position="top"
+              >
+                <CardTitle className="text-lg font-bold text-white flex items-center gap-2 cursor-help">
+                  <TrendingDown className="h-5 w-5 text-brand-red" />
+                  Top Losers
+                </CardTitle>
+              </Tooltip>
             </CardHeader>
             <CardContent>
               <EnhancedMovers 
