@@ -41,7 +41,7 @@ import {
 import { formatUSD, safeToFixed } from "@/lib/num";
 import { apiFetch } from "@/lib/http";
 import { apiUrl, fetchJson } from "@/lib/api";
-import Tooltip from "@/components/ui/Tooltip";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 
 interface WatchlistItem {
   id: number;
@@ -283,7 +283,7 @@ export default function Dashboard() {
                     data={history || []} 
                     range={chartRange}
                     showProfitShading={true}
-                    showTooltips={true}
+                    showInfoTooltips={true}
                   />
                 </div>
 
@@ -356,7 +356,7 @@ export default function Dashboard() {
 
         {/* Row 2: P&L KPIs under Portfolio Overview */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-          <Tooltip 
+          <InfoTooltip 
             content="Your total unrealized profit or loss. This is the difference between what you paid for all skins and their current market value."
             position="top"
           >
@@ -371,9 +371,9 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-          </Tooltip>
+          </InfoTooltip>
 
-          <Tooltip 
+          <InfoTooltip 
             content="Average value per skin in your portfolio. Calculated by dividing total portfolio value by number of skins."
             position="top"
           >
@@ -383,9 +383,9 @@ export default function Dashboard() {
                 <div className="text-sm text-gray-400">Avg per Skin</div>
               </CardContent>
             </Card>
-          </Tooltip>
+          </InfoTooltip>
 
-          <Tooltip 
+          <InfoTooltip 
             content="Total number of different skins in your portfolio. Each unique skin counts as one, regardless of quantity."
             position="top"
           >
@@ -395,9 +395,9 @@ export default function Dashboard() {
                 <div className="text-sm text-gray-400"># Skins</div>
               </CardContent>
             </Card>
-          </Tooltip>
+          </InfoTooltip>
 
-          <Tooltip 
+          <InfoTooltip 
             content="Total amount you originally paid for all skins in your portfolio. This is your cost basis for calculating profits and losses."
             position="top"
           >
@@ -407,9 +407,9 @@ export default function Dashboard() {
                 <div className="text-sm text-gray-400">Total Invested</div>
               </CardContent>
             </Card>
-          </Tooltip>
+          </InfoTooltip>
 
-          <Tooltip 
+          <InfoTooltip 
             content="Profit or loss from the last 24 hours. Shows how much your portfolio value changed in the past day."
             position="top"
           >
@@ -421,9 +421,9 @@ export default function Dashboard() {
                 <div className="text-sm text-gray-400">Day P&L</div>
               </CardContent>
             </Card>
-          </Tooltip>
+          </InfoTooltip>
 
-          <Tooltip 
+          <InfoTooltip 
             content="Profit or loss from the last 7 days. Shows how much your portfolio value changed in the past week."
             position="top"
           >
@@ -435,7 +435,7 @@ export default function Dashboard() {
                 <div className="text-sm text-gray-400">7d P&L</div>
               </CardContent>
             </Card>
-          </Tooltip>
+          </InfoTooltip>
         </div>
 
         {/* Row 3: Breakdown, Market Pulse, Events in a row */}
@@ -451,7 +451,7 @@ export default function Dashboard() {
 
           <Card className="card-secondary">
             <CardHeader>
-              <Tooltip 
+              <InfoTooltip 
                 content="Real-time market activity and trends. Shows current market conditions, trading volume, and price movements across all skins."
                 position="top"
               >
@@ -460,7 +460,7 @@ export default function Dashboard() {
                   Market Pulse
                   <Lock className="h-4 w-4 text-gray-400" />
                 </CardTitle>
-              </Tooltip>
+              </InfoTooltip>
             </CardHeader>
             <CardContent>
               <MarketPulse />
@@ -469,7 +469,7 @@ export default function Dashboard() {
 
           <Card className="card-secondary">
             <CardHeader>
-              <Tooltip 
+              <InfoTooltip 
                 content="Important market events and announcements that could affect skin prices. Includes major updates, tournaments, and market news."
                 position="top"
               >
@@ -478,7 +478,7 @@ export default function Dashboard() {
                   Market Events
                   <Lock className="h-4 w-4 text-gray-400" />
                 </CardTitle>
-              </Tooltip>
+              </InfoTooltip>
             </CardHeader>
             <CardContent>
               <MarketEvents />
@@ -491,7 +491,7 @@ export default function Dashboard() {
           <Card className="card-secondary">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <Tooltip 
+                <InfoTooltip 
                   content="Skins with the highest price increases in the selected timeframe. Great for spotting trending items and potential investment opportunities."
                   position="top"
                 >
@@ -499,7 +499,7 @@ export default function Dashboard() {
                     <TrendingUp className="h-5 w-5 text-brand-green" />
                     Top Gainers
                   </CardTitle>
-                </Tooltip>
+                </InfoTooltip>
                 <div className="flex items-center gap-2">
                   <ToggleGroup type="single" value={moverTimeframe} onValueChange={(value) => setMoverTimeframe(value as any)}>
                     <ToggleGroupItem value="24h">24h</ToggleGroupItem>
@@ -532,7 +532,7 @@ export default function Dashboard() {
 
           <Card className="card-secondary">
             <CardHeader>
-              <Tooltip 
+              <InfoTooltip 
                 content="Skins with the highest price decreases in the selected timeframe. Useful for identifying potential buying opportunities or items to avoid."
                 position="top"
               >
@@ -540,7 +540,7 @@ export default function Dashboard() {
                   <TrendingDown className="h-5 w-5 text-brand-red" />
                   Top Losers
                 </CardTitle>
-              </Tooltip>
+              </InfoTooltip>
             </CardHeader>
             <CardContent>
               <EnhancedMovers 

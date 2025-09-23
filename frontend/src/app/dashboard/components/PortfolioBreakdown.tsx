@@ -15,7 +15,7 @@ import {
   Filter
 } from "lucide-react";
 import { formatUSD } from "@/lib/num";
-import Tooltip from "@/components/ui/Tooltip";
+import InfoInfoTooltip from "@/components/ui/InfoInfoTooltip";
 
 interface PortfolioItem {
   id: number;
@@ -134,7 +134,7 @@ export default function PortfolioBreakdown({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Tooltip 
+            <InfoTooltip 
               content="Shows how your portfolio is distributed across different skin rarities or weapon types. Switch between 'Rarity' and 'Weapon' views to see different breakdowns."
               position="top"
             >
@@ -142,7 +142,7 @@ export default function PortfolioBreakdown({
                 <PieChart className="h-5 w-5 text-brand-blue" />
                 Portfolio Breakdown
               </CardTitle>
-            </Tooltip>
+            </InfoTooltip>
             {lastUpdated && (
               <span className="text-xs text-muted-foreground">
                 Updated {lastUpdated}

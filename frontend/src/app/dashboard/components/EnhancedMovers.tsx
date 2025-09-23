@@ -20,7 +20,7 @@ import {
 import { formatUSD, safeToFixed } from "@/lib/num";
 import Image from "next/image";
 import Link from "next/link";
-import Tooltip from "@/components/ui/Tooltip";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 
 interface MoverItem {
   id: number;
