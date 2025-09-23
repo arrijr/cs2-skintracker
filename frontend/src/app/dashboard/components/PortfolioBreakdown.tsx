@@ -87,8 +87,14 @@ export default function PortfolioBreakdown({
     if (!portfolio || portfolio.length === 0) return [];
 
     const grouped = portfolio.reduce((acc, item) => {
-      // Use currentValue from the item, fallback to calculated value
-      const itemValue = item.currentValue || (item.skin?.marketPrice || 0) * (item.amount || 0);
+      console.log('Portfolio item:', item); // Debug log
+      
+      // Calculate value based on current market price
+      const currentPrice = item.skin?.marketPrice || item.skin?.priceLatest || 0;
+      const amount = item.amount || 0;
+      const itemValue = currentPrice * amount;
+      
+      console.log('Current price:', currentPrice, 'Amount:', amount, 'Item value:', itemValue); // Debug log
       
       const category = breakdownType === 'rarity' 
         ? (item.skin?.rarity || 'Unknown')
@@ -96,12 +102,14 @@ export default function PortfolioBreakdown({
         ? (item.skin?.weaponType || 'Unknown')
         : (item.skin?.exterior || 'Unknown');
       
+      console.log('Category:', category); // Debug log
+      
       if (!acc[category]) {
         acc[category] = { value: 0, count: 0 };
       }
       
       acc[category].value += itemValue;
-      acc[category].count += item.amount || 0;
+      acc[category].count += amount;
       
       return acc;
     }, {} as Record<string, { value: number; count: number }>);
