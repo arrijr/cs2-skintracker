@@ -72,6 +72,10 @@ export default function Dashboard() {
   const { getToken } = useAuth();
   const router = useRouter();
   const { data, error, isLoading, mutate, portfolio, history, kpis, portfolioLoading, historyLoading, kpisLoading } = usePortfolioData();
+  
+  // Debug portfolio data
+  console.log('Dashboard portfolio data:', portfolio);
+  console.log('Portfolio loading:', portfolioLoading);
 
   // Dashboard state
   const [chartRange, setChartRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all'>('7d');
