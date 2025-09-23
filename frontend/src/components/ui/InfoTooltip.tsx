@@ -90,28 +90,38 @@ export default function Tooltip({
       {children}
       
       {showIcon && (
-        <div className="absolute -top-1 -right-1">
-          <Info className="h-3 w-3 text-gray-400 hover:text-gray-300 transition-colors" />
+        <div className="absolute -top-1 -right-1 group">
+          <div className="relative">
+            <Info className="h-3 w-3 text-gray-400 group-hover:text-blue-400 transition-all duration-200 group-hover:scale-110" />
+            <div className="absolute inset-0 bg-blue-500/20 rounded-full scale-0 group-hover:scale-150 transition-all duration-300 opacity-0 group-hover:opacity-100" />
+          </div>
         </div>
       )}
 
       {isVisible && (
         <div
           ref={tooltipRef}
-          className="fixed z-50 px-3 py-2 text-sm text-white bg-gray-900 border border-gray-700 rounded-lg shadow-lg max-w-xs"
+          className="fixed z-50 px-4 py-3 text-sm text-white bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-600/50 rounded-xl shadow-2xl backdrop-blur-sm max-w-xs tooltip-animate"
           style={{
             top: tooltipPosition.top,
             left: tooltipPosition.left,
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
           }}
         >
-          {content}
+          <div className="relative">
+            {content}
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full animate-pulse" />
+          </div>
           <div 
-            className={`absolute w-2 h-2 bg-gray-900 border border-gray-700 transform rotate-45 ${
-              position === 'top' ? 'top-full left-1/2 -translate-x-1/2 -mt-1' :
-              position === 'bottom' ? 'bottom-full left-1/2 -translate-x-1/2 mb-1' :
-              position === 'left' ? 'left-full top-1/2 -translate-y-1/2 -ml-1' :
-              'right-full top-1/2 -translate-y-1/2 mr-1'
+            className={`absolute w-3 h-3 bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600/50 transform rotate-45 ${
+              position === 'top' ? 'top-full left-1/2 -translate-x-1/2 -mt-1.5' :
+              position === 'bottom' ? 'bottom-full left-1/2 -translate-x-1/2 mb-1.5' :
+              position === 'left' ? 'left-full top-1/2 -translate-y-1/2 -ml-1.5' :
+              'right-full top-1/2 -translate-y-1/2 mr-1.5'
             }`}
+            style={{
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)'
+            }}
           />
         </div>
       )}
