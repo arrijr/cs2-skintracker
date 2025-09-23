@@ -86,11 +86,9 @@ export default function PortfolioBreakdown({
   const getBreakdownData = (): BreakdownData[] => {
     if (!portfolio || portfolio.length === 0) return [];
 
-    console.log('Portfolio data:', portfolio); // Debug log
-    console.log('Breakdown type:', breakdownType); // Debug log
-
     const grouped = portfolio.reduce((acc, item) => {
-      console.log('Processing item:', item); // Debug log
+      // Use currentValue from the item, fallback to calculated value
+      const itemValue = item.currentValue || (item.skin?.marketPrice || 0) * (item.amount || 0);
       
       const category = breakdownType === 'rarity' 
         ? (item.skin?.rarity || 'Unknown')
@@ -98,19 +96,15 @@ export default function PortfolioBreakdown({
         ? (item.skin?.weaponType || 'Unknown')
         : (item.skin?.exterior || 'Unknown');
       
-      console.log('Category:', category, 'Current value:', item.currentValue, 'Amount:', item.amount); // Debug log
-      
       if (!acc[category]) {
         acc[category] = { value: 0, count: 0 };
       }
       
-      acc[category].value += item.currentValue || 0;
+      acc[category].value += itemValue;
       acc[category].count += item.amount || 0;
       
       return acc;
     }, {} as Record<string, { value: number; count: number }>);
-
-    console.log('Grouped data:', grouped); // Debug log
 
     const totalValue = Object.values(grouped).reduce((sum, item) => sum + item.value, 0);
     
