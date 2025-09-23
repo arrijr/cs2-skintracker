@@ -31,23 +31,36 @@
     --chart-5: 27 87% 67%;
   }
 
-  /* SkinTrackr Custom Color Palette - Clean & Modern */
+  /* SkinTrackr Design System - Neutral & Modern */
   :root {
-    --bg-primary: #0f0f23;
-    --bg-secondary: #1A1A1A;
-    --bg-tertiary: #222222;
-    --bg-hover: #2A2A2A;
-    --text-primary: #FFFFFF;
-    --text-secondary: #A1A1AA;
-    --text-muted: #71717A;
-    --brand-green: #00E599;
-    --brand-red: #EF4444;
-    --brand-warning: #FACC15;
-    --brand-info: #3B82F6;
-    --brand-premium: #F59E0B;
-    --brand-orange: #F59E0B;
-    --brand-purple: #9C27B0;
-    --brand-yellow: #FFC107;
+    /* Surface System */
+    --surface-0: #0F1012;  /* Page background */
+    --surface-1: #15171B;  /* Primary cards (Portfolio, KPIs) */
+    --surface-2: #1B1E23;  /* Secondary cards (Events, Market Pulse) */
+    --surface-3: #20242B;  /* Inset elements (Tabs, Toolbars) */
+    --border: #2A2F38;     /* Consistent border color */
+    --hover: #1E2127;      /* Subtle hover state */
+    
+    /* Typography */
+    --text-primary: #F8FAFC;    /* Main text */
+    --text-secondary: #A1A7B3;  /* Labels, secondary text */
+    --text-muted: #6B7280;      /* Captions, timestamps */
+    
+    /* Accent Colors */
+    --accent-positive: #22E39E;  /* Up/Positive */
+    --accent-negative: #EF4444;  /* Down/Negative */
+    --accent-premium: #F59E0B;   /* Premium/Highlight */
+    --accent-info: #60A5FA;      /* Info (Icons/Badges only) */
+    
+    /* Legacy support */
+    --bg-primary: var(--surface-0);
+    --bg-secondary: var(--surface-1);
+    --bg-tertiary: var(--surface-2);
+    --bg-hover: var(--hover);
+    --brand-green: var(--accent-positive);
+    --brand-red: var(--accent-negative);
+    --brand-premium: var(--accent-premium);
+    --brand-info: var(--accent-info);
   }
 
   .dark {
@@ -590,85 +603,101 @@
     @apply animate-count-up;
   }
 
-  /* SkinTrackr Color Utilities - Direct Tailwind Classes */
+  /* SkinTrackr Design System Utilities */
+  
+  /* Typography */
+  .text-primary {
+    color: var(--text-primary) !important;
+  }
+
+  .text-secondary {
+    color: var(--text-secondary) !important;
+  }
+
+  .text-muted {
+    color: var(--text-muted) !important;
+  }
+
+  /* Accent Colors */
+  .text-positive {
+    color: var(--accent-positive) !important;
+  }
+
+  .text-negative {
+    color: var(--accent-negative) !important;
+  }
+
+  .text-premium {
+    color: var(--accent-premium) !important;
+  }
+
+  .text-info {
+    color: var(--accent-info) !important;
+  }
+
+  .bg-positive {
+    background-color: var(--accent-positive) !important;
+  }
+
+  .bg-negative {
+    background-color: var(--accent-negative) !important;
+  }
+
+  .bg-premium {
+    background-color: var(--accent-premium) !important;
+  }
+
+  .bg-info {
+    background-color: var(--accent-info) !important;
+  }
+
+  /* Surface Colors */
+  .bg-surface-0 {
+    background-color: var(--surface-0) !important;
+  }
+
+  .bg-surface-1 {
+    background-color: var(--surface-1) !important;
+  }
+
+  .bg-surface-2 {
+    background-color: var(--surface-2) !important;
+  }
+
+  .bg-surface-3 {
+    background-color: var(--surface-3) !important;
+  }
+
+  .bg-hover {
+    background-color: var(--hover) !important;
+  }
+
+  .border-surface {
+    border-color: var(--border) !important;
+  }
+
+  /* Premium Badge with transparent background */
+  .badge-premium-transparent {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    color: var(--accent-premium) !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  }
+
+  /* Legacy support */
   .text-brand-green {
-    @apply text-emerald-400;
+    color: var(--accent-positive) !important;
   }
 
   .text-brand-red {
-    @apply text-red-500;
-  }
-
-  .text-brand-warning {
-    @apply text-yellow-400;
-  }
-
-  .text-brand-info {
-    @apply text-blue-500;
+    color: var(--accent-negative) !important;
   }
 
   .text-brand-premium {
-    @apply text-amber-500;
+    color: var(--accent-premium) !important;
   }
 
-  .bg-brand-green {
-    @apply bg-emerald-400;
-  }
-
-  .bg-brand-red {
-    @apply bg-red-500;
-  }
-
-  .bg-brand-warning {
-    @apply bg-yellow-400;
-  }
-
-  .bg-brand-info {
-    @apply bg-blue-500;
-  }
-
-  .bg-brand-premium {
-    @apply bg-amber-500;
-  }
-
-  .border-brand-green {
-    @apply border-emerald-400;
-  }
-
-  .border-brand-red {
-    @apply border-red-500;
-  }
-
-  .border-brand-warning {
-    @apply border-yellow-400;
-  }
-
-  .border-brand-info {
-    @apply border-blue-500;
-  }
-
-  .border-brand-premium {
-    @apply border-amber-500;
-  }
-
-  .hover\:bg-brand-green:hover {
-    @apply bg-emerald-400;
-  }
-
-  .hover\:bg-brand-red:hover {
-    @apply bg-red-500;
-  }
-
-  .hover\:bg-brand-warning:hover {
-    @apply bg-yellow-400;
-  }
-
-  .hover\:bg-brand-info:hover {
-    @apply bg-blue-500;
-  }
-
-  .hover\:bg-brand-premium:hover {
-    @apply bg-amber-500;
+  .text-brand-info {
+    color: var(--accent-info) !important;
   }
   
   .value-medium {
@@ -755,7 +784,7 @@
   /* Dashboard Background */
   .dashboard-bg {
     @apply min-h-screen;
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    background: var(--surface-0);
     @apply relative;
   }
   
@@ -822,30 +851,51 @@
   }
 }
 
-/* Final Card Overrides - Clean & Modern */
+/* Final Card Overrides - Neutral Surface System */
 @layer components {
   .card-enhanced {
-    @apply bg-neutral-900 !important;
-    @apply border-neutral-800/50 !important;
-    @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-neutral-500/10;
-    @apply hover:border-neutral-700/50;
+    background: var(--surface-1) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+    transition: all 300ms ease-out !important;
+  }
+
+  .card-enhanced:hover {
+    background: var(--hover) !important;
+    cursor: pointer !important;
   }
 
   .card-primary {
-    @apply bg-neutral-950 !important;
-    @apply border-neutral-800/50 !important;
-    @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-neutral-500/10;
-    @apply hover:border-neutral-700/50;
+    background: var(--surface-1) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+    transition: all 300ms ease-out !important;
+  }
+
+  .card-primary:hover {
+    background: var(--hover) !important;
+    cursor: pointer !important;
   }
 
   .card-secondary {
-    @apply bg-neutral-800 !important;
-    @apply border-neutral-700/50 !important;
-    @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-neutral-500/10;
-    @apply hover:border-neutral-600/50;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+    transition: all 300ms ease-out !important;
+  }
+
+  .card-secondary:hover {
+    background: var(--hover) !important;
+    cursor: pointer !important;
+  }
+
+  .card-inset {
+    background: var(--surface-3) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
   }
 }
 
