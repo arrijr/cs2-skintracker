@@ -120,8 +120,7 @@ export function verifyClerkJwt(req, res, next) {
         if (clerkUserId) {
           // Look up the actual user ID from the database
           try {
-            const { PrismaClient } = await import('@prisma/client');
-            const prisma = new PrismaClient();
+            const prisma = (await import('../prisma/prismaClient.js')).default;
             
             const user = await prisma.user.findFirst({
               where: { clerkId: clerkUserId },
@@ -140,8 +139,6 @@ export function verifyClerkJwt(req, res, next) {
                 message: "User not found in database" 
               });
             }
-            
-            await prisma.$disconnect();
           } catch (dbError) {
             console.error("[JWT VERIFY] Database error:", dbError);
             return res.status(500).json({ 
