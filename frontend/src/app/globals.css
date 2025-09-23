@@ -822,30 +822,30 @@
   }
 }
 
-/* Final Card Overrides - Clean & Modern */
+/* Final Card Overrides - Back to Blue Design */
 @layer components {
   .card-enhanced {
-    @apply bg-gray-900 !important;
-    @apply border-gray-700/50 !important;
+    @apply bg-slate-800/60 !important;
+    @apply border-slate-600/50 !important;
     @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-gray-500/10;
-    @apply hover:border-gray-600/50;
+    @apply hover:shadow-xl hover:shadow-slate-500/10;
+    @apply hover:border-slate-500/50;
   }
 
   .card-primary {
-    @apply bg-gray-950 !important;
-    @apply border-gray-700/50 !important;
+    @apply bg-slate-900/80 !important;
+    @apply border-slate-700/50 !important;
     @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-gray-500/10;
-    @apply hover:border-gray-600/50;
+    @apply hover:shadow-xl hover:shadow-slate-500/10;
+    @apply hover:border-slate-600/50;
   }
 
   .card-secondary {
-    @apply bg-gray-800 !important;
-    @apply border-gray-700/50 !important;
+    @apply bg-slate-800/40 !important;
+    @apply border-slate-600/40 !important;
     @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-gray-500/10;
-    @apply hover:border-gray-600/50;
+    @apply hover:shadow-xl hover:shadow-slate-500/10;
+    @apply hover:border-slate-500/50;
   }
 }
 
