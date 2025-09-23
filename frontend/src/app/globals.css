@@ -31,15 +31,15 @@
     --chart-5: 27 87% 67%;
   }
 
-  /* SkinTrackr Design System - Neutral & Modern */
+  /* SkinTrackr Design System - Gradient Header + Neutral Body */
   :root {
-    /* Surface System */
-    --surface-0: #0F1012;  /* Page background */
-    --surface-1: #15171B;  /* Primary cards (Portfolio, KPIs) */
-    --surface-2: #1B1E23;  /* Secondary cards (Events, Market Pulse) */
-    --surface-3: #20242B;  /* Inset elements (Tabs, Toolbars) */
-    --border: #2A2F38;     /* Consistent border color */
-    --hover: #1E2127;      /* Subtle hover state */
+    /* Surface System - Neutral Dark Grays */
+    --surface-0: #0D0D0D;  /* Body background */
+    --surface-1: #1A1A1A;  /* Primary cards (Portfolio, KPIs) */
+    --surface-2: #222222;  /* Secondary cards (Events, Market Pulse) */
+    --surface-3: #2A2A2A;  /* Hover/Active states */
+    --border: #2A2A2A;     /* Subtle borders */
+    --hover: #2A2A2A;      /* Hover state */
     
     /* Typography */
     --text-primary: #F8FAFC;    /* Main text */
@@ -47,7 +47,7 @@
     --text-muted: #6B7280;      /* Captions, timestamps */
     
     /* Accent Colors */
-    --accent-positive: #22E39E;  /* Up/Positive */
+    --accent-positive: #00E599;  /* Up/Positive */
     --accent-negative: #EF4444;  /* Down/Negative */
     --accent-premium: #F59E0B;   /* Premium/Highlight */
     --accent-info: #60A5FA;      /* Info (Icons/Badges only) */
@@ -781,10 +781,16 @@
     @apply w-full px-4 sm:px-6 lg:px-8;
   }
   
-  /* Dashboard Background */
+  /* Dashboard Background - Gradient Header + Neutral Body */
   .dashboard-bg {
     @apply min-h-screen;
     background: var(--surface-0);
+    @apply relative;
+  }
+
+  /* Gradient Header Area */
+  .dashboard-header-gradient {
+    background: linear-gradient(135deg, #1e3a8a 0%, #0d0d0d 100%);
     @apply relative;
   }
   
@@ -851,7 +857,7 @@
   }
 }
 
-/* Final Card Overrides - Neutral Surface System */
+/* Final Card Overrides - Gradient Header + Neutral Cards */
 @layer components {
   .card-enhanced {
     background: var(--surface-1) !important;
@@ -896,6 +902,11 @@
     background: var(--surface-3) !important;
     border: 1px solid var(--border) !important;
     border-radius: 12px !important;
+  }
+
+  /* Chart Background */
+  .chart-bg {
+    background: #111111 !important;
   }
 }
 
