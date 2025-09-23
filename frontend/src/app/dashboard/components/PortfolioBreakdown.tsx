@@ -77,17 +77,19 @@ export default function PortfolioBreakdown({
   const getBreakdownData = (): BreakdownData[] => {
     if (!portfolio || portfolio.length === 0) return [];
 
+    console.log('Portfolio data:', portfolio); // Debug log
+
     const grouped = portfolio.reduce((acc, item) => {
       const category = breakdownType === 'rarity' 
-        ? item.skin.rarity 
-        : item.skin.weaponType;
+        ? (item.skin?.rarity || 'Unknown')
+        : (item.skin?.weaponType || 'Unknown');
       
       if (!acc[category]) {
         acc[category] = { value: 0, count: 0 };
       }
       
-      acc[category].value += item.currentValue;
-      acc[category].count += item.amount;
+      acc[category].value += item.currentValue || 0;
+      acc[category].count += item.amount || 0;
       
       return acc;
     }, {} as Record<string, { value: number; count: number }>);
@@ -113,7 +115,7 @@ export default function PortfolioBreakdown({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5 text-brand-blue" />
+              <PieChart className="h-5 w-5 text-emerald-400" />
               Portfolio Breakdown
             </CardTitle>
             <Skeleton className="h-8 w-8" />
@@ -139,7 +141,7 @@ export default function PortfolioBreakdown({
               position="top"
             >
               <CardTitle className="flex items-center gap-2 text-base font-semibold cursor-help">
-                <PieChart className="h-5 w-5 text-brand-blue" />
+                <PieChart className="h-5 w-5 text-emerald-400" />
                 Portfolio Breakdown
               </CardTitle>
             </InfoTooltip>
@@ -229,7 +231,7 @@ export default function PortfolioBreakdown({
               onClick={() => window.location.href = '/skins'}
               variant="outline" 
               size="sm"
-              className="border-brand-blue/30 text-brand-blue hover:bg-brand-blue/10"
+              className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
             >
               <Package className="h-4 w-4 mr-2" />
               Browse Skins

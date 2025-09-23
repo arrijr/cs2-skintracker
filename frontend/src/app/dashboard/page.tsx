@@ -456,7 +456,7 @@ export default function Dashboard() {
                 position="top"
               >
                 <CardTitle className="text-lg font-bold text-white flex items-center gap-2 cursor-help">
-                  <Activity className="h-5 w-5 text-brand-info" />
+                  <Activity className="h-5 w-5 text-emerald-400" />
                   Market Pulse
                   <Lock className="h-4 w-4 text-gray-400" />
                 </CardTitle>
@@ -556,11 +556,11 @@ export default function Dashboard() {
 
         {/* Quick Actions - Compact Button Block */}
         <div className="flex flex-wrap gap-3 justify-center">
-          <Button variant="outline" className="border-brand-info text-brand-info hover:bg-brand-info hover:text-white">
+          <Button variant="outline" className="border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white">
             <BarChart3 className="h-4 w-4 mr-2" />
             View Portfolio
           </Button>
-          <Button variant="outline" className="border-brand-info text-brand-info hover:bg-brand-info hover:text-white">
+          <Button variant="outline" className="border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white">
             <Package className="h-4 w-4 mr-2" />
             Browse Skins
           </Button>
