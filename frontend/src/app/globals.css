@@ -867,24 +867,8 @@
     border-radius: 16px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
     transition: all 300ms ease-out !important;
-    position: relative !important;
-    overflow: hidden !important;
   }
 
-  .card-enhanced::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s;
-  }
-
-  .card-enhanced:hover::before {
-    left: 100%;
-  }
 
   .card-enhanced:hover {
     background: linear-gradient(135deg, var(--hover) 0%, var(--surface-3) 100%) !important;
@@ -899,24 +883,8 @@
     border-radius: 16px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
     transition: all 300ms ease-out !important;
-    position: relative !important;
-    overflow: hidden !important;
   }
 
-  .card-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s;
-  }
-
-  .card-primary:hover::before {
-    left: 100%;
-  }
 
   .card-primary:hover {
     background: linear-gradient(135deg, var(--hover) 0%, var(--surface-3) 100%) !important;
@@ -931,24 +899,8 @@
     border-radius: 16px !important;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
     transition: all 300ms ease-out !important;
-    position: relative !important;
-    overflow: hidden !important;
   }
 
-  .card-secondary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-    transition: left 0.5s;
-  }
-
-  .card-secondary:hover::before {
-    left: 100%;
-  }
 
   .card-secondary:hover {
     background: linear-gradient(135deg, var(--hover) 0%, var(--surface-3) 100%) !important;
