@@ -358,9 +358,9 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
             <InfoTooltip 
               content="Your total unrealized profit or loss. This is the difference between what you paid for all skins and their current market value."
-              position="bottom"
+              position="top"
             >
-            <Card className="card-primary cursor-help group hover:scale-[1.02] transition-all duration-200">
+            <Card className="card-primary">
               <CardContent className="p-4 text-center">
                 <div className={`text-2xl font-bold ${unrealizedPL >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
                   {formatUSD(unrealizedPL)}
@@ -375,9 +375,9 @@ export default function Dashboard() {
 
             <InfoTooltip 
               content="Average value per skin in your portfolio. Calculated by dividing total portfolio value by number of skins."
-              position="bottom"
+              position="top"
             >
-            <Card className="card-primary cursor-help group hover:scale-[1.02] transition-all duration-200">
+            <Card className="card-primary">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-white">{formatUSD(avgPerSkin)}</div>
                 <div className="text-sm text-gray-400">Avg per Skin</div>
@@ -387,9 +387,9 @@ export default function Dashboard() {
 
             <InfoTooltip 
               content="Total number of different skins in your portfolio. Each unique skin counts as one, regardless of quantity."
-              position="bottom"
+              position="top"
             >
-            <Card className="card-primary cursor-help group hover:scale-[1.02] transition-all duration-200">
+            <Card className="card-primary">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-white">{portfolio?.length || 0}</div>
                 <div className="text-sm text-gray-400"># Skins</div>
@@ -399,9 +399,9 @@ export default function Dashboard() {
 
             <InfoTooltip 
               content="Total amount you originally paid for all skins in your portfolio. This is your cost basis for calculating profits and losses."
-              position="bottom"
+              position="top"
             >
-            <Card className="card-primary cursor-help group hover:scale-[1.02] transition-all duration-200">
+            <Card className="card-primary">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-white">{formatUSD(totalInvested)}</div>
                 <div className="text-sm text-gray-400">Total Invested</div>
@@ -411,9 +411,9 @@ export default function Dashboard() {
 
             <InfoTooltip 
               content="Profit or loss from the last 24 hours. Shows how much your portfolio value changed in the past day."
-              position="bottom"
+              position="top"
             >
-            <Card className="card-primary cursor-help group hover:scale-[1.02] transition-all duration-200">
+            <Card className="card-primary">
               <CardContent className="p-4 text-center">
                 <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
                   {formatUSD(change24h * totalValue / 100)}
@@ -425,9 +425,9 @@ export default function Dashboard() {
 
             <InfoTooltip 
               content="Profit or loss from the last 7 days. Shows how much your portfolio value changed in the past week."
-              position="bottom"
+              position="top"
             >
-            <Card className="card-primary cursor-help group hover:scale-[1.02] transition-all duration-200">
+            <Card className="card-primary">
               <CardContent className="p-4 text-center">
                 <div className={`text-2xl font-bold ${change7d >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
                   {formatUSD(change7d * totalValue / 100)}
