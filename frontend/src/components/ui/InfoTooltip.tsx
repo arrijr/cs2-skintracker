@@ -30,26 +30,52 @@ export default function Tooltip({
     const tooltipRect = tooltipRef.current.getBoundingClientRect();
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
     let top = 0;
     let left = 0;
 
     switch (position) {
       case 'top':
-        top = triggerRect.top + scrollTop - tooltipRect.height - 8;
+        top = triggerRect.top + scrollTop - tooltipRect.height - 12;
         left = triggerRect.left + scrollLeft + (triggerRect.width - tooltipRect.width) / 2;
+        
+        // Ensure tooltip stays within viewport
+        if (left < 8) left = 8;
+        if (left + tooltipRect.width > viewportWidth - 8) {
+          left = viewportWidth - tooltipRect.width - 8;
+        }
         break;
       case 'bottom':
-        top = triggerRect.bottom + scrollTop + 8;
+        top = triggerRect.bottom + scrollTop + 12;
         left = triggerRect.left + scrollLeft + (triggerRect.width - tooltipRect.width) / 2;
+        
+        // Ensure tooltip stays within viewport
+        if (left < 8) left = 8;
+        if (left + tooltipRect.width > viewportWidth - 8) {
+          left = viewportWidth - tooltipRect.width - 8;
+        }
         break;
       case 'left':
         top = triggerRect.top + scrollTop + (triggerRect.height - tooltipRect.height) / 2;
-        left = triggerRect.left + scrollLeft - tooltipRect.width - 8;
+        left = triggerRect.left + scrollLeft - tooltipRect.width - 12;
+        
+        // Ensure tooltip stays within viewport
+        if (top < 8) top = 8;
+        if (top + tooltipRect.height > viewportHeight - 8) {
+          top = viewportHeight - tooltipRect.height - 8;
+        }
         break;
       case 'right':
         top = triggerRect.top + scrollTop + (triggerRect.height - tooltipRect.height) / 2;
-        left = triggerRect.right + scrollLeft + 8;
+        left = triggerRect.right + scrollLeft + 12;
+        
+        // Ensure tooltip stays within viewport
+        if (top < 8) top = 8;
+        if (top + tooltipRect.height > viewportHeight - 8) {
+          top = viewportHeight - tooltipRect.height - 8;
+        }
         break;
     }
 
@@ -114,10 +140,10 @@ export default function Tooltip({
           </div>
           <div 
             className={`absolute w-3 h-3 bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600/50 transform rotate-45 ${
-              position === 'top' ? 'top-full left-1/2 -translate-x-1/2 -mt-1.5' :
-              position === 'bottom' ? 'bottom-full left-1/2 -translate-x-1/2 mb-1.5' :
-              position === 'left' ? 'left-full top-1/2 -translate-y-1/2 -ml-1.5' :
-              'right-full top-1/2 -translate-y-1/2 mr-1.5'
+              position === 'top' ? 'top-full left-1/2 -translate-x-1/2 -mt-1' :
+              position === 'bottom' ? 'bottom-full left-1/2 -translate-x-1/2 mb-1' :
+              position === 'left' ? 'left-full top-1/2 -translate-y-1/2 -ml-1' :
+              'right-full top-1/2 -translate-y-1/2 mr-1'
             }`}
             style={{
               boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)'
