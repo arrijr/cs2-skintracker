@@ -28,8 +28,6 @@ export default function Tooltip({
 
     const triggerRect = triggerRef.current.getBoundingClientRect();
     const tooltipRect = tooltipRef.current.getBoundingClientRect();
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
@@ -38,45 +36,31 @@ export default function Tooltip({
 
     switch (position) {
       case 'top':
-        top = triggerRect.top + scrollTop - tooltipRect.height - 12;
-        left = triggerRect.left + scrollLeft + (triggerRect.width - tooltipRect.width) / 2;
-        
-        // Ensure tooltip stays within viewport
-        if (left < 8) left = 8;
-        if (left + tooltipRect.width > viewportWidth - 8) {
-          left = viewportWidth - tooltipRect.width - 8;
-        }
+        top = triggerRect.top - tooltipRect.height - 8;
+        left = triggerRect.left + (triggerRect.width - tooltipRect.width) / 2;
         break;
       case 'bottom':
-        top = triggerRect.bottom + scrollTop + 12;
-        left = triggerRect.left + scrollLeft + (triggerRect.width - tooltipRect.width) / 2;
-        
-        // Ensure tooltip stays within viewport
-        if (left < 8) left = 8;
-        if (left + tooltipRect.width > viewportWidth - 8) {
-          left = viewportWidth - tooltipRect.width - 8;
-        }
+        top = triggerRect.bottom + 8;
+        left = triggerRect.left + (triggerRect.width - tooltipRect.width) / 2;
         break;
       case 'left':
-        top = triggerRect.top + scrollTop + (triggerRect.height - tooltipRect.height) / 2;
-        left = triggerRect.left + scrollLeft - tooltipRect.width - 12;
-        
-        // Ensure tooltip stays within viewport
-        if (top < 8) top = 8;
-        if (top + tooltipRect.height > viewportHeight - 8) {
-          top = viewportHeight - tooltipRect.height - 8;
-        }
+        top = triggerRect.top + (triggerRect.height - tooltipRect.height) / 2;
+        left = triggerRect.left - tooltipRect.width - 8;
         break;
       case 'right':
-        top = triggerRect.top + scrollTop + (triggerRect.height - tooltipRect.height) / 2;
-        left = triggerRect.right + scrollLeft + 12;
-        
-        // Ensure tooltip stays within viewport
-        if (top < 8) top = 8;
-        if (top + tooltipRect.height > viewportHeight - 8) {
-          top = viewportHeight - tooltipRect.height - 8;
-        }
+        top = triggerRect.top + (triggerRect.height - tooltipRect.height) / 2;
+        left = triggerRect.right + 8;
         break;
+    }
+
+    // Ensure tooltip stays within viewport
+    if (left < 8) left = 8;
+    if (left + tooltipRect.width > viewportWidth - 8) {
+      left = viewportWidth - tooltipRect.width - 8;
+    }
+    if (top < 8) top = 8;
+    if (top + tooltipRect.height > viewportHeight - 8) {
+      top = viewportHeight - tooltipRect.height - 8;
     }
 
     setTooltipPosition({ top, left });
