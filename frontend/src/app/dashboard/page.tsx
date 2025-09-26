@@ -86,47 +86,60 @@ export default function Dashboard() {
             </Button>
           </div>
           
-          {/* Key Metrics - Clean and Scannable */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Key Metrics - Enhanced like Screenshot */}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div className="bg-card/50 rounded-lg p-4 border border-border/50">
               <div className="text-2xl font-bold text-white">{formatUSD(totalValue)}</div>
               <div className="text-sm text-slate-400">Total Value</div>
+              {change24h !== 0 && (
+                <div className={`text-xs mt-1 ${change24h >= 0 ? 'text-green-400' : 'text-red-500'}`}>
+                  {change24h >= 0 ? '+' : ''}{formatUSD(change24h * totalValue / 100)}
+                </div>
+              )}
             </div>
-             <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-               <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-green-400' : 'text-red-500'}`}>
-                 {change24h >= 0 ? '+' : ''}{safeToFixed(change24h, 2)}%
-               </div>
-               <div className="text-sm text-slate-400">24h Change</div>
-             </div>
-             <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-               <div className="text-2xl font-bold text-white">{portfolio?.length || 0}</div>
-               <div className="text-sm text-slate-400">Skins</div>
-             </div>
-             <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-               <div className={`text-2xl font-bold ${unrealizedPL >= 0 ? 'text-green-400' : 'text-red-500'}`}>
-                 {formatUSD(unrealizedPL)}
-               </div>
-               <div className="text-sm text-slate-400">P&L</div>
-             </div>
+            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+              <div className="text-2xl font-bold text-white">{formatUSD(totalValue / Math.max(portfolio?.length || 1, 1))}</div>
+              <div className="text-sm text-slate-400">Avg. price / skin</div>
+            </div>
+            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+              <div className="text-2xl font-bold text-white">{portfolio?.length || 0}</div>
+              <div className="text-sm text-slate-400"># Skins</div>
+            </div>
+            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+              <div className="text-2xl font-bold text-white">{formatUSD(totalInvested)}</div>
+              <div className="text-sm text-slate-400">Total invested</div>
+            </div>
+            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+              <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-green-400' : 'text-red-500'}`}>
+                {formatUSD(change24h * totalValue / 100)}
+              </div>
+              <div className="text-sm text-slate-400">Daily P/L</div>
+            </div>
+            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+              <div className={`text-2xl font-bold ${change7d >= 0 ? 'text-green-400' : 'text-red-500'}`}>
+                {formatUSD(change7d * totalValue / 100)}
+              </div>
+              <div className="text-sm text-slate-400">7d P/L</div>
+            </div>
           </div>
         </div>
 
         {/* Main Content - Focused Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           
           {/* Portfolio Chart - Main Focus */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <Card className="card-primary">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-bold text-white">Performance</CardTitle>
-                   <ToggleGroup type="single" value={chartRange} onValueChange={(value) => setChartRange(value as any)}>
-                     <ToggleGroupItem value="7d" className="text-xs">7D</ToggleGroupItem>
-                     <ToggleGroupItem value="30d" className="text-xs">30D</ToggleGroupItem>
-                     <ToggleGroupItem value="90d" className="text-xs">90D</ToggleGroupItem>
-                     <ToggleGroupItem value="1y" className="text-xs">1Y</ToggleGroupItem>
-                     <ToggleGroupItem value="all" className="text-xs">All</ToggleGroupItem>
-                   </ToggleGroup>
+                  <CardTitle className="text-xl font-bold text-white">Portfolio Overview</CardTitle>
+                  <ToggleGroup type="single" value={chartRange} onValueChange={(value) => setChartRange(value as any)}>
+                    <ToggleGroupItem value="7d" className="text-xs">7D</ToggleGroupItem>
+                    <ToggleGroupItem value="30d" className="text-xs">30D</ToggleGroupItem>
+                    <ToggleGroupItem value="90d" className="text-xs">90D</ToggleGroupItem>
+                    <ToggleGroupItem value="1y" className="text-xs">1Y</ToggleGroupItem>
+                    <ToggleGroupItem value="all" className="text-xs">All</ToggleGroupItem>
+                  </ToggleGroup>
                 </div>
               </CardHeader>
               <CardContent>
@@ -141,98 +154,53 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* Quick Actions - Clear CTAs */}
+          {/* Alerts & Watchlist - Like Screenshot */}
           <div className="lg:col-span-1">
             <Card className="card-secondary h-full">
               <CardHeader>
-                <CardTitle className="text-lg font-bold text-white">Quick Actions</CardTitle>
+                <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-blue-500" />
+                  Alerts & Watchlist
+                  <Lock className="h-4 w-4 text-gray-400" />
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  className="w-full justify-start" 
-                  variant="outline"
-                  onClick={() => router.push('/portfolio')}
-                >
-                  <Package className="h-4 w-4 mr-2" />
-                  View Portfolio
-                  <ArrowRight className="h-4 w-4 ml-auto" />
-                </Button>
-                <Button 
-                  className="w-full justify-start" 
-                  variant="outline"
-                  onClick={() => router.push('/skins')}
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Browse Skins
-                  <ArrowRight className="h-4 w-4 ml-auto" />
-                </Button>
-                <Button 
-                  className="w-full justify-start" 
-                  variant="outline"
-                  onClick={() => router.push('/portfolio?tab=watchlist')}
-                >
-                  <Heart className="h-4 w-4 mr-2" />
-                  Watchlist
-                  <ArrowRight className="h-4 w-4 ml-auto" />
-                </Button>
-                <Button 
-                  className="w-full justify-start" 
-                  variant="outline"
-                  onClick={() => router.push('/portfolio?tab=alerts')}
-                >
-                  <AlertCircle className="h-4 w-4 mr-2" />
-                  Price Alerts
-                  <ArrowRight className="h-4 w-4 ml-auto" />
-                </Button>
+              <CardContent className="space-y-4">
+                {/* Premium Upsell */}
+                <div className="text-center p-4 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg">
+                  <Crown className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
+                  <h3 className="font-semibold text-white mb-1">Premium Required</h3>
+                  <p className="text-sm text-gray-300 mb-3">Unlock enhanced alerts and unlimited watchlist items</p>
+                  <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold">
+                    Upgrade to Premium
+                  </Button>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="space-y-2">
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => router.push('/portfolio')}
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    View Portfolio
+                    <ArrowRight className="h-4 w-4 ml-auto" />
+                  </Button>
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => router.push('/skins')}
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Browse Skins
+                    <ArrowRight className="h-4 w-4 ml-auto" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
 
-         {/* Portfolio Summary - Only if we have data */}
-         {portfolio && portfolio.length > 0 && (
-           <Card className="card-enhanced">
-             <CardHeader>
-               <CardTitle className="text-lg font-bold text-white">Recent Skins</CardTitle>
-             </CardHeader>
-             <CardContent>
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                 {portfolio.slice(0, 6).map((item, index) => (
-                   <div key={index} className="flex items-center gap-3 p-3 bg-card/30 rounded-lg border border-border/30">
-                     <div className="w-12 h-12 bg-slate-700 rounded-lg flex items-center justify-center">
-                       <Package className="h-6 w-6 text-slate-400" />
-                     </div>
-                     <div className="flex-1 min-w-0">
-                       <div className="text-sm font-medium text-white truncate">
-                         {item.skin?.name || 'Unknown Skin'}
-                       </div>
-                       <div className="text-sm text-slate-400">
-                         {formatUSD(item.skin?.priceLatest || 0)} • {item.amount}x
-                       </div>
-                     </div>
-                     <div className="text-right">
-                       <div className={`text-sm font-medium ${(item.skin?.priceChange24h || 0) >= 0 ? 'text-green-400' : 'text-red-500'}`}>
-                         {(item.skin?.priceChange24h || 0) >= 0 ? '+' : ''}{safeToFixed(item.skin?.priceChange24h || 0, 2)}%
-                       </div>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-               {portfolio.length > 6 && (
-                 <div className="mt-4 text-center">
-                   <Button 
-                     variant="outline" 
-                     size="sm"
-                     onClick={() => router.push('/portfolio')}
-                   >
-                     View All {portfolio.length} Skins
-                     <ArrowRight className="h-4 w-4 ml-2" />
-                   </Button>
-                 </div>
-               )}
-             </CardContent>
-           </Card>
-         )}
 
          {/* Portfolio Breakdown, Market Pulse, Events */}
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
