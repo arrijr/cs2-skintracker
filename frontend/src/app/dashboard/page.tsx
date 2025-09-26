@@ -110,13 +110,13 @@ export default function Dashboard() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl font-bold text-white">Performance</CardTitle>
-                  <ToggleGroup value={chartRange} onValueChange={(value) => setChartRange(value as any)}>
-                    <ToggleGroupItem value="7d" className="text-xs">7D</ToggleGroupItem>
-                    <ToggleGroupItem value="30d" className="text-xs">30D</ToggleGroupItem>
-                    <ToggleGroupItem value="90d" className="text-xs">90D</ToggleGroupItem>
-                    <ToggleGroupItem value="1y" className="text-xs">1Y</ToggleGroupItem>
-                    <ToggleGroupItem value="all" className="text-xs">All</ToggleGroupItem>
-                  </ToggleGroup>
+                   <ToggleGroup type="single" value={chartRange} onValueChange={(value) => setChartRange(value as any)}>
+                     <ToggleGroupItem value="7d" className="text-xs">7D</ToggleGroupItem>
+                     <ToggleGroupItem value="30d" className="text-xs">30D</ToggleGroupItem>
+                     <ToggleGroupItem value="90d" className="text-xs">90D</ToggleGroupItem>
+                     <ToggleGroupItem value="1y" className="text-xs">1Y</ToggleGroupItem>
+                     <ToggleGroupItem value="all" className="text-xs">All</ToggleGroupItem>
+                   </ToggleGroup>
                 </div>
               </CardHeader>
               <CardContent>
