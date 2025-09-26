@@ -617,6 +617,20 @@ POST /admin/cache/steam/clear — requires JWT + admin
 
 * Response: `{ "success": true, "message": "Cleared X cache entries", "clearedCount": number, "timestamp": "..." }`
 
+GET /admin/coverage/overview — requires JWT + admin
+
+* Response: `{ "totalSkins": number, "skinsWithRecentPrices": number, "coveragePercentage": number, "skinsWithoutHistory": number, "medianLastPriceAge": string|null, "sevenDaysAgo": string, "thirtyDaysAgo": string }`
+
+GET /admin/coverage/segments — requires JWT + admin
+
+* Query: `segmentType` (weaponType|rarity|wear), `page`, `limit`
+* Response: `{ "segmentType": string, "coverage": [{ "segment": string, "totalSkins": number, "coveragePercentage": number, "stalePercentage": number, "withoutHistory": number, "withRecentPrices": number }], "pagination": { ... } }`
+
+GET /admin/coverage/missing-skins — requires JWT + admin
+
+* Query: `limit`
+* Response: `[{ "id": number, "name": string, "category": string, "rarity": string, "wear": string, "lastPriceUpdate": string|null, "hadPrice": boolean, "watchlistCount": number, "daysSinceUpdate": number|null }]`
+
 Curl Examples
 -------------
 
@@ -703,6 +717,28 @@ Presets
 nginx
 Code kopieren
 curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/skins/presets"
+
+Admin Coverage Overview
+
+bash
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/admin/coverage/overview" \
+  -H "Authorization: Bearer <clerk-jwt-token>"
+
+Admin Coverage by Segment
+
+bash
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/admin/coverage/segments?segmentType=weaponType&page=1&limit=20" \
+  -H "Authorization: Bearer <clerk-jwt-token>"
+
+Admin Missing Skins
+
+bash
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/admin/coverage/missing-skins?limit=50" \
+  -H "Authorization: Bearer <clerk-jwt-token>"
+
 Notes
 Alle Beispiele verwenden ${NEXT_PUBLIC_API_ORIGIN} als Host.
 

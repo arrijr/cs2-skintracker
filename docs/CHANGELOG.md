@@ -8,6 +8,13 @@
   * Frontend: New `AdminControls` component in `frontend/src/app/components/AdminControls.tsx`.
   * Frontend: New "Controls" tab on Admin page to run jobs and clear Steam cache.
   * Docs: Updated `/docs/API.md` with admin endpoints and curl examples.
+* feat(admin): Coverage Explorer tab for data quality analysis
+  * Frontend: New "Coverage" tab in Admin Panel with comprehensive data quality metrics.
+  * Frontend: Coverage overview cards showing total skins, coverage percentage, missing history, and median age.
+  * Frontend: Segment analysis by weapon type, rarity, and wear with visual progress bars.
+  * Frontend: Top missing skins list with relevance ranking (watchlist count, historical prices).
+  * Backend: Coverage service already implemented with endpoints for overview, segments, and missing skins.
+  * Docs: Updated `/docs/API.md` with coverage endpoints and curl examples.
 * feat(dashboard): real pie chart for Portfolio Breakdown
   * **New Component** (`/frontend/src/app/dashboard/components/PortfolioPieChart.tsx`)
     * Implemented interactive pie chart using Recharts library

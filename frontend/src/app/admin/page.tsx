@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle, RefreshCw, BarChart3, Settings, FileText } from "lucide-react";
+import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle, RefreshCw, BarChart3, Settings, FileText, Search, TrendingUp } from "lucide-react";
 import BuildInfo from "../components/BuildInfo";
 import AdminMiniMetrics from "../components/AdminMiniMetrics";
 import { safeLower } from "@/lib/strings";
@@ -16,7 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { formatUSD, safeToFixed } from "@/lib/num";
 import AdminControls from "../components/AdminControls";
 
-type AdminTab = "overview" | "jobs" | "logs" | "controls";
+type AdminTab = "overview" | "jobs" | "logs" | "controls" | "coverage";
 
 interface AdminOverview {
   lastPriceUpdate: string | null;
@@ -47,6 +47,37 @@ interface AdminLog {
   user: { email: string };
 }
 
+interface CoverageOverview {
+  totalSkins: number;
+  skinsWithRecentPrices: number;
+  coveragePercentage: number;
+  skinsWithoutHistory: number;
+  medianLastPriceAge: string | null;
+  sevenDaysAgo: string;
+  thirtyDaysAgo: string;
+}
+
+interface SegmentCoverage {
+  segment: string;
+  totalSkins: number;
+  coveragePercentage: number;
+  stalePercentage: number;
+  withoutHistory: number;
+  withRecentPrices: number;
+}
+
+interface MissingSkin {
+  id: number;
+  name: string;
+  category: string;
+  rarity: string;
+  wear: string;
+  lastPriceUpdate: string | null;
+  hadPrice: boolean;
+  watchlistCount: number;
+  daysSinceUpdate: number | null;
+}
+
 export default function AdminPage() {
   const { isSignedIn, isLoaded, user } = useUser();
   const { isAdmin } = useUserRole();
@@ -56,6 +87,11 @@ export default function AdminPage() {
   const [overview, setOverview] = useState<AdminOverview | null>(null);
   const [jobs, setJobs] = useState<AdminJob[]>([]);
   const [logs, setAdminLogs] = useState<AdminLog[]>([]);
+  const [coverageOverview, setCoverageOverview] = useState<CoverageOverview | null>(null);
+  const [segmentCoverage, setSegmentCoverage] = useState<SegmentCoverage[]>([]);
+  const [missingSkins, setMissingSkins] = useState<MissingSkin[]>([]);
+  const [coverageSegmentType, setCoverageSegmentType] = useState<'weaponType' | 'rarity' | 'wear'>('weaponType');
+  const [coveragePage, setCoveragePage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,6 +100,12 @@ export default function AdminPage() {
       loadAdminData();
     }
   }, [isLoaded, isSignedIn, isAdmin]);
+
+  useEffect(() => {
+    if (activeTab === "coverage" && isLoaded && isSignedIn && isAdmin) {
+      loadCoverageData();
+    }
+  }, [activeTab, coverageSegmentType, coveragePage, isLoaded, isSignedIn, isAdmin]);
 
   const loadAdminData = async () => {
     setLoading(true);
@@ -91,6 +133,25 @@ export default function AdminPage() {
       setError("Failed to load admin data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCoverageData = async () => {
+    try {
+      const token = await getToken({ template: "backend" });
+      const authHeaders = { ...(token && { Authorization: `Bearer ${token}` }) } as Record<string, string>;
+      
+      const [overviewRes, segmentRes, missingRes] = await Promise.all([
+        fetchJson(apiUrl("/api/v1/admin/coverage/overview"), { headers: authHeaders }),
+        fetchJson(apiUrl(`/api/v1/admin/coverage/segments?segmentType=${coverageSegmentType}&page=${coveragePage}&limit=20`), { headers: authHeaders }),
+        fetchJson(apiUrl("/api/v1/admin/coverage/missing-skins?limit=50"), { headers: authHeaders })
+      ]);
+
+      setCoverageOverview(overviewRes as CoverageOverview);
+      setSegmentCoverage((segmentRes as any).coverage || []);
+      setMissingSkins((missingRes as any) || []);
+    } catch (err) {
+      console.error("Failed to load coverage data:", err);
     }
   };
 
@@ -163,7 +224,7 @@ export default function AdminPage() {
 
           {/* Tab Navigation */}
           <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as AdminTab)} className="w-full animate-slide-up">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Overview
@@ -175,6 +236,10 @@ export default function AdminPage() {
               <TabsTrigger value="logs" className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
                 Logs
+              </TabsTrigger>
+              <TabsTrigger value="coverage" className="flex items-center gap-2">
+                <Search className="w-4 h-4" />
+                Coverage
               </TabsTrigger>
               <TabsTrigger value="controls" className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
@@ -452,7 +517,168 @@ export default function AdminPage() {
               </Card>
             </TabsContent>
 
-            {/* Controls Tab */}
+            {/* Coverage Tab */}
+            <TabsContent value="coverage" className="space-y-6 mt-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-semibold">Data Coverage Explorer</h2>
+                <Button 
+                  onClick={loadCoverageData} 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Refresh
+                </Button>
+              </div>
+              <p className="text-muted-foreground">Analyze data quality and identify missing or stale price information.</p>
+
+              {/* Coverage Overview */}
+              {coverageOverview && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Total Skins</CardTitle>
+                      <Database className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{coverageOverview.totalSkins.toLocaleString()}</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Coverage</CardTitle>
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{safeToFixed(coverageOverview.coveragePercentage, 1)}%</div>
+                      <p className="text-xs text-muted-foreground">
+                        {coverageOverview.skinsWithRecentPrices.toLocaleString()} with recent prices
+                      </p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Missing History</CardTitle>
+                      <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{coverageOverview.skinsWithoutHistory.toLocaleString()}</div>
+                      <p className="text-xs text-muted-foreground">
+                        No price data in 30 days
+                      </p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Median Age</CardTitle>
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {coverageOverview.medianLastPriceAge 
+                          ? Math.floor((Date.now() - new Date(coverageOverview.medianLastPriceAge).getTime()) / (1000 * 60 * 60 * 24))
+                          : "—"
+                        }d
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Since last update
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Segment Analysis */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Coverage by Segment</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={coverageSegmentType}
+                        onChange={(e) => {
+                          setCoverageSegmentType(e.target.value as 'weaponType' | 'rarity' | 'wear');
+                          setCoveragePage(1);
+                        }}
+                        className="px-3 py-1 border rounded-md text-sm"
+                      >
+                        <option value="weaponType">Weapon Type</option>
+                        <option value="rarity">Rarity</option>
+                        <option value="wear">Wear</option>
+                      </select>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {segmentCoverage.map((segment, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{segment.segment}</span>
+                            <Badge variant="outline">{segment.totalSkins} skins</Badge>
+                          </div>
+                          <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                            <span>Coverage: {safeToFixed(segment.coveragePercentage, 1)}%</span>
+                            <span>Stale: {safeToFixed(segment.stalePercentage, 1)}%</span>
+                            <span>No History: {segment.withoutHistory}</span>
+                          </div>
+                        </div>
+                        <div className="w-32">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full ${
+                                segment.coveragePercentage >= 95 ? 'bg-green-500' :
+                                segment.coveragePercentage >= 80 ? 'bg-yellow-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${Math.min(segment.coveragePercentage, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Missing Skins */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Missing Skins</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Skins without recent price data, ordered by relevance
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {missingSkins.slice(0, 20).map((skin) => (
+                      <div key={skin.id} className="flex items-center justify-between p-2 border rounded">
+                        <div className="flex-1">
+                          <div className="font-medium">{skin.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {skin.category} • {skin.rarity} • {skin.wear}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          {skin.hadPrice && <Badge variant="outline">Had Price</Badge>}
+                          {skin.watchlistCount > 0 && (
+                            <Badge variant="secondary">{skin.watchlistCount} watchlists</Badge>
+                          )}
+                          {skin.daysSinceUpdate && (
+                            <span>{skin.daysSinceUpdate}d ago</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="controls" className="space-y-6 mt-6">
               <h2 className="text-2xl font-semibold mb-2">Controls</h2>
               <p className="text-muted-foreground mb-4">Safeguarded admin operations. In production, writes are disabled unless explicitly enabled via environment.</p>
