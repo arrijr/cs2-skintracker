@@ -16,19 +16,67 @@ module.exports = {
   			'2xl': '1rem', // 16px - CS2 Style
   			'3xl': '1.5rem', // 24px - CS2 Style
   		},
-  		colors: {
-  			// CS2 Skin Tracker Brand Colors
-  			brand: {
-  				green: '#10B981', // Emerald-500 - CS2 Green
-  				'green-dark': '#059669', // Emerald-600
-  				'green-light': '#34D399', // Emerald-400
-  				blue: '#3B82F6', // Blue-500
-  				'blue-dark': '#2563EB', // Blue-600
-  				'blue-light': '#60A5FA', // Blue-400
-  				orange: '#F59E0B', // Amber-500
-  				'orange-dark': '#D97706', // Amber-600
-  				'orange-light': '#FBBF24', // Amber-400
-  			},
+		colors: {
+			// CS2 Skin Tracker - Unified Brand Colors
+			brand: {
+				// Primary Celadon Palette
+				celadon: {
+					50: '#F0FDF4',
+					100: '#DCFCE7',
+					200: '#BBF7D0',
+					300: '#86EFAC',
+					400: '#A1E8AF',  // Base
+					500: '#94C595',  // Medium
+					600: '#7FB87F',
+					700: '#6A9B6A',
+					800: '#557E55',
+					900: '#406140',
+					DEFAULT: '#A1E8AF',
+					dark: '#94C595',
+					light: '#86EFAC'
+				},
+				// Slate Gray Palette
+				slate: {
+					50: '#F8FAFC',
+					100: '#F1F5F9',
+					200: '#E2E8F0',
+					300: '#CBD5E1',
+					400: '#94A3B8',
+					500: '#747C92',  // Base
+					600: '#64748B',
+					700: '#475569',
+					800: '#334155',
+					900: '#1E293B',
+					DEFAULT: '#747C92'
+				},
+				// Purple Palette
+				purple: {
+					50: '#FAF5FF',
+					100: '#F3E8FF',
+					200: '#E9D5FF',
+					300: '#D8B4FE',
+					400: '#C084FC',
+					500: '#3A2449',  // Base
+					600: '#9333EA',
+					700: '#7C3AED',
+					800: '#6B21A8',
+					900: '#581C87',
+					DEFAULT: '#3A2449'
+				},
+				// Midnight Blue
+				midnight: '#372772',
+				
+				// Legacy Support
+				green: '#94C595',
+				'green-dark': '#7FB87F',
+				'green-light': '#A1E8AF',
+				blue: '#747C92',
+				'blue-dark': '#64748B',
+				'blue-light': '#94A3B8',
+				orange: '#F59E0B',
+				'orange-dark': '#D97706',
+				'orange-light': '#FBBF24',
+			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

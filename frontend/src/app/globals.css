@@ -4,6 +4,9 @@
 
 @layer base {
   :root {
+    /* ===== CS2 SKIN TRACKER - UNIFIED DESIGN SYSTEM ===== */
+    
+    /* Base Colors - HSL format for Shadcn/UI compatibility */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -24,72 +27,50 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    
+    /* Chart Colors - Based on your palette */
+    --chart-1: 132 61% 77%;  /* Celadon - A1E8AF */
+    --chart-2: 121 25% 77%;  /* Celadon Dark - 94C595 */
+    --chart-3: 224 21% 57%;  /* Slate Gray - 747C92 */
+    --chart-4: 253 66% 45%;  /* Midnight Blue - 372772 */
+    --chart-5: 276 51% 29%;  /* Dark Purple - 3A2449 */
   }
 
-  /* SkinTrackr Design System - Dynamic & Exciting */
-  :root {
-    /* Surface System - Vibrant Dark */
-    --surface-0: #0f0f23;  /* Body background - deep blue */
-    --surface-1: #1a1a2e;  /* Primary cards - dark blue */
-    --surface-2: #16213e;  /* Secondary cards - darker blue */
-    --surface-3: #2a2a3e;  /* Hover/Active states - lighter blue */
-    --border: #4a4a6a;     /* Glowing borders */
-    --hover: #2a2a3e;      /* Hover state */
-    
-    /* Typography */
-    --text-primary: #ffffff;    /* Main text */
-    --text-secondary: #b8c5d1;  /* Labels, secondary text */
-    --text-muted: #7a8a9a;      /* Captions, timestamps */
-    
-    /* Accent Colors - Vibrant & Exciting */
-    --accent-positive: #00ff88;  /* Up/Positive - neon green */
-    --accent-negative: #ff3366;  /* Down/Negative - neon red */
-    --accent-premium: #ffaa00;   /* Premium/Highlight - neon orange */
-    --accent-info: #00aaff;      /* Info - neon blue */
-    --accent-purple: #aa44ff;    /* Purple accent */
-    --accent-cyan: #00ffff;      /* Cyan accent */
-    
-    /* Legacy support */
-    --bg-primary: var(--surface-0);
-    --bg-secondary: var(--surface-1);
-    --bg-tertiary: var(--surface-2);
-    --bg-hover: var(--hover);
-    --brand-green: var(--accent-positive);
-    --brand-red: var(--accent-negative);
-    --brand-premium: var(--accent-premium);
-    --brand-info: var(--accent-info);
-  }
-
+  /* ===== DARK MODE - CS2 THEME ===== */
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* Surface System - Based on your dark purple palette */
+    --background: 276 51% 6%;      /* Dark Purple - 3A2449 (darker) */
+    --foreground: 0 0% 95%;        /* Near white text */
+    --card: 276 51% 8%;            /* Slightly lighter than background */
+    --card-foreground: 0 0% 95%;
+    --popover: 276 51% 8%;
+    --popover-foreground: 0 0% 95%;
+    
+    /* Primary Colors - Based on your Celadon palette */
+    --primary: 132 61% 77%;        /* Celadon - A1E8AF */
+    --primary-foreground: 276 51% 6%; /* Dark text on light background */
+    --secondary: 224 21% 20%;      /* Slate Gray - 747C92 (darker) */
+    --secondary-foreground: 0 0% 95%;
+    --muted: 224 21% 15%;          /* Even darker slate */
+    --muted-foreground: 224 21% 65%; /* Muted slate text */
+    
+    /* Accent Colors - Vibrant versions of your palette */
+    --accent: 132 61% 77%;         /* Celadon accent */
+    --accent-foreground: 276 51% 6%;
+    --destructive: 0 84% 60%;      /* Red for errors */
+    --destructive-foreground: 0 0% 95%;
+    
+    /* Borders and Inputs */
+    --border: 224 21% 25%;         /* Slate Gray borders */
+    --input: 224 21% 15%;          /* Dark input backgrounds */
+    --ring: 132 61% 77%;           /* Celadon focus ring */
+    
+    /* Chart Colors - Same as light mode for consistency */
+    --chart-1: 132 61% 77%;  /* Celadon */
+    --chart-2: 121 25% 77%;  /* Celadon Dark */
+    --chart-3: 224 21% 57%;  /* Slate Gray */
+    --chart-4: 253 66% 45%;  /* Midnight Blue */
+    --chart-5: 276 51% 29%;  /* Dark Purple */
   }
 }
 
@@ -102,26 +83,66 @@
   }
 }
 
-/* Custom CS2 Brand Colors */
+/* ===== CS2 SKIN TRACKER - BRAND COLORS ===== */
 :root {
-  --brand-blue: #4A9EFF;
-  --brand-green: #4CAF50;
-  --brand-orange: #FF9800;
-  --brand-red: #F44336;
-  --brand-purple: #9C27B0;
-  --brand-yellow: #FFC107;
+  /* Primary Brand Colors - Based on your palette */
+  --brand-celadon: #A1E8AF;        /* Primary - Celadon */
+  --brand-celadon-dark: #94C595;   /* Secondary - Celadon Dark */
+  --brand-slate: #747C92;          /* Neutral - Slate Gray */
+  --brand-midnight: #372772;       /* Accent - Midnight Blue */
+  --brand-purple: #3A2449;         /* Dark - Dark Purple */
   
-  /* Enhanced Color Palette */
-  --bg-primary: #0f0f23;
-  --bg-secondary: #1a1a2e;
-  --bg-tertiary: #16213e;
-  --accent-primary: #4A9EFF;
-  --accent-secondary: #4CAF50;
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  --border-primary: #374151;
-  --border-secondary: #4b5563;
+  /* Generated Shades - Automatically created */
+  --brand-celadon-50: #F0FDF4;     /* Lightest */
+  --brand-celadon-100: #DCFCE7;    /* Very Light */
+  --brand-celadon-200: #BBF7D0;    /* Light */
+  --brand-celadon-300: #86EFAC;    /* Medium Light */
+  --brand-celadon-400: #A1E8AF;    /* Base */
+  --brand-celadon-500: #94C595;    /* Medium */
+  --brand-celadon-600: #7FB87F;    /* Medium Dark */
+  --brand-celadon-700: #6A9B6A;    /* Dark */
+  --brand-celadon-800: #557E55;    /* Very Dark */
+  --brand-celadon-900: #406140;    /* Darkest */
+  
+  /* Slate Shades */
+  --brand-slate-50: #F8FAFC;
+  --brand-slate-100: #F1F5F9;
+  --brand-slate-200: #E2E8F0;
+  --brand-slate-300: #CBD5E1;
+  --brand-slate-400: #94A3B8;
+  --brand-slate-500: #747C92;      /* Base */
+  --brand-slate-600: #64748B;
+  --brand-slate-700: #475569;
+  --brand-slate-800: #334155;
+  --brand-slate-900: #1E293B;
+  
+  /* Purple Shades */
+  --brand-purple-50: #FAF5FF;
+  --brand-purple-100: #F3E8FF;
+  --brand-purple-200: #E9D5FF;
+  --brand-purple-300: #D8B4FE;
+  --brand-purple-400: #C084FC;
+  --brand-purple-500: #3A2449;     /* Base */
+  --brand-purple-600: #9333EA;
+  --brand-purple-700: #7C3AED;
+  --brand-purple-800: #6B21A8;
+  --brand-purple-900: #581C87;
+  
+  /* Semantic Colors */
+  --success: var(--brand-celadon-500);
+  --success-light: var(--brand-celadon-400);
+  --success-dark: var(--brand-celadon-600);
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: var(--brand-slate-500);
+  
+  /* Legacy Support - Map old colors to new system */
+  --brand-blue: var(--brand-slate-500);
+  --brand-green: var(--brand-celadon-500);
+  --brand-orange: var(--warning);
+  --brand-red: var(--error);
+  --brand-purple: var(--brand-purple-500);
+  --brand-yellow: #FBBF24;
 }
 
 /* Smooth Animations */

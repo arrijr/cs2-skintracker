@@ -7,32 +7,39 @@ This document defines the consistent design system used throughout the CS2 Skin 
 ## Color Palette
 ----
 
-### Primary Colors
-* **Brand Green**: `#4CAF50` - Primary actions, success states
-* **Brand Blue**: `#2196F3` - Secondary actions, links
-* **Brand Orange**: `#FF9800` - Warnings, StatTrak items
-* **Brand Purple**: `#9C27B0` - Special items, premium features
-* **Brand Yellow**: `#FFC107` - Highlights, special indicators
+### Primary Colors - CS2 Skin Tracker Palette
+* **Celadon**: `#A1E8AF` - Primary actions, success states, positive values
+* **Celadon Dark**: `#94C595` - Secondary actions, hover states
+* **Slate Gray**: `#747C92` - Neutral elements, text, borders
+* **Midnight Blue**: `#372772` - Accent elements, special highlights
+* **Dark Purple**: `#3A2449` - Dark backgrounds, premium features
 
-### Rarity Colors
-* **Covert**: `text-red-400 bg-red-400/10 border-red-400/30` - Red
-* **Classified**: `text-pink-400 bg-pink-400/10 border-pink-400/30` - Pink
-* **Restricted**: `text-purple-400 bg-purple-400/10 border-purple-400/30` - Purple
-* **Mil-Spec**: `text-blue-400 bg-blue-400/10 border-blue-400/30` - Blue
-* **Industrial**: `text-cyan-400 bg-cyan-400/10 border-cyan-400/30` - Cyan
-* **Consumer**: `text-gray-400 bg-gray-400/10 border-gray-400/30` - Gray
+### Color Usage Guidelines
+* **Celadon (Primary)**: Use for main CTAs, success states, positive price changes
+* **Celadon Dark (Secondary)**: Use for secondary buttons, hover states
+* **Slate Gray (Neutral)**: Use for text, borders, disabled states
+* **Midnight Blue (Accent)**: Use for special features, highlights
+* **Dark Purple (Dark)**: Use for dark mode backgrounds, premium sections
 
-### Wear Colors
-* **Factory New (FN)**: `text-green-400 bg-green-400/10 border-green-400/30` - Green
-* **Minimal Wear (MW)**: `text-lime-400 bg-lime-400/10 border-lime-400/30` - Lime
-* **Field-Tested (FT)**: `text-yellow-400 bg-yellow-400/10 border-yellow-400/30` - Yellow
-* **Well-Worn (WW)**: `text-orange-400 bg-orange-400/10 border-orange-400/30` - Orange
-* **Battle-Scarred (BS)**: `text-red-400 bg-red-400/10 border-red-400/30` - Red
+### Rarity Colors - Updated with New Palette
+* **Covert**: `text-red-500 bg-red-500/10 border-red-500/30` - Red (highest rarity)
+* **Classified**: `text-pink-500 bg-pink-500/10 border-pink-500/30` - Pink
+* **Restricted**: `text-brand-purple-600 bg-brand-purple-600/10 border-brand-purple-600/30` - Purple
+* **Mil-Spec**: `text-brand-slate-500 bg-brand-slate-500/10 border-brand-slate-500/30` - Slate
+* **Industrial**: `text-cyan-500 bg-cyan-500/10 border-cyan-500/30` - Cyan
+* **Consumer**: `text-brand-slate-400 bg-brand-slate-400/10 border-brand-slate-400/30` - Light Slate
 
-### Price Change Colors
-* **Positive**: `text-green-400` - Price increases
-* **Negative**: `text-red-400` - Price decreases
-* **Neutral**: `text-slate-400` - No change
+### Wear Colors - Updated with New Palette
+* **Factory New (FN)**: `text-brand-celadon-500 bg-brand-celadon-500/10 border-brand-celadon-500/30` - Celadon
+* **Minimal Wear (MW)**: `text-brand-celadon-400 bg-brand-celadon-400/10 border-brand-celadon-400/30` - Light Celadon
+* **Field-Tested (FT)**: `text-yellow-500 bg-yellow-500/10 border-yellow-500/30` - Yellow
+* **Well-Worn (WW)**: `text-orange-500 bg-orange-500/10 border-orange-500/30` - Orange
+* **Battle-Scarred (BS)**: `text-red-500 bg-red-500/10 border-red-500/30` - Red
+
+### Price Change Colors - Updated with New Palette
+* **Positive**: `text-brand-celadon-500` - Price increases (Celadon)
+* **Negative**: `text-red-500` - Price decreases (Red)
+* **Neutral**: `text-brand-slate-400` - No change (Slate)
 
 ## Card Design System
 ----
@@ -143,22 +150,28 @@ All data cards should follow this pattern:
 ## Interactive Elements
 ----
 
-### Buttons
-* **Primary**: `bg-brand-green hover:bg-brand-green/90 text-white`
-* **Secondary**: `bg-slate-700 hover:bg-slate-600 text-white`
-* **Outline**: `border-slate-600/50 text-slate-300 hover:bg-slate-700/50`
-* **Ghost**: `text-slate-400 hover:text-white hover:bg-slate-800`
+### Buttons - Updated with New Palette
+* **Primary**: `bg-brand-celadon-500 hover:bg-brand-celadon-600 text-white` - Main actions
+* **Secondary**: `bg-brand-slate-700 hover:bg-brand-slate-600 text-white` - Secondary actions
+* **Outline**: `border-brand-slate-500/50 text-brand-slate-300 hover:bg-brand-slate-700/50` - Subtle actions
+* **Ghost**: `text-brand-slate-400 hover:text-white hover:bg-brand-slate-800` - Minimal actions
+* **Success**: `bg-brand-celadon-500 hover:bg-brand-celadon-600 text-white` - Success states
+* **Warning**: `bg-yellow-500 hover:bg-yellow-600 text-white` - Warning states
+* **Danger**: `bg-red-500 hover:bg-red-600 text-white` - Error states
 
-### Badges
-* **Default**: `border-slate-600/30 text-slate-300 bg-slate-600/10`
-* **Active**: `border-brand-blue/30 text-brand-blue bg-brand-blue/10`
-* **Success**: `border-green-500/30 text-green-400 bg-green-500/10`
-* **Warning**: `border-orange-500/30 text-orange-400 bg-orange-500/10`
+### Badges - Updated with New Palette
+* **Default**: `border-brand-slate-500/30 text-brand-slate-300 bg-brand-slate-500/10`
+* **Active**: `border-brand-celadon-500/30 text-brand-celadon-400 bg-brand-celadon-500/10`
+* **Success**: `border-brand-celadon-500/30 text-brand-celadon-400 bg-brand-celadon-500/10`
+* **Warning**: `border-yellow-500/30 text-yellow-400 bg-yellow-500/10`
+* **Error**: `border-red-500/30 text-red-400 bg-red-500/10`
+* **Info**: `border-brand-slate-500/30 text-brand-slate-400 bg-brand-slate-500/10`
 
-### Inputs
-* **Base**: `bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400`
-* **Focus**: `focus:ring-2 focus:ring-brand-blue/50`
+### Inputs - Updated with New Palette
+* **Base**: `bg-brand-slate-700/50 border-brand-slate-500/50 text-white placeholder:text-brand-slate-400`
+* **Focus**: `focus:ring-2 focus:ring-brand-celadon-500/50`
 * **Error**: `border-red-500/50 bg-red-500/10`
+* **Success**: `border-brand-celadon-500/50 bg-brand-celadon-500/10`
 
 ## Layout Guidelines
 ----
