@@ -767,10 +767,12 @@
     @apply w-full px-4 sm:px-6 lg:px-8;
   }
   
-  /* Dashboard Background - Solid Background */
+  /* Dashboard Background - Subtle Gradient */
   .dashboard-bg {
     @apply min-h-screen;
-    @apply bg-background;
+    background: linear-gradient(135deg, 
+      hsl(var(--background)) 0%, 
+      hsl(var(--muted)) 100%);
     @apply relative;
   }
 
@@ -935,93 +937,50 @@
   }
 }
 
-/* Enhanced Card System - More Visual Appeal */
+/* Clean, Modern Card System */
 @layer components {
   .card-enhanced {
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%) !important;
+    background: hsl(var(--card)) !important;
     border: 1px solid hsl(var(--border)) !important;
-    border-radius: 16px !important;
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.4),
-      0 0 0 1px rgba(255, 255, 255, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-    transition: all 300ms ease-out !important;
-    position: relative !important;
-    overflow: hidden !important;
-  }
-
-  .card-enhanced::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    transition: all 200ms ease-out !important;
   }
 
   .card-enhanced:hover {
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%) !important;
+    background: hsl(var(--card)) !important;
     cursor: pointer !important;
-    box-shadow: 
-      0 12px 40px rgba(0, 0, 0, 0.5),
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
-    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+    transform: translateY(-1px) !important;
   }
 
   .card-primary {
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%) !important;
+    background: hsl(var(--card)) !important;
     border: 1px solid hsl(var(--border)) !important;
-    border-radius: 16px !important;
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.4),
-      0 0 0 1px rgba(255, 255, 255, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-    transition: all 300ms ease-out !important;
-    position: relative !important;
-    overflow: hidden !important;
-  }
-
-  .card-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(161, 232, 175, 0.3), transparent);
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    transition: all 200ms ease-out !important;
   }
 
   .card-primary:hover {
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%) !important;
+    background: hsl(var(--card)) !important;
     cursor: pointer !important;
-    box-shadow: 
-      0 12px 40px rgba(0, 0, 0, 0.5),
-      0 0 0 1px rgba(161, 232, 175, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
-    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+    transform: translateY(-1px) !important;
   }
 
   .card-secondary {
-    background: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted)) 100%) !important;
+    background: hsl(var(--muted)) !important;
     border: 1px solid hsl(var(--border)) !important;
-    border-radius: 16px !important;
-    box-shadow: 
-      0 6px 24px rgba(0, 0, 0, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.03),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-    transition: all 300ms ease-out !important;
-    position: relative !important;
-    overflow: hidden !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    transition: all 200ms ease-out !important;
   }
 
   .card-secondary:hover {
-    background: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted)) 100%) !important;
+    background: hsl(var(--muted)) !important;
     cursor: pointer !important;
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.4),
-      0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
     transform: translateY(-1px) !important;
   }
 
@@ -1032,116 +991,6 @@
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2) !important;
   }
 
-  /* Special Dashboard Cards with More Visual Appeal */
-  .card-dashboard-main {
-    background: linear-gradient(135deg, 
-      hsl(var(--card)) 0%, 
-      hsl(var(--card)) 50%, 
-      hsl(var(--muted)) 100%) !important;
-    border: 1px solid hsl(var(--border)) !important;
-    border-radius: 20px !important;
-    box-shadow: 
-      0 12px 48px rgba(0, 0, 0, 0.5),
-      0 0 0 1px rgba(255, 255, 255, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
-    transition: all 400ms ease-out !important;
-    position: relative !important;
-    overflow: hidden !important;
-  }
-
-  .card-dashboard-main::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, 
-      transparent, 
-      rgba(161, 232, 175, 0.4), 
-      rgba(116, 124, 146, 0.4), 
-      transparent);
-  }
-
-  .card-dashboard-main:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: 
-      0 16px 64px rgba(0, 0, 0, 0.6),
-      0 0 0 1px rgba(161, 232, 175, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
-  }
-
-  .card-dashboard-metric {
-    background: linear-gradient(135deg, 
-      hsl(var(--card)) 0%, 
-      hsl(var(--card)) 100%) !important;
-    border: 1px solid hsl(var(--border)) !important;
-    border-radius: 16px !important;
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.4),
-      0 0 0 1px rgba(255, 255, 255, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-    transition: all 300ms ease-out !important;
-    position: relative !important;
-    overflow: hidden !important;
-  }
-
-  .card-dashboard-metric::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, 
-      transparent, 
-      rgba(255, 255, 255, 0.15), 
-      transparent);
-  }
-
-  .card-dashboard-metric:hover {
-    transform: translateY(-2px) scale(1.02) !important;
-    box-shadow: 
-      0 12px 40px rgba(0, 0, 0, 0.5),
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
-  }
-
-  .card-dashboard-sidebar {
-    background: linear-gradient(135deg, 
-      hsl(var(--muted)) 0%, 
-      hsl(var(--card)) 100%) !important;
-    border: 1px solid hsl(var(--border)) !important;
-    border-radius: 18px !important;
-    box-shadow: 
-      0 10px 40px rgba(0, 0, 0, 0.45),
-      0 0 0 1px rgba(255, 255, 255, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-    transition: all 350ms ease-out !important;
-    position: relative !important;
-    overflow: hidden !important;
-  }
-
-  .card-dashboard-sidebar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, 
-      transparent, 
-      rgba(116, 124, 146, 0.3), 
-      transparent);
-  }
-
-  .card-dashboard-sidebar:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 
-      0 14px 48px rgba(0, 0, 0, 0.55),
-      0 0 0 1px rgba(116, 124, 146, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
-  }
 
   /* Tooltip Animations */
   @keyframes tooltipFadeIn {
