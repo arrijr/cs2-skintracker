@@ -38,21 +38,21 @@
 
   /* ===== DARK MODE - CS2 THEME ===== */
   .dark {
-    /* Surface System - Dark Mode Basis wie im Screenshot */
-    --background: 0 0% 7%;         /* #121212 - Dark Mode Basis */
+    /* Surface System - Bläuliches Grau wie im Screenshot */
+    --background: 220 13% 7%;      /* Bläuliches Dunkelgrau - #121212 mit Blaustich */
     --foreground: 0 0% 95%;        /* Near white text */
-    --card: 0 0% 12%;              /* #1E1E1E - Slightly lighter */
+    --card: 220 13% 12%;           /* Bläuliches Grau - #1E1E1E mit Blaustich */
     --card-foreground: 0 0% 95%;
-    --popover: 0 0% 12%;
+    --popover: 220 13% 12%;
     --popover-foreground: 0 0% 95%;
     
     /* Primary Colors - Logo-Grün */
     --primary: 142 76% 64%;        /* #4ADE80 - Logo-Grün */
     --primary-foreground: 0 0% 7%; /* Dark text on light background */
-    --secondary: 0 0% 20%;         /* Dark gray for secondary */
+    --secondary: 220 13% 20%;      /* Bläuliches Grau für secondary */
     --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 15%;             /* Even darker gray */
-    --muted-foreground: 0 0% 65%;  /* Muted text */
+    --muted: 220 13% 15%;          /* Bläuliches Grau - Even darker */
+    --muted-foreground: 220 13% 65%; /* Muted text mit Blaustich */
     
     /* Accent Colors - Screenshot Palette */
     --accent: 142 76% 64%;         /* Logo-Grün accent */
@@ -61,8 +61,8 @@
     --destructive-foreground: 0 0% 95%;
     
     /* Borders and Inputs */
-    --border: 0 0% 25%;            /* Dark borders */
-    --input: 0 0% 15%;             /* Dark input backgrounds */
+    --border: 220 13% 25%;         /* Bläuliche Borders */
+    --input: 220 13% 15%;          /* Bläuliche Input backgrounds */
     --ring: 142 76% 64%;           /* Logo-Grün focus ring */
     
     /* Chart Colors - Screenshot Palette */
