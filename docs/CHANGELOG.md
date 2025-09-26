@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Added
+* feat(admin): authenticated Admin Panel requests and Controls tab
+  * Frontend: Add Clerk JWT on `/admin` data fetches in `frontend/src/app/admin/page.tsx`.
+  * Frontend: New `AdminControls` component in `frontend/src/app/components/AdminControls.tsx`.
+  * Frontend: New "Controls" tab on Admin page to run jobs and clear Steam cache.
+  * Docs: Updated `/docs/API.md` with admin endpoints and curl examples.
 * feat(dashboard): real pie chart for Portfolio Breakdown
   * **New Component** (`/frontend/src/app/dashboard/components/PortfolioPieChart.tsx`)
     * Implemented interactive pie chart using Recharts library
@@ -21,6 +26,7 @@
     * Mobile-friendly legend with truncated text
 
 ### Fixed
+* fix(admin): normalize logs user field to support backend `admin` relation shape
 * feat(layout): comprehensive responsive layout improvements
   * **CSS Container System** (`/frontend/src/app/globals.css`)
     * Added `container-cs2` class with max-width and responsive padding

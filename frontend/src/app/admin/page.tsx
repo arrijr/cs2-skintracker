@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle, RefreshCw, BarChart3, Settings, FileText } from "lucide-react";
 import BuildInfo from "../components/BuildInfo";
@@ -14,8 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { formatUSD, safeToFixed } from "@/lib/num";
+import AdminControls from "../components/AdminControls";
 
-type AdminTab = "overview" | "jobs" | "logs";
+type AdminTab = "overview" | "jobs" | "logs" | "controls";
 
 interface AdminOverview {
   lastPriceUpdate: string | null;
@@ -49,6 +50,7 @@ interface AdminLog {
 export default function AdminPage() {
   const { isSignedIn, isLoaded, user } = useUser();
   const { isAdmin } = useUserRole();
+  const { getToken } = useAuth();
 
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const [overview, setOverview] = useState<AdminOverview | null>(null);
@@ -68,15 +70,23 @@ export default function AdminPage() {
     setError(null);
     
     try {
+      const token = await getToken({ template: "backend" });
+      const authHeaders = { ...(token && { Authorization: `Bearer ${token}` }) } as Record<string, string>;
       const [overviewRes, jobsRes, logsRes] = await Promise.all([
-        fetchJson(apiUrl("/api/v1/admin/overview")),
-        fetchJson(apiUrl("/api/v1/admin/jobs")),
-        fetchJson(apiUrl("/api/v1/admin/logs"))
+        fetchJson(apiUrl("/api/v1/admin/overview"), { headers: authHeaders }),
+        fetchJson(apiUrl("/api/v1/admin/jobs"), { headers: authHeaders }),
+        fetchJson(apiUrl("/api/v1/admin/logs"), { headers: authHeaders })
       ]);
 
       setOverview(overviewRes as AdminOverview);
       setJobs((jobsRes as any).jobs); // Type assertion for jobs
-      setAdminLogs((logsRes as any).logs); // Type assertion for logs
+      // Normalize logs to always have user.email
+      const rawLogs = (logsRes as any).logs as any[];
+      const normalizedLogs = (rawLogs || []).map((l) => ({
+        ...l,
+        user: l.user ?? l.admin ?? { email: "System" }
+      }));
+      setAdminLogs(normalizedLogs as AdminLog[]);
     } catch (err) {
       setError("Failed to load admin data");
     } finally {
@@ -152,8 +162,8 @@ export default function AdminPage() {
           )}
 
           {/* Tab Navigation */}
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as AdminTab)} className="w-full animate-slide-up">
-            <TabsList className="grid w-full grid-cols-3">
+          <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as AdminTab)} className="w-full animate-slide-up">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Overview
@@ -165,6 +175,10 @@ export default function AdminPage() {
               <TabsTrigger value="logs" className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
                 Logs
+              </TabsTrigger>
+              <TabsTrigger value="controls" className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Controls
               </TabsTrigger>
             </TabsList>
 
@@ -330,7 +344,7 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {jobs.map((job, index) => (
+                    {jobs.map((job: AdminJob, index: number) => (
                       <Card key={index} className="card-enhanced hover-lift">
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between mb-3">
@@ -398,7 +412,7 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {logs.map((log) => (
+                    {logs.map((log: AdminLog) => (
                       <Card key={log.id} className="card-enhanced hover-lift">
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-2">
@@ -436,6 +450,13 @@ export default function AdminPage() {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Controls Tab */}
+            <TabsContent value="controls" className="space-y-6 mt-6">
+              <h2 className="text-2xl font-semibold mb-2">Controls</h2>
+              <p className="text-muted-foreground mb-4">Safeguarded admin operations. In production, writes are disabled unless explicitly enabled via environment.</p>
+              <AdminControls />
             </TabsContent>
           </Tabs>
         </div>
