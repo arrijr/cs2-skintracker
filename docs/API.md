@@ -581,7 +581,90 @@ Admin
 
 GET /admin/overview — requires JWT + admin
 
-Response: { "users": number, "skins": number, "watchlist": number, "portfolio": number }
+* Response: `{ "lastPriceUpdate": string|null, "pricesWritten24h": number, "priceCoverage": number, "portfolioSnapshotLastRun": string|null, "alerts24h": { ... } }`
+
+GET /admin/jobs — requires JWT + admin
+
+* Response: `{ "jobs": [{ "name": string, "lastRun": string, "status": "completed|failed|running", "duration": string, "resultCounts": { [key: string]: number } }], "pagination": { ... } }`
+
+GET /admin/logs — requires JWT + admin
+
+* Query: `page`, `limit`, `action`, `resource`
+* Response: `{ "logs": [{ "id": number, "action": string, "resource": string, "details": string|null, "createdAt": string, "admin": { "email": string } }], "pagination": { ... } }`
+
+POST /admin/jobs/skin-prices — requires JWT + admin
+
+* Body: `{ "take": number, "category"?: string, "rarity"?: string, "ids"?: number[], "dryRun"?: boolean }`
+* Notes: In production, writes are disabled unless `ALLOW_ADMIN_WRITES_IN_PROD` is set.
+
+POST /admin/jobs/portfolio-snapshots — requires JWT + admin
+
+* Body: `{ "userId"?: number, "batchSize"?: number, "dryRun"?: boolean }`
+
+POST /admin/jobs/alert-check — requires JWT + admin
+
+* Body: `{ "limit"?: number, "optInOnly"?: boolean, "dryRun"?: boolean }`
+
+GET /admin/health — requires JWT + admin
+
+* Response: `{ "status": "healthy", "timestamp": "...", "admin": true }`
+
+GET /admin/ping — requires JWT + admin
+
+* Response: `{ "message": "admin ok", "user": "...", "timestamp": "..." }`
+
+POST /admin/cache/steam/clear — requires JWT + admin
+
+* Response: `{ "success": true, "message": "Cleared X cache entries", "clearedCount": number, "timestamp": "..." }`
+
+Curl Examples
+-------------
+
+Admin Overview
+
+```bash
+curl -s "$NEXT_PUBLIC_API_ORIGIN/api/v1/admin/overview" \
+  -H "Authorization: Bearer $CLERK_BACKEND_JWT"
+```
+
+Admin Jobs
+
+```bash
+curl -s "$NEXT_PUBLIC_API_ORIGIN/api/v1/admin/jobs" \
+  -H "Authorization: Bearer $CLERK_BACKEND_JWT"
+```
+
+Admin Logs (page 1, 20 per page)
+
+```bash
+curl -s "$NEXT_PUBLIC_API_ORIGIN/api/v1/admin/logs?page=1&limit=20" \
+  -H "Authorization: Bearer $CLERK_BACKEND_JWT"
+```
+
+Dry Run: Skin Price Update (take 50)
+
+```bash
+curl -s -X POST "$NEXT_PUBLIC_API_ORIGIN/api/v1/admin/jobs/skin-prices" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $CLERK_BACKEND_JWT" \
+  -d '{"take":50,"dryRun":true}'
+```
+
+Execute: Portfolio Snapshots (batch size 100)
+
+```bash
+curl -s -X POST "$NEXT_PUBLIC_API_ORIGIN/api/v1/admin/jobs/portfolio-snapshots" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $CLERK_BACKEND_JWT" \
+  -d '{"batchSize":100,"dryRun":false}'
+```
+
+Clear Steam Cache
+
+```bash
+curl -s -X POST "$NEXT_PUBLIC_API_ORIGIN/api/v1/admin/cache/steam/clear" \
+  -H "Authorization: Bearer $CLERK_BACKEND_JWT"
+```
 
 Curl Examples
 User Sync
