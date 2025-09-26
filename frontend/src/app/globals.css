@@ -850,50 +850,178 @@
   }
 }
 
-/* Final Card Overrides - Solid, Non-Transparent Cards */
+/* Enhanced Animations for Better UX */
+@layer utilities {
+  .animate-card-enter {
+    animation: cardEnter 0.6s ease-out;
+  }
+  
+  .animate-metric-hover {
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .animate-metric-hover:hover {
+    animation: metricHover 0.3s ease-out;
+  }
+  
+  .animate-chart-load {
+    animation: chartLoad 1s ease-out;
+  }
+  
+  .animate-value-change {
+    animation: valueChange 0.5s ease-out;
+  }
+  
+  .animate-badge-pulse {
+    animation: badgePulse 2s ease-in-out infinite;
+  }
+}
+
+/* Keyframes for Enhanced Animations */
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes metricHover {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.02);
+  }
+  100% {
+    transform: translateY(-2px) scale(1.02);
+  }
+}
+
+@keyframes chartLoad {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes valueChange {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Enhanced Card System - More Visual Appeal */
 @layer components {
   .card-enhanced {
-    background: hsl(var(--card)) !important;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%) !important;
     border: 1px solid hsl(var(--border)) !important;
     border-radius: 16px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
     transition: all 300ms ease-out !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .card-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   }
 
   .card-enhanced:hover {
-    background: hsl(var(--card)) !important;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%) !important;
     cursor: pointer !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
-    transform: translateY(-1px) !important;
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-2px) !important;
   }
 
   .card-primary {
-    background: hsl(var(--card)) !important;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%) !important;
     border: 1px solid hsl(var(--border)) !important;
     border-radius: 16px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
     transition: all 300ms ease-out !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .card-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(161, 232, 175, 0.3), transparent);
   }
 
   .card-primary:hover {
-    background: hsl(var(--card)) !important;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%) !important;
     cursor: pointer !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
-    transform: translateY(-1px) !important;
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(161, 232, 175, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-2px) !important;
   }
 
   .card-secondary {
-    background: hsl(var(--muted)) !important;
+    background: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted)) 100%) !important;
     border: 1px solid hsl(var(--border)) !important;
     border-radius: 16px !important;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25) !important;
+    box-shadow: 
+      0 6px 24px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.03),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
     transition: all 300ms ease-out !important;
+    position: relative !important;
+    overflow: hidden !important;
   }
 
   .card-secondary:hover {
-    background: hsl(var(--muted)) !important;
+    background: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted)) 100%) !important;
     cursor: pointer !important;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.08) !important;
     transform: translateY(-1px) !important;
   }
 
@@ -902,6 +1030,117 @@
     border: 1px solid var(--border) !important;
     border-radius: 12px !important;
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  /* Special Dashboard Cards with More Visual Appeal */
+  .card-dashboard-main {
+    background: linear-gradient(135deg, 
+      hsl(var(--card)) 0%, 
+      hsl(var(--card)) 50%, 
+      hsl(var(--muted)) 100%) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: 20px !important;
+    box-shadow: 
+      0 12px 48px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    transition: all 400ms ease-out !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .card-dashboard-main::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(161, 232, 175, 0.4), 
+      rgba(116, 124, 146, 0.4), 
+      transparent);
+  }
+
+  .card-dashboard-main:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 
+      0 16px 64px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(161, 232, 175, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .card-dashboard-metric {
+    background: linear-gradient(135deg, 
+      hsl(var(--card)) 0%, 
+      hsl(var(--card)) 100%) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: 16px !important;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    transition: all 300ms ease-out !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .card-dashboard-metric::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(255, 255, 255, 0.15), 
+      transparent);
+  }
+
+  .card-dashboard-metric:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .card-dashboard-sidebar {
+    background: linear-gradient(135deg, 
+      hsl(var(--muted)) 0%, 
+      hsl(var(--card)) 100%) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: 18px !important;
+    box-shadow: 
+      0 10px 40px rgba(0, 0, 0, 0.45),
+      0 0 0 1px rgba(255, 255, 255, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    transition: all 350ms ease-out !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .card-dashboard-sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(116, 124, 146, 0.3), 
+      transparent);
+  }
+
+  .card-dashboard-sidebar:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 
+      0 14px 48px rgba(0, 0, 0, 0.55),
+      0 0 0 1px rgba(116, 124, 146, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
   }
 
   /* Tooltip Animations */

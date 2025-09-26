@@ -247,7 +247,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
           {/* Portfolio Overview - Large Card */}
           <div className="lg:col-span-3">
-            <Card className="card-primary h-full">
+            <Card className="card-dashboard-main h-full animate-card-enter">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-2xl font-bold text-white">Portfolio Overview</CardTitle>
@@ -307,7 +307,7 @@ export default function Dashboard() {
 
           {/* Alerts & Watchlist - Narrow Card */}
           <div className="lg:col-span-1">
-            <Card className="card-secondary h-full">
+            <Card className="card-dashboard-sidebar h-full animate-card-enter" style={{ animationDelay: '0.1s' }}>
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
                   <AlertCircle className="h-5 w-5 text-brand-warning" />
@@ -364,7 +364,7 @@ export default function Dashboard() {
               content="Your total unrealized profit or loss. This is the difference between what you paid for all skins and their current market value."
               position="top"
             >
-            <Card className="card-primary">
+            <Card className="card-dashboard-metric animate-metric-hover">
               <CardContent className="p-4 text-center">
                 <div className={`text-2xl font-bold ${unrealizedPL >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
                   {formatUSD(unrealizedPL)}
@@ -381,7 +381,7 @@ export default function Dashboard() {
               content="Average value per skin in your portfolio. Calculated by dividing total portfolio value by number of skins."
               position="top"
             >
-            <Card className="card-primary">
+            <Card className="card-dashboard-metric animate-metric-hover">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-white">{formatUSD(avgPerSkin)}</div>
                 <div className="text-sm text-gray-400">Avg per Skin</div>
@@ -393,7 +393,7 @@ export default function Dashboard() {
               content="Total number of different skins in your portfolio. Each unique skin counts as one, regardless of quantity."
               position="top"
             >
-            <Card className="card-primary">
+            <Card className="card-dashboard-metric animate-metric-hover">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-white">{portfolio?.length || 0}</div>
                 <div className="text-sm text-gray-400"># Skins</div>
@@ -405,7 +405,7 @@ export default function Dashboard() {
               content="Total amount you originally paid for all skins in your portfolio. This is your cost basis for calculating profits and losses."
               position="top"
             >
-            <Card className="card-primary">
+            <Card className="card-dashboard-metric animate-metric-hover">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-white">{formatUSD(totalInvested)}</div>
                 <div className="text-sm text-gray-400">Total Invested</div>
@@ -417,7 +417,7 @@ export default function Dashboard() {
               content="Profit or loss from the last 24 hours. Shows how much your portfolio value changed in the past day."
               position="top"
             >
-            <Card className="card-primary">
+            <Card className="card-dashboard-metric animate-metric-hover">
               <CardContent className="p-4 text-center">
                 <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
                   {formatUSD(change24h * totalValue / 100)}
@@ -431,7 +431,7 @@ export default function Dashboard() {
               content="Profit or loss from the last 7 days. Shows how much your portfolio value changed in the past week."
               position="top"
             >
-            <Card className="card-primary">
+            <Card className="card-dashboard-metric animate-metric-hover">
               <CardContent className="p-4 text-center">
                 <div className={`text-2xl font-bold ${change7d >= 0 ? 'text-brand-green' : 'text-brand-red'}`}>
                   {formatUSD(change7d * totalValue / 100)}
@@ -444,7 +444,7 @@ export default function Dashboard() {
 
         {/* Row 3: Breakdown, Market Pulse, Events in a row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <Card className="card-secondary">
+          <Card className="card-enhanced">
             <CardHeader>
               <CardTitle className="text-lg font-bold text-white">Portfolio Breakdown</CardTitle>
             </CardHeader>
@@ -453,7 +453,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="card-secondary">
+          <Card className="card-enhanced">
             <CardHeader>
               <InfoTooltip 
                 content="Real-time market activity and trends. Shows current market conditions, trading volume, and price movements across all skins."
@@ -471,7 +471,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="card-secondary">
+          <Card className="card-enhanced">
             <CardHeader>
               <InfoTooltip 
                 content="Important market events and announcements that could affect skin prices. Includes major updates, tournaments, and market news."
@@ -492,7 +492,7 @@ export default function Dashboard() {
 
         {/* Row 4: Movers over full width, Gainers left, Losers right */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <Card className="card-secondary">
+          <Card className="card-enhanced">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <InfoTooltip 
@@ -534,7 +534,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="card-secondary">
+          <Card className="card-enhanced">
             <CardHeader>
               <InfoTooltip 
                 content="Skins with the highest price decreases in the selected timeframe. Useful for identifying potential buying opportunities or items to avoid."
