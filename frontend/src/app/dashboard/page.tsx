@@ -70,9 +70,9 @@ export default function Dashboard() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-white">Portfolio</h1>
+              <h1 className="text-3xl font-bold text-white">Dashboard</h1>
               <p className="text-slate-400 mt-1">
-                {portfolio?.length || 0} skins • {formatUSD(totalValue)} total value
+                Track your CS2 skin portfolio performance
               </p>
             </div>
             <Button
@@ -93,7 +93,7 @@ export default function Dashboard() {
               <div className="text-sm text-slate-400">Total Value</div>
             </div>
              <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-               <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+               <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-green-400' : 'text-red-500'}`}>
                  {change24h >= 0 ? '+' : ''}{safeToFixed(change24h, 2)}%
                </div>
                <div className="text-sm text-slate-400">24h Change</div>
@@ -103,7 +103,7 @@ export default function Dashboard() {
                <div className="text-sm text-slate-400">Skins</div>
              </div>
              <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-               <div className={`text-2xl font-bold ${unrealizedPL >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+               <div className={`text-2xl font-bold ${unrealizedPL >= 0 ? 'text-green-400' : 'text-red-500'}`}>
                  {formatUSD(unrealizedPL)}
                </div>
                <div className="text-sm text-slate-400">P&L</div>
@@ -211,7 +211,7 @@ export default function Dashboard() {
                        </div>
                      </div>
                      <div className="text-right">
-                       <div className={`text-sm font-medium ${(item.skin?.priceChange24h || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                       <div className={`text-sm font-medium ${(item.skin?.priceChange24h || 0) >= 0 ? 'text-green-400' : 'text-red-500'}`}>
                          {(item.skin?.priceChange24h || 0) >= 0 ? '+' : ''}{safeToFixed(item.skin?.priceChange24h || 0, 2)}%
                        </div>
                      </div>
@@ -248,7 +248,7 @@ export default function Dashboard() {
            <Card className="card-enhanced">
              <CardHeader>
                <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                 <Activity className="h-5 w-5 text-emerald-500" />
+                 <Activity className="h-5 w-5 text-green-400" />
                  Market Pulse
                  <Lock className="h-4 w-4 text-gray-400" />
                </CardTitle>
@@ -261,7 +261,7 @@ export default function Dashboard() {
            <Card className="card-enhanced">
              <CardHeader>
                <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                 <Globe className="h-5 w-5 text-violet-500" />
+                 <Globe className="h-5 w-5 text-blue-500" />
                  Market Events
                  <Lock className="h-4 w-4 text-gray-400" />
                </CardTitle>
@@ -278,7 +278,7 @@ export default function Dashboard() {
              <CardHeader>
                <div className="flex items-center justify-between">
                  <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                   <TrendingUp className="h-5 w-5 text-emerald-500" />
+                   <TrendingUp className="h-5 w-5 text-green-400" />
                    Top Gainers
                  </CardTitle>
                  <ToggleGroup type="single" value={moverTimeframe} onValueChange={(value) => setMoverTimeframe(value as any)}>

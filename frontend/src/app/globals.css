@@ -38,39 +38,39 @@
 
   /* ===== DARK MODE - CS2 THEME ===== */
   .dark {
-    /* Surface System - Based on your dark purple palette */
-    --background: 276 51% 6%;      /* Dark Purple - 3A2449 (darker) */
+    /* Surface System - Dark Mode Basis wie im Screenshot */
+    --background: 0 0% 7%;         /* #121212 - Dark Mode Basis */
     --foreground: 0 0% 95%;        /* Near white text */
-    --card: 276 51% 8%;            /* Slightly lighter than background */
+    --card: 0 0% 12%;              /* #1E1E1E - Slightly lighter */
     --card-foreground: 0 0% 95%;
-    --popover: 276 51% 8%;
+    --popover: 0 0% 12%;
     --popover-foreground: 0 0% 95%;
     
-    /* Primary Colors - Based on your Celadon palette */
-    --primary: 132 61% 77%;        /* Celadon - A1E8AF */
-    --primary-foreground: 276 51% 6%; /* Dark text on light background */
-    --secondary: 224 21% 20%;      /* Slate Gray - 747C92 (darker) */
+    /* Primary Colors - Logo-Grün */
+    --primary: 142 76% 64%;        /* #4ADE80 - Logo-Grün */
+    --primary-foreground: 0 0% 7%; /* Dark text on light background */
+    --secondary: 0 0% 20%;         /* Dark gray for secondary */
     --secondary-foreground: 0 0% 95%;
-    --muted: 224 21% 15%;          /* Even darker slate */
-    --muted-foreground: 224 21% 65%; /* Muted slate text */
+    --muted: 0 0% 15%;             /* Even darker gray */
+    --muted-foreground: 0 0% 65%;  /* Muted text */
     
-    /* Accent Colors - Vibrant versions of your palette */
-    --accent: 132 61% 77%;         /* Celadon accent */
-    --accent-foreground: 276 51% 6%;
-    --destructive: 0 84% 60%;      /* Red for errors */
+    /* Accent Colors - Screenshot Palette */
+    --accent: 142 76% 64%;         /* Logo-Grün accent */
+    --accent-foreground: 0 0% 7%;
+    --destructive: 0 84% 60%;      /* #EF4444 - Rot für Verluste */
     --destructive-foreground: 0 0% 95%;
     
     /* Borders and Inputs */
-    --border: 224 21% 25%;         /* Slate Gray borders */
-    --input: 224 21% 15%;          /* Dark input backgrounds */
-    --ring: 132 61% 77%;           /* Celadon focus ring */
+    --border: 0 0% 25%;            /* Dark borders */
+    --input: 0 0% 15%;             /* Dark input backgrounds */
+    --ring: 142 76% 64%;           /* Logo-Grün focus ring */
     
-    /* Chart Colors - Same as light mode for consistency */
-    --chart-1: 132 61% 77%;  /* Celadon */
-    --chart-2: 121 25% 77%;  /* Celadon Dark */
-    --chart-3: 224 21% 57%;  /* Slate Gray */
-    --chart-4: 253 66% 45%;  /* Midnight Blue */
-    --chart-5: 276 51% 29%;  /* Dark Purple */
+    /* Chart Colors - Screenshot Palette */
+    --chart-1: 142 76% 64%;  /* #4ADE80 - Logo-Grün */
+    --chart-2: 217 91% 60%;  /* #3B82F6 - Blau für Sekundäraktionen */
+    --chart-3: 0 84% 60%;    /* #EF4444 - Rot für Verluste */
+    --chart-4: 262 83% 58%;  /* #8B5CF6 - Violet */
+    --chart-5: 45 93% 47%;   /* #F59E0B - Orange */
   }
 }
 
