@@ -55,38 +55,38 @@ interface ChartData {
   color: string;
 }
 
-// Rarity colors matching CS2 rarity system
+// Rarity colors matching CS2 rarity system - Updated with new palette
 const RARITY_COLORS = {
-  'Covert': '#ff6b6b',
-  'Classified': '#ff9ff3',
-  'Restricted': '#a8e6cf',
-  'Mil-Spec': '#74c0fc',
-  'Industrial': '#ffd93d',
-  'Consumer': '#6c757d',
-  'Unknown': '#6b7280'
+  'Covert': '#ef4444',           // Red-500
+  'Classified': '#ec4899',       // Pink-500
+  'Restricted': '#9333ea',       // Purple-600
+  'Mil-Spec': '#747c92',         // Brand Slate
+  'Industrial': '#06b6d4',       // Cyan-500
+  'Consumer': '#94a3b8',         // Slate-400
+  'Unknown': '#6b7280'           // Gray-500
 };
 
-// Weapon type colors
+// Weapon type colors - Updated with new palette
 const WEAPON_COLORS = {
-  'Rifle': '#ff6b6b',
-  'Pistol': '#4ecdc4',
-  'SMG': '#45b7d1',
-  'Sniper Rifle': '#96ceb4',
-  'Shotgun': '#feca57',
-  'Machinegun': '#ff9ff3',
-  'Knife': '#a8e6cf',
-  'Gloves': '#74c0fc',
-  'Unknown': '#6b7280'
+  'Rifle': '#ef4444',            // Red-500
+  'Pistol': '#94c595',           // Brand Celadon Dark
+  'SMG': '#06b6d4',              // Cyan-500
+  'Sniper Rifle': '#a1e8af',     // Brand Celadon
+  'Shotgun': '#f59e0b',          // Yellow-500
+  'Machinegun': '#ec4899',       // Pink-500
+  'Knife': '#9333ea',            // Purple-600
+  'Gloves': '#747c92',           // Brand Slate
+  'Unknown': '#6b7280'           // Gray-500
 };
 
-// Exterior colors
+// Exterior colors - Updated with new palette
 const EXTERIOR_COLORS = {
-  'Factory New': '#4ecdc4',
-  'Minimal Wear': '#45b7d1',
-  'Field-Tested': '#96ceb4',
-  'Well-Worn': '#feca57',
-  'Battle-Scarred': '#ff6b6b',
-  'Unknown': '#6b7280'
+  'Factory New': '#94c595',      // Brand Celadon Dark
+  'Minimal Wear': '#a1e8af',     // Brand Celadon
+  'Field-Tested': '#f59e0b',     // Yellow-500
+  'Well-Worn': '#f97316',        // Orange-500
+  'Battle-Scarred': '#ef4444',   // Red-500
+  'Unknown': '#6b7280'           // Gray-500
 };
 
 export function PortfolioPieChart({

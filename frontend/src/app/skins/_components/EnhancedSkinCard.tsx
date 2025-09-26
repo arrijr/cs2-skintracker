@@ -65,30 +65,30 @@ export function EnhancedSkinCard({
 
   const getRarityColor = (rarity?: string) => {
     switch (rarity?.toLowerCase()) {
-      case 'covert': return 'text-red-400 border-red-400/30 bg-red-400/10';
-      case 'classified': return 'text-pink-400 border-pink-400/30 bg-pink-400/10';
-      case 'restricted': return 'text-purple-400 border-purple-400/30 bg-purple-400/10';
-      case 'mil-spec': return 'text-blue-400 border-blue-400/30 bg-blue-400/10';
-      case 'industrial': return 'text-cyan-400 border-cyan-400/30 bg-cyan-400/10';
-      case 'consumer': return 'text-gray-400 border-gray-400/30 bg-gray-400/10';
-      default: return 'text-slate-400 border-slate-400/30 bg-slate-400/10';
+      case 'covert': return 'text-red-500 border-red-500/30 bg-red-500/10';
+      case 'classified': return 'text-pink-500 border-pink-500/30 bg-pink-500/10';
+      case 'restricted': return 'text-brand-purple-600 border-brand-purple-600/30 bg-brand-purple-600/10';
+      case 'mil-spec': return 'text-brand-slate-500 border-brand-slate-500/30 bg-brand-slate-500/10';
+      case 'industrial': return 'text-cyan-500 border-cyan-500/30 bg-cyan-500/10';
+      case 'consumer': return 'text-brand-slate-400 border-brand-slate-400/30 bg-brand-slate-400/10';
+      default: return 'text-brand-slate-400 border-brand-slate-400/30 bg-brand-slate-400/10';
     }
   };
 
   const getWearColor = (wear?: string) => {
     switch (wear?.toLowerCase()) {
-      case 'fn': return 'text-green-400 bg-green-400/10 border-green-400/30';
-      case 'mw': return 'text-lime-400 bg-lime-400/10 border-lime-400/30';
-      case 'ft': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30';
-      case 'ww': return 'text-orange-400 bg-orange-400/10 border-orange-400/30';
-      case 'bs': return 'text-red-400 bg-red-400/10 border-red-400/30';
-      default: return 'text-slate-400 bg-slate-400/10 border-slate-400/30';
+      case 'fn': return 'text-brand-celadon-500 bg-brand-celadon-500/10 border-brand-celadon-500/30';
+      case 'mw': return 'text-brand-celadon-400 bg-brand-celadon-400/10 border-brand-celadon-400/30';
+      case 'ft': return 'text-yellow-500 bg-yellow-500/10 border-yellow-500/30';
+      case 'ww': return 'text-orange-500 bg-orange-500/10 border-orange-500/30';
+      case 'bs': return 'text-red-500 bg-red-500/10 border-red-500/30';
+      default: return 'text-brand-slate-400 bg-brand-slate-400/10 border-brand-slate-400/30';
     }
   };
 
   const getPriceChangeColor = (change?: number) => {
-    if (!change) return 'text-slate-400';
-    return change >= 0 ? 'text-green-400' : 'text-red-400';
+    if (!change) return 'text-brand-slate-400';
+    return change >= 0 ? 'text-brand-celadon-500' : 'text-red-500';
   };
 
   const getPriceChangeIcon = (change?: number) => {

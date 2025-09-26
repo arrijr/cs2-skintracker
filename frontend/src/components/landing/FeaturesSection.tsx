@@ -19,49 +19,49 @@ const features = [
     icon: Bell,
     title: "Price Alerts",
     description: "Never miss the right moment to buy or sell with instant notifications.",
-    color: "text-brand-orange",
-    bgColor: "bg-brand-orange/10",
-    borderColor: "border-brand-orange/30"
+    color: "text-yellow-500",
+    bgColor: "bg-yellow-500/10",
+    borderColor: "border-yellow-500/30"
   },
   {
     icon: BarChart3,
     title: "Portfolio Tracking",
     description: "See your gains and performance at a glance with detailed analytics.",
-    color: "text-brand-green",
-    bgColor: "bg-brand-green/10",
-    borderColor: "border-brand-green/30"
+    color: "text-brand-celadon-500",
+    bgColor: "bg-brand-celadon-500/10",
+    borderColor: "border-brand-celadon-500/30"
   },
   {
     icon: Heart,
     title: "Smart Watchlist",
     description: "Organize and monitor your favorite skins with intelligent categorization.",
-    color: "text-brand-red",
-    bgColor: "bg-brand-red/10",
-    borderColor: "border-brand-red/30"
+    color: "text-red-500",
+    bgColor: "bg-red-500/10",
+    borderColor: "border-red-500/30"
   },
   {
     icon: TrendingUp,
     title: "Market Insights",
     description: "Advanced analytics & benchmarks to make informed trading decisions.",
-    color: "text-brand-blue",
-    bgColor: "bg-brand-blue/10",
-    borderColor: "border-brand-blue/30"
+    color: "text-brand-slate-500",
+    bgColor: "bg-brand-slate-500/10",
+    borderColor: "border-brand-slate-500/30"
   },
   {
     icon: Shield,
     title: "Secure & Private",
     description: "Your data is encrypted and never shared with third parties.",
-    color: "text-brand-purple",
-    bgColor: "bg-brand-purple/10",
-    borderColor: "border-brand-purple/30"
+    color: "text-brand-purple-600",
+    bgColor: "bg-brand-purple-600/10",
+    borderColor: "border-brand-purple-600/30"
   },
   {
     icon: Zap,
     title: "Real-time Updates",
     description: "Live price feeds updated every minute for maximum accuracy.",
-    color: "text-brand-yellow",
-    bgColor: "bg-brand-yellow/10",
-    borderColor: "border-brand-yellow/30"
+    color: "text-brand-midnight",
+    bgColor: "bg-brand-midnight/10",
+    borderColor: "border-brand-midnight/30"
   }
 ];
 

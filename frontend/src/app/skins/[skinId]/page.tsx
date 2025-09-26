@@ -569,13 +569,13 @@ export default function SkinDetailPage() {
                     <Badge 
                       variant="outline" 
                       className={`text-sm font-semibold ${
-                        skin.rarity === 'Covert' ? 'border-red-500 text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-300 shadow-red-200 dark:shadow-red-900' :
-                        skin.rarity === 'Classified' ? 'border-purple-500 text-purple-600 bg-purple-50 dark:bg-purple-950 dark:text-purple-300 shadow-purple-200 dark:shadow-purple-900' :
-                        skin.rarity === 'Restricted' ? 'border-pink-500 text-pink-600 bg-pink-50 dark:bg-pink-950 dark:text-pink-300 shadow-pink-200 dark:shadow-pink-900' :
-                        skin.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950 dark:text-blue-300 shadow-blue-200 dark:shadow-blue-900' :
-                        skin.rarity === 'Industrial' ? 'border-cyan-500 text-cyan-600 bg-cyan-50 dark:bg-cyan-950 dark:text-cyan-300 shadow-cyan-200 dark:shadow-cyan-900' :
-                        skin.rarity === 'Consumer' ? 'border-green-500 text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-300 shadow-green-200 dark:shadow-green-900' :
-                        'border-gray-500 text-gray-600 bg-gray-50 dark:bg-gray-950 dark:text-gray-300 shadow-gray-200 dark:shadow-gray-900'
+                        skin.rarity === 'Covert' ? 'border-red-500 text-red-500 bg-red-500/10 dark:bg-red-500/10 dark:text-red-500' :
+                        skin.rarity === 'Classified' ? 'border-pink-500 text-pink-500 bg-pink-500/10 dark:bg-pink-500/10 dark:text-pink-500' :
+                        skin.rarity === 'Restricted' ? 'border-brand-purple-600 text-brand-purple-600 bg-brand-purple-600/10 dark:bg-brand-purple-600/10 dark:text-brand-purple-600' :
+                        skin.rarity === 'Mil-Spec' ? 'border-brand-slate-500 text-brand-slate-500 bg-brand-slate-500/10 dark:bg-brand-slate-500/10 dark:text-brand-slate-500' :
+                        skin.rarity === 'Industrial' ? 'border-cyan-500 text-cyan-500 bg-cyan-500/10 dark:bg-cyan-500/10 dark:text-cyan-500' :
+                        skin.rarity === 'Consumer' ? 'border-brand-slate-400 text-brand-slate-400 bg-brand-slate-400/10 dark:bg-brand-slate-400/10 dark:text-brand-slate-400' :
+                        'border-brand-slate-400 text-brand-slate-400 bg-brand-slate-400/10 dark:bg-brand-slate-400/10 dark:text-brand-slate-400'
                       }`}
                     >
                       {skin.rarity || 'Unknown'}

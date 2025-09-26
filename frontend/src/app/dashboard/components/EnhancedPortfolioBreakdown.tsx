@@ -68,13 +68,13 @@ export function EnhancedPortfolioBreakdown({
 
   const getRarityColor = (rarity: string) => {
     switch (rarity.toLowerCase()) {
-      case 'covert': return 'text-red-400 bg-red-400/10 border-red-400/30';
-      case 'classified': return 'text-pink-400 bg-pink-400/10 border-pink-400/30';
-      case 'restricted': return 'text-purple-400 bg-purple-400/10 border-purple-400/30';
-      case 'mil-spec': return 'text-blue-400 bg-blue-400/10 border-blue-400/30';
-      case 'industrial': return 'text-cyan-400 bg-cyan-400/10 border-cyan-400/30';
-      case 'consumer': return 'text-gray-400 bg-gray-400/10 border-gray-400/30';
-      default: return 'text-slate-400 bg-slate-400/10 border-slate-400/30';
+      case 'covert': return 'text-red-500 bg-red-500/10 border-red-500/30';
+      case 'classified': return 'text-pink-500 bg-pink-500/10 border-pink-500/30';
+      case 'restricted': return 'text-brand-purple-600 bg-brand-purple-600/10 border-brand-purple-600/30';
+      case 'mil-spec': return 'text-brand-slate-500 bg-brand-slate-500/10 border-brand-slate-500/30';
+      case 'industrial': return 'text-cyan-500 bg-cyan-500/10 border-cyan-500/30';
+      case 'consumer': return 'text-brand-slate-400 bg-brand-slate-400/10 border-brand-slate-400/30';
+      default: return 'text-brand-slate-400 bg-brand-slate-400/10 border-brand-slate-400/30';
     }
   };
 

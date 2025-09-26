@@ -47,31 +47,31 @@ interface PortfolioBreakdownProps {
 }
 
 const RARITY_COLORS = {
-  'Covert': '#ff6b6b',
-  'Classified': '#4ecdc4', 
-  'Restricted': '#45b7d1',
-  'Mil-Spec': '#96ceb4',
-  'Industrial': '#feca57',
-  'Consumer': '#a55eea'
+  'Covert': '#ef4444',           // Red-500
+  'Classified': '#ec4899',       // Pink-500
+  'Restricted': '#9333ea',       // Purple-600
+  'Mil-Spec': '#747c92',         // Brand Slate
+  'Industrial': '#06b6d4',       // Cyan-500
+  'Consumer': '#94a3b8'          // Slate-400
 };
 
 const WEAPON_COLORS = {
-  'Rifles': '#ff6b6b',
-  'Pistols': '#4ecdc4',
-  'SMGs': '#45b7d1', 
-  'Shotguns': '#96ceb4',
-  'Knives': '#feca57',
-  'Gloves': '#a55eea',
-  'Other': '#a55eea'
+  'Rifles': '#ef4444',           // Red-500
+  'Pistols': '#94c595',          // Brand Celadon Dark
+  'SMGs': '#06b6d4',             // Cyan-500
+  'Shotguns': '#a1e8af',         // Brand Celadon
+  'Knives': '#f59e0b',           // Yellow-500
+  'Gloves': '#9333ea',           // Purple-600
+  'Other': '#6b7280'             // Gray-500
 };
 
 const EXTERIOR_COLORS = {
-  'Factory New': '#4ecdc4',
-  'Minimal Wear': '#45b7d1',
-  'Field-Tested': '#96ceb4',
-  'Well-Worn': '#feca57',
-  'Battle-Scarred': '#ff6b6b',
-  'Other': '#a55eea'
+  'Factory New': '#94c595',      // Brand Celadon Dark
+  'Minimal Wear': '#a1e8af',     // Brand Celadon
+  'Field-Tested': '#f59e0b',     // Yellow-500
+  'Well-Worn': '#f97316',        // Orange-500
+  'Battle-Scarred': '#ef4444',   // Red-500
+  'Other': '#6b7280'             // Gray-500
 };
 
 export default function PortfolioBreakdown({ 

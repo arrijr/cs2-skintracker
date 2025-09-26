@@ -448,19 +448,19 @@ export function SkinCard({
 }
 
 function getRarityColor(rarity: string | null | undefined): string {
-  if (!rarity) return 'bg-gray-600 border-gray-600';
+  if (!rarity) return 'bg-brand-slate-500 border-brand-slate-500';
   
   const colors: Record<string, string> = {
-    'Consumer Grade': 'bg-gray-500 border-gray-500',
-    'Industrial Grade': 'bg-cyan-600 border-cyan-600',
-    'Mil-Spec': 'bg-blue-600 border-blue-600',
-    'Restricted': 'bg-purple-600 border-purple-600',
-    'Classified': 'bg-pink-600 border-pink-600',
-    'Covert': 'bg-red-600 border-red-600',
-    'Contraband': 'bg-orange-600 border-orange-600',
+    'Consumer Grade': 'bg-brand-slate-400 border-brand-slate-400',
+    'Industrial Grade': 'bg-cyan-500 border-cyan-500',
+    'Mil-Spec': 'bg-brand-slate-500 border-brand-slate-500',
+    'Restricted': 'bg-brand-purple-600 border-brand-purple-600',
+    'Classified': 'bg-pink-500 border-pink-500',
+    'Covert': 'bg-red-500 border-red-500',
+    'Contraband': 'bg-orange-500 border-orange-500',
   };
   
-  return colors[rarity] || 'bg-gray-600 border-gray-600';
+  return colors[rarity] || 'bg-brand-slate-500 border-brand-slate-500';
 }
 
 function getWearFullName(wear: string): string {

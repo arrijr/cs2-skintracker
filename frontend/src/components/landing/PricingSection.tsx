@@ -27,8 +27,8 @@ const plans = [
     cta: "Get Started Free",
     href: "/sign-up",
     popular: false,
-    color: "border-slate-600",
-    bgColor: "bg-slate-800/30"
+    color: "border-brand-slate-500",
+    bgColor: "bg-brand-slate-800/30"
   },
   {
     name: "Premium",
@@ -49,8 +49,8 @@ const plans = [
     cta: "Start Premium Trial",
     href: "/sign-up?plan=premium",
     popular: true,
-    color: "border-brand-green",
-    bgColor: "bg-brand-green/5"
+    color: "border-brand-celadon-500",
+    bgColor: "bg-brand-celadon-500/5"
   }
 ];
 
@@ -62,12 +62,12 @@ export default function PricingSection() {
           
           {/* Section Header */}
           <div className="text-center mb-16">
-            <Badge variant="outline" className="border-brand-blue/30 text-brand-blue bg-brand-blue/10 mb-4">
+            <Badge variant="outline" className="border-brand-slate-500/30 text-brand-slate-400 bg-brand-slate-500/10 mb-4">
               Simple Pricing
             </Badge>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
               Choose your{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-blue">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-celadon-500 to-brand-slate-500">
                 trading level
               </span>
             </h2>
@@ -82,13 +82,13 @@ export default function PricingSection() {
               <Card 
                 key={plan.name}
                 className={`card-enhanced group hover:scale-105 transition-all duration-300 ${plan.color} ${plan.bgColor} ${
-                  plan.popular ? 'ring-2 ring-brand-green/50 shadow-xl shadow-brand-green/10' : ''
+                  plan.popular ? 'ring-2 ring-brand-celadon-500/50 shadow-xl shadow-brand-celadon-500/10' : ''
                 }`}
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-brand-green text-white px-4 py-1">
+                    <Badge className="bg-brand-celadon-500 text-white px-4 py-1">
                       <Star className="h-3 w-3 mr-1" />
                       Most Popular
                     </Badge>

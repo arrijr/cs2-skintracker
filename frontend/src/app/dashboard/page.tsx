@@ -181,10 +181,10 @@ export default function Dashboard() {
   };
 
   const getChangeColor = (change: number) => {
-    if (Math.abs(change) < 1) return 'text-slate-400';
-    if (Math.abs(change) < 3) return change >= 0 ? 'text-green-300' : 'text-red-300';
-    if (Math.abs(change) < 5) return change >= 0 ? 'text-green-400' : 'text-red-400';
-    return change >= 0 ? 'text-green-500' : 'text-red-500';
+    if (Math.abs(change) < 1) return 'text-brand-slate-400';
+    if (Math.abs(change) < 3) return change >= 0 ? 'text-brand-celadon-300' : 'text-red-300';
+    if (Math.abs(change) < 5) return change >= 0 ? 'text-brand-celadon-400' : 'text-red-400';
+    return change >= 0 ? 'text-brand-celadon-500' : 'text-red-500';
   };
 
   const getChangeBadgeVariant = (change: number) => {
@@ -194,9 +194,9 @@ export default function Dashboard() {
   };
 
   const getChangeBadgeClass = (change: number) => {
-    if (Math.abs(change) < 1) return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-    if (Math.abs(change) < 3) return change >= 0 ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30';
-    return change >= 0 ? 'bg-green-600/20 text-green-500 border-green-600/30' : 'bg-red-600/20 text-red-500 border-red-600/30';
+    if (Math.abs(change) < 1) return 'bg-brand-slate-500/20 text-brand-slate-400 border-brand-slate-500/30';
+    if (Math.abs(change) < 3) return change >= 0 ? 'bg-brand-celadon-500/20 text-brand-celadon-400 border-brand-celadon-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30';
+    return change >= 0 ? 'bg-brand-celadon-600/20 text-brand-celadon-500 border-brand-celadon-600/30' : 'bg-red-600/20 text-red-500 border-red-600/30';
   };
 
   if (!isLoaded) {

@@ -428,38 +428,36 @@
   }
 }
 
-/* Card Enhancements */
+/* Card Enhancements - Solid, Non-Transparent Cards */
 @layer components {
   .card-brand {
-    @apply bg-gradient-to-br from-slate-800/50 to-slate-900/50;
-    @apply border border-slate-700/50;
-    @apply backdrop-blur-sm;
-    @apply shadow-lg shadow-slate-900/20;
+    @apply bg-card;
+    @apply border border-border;
+    @apply shadow-lg;
   }
   
   .card-enhanced {
-    @apply bg-gray-900;
-    @apply border border-gray-800/50;
+    @apply bg-card;
+    @apply border border-border;
     @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-gray-500/10;
-    @apply hover:border-gray-700/50;
-    @apply hover:bg-gray-800/40;
+    @apply hover:shadow-xl;
+    @apply hover:border-border/80;
   }
 
   .card-primary {
-    @apply bg-gray-950;
-    @apply border border-gray-700/50;
+    @apply bg-card;
+    @apply border border-border;
     @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-gray-500/10;
-    @apply hover:border-gray-600/50;
+    @apply hover:shadow-xl;
+    @apply hover:border-border/80;
   }
 
   .card-secondary {
-    @apply bg-gray-800;
-    @apply border border-gray-700/50;
+    @apply bg-muted;
+    @apply border border-border;
     @apply transition-all duration-300 ease-in-out;
-    @apply hover:shadow-xl hover:shadow-gray-500/10;
-    @apply hover:border-gray-600/50;
+    @apply hover:shadow-xl;
+    @apply hover:border-border/80;
   }
   
   .card-interactive {
@@ -470,45 +468,29 @@
   
   .card-premium {
     @apply relative overflow-hidden;
-    @apply bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent;
-    @apply border border-amber-500/20;
-    @apply shadow-lg shadow-amber-500/10;
-  }
-  
-  .card-premium::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-      transparent, 
-      rgba(255, 193, 7, 0.1), 
-      transparent
-    );
-    animation: shimmer 3s infinite;
+    @apply bg-card;
+    @apply border border-yellow-500/30;
+    @apply shadow-lg;
   }
   
   .card-glass {
-    @apply bg-slate-800/30;
-    @apply border border-slate-600/20;
-    @apply backdrop-blur-md;
-    @apply shadow-xl shadow-slate-900/30;
+    @apply bg-card;
+    @apply border border-border;
+    @apply shadow-xl;
   }
   
   .card-elegant {
-    @apply bg-gradient-to-br from-slate-800/40 to-slate-900/60;
-    @apply border border-slate-600/40;
-    @apply shadow-lg shadow-slate-900/25;
-    @apply hover:shadow-xl hover:shadow-slate-700/20;
+    @apply bg-card;
+    @apply border border-border;
+    @apply shadow-lg;
+    @apply hover:shadow-xl;
   }
   
   .card-glow {
     @apply relative overflow-hidden;
-    @apply bg-gradient-to-br from-slate-800/60 to-slate-900/80;
-    @apply border border-slate-600/50;
-    @apply shadow-xl shadow-slate-900/30;
+    @apply bg-card;
+    @apply border border-border;
+    @apply shadow-xl;
   }
   
   .card-glow::before {
@@ -742,35 +724,16 @@
   }
   
   .interactive-card:hover {
-    @apply border-slate-500/60;
-    @apply bg-gradient-to-br from-slate-700/40 to-slate-800/60;
+    @apply border-border/80;
+    @apply bg-card;
   }
   
   .stat-card {
     @apply relative overflow-hidden;
-    @apply bg-gradient-to-br from-slate-800/60 to-slate-900/80;
-    @apply border border-slate-600/50;
-    @apply hover:border-slate-500/70;
+    @apply bg-card;
+    @apply border border-border;
+    @apply hover:border-border/80;
     @apply transition-all duration-300;
-  }
-  
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-      transparent, 
-      rgba(255, 255, 255, 0.1), 
-      transparent
-    );
-    transition: left 0.5s;
-  }
-  
-  .stat-card:hover::before {
-    left: 100%;
   }
 }
 
@@ -804,28 +767,35 @@
     @apply w-full px-4 sm:px-6 lg:px-8;
   }
   
-  /* Dashboard Background - Gradient Header + Neutral Body */
+  /* Dashboard Background - Solid Background */
   .dashboard-bg {
     @apply min-h-screen;
-    background: var(--surface-0);
+    @apply bg-background;
     @apply relative;
   }
 
-  /* Gradient Header Area - Dynamic */
+  /* Dashboard Header - Solid Background */
   .dashboard-header-gradient {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #0f0f23 100%);
+    @apply bg-background;
     @apply relative;
   }
-  
-  .dashboard-bg::before {
+
+  /* Landing Page - Keep Gradients Only Here */
+  .landing-bg {
+    @apply min-h-screen;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    @apply relative;
+  }
+
+  .landing-bg::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 20% 80%, rgba(74, 158, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(76, 175, 80, 0.1) 0%, transparent 50%);
+    background: radial-gradient(circle at 20% 80%, rgba(161, 232, 175, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(116, 124, 146, 0.1) 0%, transparent 50%);
     pointer-events: none;
   }
   
@@ -880,58 +850,55 @@
   }
 }
 
-/* Final Card Overrides - Dynamic & Exciting */
+/* Final Card Overrides - Solid, Non-Transparent Cards */
 @layer components {
   .card-enhanced {
-    background: linear-gradient(135deg, var(--surface-1) 0%, var(--surface-2) 100%) !important;
-    border: 1px solid var(--border) !important;
+    background: hsl(var(--card)) !important;
+    border: 1px solid hsl(var(--border)) !important;
     border-radius: 16px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
     transition: all 300ms ease-out !important;
   }
 
-
   .card-enhanced:hover {
-    background: linear-gradient(135deg, var(--hover) 0%, var(--surface-3) 100%) !important;
+    background: hsl(var(--card)) !important;
     cursor: pointer !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
     transform: translateY(-1px) !important;
   }
 
   .card-primary {
-    background: linear-gradient(135deg, var(--surface-1) 0%, var(--surface-2) 100%) !important;
-    border: 1px solid var(--border) !important;
+    background: hsl(var(--card)) !important;
+    border: 1px solid hsl(var(--border)) !important;
     border-radius: 16px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
     transition: all 300ms ease-out !important;
   }
 
-
   .card-primary:hover {
-    background: linear-gradient(135deg, var(--hover) 0%, var(--surface-3) 100%) !important;
+    background: hsl(var(--card)) !important;
     cursor: pointer !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 20px rgba(59, 130, 246, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
     transform: translateY(-1px) !important;
   }
 
   .card-secondary {
-    background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-3) 100%) !important;
-    border: 1px solid var(--border) !important;
+    background: hsl(var(--muted)) !important;
+    border: 1px solid hsl(var(--border)) !important;
     border-radius: 16px !important;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25) !important;
     transition: all 300ms ease-out !important;
   }
 
-
   .card-secondary:hover {
-    background: linear-gradient(135deg, var(--hover) 0%, var(--surface-3) 100%) !important;
+    background: hsl(var(--muted)) !important;
     cursor: pointer !important;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3) !important;
     transform: translateY(-1px) !important;
   }
 
   .card-inset {
-    background: var(--surface-3) !important;
+    background: hsl(var(--muted)) !important;
     border: 1px solid var(--border) !important;
     border-radius: 12px !important;
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2) !important;

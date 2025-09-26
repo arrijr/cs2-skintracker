@@ -26,7 +26,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="landing-bg">
       <HeroSection />
       <FeaturesSection />
       <PricingSection />

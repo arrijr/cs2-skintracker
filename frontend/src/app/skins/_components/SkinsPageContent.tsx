@@ -44,20 +44,20 @@ type Skin = {
   sold24h?: number;
 };
 
-// Standard CS2 categories like skinbid.com
+// Standard CS2 categories like skinbid.com - Updated with new palette
 const CS2_CATEGORIES = {
-  all: { name: "All", color: "bg-gray-600" },
+  all: { name: "All", color: "bg-brand-slate-500" },
   knives: { name: "Knives", color: "bg-red-500" },
   gloves: { name: "Gloves", color: "bg-orange-500" },
-  pistols: { name: "Pistols", color: "bg-yellow-500" },
-  smgs: { name: "SMGs", color: "bg-green-500" },
-  rifles: { name: "Rifles", color: "bg-blue-500" },
-  shotguns: { name: "Shotguns", color: "bg-purple-500" },
+  pistols: { name: "Pistols", color: "bg-brand-celadon-500" },
+  smgs: { name: "SMGs", color: "bg-cyan-500" },
+  rifles: { name: "Rifles", color: "bg-brand-slate-500" },
+  shotguns: { name: "Shotguns", color: "bg-brand-purple-600" },
   machineGuns: { name: "Machine Guns", color: "bg-pink-500" },
-  stickers: { name: "Stickers", color: "bg-indigo-500" },
+  stickers: { name: "Stickers", color: "bg-brand-midnight" },
   agents: { name: "Agents", color: "bg-teal-500" },
-  cases: { name: "Cases", color: "bg-gray-500" },
-  charms: { name: "Charms", color: "bg-amber-500" }
+  cases: { name: "Cases", color: "bg-brand-slate-400" },
+  charms: { name: "Charms", color: "bg-yellow-500" }
 };
 
 // P3: Advanced Filter Options
