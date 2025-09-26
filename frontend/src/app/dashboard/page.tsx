@@ -7,6 +7,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
 import { PortfolioValueChart } from "@/components/charts/PortfolioValueChart";
+import { PortfolioPieChart } from "./components/PortfolioPieChart";
+import MarketPulse from "./components/MarketPulse";
+import MarketEvents from "./components/MarketEvents";
+import { EnhancedMovers } from "./components/EnhancedMovers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +25,11 @@ import {
   Heart,
   Plus,
   ArrowRight,
-  Eye
+  Eye,
+  Activity,
+  Globe,
+  Crown,
+  Lock
 } from "lucide-react";
 import { formatUSD, safeToFixed } from "@/lib/num";
 
@@ -32,6 +40,8 @@ export default function Dashboard() {
   const { data, error, isLoading, mutate, portfolio, history, kpis } = usePortfolioData();
   
   const [chartRange, setChartRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all'>('7d');
+  const [movers, setMovers] = useState<{ gainers: any[]; losers: any[] }>({ gainers: [], losers: [] });
+  const [moverTimeframe, setMoverTimeframe] = useState<'24h' | '7d'>('24h');
 
   const handleRefresh = async () => {
     await mutate();
@@ -82,22 +92,22 @@ export default function Dashboard() {
               <div className="text-2xl font-bold text-white">{formatUSD(totalValue)}</div>
               <div className="text-sm text-slate-400">Total Value</div>
             </div>
-            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-              <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-brand-celadon-500' : 'text-red-500'}`}>
-                {change24h >= 0 ? '+' : ''}{safeToFixed(change24h, 2)}%
-              </div>
-              <div className="text-sm text-slate-400">24h Change</div>
-            </div>
-            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-              <div className="text-2xl font-bold text-white">{portfolio?.length || 0}</div>
-              <div className="text-sm text-slate-400">Skins</div>
-            </div>
-            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-              <div className={`text-2xl font-bold ${unrealizedPL >= 0 ? 'text-brand-celadon-500' : 'text-red-500'}`}>
-                {formatUSD(unrealizedPL)}
-              </div>
-              <div className="text-sm text-slate-400">P&L</div>
-            </div>
+             <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+               <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                 {change24h >= 0 ? '+' : ''}{safeToFixed(change24h, 2)}%
+               </div>
+               <div className="text-sm text-slate-400">24h Change</div>
+             </div>
+             <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+               <div className="text-2xl font-bold text-white">{portfolio?.length || 0}</div>
+               <div className="text-sm text-slate-400">Skins</div>
+             </div>
+             <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+               <div className={`text-2xl font-bold ${unrealizedPL >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                 {formatUSD(unrealizedPL)}
+               </div>
+               <div className="text-sm text-slate-400">P&L</div>
+             </div>
           </div>
         </div>
 
@@ -179,50 +189,129 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Portfolio Summary - Only if we have data */}
-        {portfolio && portfolio.length > 0 && (
-          <Card className="card-enhanced">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold text-white">Recent Skins</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {portfolio.slice(0, 6).map((item, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-card/30 rounded-lg border border-border/30">
-                    <div className="w-12 h-12 bg-slate-700 rounded-lg flex items-center justify-center">
-                      <Package className="h-6 w-6 text-slate-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-white truncate">
-                        {item.skin?.name || 'Unknown Skin'}
-                      </div>
-                      <div className="text-sm text-slate-400">
-                        {formatUSD(item.skin?.priceLatest || 0)} • {item.amount}x
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={`text-sm font-medium ${(item.skin?.priceChange24h || 0) >= 0 ? 'text-brand-celadon-500' : 'text-red-500'}`}>
-                        {(item.skin?.priceChange24h || 0) >= 0 ? '+' : ''}{safeToFixed(item.skin?.priceChange24h || 0, 2)}%
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {portfolio.length > 6 && (
-                <div className="mt-4 text-center">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => router.push('/portfolio')}
-                  >
-                    View All {portfolio.length} Skins
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+         {/* Portfolio Summary - Only if we have data */}
+         {portfolio && portfolio.length > 0 && (
+           <Card className="card-enhanced">
+             <CardHeader>
+               <CardTitle className="text-lg font-bold text-white">Recent Skins</CardTitle>
+             </CardHeader>
+             <CardContent>
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                 {portfolio.slice(0, 6).map((item, index) => (
+                   <div key={index} className="flex items-center gap-3 p-3 bg-card/30 rounded-lg border border-border/30">
+                     <div className="w-12 h-12 bg-slate-700 rounded-lg flex items-center justify-center">
+                       <Package className="h-6 w-6 text-slate-400" />
+                     </div>
+                     <div className="flex-1 min-w-0">
+                       <div className="text-sm font-medium text-white truncate">
+                         {item.skin?.name || 'Unknown Skin'}
+                       </div>
+                       <div className="text-sm text-slate-400">
+                         {formatUSD(item.skin?.priceLatest || 0)} • {item.amount}x
+                       </div>
+                     </div>
+                     <div className="text-right">
+                       <div className={`text-sm font-medium ${(item.skin?.priceChange24h || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                         {(item.skin?.priceChange24h || 0) >= 0 ? '+' : ''}{safeToFixed(item.skin?.priceChange24h || 0, 2)}%
+                       </div>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+               {portfolio.length > 6 && (
+                 <div className="mt-4 text-center">
+                   <Button 
+                     variant="outline" 
+                     size="sm"
+                     onClick={() => router.push('/portfolio')}
+                   >
+                     View All {portfolio.length} Skins
+                     <ArrowRight className="h-4 w-4 ml-2" />
+                   </Button>
+                 </div>
+               )}
+             </CardContent>
+           </Card>
+         )}
+
+         {/* Portfolio Breakdown, Market Pulse, Events */}
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+           <Card className="card-enhanced">
+             <CardHeader>
+               <CardTitle className="text-lg font-bold text-white">Portfolio Breakdown</CardTitle>
+             </CardHeader>
+             <CardContent>
+               <PortfolioPieChart portfolio={portfolio || []} />
+             </CardContent>
+           </Card>
+
+           <Card className="card-enhanced">
+             <CardHeader>
+               <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                 <Activity className="h-5 w-5 text-emerald-500" />
+                 Market Pulse
+                 <Lock className="h-4 w-4 text-gray-400" />
+               </CardTitle>
+             </CardHeader>
+             <CardContent>
+               <MarketPulse />
+             </CardContent>
+           </Card>
+
+           <Card className="card-enhanced">
+             <CardHeader>
+               <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                 <Globe className="h-5 w-5 text-violet-500" />
+                 Market Events
+                 <Lock className="h-4 w-4 text-gray-400" />
+               </CardTitle>
+             </CardHeader>
+             <CardContent>
+               <MarketEvents />
+             </CardContent>
+           </Card>
+         </div>
+
+         {/* Top Movers */}
+         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+           <Card className="card-enhanced">
+             <CardHeader>
+               <div className="flex items-center justify-between">
+                 <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                   <TrendingUp className="h-5 w-5 text-emerald-500" />
+                   Top Gainers
+                 </CardTitle>
+                 <ToggleGroup type="single" value={moverTimeframe} onValueChange={(value) => setMoverTimeframe(value as any)}>
+                   <ToggleGroupItem value="24h" className="text-xs">24h</ToggleGroupItem>
+                   <ToggleGroupItem value="7d" className="text-xs">7d</ToggleGroupItem>
+                 </ToggleGroup>
+               </div>
+             </CardHeader>
+             <CardContent>
+               <EnhancedMovers 
+                 type="gainers" 
+                 data={movers.gainers} 
+                 timeframe={moverTimeframe}
+               />
+             </CardContent>
+           </Card>
+
+           <Card className="card-enhanced">
+             <CardHeader>
+               <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                 <TrendingDown className="h-5 w-5 text-red-500" />
+                 Top Losers
+               </CardTitle>
+             </CardHeader>
+             <CardContent>
+               <EnhancedMovers 
+                 type="losers" 
+                 data={movers.losers} 
+                 timeframe={moverTimeframe}
+               />
+             </CardContent>
+           </Card>
+         </div>
 
         {/* Empty State - Clear Call to Action */}
         {(!portfolio || portfolio.length === 0) && (

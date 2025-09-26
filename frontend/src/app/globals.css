@@ -85,12 +85,13 @@
 
 /* ===== CS2 SKIN TRACKER - BRAND COLORS ===== */
 :root {
-  /* Primary Brand Colors - Based on your palette */
-  --brand-celadon: #A1E8AF;        /* Primary - Celadon */
-  --brand-celadon-dark: #94C595;   /* Secondary - Celadon Dark */
-  --brand-slate: #747C92;          /* Neutral - Slate Gray */
-  --brand-midnight: #372772;       /* Accent - Midnight Blue */
-  --brand-purple: #3A2449;         /* Dark - Dark Purple */
+  /* Primary Brand Colors - Refined Palette */
+  --brand-emerald: #10B981;        /* Primary - Emerald Green */
+  --brand-emerald-dark: #059669;   /* Secondary - Dark Emerald */
+  --brand-slate: #64748B;          /* Neutral - Slate */
+  --brand-indigo: #6366F1;         /* Accent - Indigo */
+  --brand-violet: #8B5CF6;         /* Purple - Violet */
+  --brand-rose: #F43F5E;           /* Accent - Rose */
   
   /* Generated Shades - Automatically created */
   --brand-celadon-50: #F0FDF4;     /* Lightest */
