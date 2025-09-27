@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Crown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -26,6 +27,7 @@ import { EnhancedPortfolioGrid } from "./_components/EnhancedPortfolioGrid";
 // {/* Authentifizierte Hooks */}
 import { useAuthenticatedPortfolio } from "@/hooks/useAuthenticatedPortfolio";
 import { useAuthenticatedWatchlist } from "@/hooks/useAuthenticatedWatchlist";
+import { useUserRole } from "@/hooks/useUserRole";
 
 // {/* Types kept minimal; UI components do stricter typing */}
 type WatchlistEntry = any;
@@ -54,6 +56,7 @@ export default function PortfolioPage() {
   // Authentifizierte Hooks
   const { portfolio: portfolioSkins, kpis: kpiData, history, isLoading, error, mutate } = useAuthenticatedPortfolio();
   const { watchlist, isLoading: watchlistLoading, error: watchlistError, mutate: mutateWatchlist } = useAuthenticatedWatchlist();
+  const { isPremium } = useUserRole();
 
   // {/* Remove from Watchlist */}
   async function handleRemoveWatchlist(skinId: number) {
@@ -96,6 +99,21 @@ export default function PortfolioPage() {
             <div className="text-destructive text-sm">{error}</div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Premium Status Banner */}
+      {isPremium && (
+        <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
+              <Crown className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white">Premium Active</h3>
+              <p className="text-sm text-green-300">You have access to all premium features including advanced charts, smart alerts, and market intelligence.</p>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Main */}

@@ -29,8 +29,8 @@ export default function PremiumFeatureFlag({
     'market-intelligence': isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_MARKET_INTELLIGENCE === 'true',
   };
 
-  // Check if feature is enabled via environment variable
-  const isFeatureEnabled = FEATURE_FLAGS[feature as keyof typeof FEATURE_FLAGS] || false;
+  // For premium users, always enable features regardless of env vars
+  const isFeatureEnabled = isPremium || FEATURE_FLAGS[feature as keyof typeof FEATURE_FLAGS] || false;
 
   // Use Clerk premium status from useUserRole hook
 
@@ -42,8 +42,20 @@ export default function PremiumFeatureFlag({
           <div className="text-2xl mb-4">🔒</div>
           <h4 className="text-lg font-medium mb-2">Feature Disabled</h4>
           <p className="text-sm text-gray-400">
-            {feature} is currently disabled. Enable with environment variable.
+            {isPremium 
+              ? `${feature} is currently disabled. Enable with environment variable.`
+              : `This premium feature requires a subscription.`
+            }
           </p>
+          {!isPremium && (
+            <button 
+              onClick={() => window.open('/profile', '_blank')}
+              className="mt-4 bg-gradient-to-r from-amber-500 to-yellow-500 text-black px-6 py-2 rounded-lg font-medium hover:from-amber-600 hover:to-yellow-600 transition-all"
+            >
+              <Crown className="inline w-4 h-4 mr-2" />
+              Upgrade to Premium
+            </button>
+          )}
         </div>
       </div>
     );
@@ -68,9 +80,9 @@ export default function PremiumFeatureFlag({
     return (
       <div className="relative">
         <div className="absolute top-2 right-2 z-10">
-          <div className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-xs px-2 py-1 rounded-full font-medium">
+          <div className="flex items-center gap-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-1 rounded-full font-medium">
             <Crown className="w-3 h-3" />
-            Premium
+            Premium Active
           </div>
         </div>
         {children}
