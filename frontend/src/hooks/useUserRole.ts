@@ -14,6 +14,7 @@ export function useUserRole(): {
   loading: boolean; 
   isAdmin: boolean; 
   isUser: boolean; 
+  isPremium: boolean; 
 } {
   const { user, isLoaded } = useUser();
   
@@ -29,6 +30,7 @@ export function useUserRole(): {
     role,
     loading: !isLoaded,
     isAdmin: role?.isAdmin ?? false,
-    isUser: role?.isUser ?? false
+    isUser: role?.isUser ?? false,
+    isPremium: role?.isPremium ?? false
   };
 }

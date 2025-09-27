@@ -6,6 +6,7 @@ import { safeLower } from "@/lib/strings";
 export interface UserRole {
   isAdmin: boolean;
   isUser: boolean;
+  isPremium: boolean;
   role: string | null;
   email: string | null;
 }
@@ -27,6 +28,7 @@ export function getUserRole(user: any): UserRole {
     return {
       isAdmin: false,
       isUser: false,
+      isPremium: false,
       role: null,
       email: null
     };
@@ -36,10 +38,15 @@ export function getUserRole(user: any): UserRole {
   const isAdmin = user.publicMetadata?.role === 'admin' || 
                   user.unsafeMetadata?.role === 'admin' ||
                   ADMIN_EMAILS.includes(email || '');
+  
+  // Check premium status from Clerk metadata
+  const isPremium = user.publicMetadata?.isPremium === true || 
+                   user.unsafeMetadata?.isPremium === true;
 
   return {
     isAdmin,
     isUser: !isAdmin,
+    isPremium,
     role: isAdmin ? 'admin' : 'user',
     email
   };

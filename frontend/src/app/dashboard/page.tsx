@@ -6,6 +6,7 @@ import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
+import { useUserRole } from "@/hooks/useUserRole";
 import { PortfolioValueChart } from "@/components/charts/PortfolioValueChart";
 import { PortfolioPieChart } from "./components/PortfolioPieChart";
 import MarketPulse from "./components/MarketPulse";
@@ -38,6 +39,7 @@ export default function Dashboard() {
   const { getToken } = useAuth();
   const router = useRouter();
   const { data, error, isLoading, mutate, portfolio, history, kpis } = usePortfolioData();
+  const { isPremium } = useUserRole();
   
   const [chartRange, setChartRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all'>('7d');
   const [movers, setMovers] = useState<{ gainers: any[]; losers: any[] }>({ gainers: [], losers: [] });
@@ -165,15 +167,24 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Premium Upsell */}
-                <div className="text-center p-4 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg">
-                  <Crown className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
-                  <h3 className="font-semibold text-white mb-1">Premium Required</h3>
-                  <p className="text-sm text-gray-300 mb-3">Unlock enhanced alerts and unlimited watchlist items</p>
-                  <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold">
-                    Upgrade to Premium
-                  </Button>
-                </div>
+                {/* Premium Status */}
+                {isPremium ? (
+                  <div className="text-center p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg">
+                    <Crown className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                    <h3 className="font-semibold text-white mb-1">Premium Active</h3>
+                    <p className="text-sm text-gray-300 mb-3">You have access to all premium features</p>
+                    <div className="text-xs text-green-400">✓ Enhanced alerts ✓ Unlimited watchlist</div>
+                  </div>
+                ) : (
+                  <div className="text-center p-4 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg">
+                    <Crown className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
+                    <h3 className="font-semibold text-white mb-1">Premium Required</h3>
+                    <p className="text-sm text-gray-300 mb-3">Unlock enhanced alerts and unlimited watchlist items</p>
+                    <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold">
+                      Upgrade to Premium
+                    </Button>
+                  </div>
+                )}
 
                 {/* Quick Actions */}
                 <div className="space-y-2">
@@ -222,7 +233,12 @@ export default function Dashboard() {
                </CardTitle>
              </CardHeader>
              <CardContent>
-               <MarketPulse />
+               <MarketPulse 
+                 lastUpdated={null} 
+                 onRefresh={() => {}} 
+                 isLoading={false}
+                 isPremium={isPremium}
+               />
              </CardContent>
            </Card>
 
