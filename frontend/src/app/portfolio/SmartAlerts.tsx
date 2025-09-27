@@ -42,8 +42,8 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
   const [activeTab, setActiveTab] = useState<AlertType>("technical");
   const [alerts, setAlerts] = useState<Alert[]>([]);
 
-  // Feature flag for smart alerts
-  const SMART_ALERTS_ENABLED = process.env.NEXT_PUBLIC_PORTFOLIO_SMART_ALERTS === 'true';
+  // Feature flag for smart alerts - enable for premium users
+  const SMART_ALERTS_ENABLED = isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_SMART_ALERTS === 'true';
 
   // Calculate technical indicators
   const technicalIndicators = useMemo(() => {

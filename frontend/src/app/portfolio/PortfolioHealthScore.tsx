@@ -53,7 +53,7 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
   const [showDetails, setShowDetails] = useState(false);
 
   // Feature flag for portfolio health score
-  const PORTFOLIO_HEALTH_ENABLED = process.env.NEXT_PUBLIC_PORTFOLIO_HEALTH_SCORE === 'true';
+  const PORTFOLIO_HEALTH_ENABLED = isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_HEALTH_SCORE === 'true';
 
   // Calculate portfolio health metrics
   const healthScore = useMemo(() => {

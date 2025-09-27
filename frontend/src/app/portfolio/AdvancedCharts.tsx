@@ -36,8 +36,8 @@ type ChartType = "candlestick" | "volume" | "correlation" | "heatmap";
 export default function AdvancedCharts({ portfolio, history, isPremium = false }: Props) {
   const [selectedChart, setSelectedChart] = useState<ChartType>("candlestick");
 
-  // Feature flag for advanced charts
-  const ADVANCED_CHARTS_ENABLED = process.env.NEXT_PUBLIC_PORTFOLIO_ADVANCED_CHARTS === 'true';
+  // Feature flag for advanced charts - enable for premium users
+  const ADVANCED_CHARTS_ENABLED = isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_ADVANCED_CHARTS === 'true';
 
   const chartData = useMemo(() => {
     if (!history || history.length < 2) return null;

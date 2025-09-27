@@ -57,7 +57,7 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
   const [activeTab, setActiveTab] = useState<"overview" | "transactions" | "tax" | "attribution">("overview");
 
   // Feature flag for transaction analytics
-  const TRANSACTION_ANALYTICS_ENABLED = process.env.NEXT_PUBLIC_PORTFOLIO_TRANSACTION_ANALYTICS === 'true';
+  const TRANSACTION_ANALYTICS_ENABLED = isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_TRANSACTION_ANALYTICS === 'true';
 
   // Simulate transaction history (in real app, this would come from API)
   const transactions = useMemo(() => {

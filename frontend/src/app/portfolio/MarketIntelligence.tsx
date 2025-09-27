@@ -74,7 +74,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
   const [selectedTimeframe, setSelectedTimeframe] = useState<"1W" | "1M" | "3M">("1M");
 
   // Feature flag for market intelligence
-  const MARKET_INTELLIGENCE_ENABLED = process.env.NEXT_PUBLIC_PORTFOLIO_MARKET_INTELLIGENCE === 'true';
+  const MARKET_INTELLIGENCE_ENABLED = isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_MARKET_INTELLIGENCE === 'true';
 
   // Simulate price predictions using technical analysis
   const pricePredictions = useMemo(() => {
