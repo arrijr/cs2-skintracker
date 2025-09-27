@@ -9,8 +9,7 @@ General
 - When you output code, ALWAYS include:
   1) the file path, and
   2) whether it's [Frontend] or [Backend].
-- In React/TSX, ALWAYS place a clear block comment above the snippet, e.g.:
-  {/* Add Skin to Watchlist */}
+- In React/TSX, ALWAYS place a clear block comment above the snippet, e.g.: {/* Add Skin to Watchlist */}
 - Never hardcode secrets. Use process.env and document new env keys in README.
 - Respect existing structure and naming.
 
@@ -33,113 +32,120 @@ Backend (Node/Express, Prisma, PostgreSQL)
 Branch / CI
 - Use Conventional Commits (feat:, fix:, chore:, refactor:, docs:).
 - On non-main branches set RUN_SCHEDULER=false (no cron in staging).
-- Frontend must read `NEXT_PUBLIC_API_URL` from env.
+- Frontend must read NEXT_PUBLIC_API_URL from env.
 
 Logging
 - Keep logs minimal in production. Use clear tags for cron start/end.
 
 ---
 
-Documentation Workflow (immer anwenden)
-- Bei **jedem Feature/Refactor/Bugfix**:
-  1) Prüfe/aktualisiere **/docs/CHANGELOG.md** (Datum, Scope, Files).
-  2) Aktualisiere **/docs/ARCHITECTURE.md**, wenn Flows/Schichten/Abhängigkeiten sich ändern (Mermaid nutzen).
-  3) Aktualisiere **/docs/API.md**, wenn Endpoints, DTOs, Fehlercodes ändern.
-  4) Aktualisiere **/docs/DATA_MODEL.md**, wenn Prisma/DB-Felder, Constraints oder Relationen sich ändern.
-  5) Wichtige Entscheidung? Ergänze **/docs/DECISIONS.md** (ADR).
-  6) Wiederkehrender Fehler? Ergänze **/docs/TROUBLESHOOTING.md** (Symptom → Ursache → Fix → Prävention).
+Documentation Workflow (strictly apply)
+- For every feature/refactor/bugfix:
+  1) Update /docs/CHANGELOG.md (date, scope, files).
+  2) Update /docs/ARCHITECTURE.md if flows/layers/dependencies change (use Mermaid).
+  3) Update /docs/API.md if endpoints, DTOs, error codes change.
+  4) Update /docs/DATA_MODEL.md if Prisma/DB schema changes.
+  5) Add entry to /docs/DECISIONS.md for key decisions (ADR).
+  6) Add entry to /docs/TROUBLESHOOTING.md for recurring bugs (symptom → cause → fix → prevention).
 
-- Problem-Solving-Modus (THINK Notes):
-  - Bei kniffligen Themen erstelle **/docs/think/YYYY-MM-DD-<slug>.md** mit:
-    _Context_, _Logs/Symptome_, _Hypothesen_, _Analyse_, _Decision_, _Checklist_, _Follow-ups_.
-  - Denke dort schriftlich. Ergebnis in der PR kurz zusammenfassen.
+- Problem-Solving Mode (THINK Notes):
+  - Create /docs/think/YYYY-MM-DD-<slug>.md with:
+    Context, Logs, Hypotheses, Analysis, Decision, Checklist, Follow-ups.
+  - Summarize results in PR.
 
-- Nach jedem Merge auf main: Doku **aktuell & kohärent** halten. Keine „TODO“-Reste in Kerndokumenten.
-- Keine Secrets in Doku. Neue ENV-Keys stets in README + /docs/API.md dokumentieren.
+- After every merge to main: docs must be consistent & up to date.
+- No "TODO" placeholders in core docs.
+- Never commit secrets in docs. New ENV keys must go to README + /docs/API.md.
 - Commits/PRs:
-  - Nutze `docs:` Scope, wenn Doku geändert wurde.
-  - PR muss die Checkbox „Docs updated“ anhaken (PR-Template).
+  - Use `docs:` scope when docs were updated.
+  - PR template must check "Docs updated".
 
 ---
 
-Documentation Style & Locations (strict)
-- **Markdown only**. **Keine** PDFs/DOCX im Repo.
-- **Style:** Setext headings + `*`-Listen.
-  - H1: `Title` + `====`
-  - H2: `Subtitle` + `----`
-  - Bullets: `* `; Nummern: `1. `
-  - Codeblocks: fenced ``` with language (e.g., ```ts, ```bash).
-- **Language:** English in docs; keep currency `$`.
-- **Links:** Relative repo links only.
-- **Line width:** Prefer <= 100 chars; wrap thoughtfully.
-- **No emojis** in core docs (allowed in README marketing sections).
-- **Files & places:**
-  - Main index: `/docs/README.md`
-  - Architecture: `/docs/ARCHITECTURE.md` (with Mermaid diagrams)
-  - API: `/docs/API.md`
-  - Data model: `/docs/DATA_MODEL.md`
-  - Decisions (ADR): `/docs/DECISIONS.md`
-  - Troubleshooting: `/docs/TROUBLESHOOTING.md`
-  - Feature docs: `/docs/features/<feature>.md` (e.g., `enhanced-skins-filters.md`, `skin-filtering-system.md`)
-  - Deep dives: `/docs/think/YYYY-MM-DD-<slug>.md`
-  - Archive (old drafts): `/docs/archive/`
+Documentation Style & Locations
+- Markdown only. No PDFs/DOCX in repo.
+- Style: Setext headings + `*` bullets.
+- Language: English in docs; currency `$`.
+- Links: relative repo links only.
+- Line width: <= 100 chars.
+- No emojis in core docs (allowed in README marketing).
+- File locations:
+  - /docs/README.md (main index)
+  - /docs/ARCHITECTURE.md
+  - /docs/API.md
+  - /docs/DATA_MODEL.md
+  - /docs/DECISIONS.md
+  - /docs/TROUBLESHOOTING.md
+  - /docs/features/<feature>.md
+  - /docs/think/YYYY-MM-DD-<slug>.md
+  - /docs/archive/ (old drafts)
 
-Documentation Triggers (what to update when)
-- **New/changed endpoint** → update `/docs/API.md`:
-  - Method, path, auth, params, request/response examples, error cases.
-- **Prisma/schema change** → update `/docs/DATA_MODEL.md` + `/docs/CHANGELOG.md`.
-- **New cron, background job, or data flow** → update `/docs/ARCHITECTURE.md` (include a Mermaid flow).
-- **New feature flag or ENV** → update `/docs/DECISIONS.md` (why), `/docs/API.md` (if public), and README env section.
-- **Recurring or notable bug** → add entry in `/docs/TROUBLESHOOTING.md`.
-- **New feature** → add/extend doc under `/docs/features/`.
+Documentation Triggers
+- New/changed endpoint → update /docs/API.md (method, path, auth, params, examples).
+- Prisma/schema change → update /docs/DATA_MODEL.md + /docs/CHANGELOG.md.
+- New cron or data flow → update /docs/ARCHITECTURE.md (Mermaid diagram).
+- New feature flag or ENV → update /docs/DECISIONS.md + README.
+- Recurring bug → update /docs/TROUBLESHOOTING.md.
+- New feature → add/extend /docs/features/<feature>.md.
 
-Mermaid Diagram Conventions
-- Use Mermaid fenced blocks:
+Mermaid Diagrams
+- Use fenced blocks:
   ```mermaid
   flowchart LR
-    User --> FE[Next.js App]
-    FE -->|REST| BE[Express API]
-    BE --> DB[(PostgreSQL)]
-    BE --> CRON[[Cron]]
-Keep diagrams minimal, one purpose per diagram.
+  User --> FE[Next.js App]
+  FE -->|REST| BE[Express API]
+  BE --> DB[(Supabase/PostgreSQL)]
+  BE --> CRON[[Cron Jobs]]
+  BE --> AUTH[Clerk Authentication]
 
-Docs Quality Checklist (apply before finishing a task)
+Docs Quality Checklist
+----------------------
+* CHANGELOG updated  
+* Related docs updated (ARCHITECTURE/API/DATA_MODEL/DECISIONS/TROUBLESHOOTING)  
+* Feature doc created/updated under /docs/features/  
+* New ENV documented in README + /docs/API.md  
+* Examples compile, code fences correct  
+* Setext headings + * bullets used consistently  
 
- CHANGELOG updated
+---
 
- Related docs updated (ARCHITECTURE/API/DATA_MODEL/DECISIONS/TROUBLESHOOTING)
+Cursor Output Rules
+-------------------
+* For code: include file path + [Frontend]/[Backend]; add TSX block comment above UI snippets.  
+* For docs: Markdown only, Setext headings + bullets. Create missing files if needed.  
+* After code changes: propose inline doc edits (copy-pastable Markdown) and reference target file.  
 
- Feature doc created/updated under /docs/features/ if applicable
+---
 
- New ENV documented in README + /docs/API.md
+API / ENV
+----------
+* API calls only via `apiFetch(path)`.  
+* `NEXT_PUBLIC_API_URL` is the only frontend API base.  
+* For new endpoints: update `/docs/API.md` and add curl example.  
 
- Examples compile (requests/responses), code fences use correct language
-
- Setext headings + * bullets used consistently
-
-Cursor Output Rules (docs & code)
-
-For code output: include file path and [Frontend]/[Backend] tag; add a clear TSX block comment above UI snippets.
-
-For docs output: write in Markdown with Setext headings and * list style as above. If a doc is missing, create it in the specified path.
-
-After making code changes in a response, propose the necessary doc edits inline (as copy-pastable Markdown) and reference the correct /docs/... target file.
-
-- API Calls dürfen **nur** über den zentralen Helper `apiFetch(path)` erfolgen.
-- `NEXT_PUBLIC_API_URL` ist die **einzige** Quelle für die API-Base (Render-Host). Keine Frontend-Domain verwenden.
-- Bei neuen Endpoints: `/docs/API.md` aktualisieren und **curl-Beispiel** hinzufügen.
+---
 
 Rendering & Numbers
 -------------------
-- Preise/Zahlen im UI NIE direkt mit `.toFixed` formatieren.
-- Pflicht: `formatUSD(value)` oder `safeToFixed(value)` aus `src/lib/num.ts` verwenden.
-- API-Responses können `number|string|null` enthalten; vor Nutzung über `numberOrNull()` normalisieren.
-- Bei neuen Endpoints: in `/docs/API.md` explizit angeben, welche Felder nullable sind.
+* Never format numbers directly with `.toFixed`.  
+* Always use helpers: `formatUSD()`, `safeToFixed()`, `numberOrNull()`.  
+* Document nullable fields in `/docs/API.md`.  
 
-Skin Detail — UI Rules
----------------------
-- Preise/Zahlen immer über helpers `formatUSD`, `safeToFixed`, `numberOrNull`.
-- Bei fehlenden Daten (204/null) Panels mit klarer „No data available"-Hinweis rendern, nicht stumm ausblenden.
-- Market-Stats: Bei vorhandenem History-Punkt T-1 eine Price-Delta-Badge anzeigen.
-- Variants/Case Links mit `prefetch` für snappy UX.
-- Debug-Logs in Production minimieren (Guard auf NODE_ENV).
+---
+
+Skin Detail UI
+--------------
+* Prices/numbers via helpers (`formatUSD`, `safeToFixed`, `numberOrNull`).  
+* If data missing: show "No data available" message.  
+* Market stats: show T-1 delta badge if available.  
+* Variants/Case links: use prefetch for fast UX.  
+* Debug logs in prod: minimize (guard `NODE_ENV`).  
+
+Architecture Documentation
+--------------------------
+* Cursor is responsible for keeping `/docs/ARCHITECTURE.md` up to date.  
+* When new flows, services, or jobs are added, update the architecture diagram automatically.  
+* Use Mermaid fenced blocks for diagrams (see example below).  
+* Keep diagrams minimal, one purpose per diagram.  
+* Always include new services (e.g., background jobs, MCP servers, integrations) as soon as they are introduced.  
+* If the existing diagram becomes too large, split into multiple diagrams (API flow, DB flow, Cron flow).  

@@ -28,6 +28,7 @@ import {
   getUserActivity,
   updateUserStatus,
   updateUserEmailAlerts,
+  updateUserPremiumStatus,
   getUserStatistics,
   searchUsers,
   getAllFeatureFlags,
@@ -164,6 +165,7 @@ router.get('/users/:userId', getUserDetails);
 router.get('/users/:userId/activity', getUserActivity);
 router.put('/users/:userId/status', updateUserStatus);
 router.put('/users/:userId/email-alerts', updateUserEmailAlerts);
+router.put('/users/:userId/premium', updateUserPremiumStatus);
 router.get('/users/stats/overview', getUserStatistics);
 
 // ADM-14: Feature Flags Management - Phase 4

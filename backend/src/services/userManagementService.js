@@ -299,6 +299,40 @@ export class UserManagementService {
     }
   }
 
+  // Update user premium status
+  static async updateUserPremiumStatus(userId, isPremium, adminId) {
+    try {
+      const updatedUser = await prisma.user.update({
+        where: { id: parseInt(userId) },
+        data: { isPremium: Boolean(isPremium) },
+        select: {
+          id: true,
+          email: true,
+          isPremium: true,
+          updatedAt: true
+        }
+      });
+      
+      // Log admin action
+      await prisma.auditLog.create({
+        data: {
+          adminId,
+          action: 'user_premium_update',
+          resource: 'user',
+          resourceId: userId.toString(),
+          details: `Premium status ${isPremium ? 'enabled' : 'disabled'}`,
+          parameters: JSON.stringify({ isPremium })
+        }
+      });
+      
+      return updatedUser;
+      
+    } catch (error) {
+      console.error('Error updating user premium status:', error);
+      throw error;
+    }
+  }
+
   // Get user statistics for admin dashboard
   static async getUserStatistics() {
     try {

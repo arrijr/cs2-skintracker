@@ -775,6 +775,27 @@ export const updateUserEmailAlerts = async (req, res) => {
   }
 };
 
+export const updateUserPremiumStatus = async (req, res) => {
+  try {
+    const adminId = req.user.userId;
+    const { userId } = req.params;
+    const { isPremium } = req.body;
+    
+    // Check production safety
+    if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_ADMIN_WRITES_IN_PROD) {
+      return res.status(403).json({ 
+        error: 'User management is disabled in production for safety.' 
+      });
+    }
+    
+    const updatedUser = await UserManagementService.updateUserPremiumStatus(userId, isPremium, adminId);
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user premium status:', error);
+    res.status(500).json({ error: 'Failed to update user premium status' });
+  }
+};
+
 export const getUserStatistics = async (req, res) => {
   try {
     const stats = await UserManagementService.getUserStatistics();
