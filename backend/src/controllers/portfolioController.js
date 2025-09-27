@@ -67,7 +67,7 @@ export const getPortfolio = async (req, res) => {
     }));
 
     // 4) Aktuelle Marktpreise pro unique Skin parallel laden
-    //    (Hinweis: Das ist ein MVP – später besser cachen / throttlen)
+    //    (Optimiert: Verwende gespeicherte Preise zuerst, Steam API nur als Fallback)
     const uniqueSkins = [
       ...new Set(
         aggregated.map(a =>
@@ -76,13 +76,26 @@ export const getPortfolio = async (req, res) => {
       ),
     ];
     const priceMap = {};
-    await Promise.all(
-      uniqueSkins.map(async (mhn) => {
-        if (!mhn) return;
-        const p = await getCurrentSteamPrice(mhn);
-        priceMap[mhn] = typeof p === 'number' ? p : null;
-      })
-    );
+    
+    // Priority 1: Use stored prices from database (fastest)
+    for (const item of aggregated) {
+      const mhn = item.skin.market_hash_name || item.skin.marketHashName || item.skin.name;
+      if (mhn && item.skin.priceLatest) {
+        priceMap[mhn] = item.skin.priceLatest;
+      }
+    }
+    
+    // Priority 2: Only fetch from Steam API for skins without stored prices
+    const skinsNeedingSteamAPI = uniqueSkins.filter(mhn => !priceMap[mhn]);
+    if (skinsNeedingSteamAPI.length > 0) {
+      await Promise.all(
+        skinsNeedingSteamAPI.map(async (mhn) => {
+          if (!mhn) return;
+          const p = await getCurrentSteamPrice(mhn);
+          priceMap[mhn] = typeof p === 'number' ? p : null;
+        })
+      );
+    }
 
     // 5) Antwort normalisieren (camelCase in der API) + marketPrice ergänzen
     const portfolio = aggregated.map((item) => {
@@ -303,10 +316,7 @@ export const getPortfolioKPIs = async (req, res) => {
   try {
     const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
     
-    console.log("[PORTFOLIO-KPIS] Debug info:", { userId, hasUserId: !!userId });
-    
     if (!userId) {
-      console.log("[PORTFOLIO-KPIS] No userId, returning empty KPIs");
       return res.json({
         portfolioCount: 0,
         portfolioValue: 0,
@@ -327,16 +337,6 @@ export const getPortfolioKPIs = async (req, res) => {
       orderBy: { buyDate: 'asc' }
     });
 
-    console.log("[PORTFOLIO-KPIS] Portfolio entries found:", portfolio.length);
-    console.log("[PORTFOLIO-KPIS] Portfolio data:", portfolio.map(p => ({
-      id: p.id,
-      skinId: p.skinId,
-      amount: p.amount,
-      buyPrice: p.buyPrice,
-      skinName: p.skin.name,
-      marketHashName: p.skin.market_hash_name || p.skin.marketHashName
-    })));
-
     // Get watchlist count
     const watchlistCount = await prisma.watchlist.count({
       where: { userId }
@@ -354,21 +354,29 @@ export const getPortfolioKPIs = async (req, res) => {
     let totalValue = 0;
     let totalInvested = 0;
     
-    // Get current market prices for all skins
+    // Get current market prices for all skins (optimized)
     const uniqueSkins = [...new Set(portfolio.map(p => p.skin.market_hash_name || p.skin.marketHashName || p.skin.name))];
-    console.log("[PORTFOLIO-KPIS] Unique skins to fetch prices for:", uniqueSkins);
-    
     const priceMap = {};
-    await Promise.all(
-      uniqueSkins.map(async (mhn) => {
-        if (!mhn) return;
-        const p = await getCurrentSteamPrice(mhn);
-        priceMap[mhn] = typeof p === 'number' ? p : 0;
-        console.log(`[PORTFOLIO-KPIS] Price for ${mhn}:`, p);
-      })
-    );
     
-    console.log("[PORTFOLIO-KPIS] Price map:", priceMap);
+    // Priority 1: Use stored prices from database (fastest)
+    for (const item of portfolio) {
+      const mhn = item.skin.market_hash_name || item.skin.marketHashName || item.skin.name;
+      if (mhn && item.skin.priceLatest) {
+        priceMap[mhn] = item.skin.priceLatest;
+      }
+    }
+    
+    // Priority 2: Only fetch from Steam API for skins without stored prices
+    const skinsNeedingSteamAPI = uniqueSkins.filter(mhn => !priceMap[mhn]);
+    if (skinsNeedingSteamAPI.length > 0) {
+      await Promise.all(
+        skinsNeedingSteamAPI.map(async (mhn) => {
+          if (!mhn) return;
+          const p = await getCurrentSteamPrice(mhn);
+          priceMap[mhn] = typeof p === 'number' ? p : 0;
+        })
+      );
+    }
     
     for (const item of portfolio) {
       const marketHashName = item.skin.market_hash_name || item.skin.marketHashName || item.skin.name;
@@ -376,45 +384,27 @@ export const getPortfolioKPIs = async (req, res) => {
       
       // Priority 1: Use Steam API price if available
       if (currentPrice > 0) {
-        console.log(`[PORTFOLIO-KPIS] Using Steam API price for ${item.skin.name}:`, currentPrice);
+        // Use price from priceMap (already optimized)
       }
       // Priority 2: Use stored priceLatest from database
       else if (item.skin.priceLatest) {
         currentPrice = item.skin.priceLatest;
-        console.log(`[PORTFOLIO-KPIS] Using stored priceLatest for ${item.skin.name}:`, currentPrice);
       }
       // Priority 3: Use priceAvg from database (if available)
       else if (item.skin.priceAvg) {
         currentPrice = item.skin.priceAvg;
-        console.log(`[PORTFOLIO-KPIS] Using stored priceAvg for ${item.skin.name}:`, currentPrice);
       }
       // Priority 4: Use buyPrice as last resort
       else {
         currentPrice = item.buyPrice;
-        console.log(`[PORTFOLIO-KPIS] Using buyPrice as fallback for ${item.skin.name}:`, currentPrice);
       }
       
       const itemValue = currentPrice * item.amount;
       const itemInvested = item.buyPrice * item.amount;
       
-      console.log(`[PORTFOLIO-KPIS] Item ${item.skin.name}:`, {
-        marketHashName,
-        currentPrice,
-        amount: item.amount,
-        buyPrice: item.buyPrice,
-        itemValue,
-        itemInvested
-      });
-      
       totalValue += itemValue;
       totalInvested += itemInvested;
     }
-    
-    console.log("[PORTFOLIO-KPIS] Final calculations:", {
-      totalValue,
-      totalInvested,
-      unrealizedPL: totalValue - totalInvested
-    });
 
     // Create portfolio history entry if it doesn't exist
     try {
@@ -429,7 +419,6 @@ export const getPortfolioKPIs = async (req, res) => {
       });
       
       if (!existingHistory) {
-        console.log("[PORTFOLIO-KPIS] Creating missing history entry for today");
         await prisma.portfolioHistory.create({
           data: {
             userId,
@@ -439,9 +428,6 @@ export const getPortfolioKPIs = async (req, res) => {
             unrealizedPL: totalValue - totalInvested
           }
         });
-        console.log("[PORTFOLIO-KPIS] History entry created successfully");
-      } else {
-        console.log("[PORTFOLIO-KPIS] History entry already exists for today");
       }
     } catch (historyErr) {
       console.error("[PORTFOLIO-KPIS] Failed to create history entry:", historyErr);
