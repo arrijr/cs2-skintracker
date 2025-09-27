@@ -23,6 +23,9 @@ dotenv.config();
 
 const app = express();
 
+// Force restart trigger for CORS fix
+console.log("[APP] Starting with updated CORS configuration - v1.1");
+
 // Security headers
 app.use(helmet({
   contentSecurityPolicy: {
