@@ -1,69 +1,37 @@
-Title
-=====
+# Pull Request
 
-Kurz und prägnant (feat/fix/docs...).
+## 📋 Summary
+<!-- Provide a short summary of the changes -->
 
-Summary
--------
+---
 
-* Was wurde geändert?
-* Warum (Problem / Ziel)?
-* Wie (kurze Lösungsskizze)?
+## ✅ Checklist
 
-Type
-----
+### Code
+* [ ] Code follows project conventions
+* [ ] File paths + [Frontend]/[Backend] specified in code changes
+* [ ] UI snippets include clear block comments (e.g. `{/* Add Skin to Watchlist */}`)
+* [ ] No secrets hardcoded (`process.env` used instead)
 
-* [ ] feat
-* [ ] fix
-* [ ] docs
-* [ ] chore
-* [ ] refactor
-* [ ] perf
-* [ ] test
-* [ ] build/ci
+### Documentation
+* [ ] `/docs/CHANGELOG.md` updated  
+* [ ] Related docs updated (ARCHITECTURE/API/DATA_MODEL/DECISIONS/TROUBLESHOOTING)  
+* [ ] New feature documented under `/docs/features/` if applicable  
+* [ ] New ENV variables documented in README + `/docs/API.md`  
+* [ ] Examples compile (requests/responses), code fences correct  
+* [ ] Setext headings + `*` bullets used consistently  
 
-Breaking Changes
-----------------
+### Testing
+* [ ] Unit tests added/updated for new features
+* [ ] Edge cases covered
+* [ ] All tests passing locally
 
-* [ ] Nein
-* [ ] Ja — Migrations/Notizen unten erläutern
+---
 
-Docs Checklist (must pass)
---------------------------
+## 🔎 Related Issues
+<!-- Link to any related issues or tasks -->
 
-Bitte **anhaken**, was du aktualisiert hast (gemäß `.cursor/rules/cursorrules.mdc`):
+---
 
-* [ ] `/docs/CHANGELOG.md` (Datum, Scope, Files)
-* [ ] `/docs/ARCHITECTURE.md` (Flows/Mermaid bei Bedarf)
-* [ ] `/docs/API.md` (Endpoints, Params, Request/Response, Fehler)
-* [ ] `/docs/DATA_MODEL.md` (Prisma/DB Felder, Relationen, Constraints)
-* [ ] `/docs/DECISIONS.md` (ADR bei wichtigen Entscheidungen)
-* [ ] `/docs/TROUBLESHOOTING.md` (Symptom → Ursache → Fix → Prävention)
-* [ ] `/docs/features/<feature>.md` (neue/angepasste Features)
-* [ ] README env-Keys/Config aktualisiert (falls neu/ändert)
-* [ ] Markdown-Stil: **Setext-Überschriften** + `*`-Listen, Codefences mit Sprache
-
-Testing
--------
-
-* Manuell: Schritte, erwartetes Ergebnis
-* Optional: Unit/E2E kurz erwähnen
-* Regressionsrisiken / Edge Cases
-
-Screenshots / Logs
-------------------
-
-(Falls relevant – UI Vorher/Nachher, Konsolen-/Server-Logs, Mermaids)
-
-Migration / Rollout Notes
--------------------------
-
-* ENV-Keys neu/ändern?
-* Migrations/Seeds?
-* Feature Flags (Default, Canary, Rollback)?
-* Cron/Jobs betroffen?
-
-Linked Issues
--------------
-
-Closes #123, relates to #456
+## 📖 Notes
+<!-- Any additional context, reasoning, or follow-ups -->
