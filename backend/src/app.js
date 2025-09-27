@@ -62,7 +62,9 @@ const whitelist = [
   process.env.FRONTEND_ORIGIN,              // optional single origin
   // Vercel domains
   "https://cs2-skintracker.vercel.app",
-  "https://cs2-skintracker-git-feature-cursor-workflow-arrijrs-projects.vercel.app"
+  "https://cs2-skintracker-git-feature-cursor-workflow-arrijrs-projects.vercel.app",
+  // Additional Vercel patterns
+  "https://cs2-skintracker-git-*.arrijrs-projects.vercel.app"
 ].filter(Boolean);
 
 const corsOptions = {
@@ -86,6 +88,12 @@ const corsOptions = {
       return cb(null, true);
     }
     
+    // Allow specific Vercel git branch patterns
+    if (/^https:\/\/cs2-skintracker-git-.*\.arrijrs-projects\.vercel\.app$/.test(origin)) {
+      console.log(`[CORS] Allowed (Vercel Git): ${origin}`);
+      return cb(null, true);
+    }
+    
     // Allow localhost for development
     if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
       console.log(`[CORS] Allowed (localhost): ${origin}`);
@@ -98,9 +106,9 @@ const corsOptions = {
     return cb(new Error(`Not allowed by CORS: ${origin}`));
   },
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
-  optionsSuccessStatus: 204,
+  optionsSuccessStatus: 200,
 };
 
 // {/* Global CORS for all requests */}
