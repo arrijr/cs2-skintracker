@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Crown, Lock, CheckCircle } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 
 type Props = {
   children: React.ReactNode;
@@ -15,48 +16,23 @@ export default function PremiumFeatureFlag({
   fallback, 
   showUpgrade = true 
 }: Props) {
-  const [isPremium, setIsPremium] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isPremium, loading } = useUserRole();
 
   // Feature flags for different premium features
+  // Enable all features for premium users, regardless of env vars
   const FEATURE_FLAGS = {
-    'performance-dashboard': process.env.NEXT_PUBLIC_PORTFOLIO_PERFORMANCE_DASHBOARD === 'true',
-    'advanced-charts': process.env.NEXT_PUBLIC_PORTFOLIO_ADVANCED_CHARTS === 'true',
-    'smart-alerts': process.env.NEXT_PUBLIC_PORTFOLIO_SMART_ALERTS === 'true',
-    'transaction-analytics': process.env.NEXT_PUBLIC_PORTFOLIO_TRANSACTION_ANALYTICS === 'true',
-    'portfolio-health': process.env.NEXT_PUBLIC_PORTFOLIO_HEALTH_SCORE === 'true',
-    'market-intelligence': process.env.NEXT_PUBLIC_PORTFOLIO_MARKET_INTELLIGENCE === 'true',
+    'performance-dashboard': isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_PERFORMANCE_DASHBOARD === 'true',
+    'advanced-charts': isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_ADVANCED_CHARTS === 'true',
+    'smart-alerts': isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_SMART_ALERTS === 'true',
+    'transaction-analytics': isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_TRANSACTION_ANALYTICS === 'true',
+    'portfolio-health': isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_HEALTH_SCORE === 'true',
+    'market-intelligence': isPremium || process.env.NEXT_PUBLIC_PORTFOLIO_MARKET_INTELLIGENCE === 'true',
   };
 
   // Check if feature is enabled via environment variable
   const isFeatureEnabled = FEATURE_FLAGS[feature as keyof typeof FEATURE_FLAGS] || false;
 
-  useEffect(() => {
-    // TODO: Check user subscription status from API
-    // For now, simulate premium check
-    const checkPremiumStatus = async () => {
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // TODO: Replace with actual API call
-        // const response = await fetch('/api/v1/user/subscription');
-        // const data = await response.json();
-        // setIsPremium(data.isPremium);
-        
-        // Temporary: Set based on localStorage for testing
-        const testPremium = localStorage.getItem('portfolio-test-premium') === 'true';
-        setIsPremium(testPremium);
-      } catch (error) {
-        console.error('Failed to check premium status:', error);
-        setIsPremium(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkPremiumStatus();
-  }, []);
+  // Use Clerk premium status from useUserRole hook
 
   // If feature is disabled via environment variable, show fallback
   if (!isFeatureEnabled) {
@@ -74,7 +50,7 @@ export default function PremiumFeatureFlag({
   }
 
   // If loading, show skeleton
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="bg-gray-900 rounded-xl p-6 shadow-md animate-pulse">
         <div className="h-6 bg-gray-800 rounded mb-4"></div>
@@ -127,13 +103,12 @@ export default function PremiumFeatureFlag({
             
             <button 
               onClick={() => {
-                // Temporary: Enable premium for testing
-                localStorage.setItem('portfolio-test-premium', 'true');
-                window.location.reload();
+                // Redirect to Clerk dashboard for premium upgrade
+                window.open('/profile', '_blank');
               }}
               className="block mx-auto text-xs text-gray-500 hover:text-gray-400 underline"
             >
-              Test Premium Mode
+              Manage Subscription
             </button>
           </div>
         )}

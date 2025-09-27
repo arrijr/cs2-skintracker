@@ -66,6 +66,17 @@ export default function PortfolioPage() {
     }
   }
 
+  // {/* Update Price Alert */}
+  async function handleUpdateAlert(skinId: number, alertPrice: number) {
+    try {
+      // TODO: Implement updateAlert with auth
+      console.log("Update alert for skin:", skinId, "price:", alertPrice);
+      mutateWatchlist();
+    } catch (e: any) {
+      console.error("Failed to update alert:", e);
+    }
+  }
+
   // While loading auth state or data, show a loading message.
   if (!isLoaded || isLoading) {
     return <div className="text-white p-6">Loading portfolio…</div>;
@@ -202,23 +213,23 @@ export default function PortfolioPage() {
           </CardContent>
         </Card>
 
-        {/* Performance Dashboard - Temporarily Disabled */}
-        {/* <PremiumFeatureFlag feature="performance-dashboard">
+        {/* Performance Dashboard */}
+        <PremiumFeatureFlag feature="performance-dashboard">
           <PerformanceDashboard 
             portfolio={portfolioSkins} 
             history={history}
             isPremium={true}
           />
-        </PremiumFeatureFlag> */}
+        </PremiumFeatureFlag>
 
-        {/* Advanced Charts - Temporarily Disabled */}
-        {/* <PremiumFeatureFlag feature="advanced-charts">
+        {/* Advanced Charts */}
+        <PremiumFeatureFlag feature="advanced-charts">
           <AdvancedCharts 
             portfolio={portfolioSkins} 
             history={history}
             isPremium={true}
           />
-        </PremiumFeatureFlag> */}
+        </PremiumFeatureFlag>
 
         {/* Smart Alerts */}
         <PremiumFeatureFlag feature="smart-alerts">
@@ -357,6 +368,7 @@ export default function PortfolioPage() {
                 <WatchlistTable
                   watchlist={watchlist}
                   onRemove={handleRemoveWatchlist}
+                  onUpdateAlert={handleUpdateAlert}
                 />
               </CardContent>
             </Card>
