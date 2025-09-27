@@ -24,7 +24,8 @@ dotenv.config();
 const app = express();
 
 // Force restart trigger for CORS fix
-console.log("[APP] Starting with updated CORS configuration - v1.1");
+console.log("[APP] Starting with updated CORS configuration - v1.2");
+console.log("[CORS] Allowing Vercel preview domains");
 
 // Security headers
 app.use(helmet({
