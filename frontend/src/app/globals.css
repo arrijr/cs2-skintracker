@@ -8,6 +8,12 @@
   :root {
     /* ===== CS2 SKIN TRACKER - UNIFIED DESIGN SYSTEM ===== */
     
+    /* Design System Variables */
+    --card-padding: 1.5rem; /* 24px */
+    --card-radius: 0.75rem; /* 12px */
+    --section-gap: 3rem; /* 48px */
+    --card-gap: 1.5rem; /* 24px */
+    
     /* Base Colors - HSL format for Shadcn/UI compatibility */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
@@ -428,6 +434,90 @@
   50% {
     opacity: 0.8;
     box-shadow: 0 0 20px rgba(74, 158, 255, 0.6);
+  }
+}
+
+/* ===== UNIFIED DESIGN SYSTEM ===== */
+@layer components {
+  /* Standard Card Design */
+  .card-standard {
+    @apply bg-gray-900 border border-gray-700/50 rounded-xl shadow-md;
+    padding: var(--card-padding);
+  }
+  
+  /* KPI Card Design */
+  .card-kpi {
+    @apply bg-gray-900 border border-gray-700/50 rounded-xl shadow-md text-center hover:scale-105 transition-all duration-200;
+    padding: var(--card-padding);
+  }
+  
+  /* Metric Card Design */
+  .card-metric {
+    @apply bg-gray-900 border border-gray-700/50 rounded-xl shadow-md text-center hover:scale-105 transition-all duration-200;
+    padding: var(--card-padding);
+  }
+  
+  /* Section Container */
+  .section-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+  }
+  
+  /* Card Grid */
+  .card-grid {
+    display: grid;
+    gap: var(--card-gap);
+  }
+  
+  /* Typography Scale */
+  .text-h1 {
+    @apply text-4xl font-bold text-white;
+  }
+  
+  .text-h2 {
+    @apply text-2xl font-semibold text-white;
+  }
+  
+  .text-h3 {
+    @apply text-xl font-medium text-white;
+  }
+  
+  .text-body {
+    @apply text-base text-gray-300;
+  }
+  
+  .text-caption {
+    @apply text-sm text-gray-400;
+  }
+  
+  .text-small {
+    @apply text-xs text-gray-500;
+  }
+  
+  /* Color System - Only 3 colors */
+  .text-positive {
+    @apply text-green-400;
+  }
+  
+  .text-neutral {
+    @apply text-blue-400;
+  }
+  
+  .text-negative {
+    @apply text-red-400;
+  }
+  
+  .bg-positive {
+    @apply bg-green-500/10 border-green-500/20;
+  }
+  
+  .bg-neutral {
+    @apply bg-blue-500/10 border-blue-500/20;
+  }
+  
+  .bg-negative {
+    @apply bg-red-500/10 border-red-500/20;
   }
 }
 

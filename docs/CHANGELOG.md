@@ -3,6 +3,18 @@
 ## [Unreleased]
 
 ### Added
+* feat(ui): unified design system and UX improvements
+  * Frontend: New design system with CSS variables for consistent spacing and styling in `frontend/src/app/globals.css`.
+  * Frontend: Standardized card components (`.card-standard`, `.card-kpi`, `.card-metric`) with unified padding and styling.
+  * Frontend: Typography scale (`.text-h1`, `.text-h2`, `.text-h3`, `.text-body`, `.text-caption`) for consistent text hierarchy.
+  * Frontend: Color system reduced to 3 colors (`.text-positive`, `.text-neutral`, `.text-negative`) for better UX.
+  * Frontend: Updated portfolio page with consistent design system in `frontend/src/app/portfolio/page.tsx`.
+  * Frontend: Updated PerformanceDashboard with unified styling in `frontend/src/app/portfolio/PerformanceDashboard.tsx`.
+  * Frontend: Removed redundant Portfolio Allocation section for cleaner layout.
+  * Frontend: Added Inter font family for improved typography consistency.
+  * Docs: Updated `/docs/ARCHITECTURE.md` with design system documentation.
+
+### Changed
 * feat(admin): authenticated Admin Panel requests and Controls tab
   * Frontend: Add Clerk JWT on `/admin` data fetches in `frontend/src/app/admin/page.tsx`.
   * Frontend: New `AdminControls` component in `frontend/src/app/components/AdminControls.tsx`.

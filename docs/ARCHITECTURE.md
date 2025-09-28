@@ -7,10 +7,13 @@ System Components
 ### Frontend (Next.js App Router)
 * **Hosting:** Vercel
 * **Framework:** Next.js 15.4.3 with App Router
-* **Styling:** Tailwind CSS + Shadcn UI + Custom Responsive System
+* **Styling:** Tailwind CSS + Shadcn UI + Unified Design System
+* **Typography:** Inter font family with consistent scale (h1-h3, body, caption)
+* **Color System:** 3-color palette (positive/green, neutral/blue, negative/red)
+* **Component System:** Standardized cards (standard, kpi, metric) with unified spacing
 * **Authentication:** Clerk
 * **State Management:** React hooks (useState, useEffect, useMemo)
-* **Layout System:** Mobile-first responsive design with custom CSS utilities
+* **Layout System:** Mobile-first responsive design with CSS variables for consistency
 
 ### Backend (Node.js/Express)
 * **Hosting:** Render
