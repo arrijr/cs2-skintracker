@@ -224,9 +224,9 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">Transaction Analytics</h3>
+        <h3 className="text-2xl font-bold text-white">Transaction Analytics</h3>
         <div className="flex items-center gap-2">
           <div className="text-xs bg-amber-600/20 text-amber-400 px-2 py-1 rounded">
             🔒 Premium Feature
@@ -304,7 +304,7 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
         <div className="space-y-6">
           {/* Realized P/L Summary */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
               <div className={`text-lg font-bold ${
                 realizedPL.totalRealizedPL >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
@@ -313,21 +313,21 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
               <div className="text-xs text-gray-400">Realized P/L</div>
             </div>
             
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
               <div className="text-lg font-bold text-blue-400">
                 ${realizedPL.totalCostBasis.toFixed(2)}
               </div>
               <div className="text-xs text-gray-400">Total Cost Basis</div>
             </div>
             
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <div className="text-lg font-bold text-purple-400">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
+              <div className="text-lg font-bold text-blue-400">
                 ${realizedPL.totalProceeds.toFixed(2)}
               </div>
               <div className="text-xs text-gray-400">Total Proceeds</div>
             </div>
             
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
               <div className={`text-lg font-bold ${
                 realizedPL.realizedPLPercent >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
@@ -338,8 +338,8 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
           </div>
 
           {/* Transaction Summary */}
-          <div className="bg-gray-800 rounded-lg p-4">
-            <h4 className="text-lg font-medium mb-4">Transaction Summary</h4>
+          <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
+            <h4 className="text-lg font-medium mb-4 text-white">Transaction Summary</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="text-center">
                 <div className="text-gray-400">Total Transactions</div>

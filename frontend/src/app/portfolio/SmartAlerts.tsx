@@ -238,9 +238,9 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
   const hasAlerts = activeAlerts.length > 0;
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">Smart Alerts</h3>
+        <h3 className="text-2xl font-bold text-white">Smart Alerts</h3>
         <div className="flex items-center gap-2">
           <div className="text-xs bg-amber-600/20 text-amber-400 px-2 py-1 rounded">
             🔒 Premium Feature
@@ -350,37 +350,60 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
       {/* Technical Indicators Summary */}
       {technicalIndicators && (
         <div className="mt-6 pt-6 border-t border-gray-700">
-          <h4 className="text-lg font-medium mb-4">Technical Indicators</h4>
+          <h4 className="text-lg font-medium mb-4 text-white">Technical Indicators</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="text-center">
-              <div className="text-gray-400">RSI (14)</div>
-              <div className={`font-medium ${
-                technicalIndicators.rsi > 70 ? 'text-red-400' : 
-                technicalIndicators.rsi < 30 ? 'text-blue-400' : 'text-green-400'
-              }`}>
-                {technicalIndicators.rsi.toFixed(1)}
+            <Tooltip content="Relative Strength Index. >70 = overbought, <30 = oversold">
+              <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
+                <div className="text-gray-400 flex items-center justify-center gap-1">
+                  RSI (14)
+                  <span className="text-xs">ℹ️</span>
+                </div>
+                <div className={`font-medium ${
+                  technicalIndicators.rsi > 70 ? 'text-red-400' : 
+                  technicalIndicators.rsi < 30 ? 'text-blue-400' : 'text-green-400'
+                }`}>
+                  {technicalIndicators.rsi.toFixed(1)}
+                </div>
               </div>
-            </div>
-            <div className="text-center">
-              <div className="text-gray-400">MACD</div>
-              <div className={`font-medium ${
-                technicalIndicators.macd > 0 ? 'text-green-400' : 'text-red-400'
-              }`}>
-                {technicalIndicators.macd.toFixed(2)}
+            </Tooltip>
+            
+            <Tooltip content="Moving Average Convergence Divergence. >0 = bullish, <0 = bearish">
+              <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
+                <div className="text-gray-400 flex items-center justify-center gap-1">
+                  MACD
+                  <span className="text-xs">ℹ️</span>
+                </div>
+                <div className={`font-medium ${
+                  technicalIndicators.macd > 0 ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {technicalIndicators.macd.toFixed(2)}
+                </div>
               </div>
-            </div>
-            <div className="text-center">
-              <div className="text-gray-400">SMA 20</div>
-              <div className="font-medium text-blue-400">
-                ${technicalIndicators.sma20.toFixed(2)}
+            </Tooltip>
+            
+            <Tooltip content="Simple Moving Average over 20 periods. Short-term trend indicator">
+              <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
+                <div className="text-gray-400 flex items-center justify-center gap-1">
+                  SMA 20
+                  <span className="text-xs">ℹ️</span>
+                </div>
+                <div className="font-medium text-blue-400">
+                  ${technicalIndicators.sma20.toFixed(2)}
+                </div>
               </div>
-            </div>
-            <div className="text-center">
-              <div className="text-gray-400">SMA 50</div>
-              <div className="font-medium text-purple-400">
-                ${technicalIndicators.sma50.toFixed(2)}
+            </Tooltip>
+            
+            <Tooltip content="Simple Moving Average over 50 periods. Medium-term trend indicator">
+              <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
+                <div className="text-gray-400 flex items-center justify-center gap-1">
+                  SMA 50
+                  <span className="text-xs">ℹ️</span>
+                </div>
+                <div className="font-medium text-blue-400">
+                  ${technicalIndicators.sma50.toFixed(2)}
+                </div>
               </div>
-            </div>
+            </Tooltip>
           </div>
         </div>
       )}
