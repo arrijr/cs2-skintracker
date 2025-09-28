@@ -24,6 +24,8 @@ import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import { formatUSD, safeToFixed } from "@/lib/num";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import CaseSupplyChart from "@/components/charts/CaseSupplyChart";
+import CasePriceChart from "@/components/charts/CasePriceChart";
 
 interface Case {
   id: number;
@@ -401,13 +403,7 @@ export default function CaseDetailPage() {
                 <CardTitle>Supply Over Time</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-medium mb-2">Supply Chart Coming Soon</h3>
-                  <p className="text-gray-400">
-                    Interactive supply charts will be implemented in the next phase
-                  </p>
-                </div>
+                <CaseSupplyChart data={caseData.caseSupply} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -418,13 +414,7 @@ export default function CaseDetailPage() {
                 <CardTitle>Price History</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <TrendingUp className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-medium mb-2">Price Chart Coming Soon</h3>
-                  <p className="text-gray-400">
-                    Interactive price charts will be implemented in the next phase
-                  </p>
-                </div>
+                <CasePriceChart data={caseData.casePriceHistory} />
               </CardContent>
             </Card>
           </TabsContent>

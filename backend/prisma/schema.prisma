@@ -23,6 +23,7 @@ model User {
   createdAt    DateTime   @default(now())
   watchlist    Watchlist[]
   portfolio    Portfolio[]
+  casePortfolio CasePortfolio[]
   portfolioHistory PortfolioHistory[]
   transactions Transaction[]
   auditLogs    AuditLog[]
@@ -137,6 +138,21 @@ model Portfolio {
   amount   Int
   buyPrice Float
   buyDate  DateTime
+}
+
+model CasePortfolio {
+  id       Int      @id @default(autoincrement())
+  user     User     @relation(fields: [userId], references: [id])
+  userId   Int
+  case     Case     @relation(fields: [caseId], references: [id])
+  caseId   Int
+  amount   Int
+  buyPrice Float
+  buyDate  DateTime
+  
+  @@unique([userId, caseId])
+  @@index([userId])
+  @@index([caseId])
 }
 
 model PriceHistory {
@@ -260,6 +276,7 @@ model Case {
   caseSupply      CaseSupply[]
   caseSkins       CaseSkin[]
   casePriceHistory CasePriceHistory[]
+  casePortfolio   CasePortfolio[]
   
   @@index([isDiscontinued])
   @@index([price])

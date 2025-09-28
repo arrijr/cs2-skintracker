@@ -51,6 +51,10 @@ export default function CasesPage() {
   const [sortField, setSortField] = useState<SortField>('timeToExtinction');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [filterDiscontinued, setFilterDiscontinued] = useState(false);
+  const [priceRange, setPriceRange] = useState<{min: number, max: number}>({min: 0, max: 1000});
+  const [extinctionRange, setExtinctionRange] = useState<{min: number, max: number}>({min: 0, max: 200});
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [userCasePortfolio, setUserCasePortfolio] = useState<number[]>([]);
 
   // Fetch cases data
   useEffect(() => {
@@ -70,12 +74,33 @@ export default function CasesPage() {
     fetchCases();
   }, []);
 
+  // Fetch user's case portfolio
+  useEffect(() => {
+    const fetchUserPortfolio = async () => {
+      try {
+        const data = await apiFetch('/case-portfolio');
+        const caseIds = data.portfolio.map((entry: any) => entry.case.id);
+        setUserCasePortfolio(caseIds);
+      } catch (err) {
+        // User might not be logged in, ignore error
+        console.log('User not authenticated or no case portfolio');
+      }
+    };
+
+    fetchUserPortfolio();
+  }, []);
+
   // Filter and sort cases
   const filteredAndSortedCases = useMemo(() => {
     let filtered = cases.filter(caseItem => {
       const matchesSearch = caseItem.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDiscontinued = filterDiscontinued ? caseItem.isDiscontinued : !caseItem.isDiscontinued;
-      return matchesSearch && matchesDiscontinued;
+      const matchesPriceRange = caseItem.price ? 
+        caseItem.price >= priceRange.min && caseItem.price <= priceRange.max : true;
+      const matchesExtinctionRange = caseItem.timeToExtinction ? 
+        caseItem.timeToExtinction >= extinctionRange.min && caseItem.timeToExtinction <= extinctionRange.max : true;
+      
+      return matchesSearch && matchesDiscontinued && matchesPriceRange && matchesExtinctionRange;
     });
 
     // Sort cases
@@ -96,7 +121,7 @@ export default function CasesPage() {
     });
 
     return filtered;
-  }, [cases, searchTerm, sortField, sortDirection, filterDiscontinued]);
+  }, [cases, searchTerm, sortField, sortDirection, filterDiscontinued, priceRange, extinctionRange]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -228,8 +253,71 @@ export default function CasesPage() {
                   <Filter className="w-4 h-4" />
                   {filterDiscontinued ? 'Discontinued' : 'Active'}
                 </Button>
+                <Button
+                  variant={showAdvancedFilters ? "default" : "outline"}
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className="flex items-center gap-2"
+                >
+                  <Filter className="w-4 h-4" />
+                  Advanced
+                </Button>
               </div>
             </div>
+
+            {/* Advanced Filters */}
+            {showAdvancedFilters && (
+              <div className="mt-6 pt-6 border-t border-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Price Range */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Price Range (USD)
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        placeholder="Min"
+                        value={priceRange.min}
+                        onChange={(e) => setPriceRange(prev => ({...prev, min: Number(e.target.value) || 0}))}
+                        className="w-24"
+                      />
+                      <span className="text-gray-400 self-center">to</span>
+                      <Input
+                        type="number"
+                        placeholder="Max"
+                        value={priceRange.max}
+                        onChange={(e) => setPriceRange(prev => ({...prev, max: Number(e.target.value) || 1000}))}
+                        className="w-24"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Extinction Range */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Time to Extinction (months)
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        placeholder="Min"
+                        value={extinctionRange.min}
+                        onChange={(e) => setExtinctionRange(prev => ({...prev, min: Number(e.target.value) || 0}))}
+                        className="w-24"
+                      />
+                      <span className="text-gray-400 self-center">to</span>
+                      <Input
+                        type="number"
+                        placeholder="Max"
+                        value={extinctionRange.max}
+                        onChange={(e) => setExtinctionRange(prev => ({...prev, max: Number(e.target.value) || 200}))}
+                        className="w-24"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -325,11 +413,18 @@ export default function CasesPage() {
                           </div>
                           <div>
                             <div className="font-medium text-white">{caseItem.name}</div>
-                            {caseItem.isDiscontinued && (
-                              <Badge variant="destructive" className="text-xs">
-                                Discontinued
-                              </Badge>
-                            )}
+                            <div className="flex items-center gap-2 mt-1">
+                              {caseItem.isDiscontinued && (
+                                <Badge variant="destructive" className="text-xs">
+                                  Discontinued
+                                </Badge>
+                              )}
+                              {userCasePortfolio.includes(caseItem.id) && (
+                                <Badge variant="default" className="text-xs bg-green-600">
+                                  In Portfolio
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </Link>
                       </td>
