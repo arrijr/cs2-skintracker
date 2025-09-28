@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Crown } from "lucide-react";
+import { Crown, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -52,11 +52,22 @@ interface PortfolioKPIs {
 export default function PortfolioPage() {
   const { isSignedIn, isLoaded } = useUser();
   const [activeFilter, setActiveFilter] = useState<{ type: string; value: string; values?: string[] } | null>(null);
+  const [showPremiumBanner, setShowPremiumBanner] = useState(true);
 
   // Authentifizierte Hooks
   const { portfolio: portfolioSkins, kpis: kpiData, history, isLoading, error, mutate } = useAuthenticatedPortfolio();
   const { watchlist, isLoading: watchlistLoading, error: watchlistError, mutate: mutateWatchlist } = useAuthenticatedWatchlist();
   const { isPremium } = useUserRole();
+
+  // Auto-hide premium banner after 10 seconds
+  useEffect(() => {
+    if (isPremium && showPremiumBanner) {
+      const timer = setTimeout(() => {
+        setShowPremiumBanner(false);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [isPremium, showPremiumBanner]);
 
   // {/* Remove from Watchlist */}
   async function handleRemoveWatchlist(skinId: number) {
@@ -101,10 +112,17 @@ export default function PortfolioPage() {
         </Card>
       )}
 
-      {/* Premium Status Banner */}
-      {isPremium && (
-        <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
-          <div className="flex items-center gap-3">
+      {/* Premium Status Banner - Temporary with X button */}
+      {isPremium && showPremiumBanner && (
+        <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-4 mb-6 relative animate-slide-in-down">
+          <button
+            onClick={() => setShowPremiumBanner(false)}
+            className="absolute top-2 right-2 text-green-300 hover:text-white transition-colors"
+            aria-label="Close banner"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <div className="flex items-center gap-3 pr-6">
             <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
               <Crown className="w-4 h-4 text-white" />
             </div>
@@ -231,6 +249,55 @@ export default function PortfolioPage() {
           </CardContent>
         </Card>
 
+        {/* Portfolio and Watchlist Tabs - Moved directly under chart */}
+        <Tabs defaultValue="portfolio" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 bg-slate-800/50 border-slate-700/50">
+            <TabsTrigger 
+              value="portfolio" 
+              className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
+            >
+              Portfolio
+            </TabsTrigger>
+            <TabsTrigger 
+              value="watchlist"
+              className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
+            >
+              Watchlist
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="portfolio" className="space-y-6">
+            <EnhancedPortfolioGrid
+              entries={portfolioSkins}
+              onDataChange={() => mutate()}
+              enableFilters={true}
+              enableSorting={true}
+              enableSearch={true}
+              showStats={false}
+              showSkeleton={isLoading}
+              skeletonCount={8}
+            />
+          </TabsContent>
+          
+          <TabsContent value="watchlist" className="space-y-6">
+            <Card className="card-enhanced">
+              <CardHeader>
+                <CardTitle className="text-white animate-slide-in-left">Watchlist</CardTitle>
+                <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+                  Track skins you're interested in
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <WatchlistTable
+                  watchlist={watchlist}
+                  onRemove={handleRemoveWatchlist}
+                  onUpdateAlert={handleUpdateAlert}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
         {/* Performance Dashboard */}
         <PremiumFeatureFlag feature="performance-dashboard">
           <PerformanceDashboard 
@@ -341,57 +408,6 @@ export default function PortfolioPage() {
             />
           </CardContent>
         </Card>
-
-
-
-        {/* Portfolio and Watchlist Tabs */}
-        <Tabs defaultValue="portfolio" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-slate-800/50 border-slate-700/50">
-            <TabsTrigger 
-              value="portfolio" 
-              className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
-            >
-              Portfolio
-            </TabsTrigger>
-            <TabsTrigger 
-              value="watchlist"
-              className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
-            >
-              Watchlist
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="portfolio" className="space-y-6">
-            <EnhancedPortfolioGrid
-              entries={portfolioSkins}
-              onDataChange={() => mutate()}
-              enableFilters={true}
-              enableSorting={true}
-              enableSearch={true}
-              showStats={false}
-              showSkeleton={isLoading}
-              skeletonCount={8}
-            />
-          </TabsContent>
-          
-          <TabsContent value="watchlist" className="space-y-6">
-            <Card className="card-enhanced">
-              <CardHeader>
-                <CardTitle className="text-white animate-slide-in-left">Watchlist</CardTitle>
-                <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
-                  Track skins you're interested in
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <WatchlistTable
-                  watchlist={watchlist}
-                  onRemove={handleRemoveWatchlist}
-                  onUpdateAlert={handleUpdateAlert}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
       </main>
     </div>
   );

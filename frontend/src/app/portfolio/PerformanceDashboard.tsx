@@ -133,86 +133,97 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
         )}
       </div>
 
-      {/* Basic Metrics - Always Visible */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <div className="text-lg font-bold text-blue-400">
-            {formatCurrency(metrics.totalInvested)}
+      {/* Basic Metrics - Modern Card Layout */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <Tooltip content="Total amount invested in your portfolio">
+          <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-xl p-4 text-center hover:scale-105 transition-all duration-200 group">
+            <div className="text-2xl font-bold text-blue-400 group-hover:text-blue-300">
+              {formatCurrency(metrics.totalInvested)}
+            </div>
+            <div className="text-sm text-gray-400 mt-1">Total Invested</div>
           </div>
-          <div className="text-xs text-gray-400">Total Invested</div>
-        </div>
+        </Tooltip>
         
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <div className="text-lg font-bold text-green-400">
-            {formatCurrency(metrics.currentValue)}
+        <Tooltip content="Current market value of your portfolio">
+          <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/20 rounded-xl p-4 text-center hover:scale-105 transition-all duration-200 group">
+            <div className="text-2xl font-bold text-green-400 group-hover:text-green-300">
+              {formatCurrency(metrics.currentValue)}
+            </div>
+            <div className="text-sm text-gray-400 mt-1">Current Value</div>
           </div>
-          <div className="text-xs text-gray-400">Current Value</div>
-        </div>
+        </Tooltip>
         
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <div className={`text-lg font-bold ${metrics.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {formatCurrency(metrics.totalReturn)}
+        <Tooltip content="Total profit or loss from your investments">
+          <div className={`bg-gradient-to-br ${metrics.totalReturn >= 0 ? 'from-green-500/10 to-green-600/10 border-green-500/20' : 'from-red-500/10 to-red-600/10 border-red-500/20'} rounded-xl p-4 text-center hover:scale-105 transition-all duration-200 group`}>
+            <div className={`text-2xl font-bold ${metrics.totalReturn >= 0 ? 'text-green-400 group-hover:text-green-300' : 'text-red-400 group-hover:text-red-300'}`}>
+              {formatCurrency(metrics.totalReturn)}
+            </div>
+            <div className="text-sm text-gray-400 mt-1">Total Return</div>
           </div>
-          <div className="text-xs text-gray-400">Total Return</div>
-        </div>
+        </Tooltip>
         
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <div className={`text-lg font-bold ${metrics.totalReturnPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {formatPercent(metrics.totalReturnPercent)}
+        <Tooltip content="Percentage return on your investment">
+          <div className={`bg-gradient-to-br ${metrics.totalReturnPercent >= 0 ? 'from-green-500/10 to-green-600/10 border-green-500/20' : 'from-red-500/10 to-red-600/10 border-red-500/20'} rounded-xl p-4 text-center hover:scale-105 transition-all duration-200 group`}>
+            <div className={`text-2xl font-bold ${metrics.totalReturnPercent >= 0 ? 'text-green-400 group-hover:text-green-300' : 'text-red-400 group-hover:text-red-300'}`}>
+              {formatPercent(metrics.totalReturnPercent)}
+            </div>
+            <div className="text-sm text-gray-400 mt-1">Total Return %</div>
           </div>
-          <div className="text-xs text-gray-400">Total Return %</div>
-        </div>
+        </Tooltip>
       </div>
 
       {/* Advanced Metrics - Premium Only */}
       {isPremium ? (
-        <div className="space-y-4">
-          <h4 className="text-lg font-medium text-gray-300 mb-4">Advanced Analytics</h4>
+        <div className="space-y-6">
+          <h4 className="text-lg font-medium text-gray-300 mb-6 flex items-center gap-2">
+            <Activity className="w-5 h-5 text-purple-400" />
+            Advanced Analytics
+          </h4>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Tooltip content="Risk-adjusted return. Higher is better. >1 is good, >2 is excellent.">
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Activity className="w-4 h-4 text-purple-400" />
-                  <span className="text-xs text-gray-400">Sharpe Ratio</span>
+              <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20 rounded-xl p-4 text-center hover:scale-105 transition-all duration-200 group">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <Activity className="w-5 h-5 text-purple-400 group-hover:text-purple-300" />
+                  <span className="text-sm font-medium text-gray-300">Sharpe Ratio</span>
                 </div>
-                <div className="text-lg font-bold text-purple-400">
+                <div className="text-xl font-bold text-purple-400 group-hover:text-purple-300">
                   {metrics.sharpeRatio.toFixed(3)}
                 </div>
               </div>
             </Tooltip>
 
             <Tooltip content="Portfolio volatility vs market. >1 = more volatile, <1 = less volatile.">
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <BarChart3 className="w-4 h-4 text-orange-400" />
-                  <span className="text-xs text-gray-400">Beta</span>
+              <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/10 border border-orange-500/20 rounded-xl p-4 text-center hover:scale-105 transition-all duration-200 group">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <BarChart3 className="w-5 h-5 text-orange-400 group-hover:text-orange-300" />
+                  <span className="text-sm font-medium text-gray-300">Beta</span>
                 </div>
-                <div className="text-lg font-bold text-orange-400">
+                <div className="text-xl font-bold text-orange-400 group-hover:text-orange-300">
                   {metrics.beta.toFixed(2)}
                 </div>
               </div>
             </Tooltip>
 
             <Tooltip content="Excess return vs market benchmark. Positive = outperforming market.">
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Target className="w-4 h-4 text-cyan-400" />
-                  <span className="text-xs text-gray-400">Alpha</span>
+              <div className={`bg-gradient-to-br ${metrics.alpha >= 0 ? 'from-cyan-500/10 to-cyan-600/10 border-cyan-500/20' : 'from-red-500/10 to-red-600/10 border-red-500/20'} rounded-xl p-4 text-center hover:scale-105 transition-all duration-200 group`}>
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <Target className={`w-5 h-5 ${metrics.alpha >= 0 ? 'text-cyan-400 group-hover:text-cyan-300' : 'text-red-400 group-hover:text-red-300'}`} />
+                  <span className="text-sm font-medium text-gray-300">Alpha</span>
                 </div>
-                <div className={`text-lg font-bold ${metrics.alpha >= 0 ? 'text-cyan-400' : 'text-red-400'}`}>
+                <div className={`text-xl font-bold ${metrics.alpha >= 0 ? 'text-cyan-400 group-hover:text-cyan-300' : 'text-red-400 group-hover:text-red-300'}`}>
                   {formatPercent(metrics.alpha * 100)}
                 </div>
               </div>
             </Tooltip>
 
             <Tooltip content="Maximum peak-to-trough decline. Lower is better.">
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Shield className="w-4 h-4 text-red-400" />
-                  <span className="text-xs text-gray-400">Max Drawdown</span>
+              <div className="bg-gradient-to-br from-red-500/10 to-red-600/10 border border-red-500/20 rounded-xl p-4 text-center hover:scale-105 transition-all duration-200 group">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <Shield className="w-5 h-5 text-red-400 group-hover:text-red-300" />
+                  <span className="text-sm font-medium text-gray-300">Max Drawdown</span>
                 </div>
-                <div className="text-lg font-bold text-red-400">
+                <div className="text-xl font-bold text-red-400 group-hover:text-red-300">
                   {metrics.maxDrawdown.toFixed(1)}%
                 </div>
               </div>
@@ -221,19 +232,19 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Tooltip content="Daily return volatility. Higher = more risk.">
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <div className="text-sm font-bold text-yellow-400">
+              <div className="bg-gradient-to-br from-yellow-500/10 to-yellow-600/10 border border-yellow-500/20 rounded-xl p-4 text-center hover:scale-105 transition-all duration-200 group">
+                <div className="text-lg font-bold text-yellow-400 group-hover:text-yellow-300">
                   {metrics.volatility.toFixed(2)}%
                 </div>
-                <div className="text-xs text-gray-400">Daily Volatility</div>
+                <div className="text-sm text-gray-400 mt-1">Daily Volatility</div>
               </div>
             </Tooltip>
 
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <div className="text-sm font-bold text-gray-400">
+            <div className="bg-gradient-to-br from-gray-500/10 to-gray-600/10 border border-gray-500/20 rounded-xl p-4 text-center hover:scale-105 transition-all duration-200 group">
+              <div className="text-lg font-bold text-gray-400 group-hover:text-gray-300">
                 {metrics.dailyReturnsCount}
               </div>
-              <div className="text-xs text-gray-400">Data Points</div>
+              <div className="text-sm text-gray-400 mt-1">Data Points</div>
             </div>
           </div>
         </div>
@@ -253,21 +264,28 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
       )}
 
       {/* Performance Summary */}
-      <div className="mt-6 pt-6 border-t border-gray-700">
+      <div className="mt-8 pt-6 border-t border-gray-700">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {metrics.totalReturnPercent >= 0 ? (
-              <TrendingUp className="w-5 h-5 text-green-400" />
+              <div className="flex items-center gap-2 bg-green-500/10 px-3 py-2 rounded-lg border border-green-500/20">
+                <TrendingUp className="w-5 h-5 text-green-400" />
+                <span className="text-sm font-medium text-green-400">
+                  Portfolio is profitable
+                </span>
+              </div>
             ) : (
-              <TrendingDown className="w-5 h-5 text-red-400" />
+              <div className="flex items-center gap-2 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20">
+                <TrendingDown className="w-5 h-5 text-red-400" />
+                <span className="text-sm font-medium text-red-400">
+                  Portfolio is at a loss
+                </span>
+              </div>
             )}
-            <span className="text-sm text-gray-400">
-              Portfolio is {metrics.totalReturnPercent >= 0 ? 'profitable' : 'at a loss'}
-            </span>
           </div>
           
           {isPremium && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 bg-gray-800/50 px-3 py-2 rounded-lg">
               Last updated: {new Date().toLocaleString()}
             </div>
           )}
