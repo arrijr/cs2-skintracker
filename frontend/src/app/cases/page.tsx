@@ -58,7 +58,7 @@ export default function CasesPage() {
       try {
         setLoading(true);
         const data = await apiFetch('/api/cases');
-        setCases(data);
+        setCases(data.cases || []);
       } catch (err) {
         setError('Failed to load cases data');
         console.error('Error fetching cases:', err);
