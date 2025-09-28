@@ -124,8 +124,8 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
 
   return (
     <div className="card-standard">
-      <div className="flex items-center justify-between mb-8">
-        <h3 className="text-h2">Portfolio Performance</h3>
+      <div className="flex items-center justify-between mb-12">
+        <h3 className="text-3xl font-bold text-white">Portfolio Performance</h3>
         {!isPremium && (
           <div className="text-xs bg-amber-600/20 text-amber-400 px-3 py-1 rounded-full">
             🔒 Premium Feature
@@ -133,52 +133,50 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
         )}
       </div>
 
-      {/* Basic Metrics - Unified Design System */}
-      <div className="card-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-10">
-        <Tooltip content="Total amount invested in your portfolio">
-          <div className="card-metric bg-neutral">
-            <div className="text-2xl font-bold text-neutral">
-              {formatCurrency(metrics.totalInvested)}
-            </div>
-            <div className="text-caption">Total Invested</div>
+      {/* Hero KPIs - Only the most important metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div className="text-center">
+          <div className="text-5xl font-bold text-white mb-2">
+            {formatCurrency(metrics.currentValue)}
           </div>
-        </Tooltip>
+          <div className="text-lg text-gray-400 mb-1">Current Value</div>
+          <div className="text-sm text-gray-500">Total portfolio value</div>
+        </div>
         
-        <Tooltip content="Current market value of your portfolio">
-          <div className="card-metric bg-positive">
-            <div className="text-2xl font-bold text-positive">
-              {formatCurrency(metrics.currentValue)}
-            </div>
-            <div className="text-caption">Current Value</div>
+        <div className="text-center">
+          <div className={`text-5xl font-bold mb-2 ${metrics.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {formatCurrency(metrics.totalReturn)}
           </div>
-        </Tooltip>
+          <div className="text-lg text-gray-400 mb-1">Total Return</div>
+          <div className="text-sm text-gray-500">Profit/Loss</div>
+        </div>
         
-        <Tooltip content="Total profit or loss from your investments">
-          <div className={`card-metric ${metrics.totalReturn >= 0 ? 'bg-positive' : 'bg-negative'}`}>
-            <div className={`text-2xl font-bold ${metrics.totalReturn >= 0 ? 'text-positive' : 'text-negative'}`}>
-              {formatCurrency(metrics.totalReturn)}
-            </div>
-            <div className="text-caption">Total Return</div>
+        <div className="text-center">
+          <div className={`text-5xl font-bold mb-2 ${metrics.totalReturnPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {formatPercent(metrics.totalReturnPercent)}
           </div>
-        </Tooltip>
-        
-        <Tooltip content="Percentage return on your investment">
-          <div className={`card-metric ${metrics.totalReturnPercent >= 0 ? 'bg-positive' : 'bg-negative'}`}>
-            <div className={`text-2xl font-bold ${metrics.totalReturnPercent >= 0 ? 'text-positive' : 'text-negative'}`}>
-              {formatPercent(metrics.totalReturnPercent)}
-            </div>
-            <div className="text-caption">Total Return %</div>
-          </div>
-        </Tooltip>
+          <div className="text-lg text-gray-400 mb-1">Return %</div>
+          <div className="text-sm text-gray-500">Performance</div>
+        </div>
       </div>
 
-      {/* Advanced Metrics - Premium Only */}
+      {/* Advanced Analytics - Collapsible Section */}
       {isPremium ? (
-        <div className="space-y-6">
-          <h4 className="text-h3 mb-6 flex items-center gap-2">
-            <Activity className="w-5 h-5 text-neutral" />
-            Advanced Analytics
-          </h4>
+        <details className="group">
+          <summary className="cursor-pointer flex items-center justify-between p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800/70 transition-colors">
+            <div className="flex items-center gap-3">
+              <Activity className="w-5 h-5 text-blue-400" />
+              <span className="text-lg font-medium text-white">Advanced Analytics</span>
+              <span className="text-sm text-gray-400">(Optional)</span>
+            </div>
+            <div className="text-gray-400 group-open:rotate-180 transition-transform">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </summary>
+          
+          <div className="mt-6 space-y-6">
           
           <div className="card-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <Tooltip content="Risk-adjusted return. Higher is better. >1 is good, >2 is excellent.">
@@ -247,7 +245,8 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
               <div className="text-caption">Data Points</div>
             </div>
           </div>
-        </div>
+          </div>
+        </details>
       ) : (
         <div className="text-center py-8">
           <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto">

@@ -146,74 +146,81 @@ export default function PortfolioPage() {
           </CardHeader>
           <CardContent className="pt-0">
           
-          {/* KPI Cards */}
-          <div className="card-grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 mb-8">
-            <div className="card-kpi">
-              <div className="text-xl sm:text-2xl font-bold text-neutral animate-slide-in-left">
-                {kpiData?.portfolioCount || portfolioSkins.length}
-              </div>
-              <div className="text-caption">Portfolio Skins</div>
-            </div>
-            
-            <div className="card-kpi">
-              <div className="text-xl sm:text-2xl font-bold text-positive animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+          {/* Hero KPIs - Only the most important metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center p-6 bg-gray-800/30 rounded-xl">
+              <div className="text-4xl font-bold text-green-400 mb-2">
                 ${kpiData?.portfolioValue?.toFixed(2) || "0.00"}
               </div>
-              <div className="text-caption">Total Value</div>
+              <div className="text-lg text-gray-300 mb-1">Total Value</div>
+              <div className="text-sm text-gray-500">Current portfolio worth</div>
               {kpiData?.portfolioChange24h !== 0 && kpiData && (
-                <Badge 
-                  variant={kpiData.portfolioChange24h > 0 ? "default" : "destructive"} 
-                  className={`text-xs mt-2 ${
-                    kpiData.portfolioChange24h > 0 
-                      ? 'bg-positive text-positive' 
-                      : 'bg-negative text-negative'
-                  }`}
-                >
+                <div className={`text-sm mt-2 px-2 py-1 rounded-full inline-block ${
+                  kpiData.portfolioChange24h > 0 
+                    ? 'bg-green-500/20 text-green-400' 
+                    : 'bg-red-500/20 text-red-400'
+                }`}>
                   {kpiData.portfolioChange24h > 0 ? "+" : ""}{kpiData.portfolioChange24h.toFixed(1)}% 24h
-                </Badge>
+                </div>
               )}
             </div>
             
-            <div className="card-kpi">
-              <div className="text-xl sm:text-2xl font-bold text-neutral animate-slide-in-left" style={{ animationDelay: '0.2s' }}>
-                ${kpiData?.totalInvested?.toFixed(2) || "0.00"}
-              </div>
-              <div className="text-caption">Total Invested</div>
-            </div>
-            
-            <div className="card-kpi">
-              <div className={`text-xl sm:text-2xl font-bold animate-slide-in-left ${
-                (kpiData?.unrealizedPL || 0) >= 0 ? 'text-positive' : 'text-negative'
-              }`} style={{ animationDelay: '0.3s' }}>
+            <div className="text-center p-6 bg-gray-800/30 rounded-xl">
+              <div className={`text-4xl font-bold mb-2 ${
+                (kpiData?.unrealizedPL || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+              }`}>
                 ${kpiData?.unrealizedPL?.toFixed(2) || "0.00"}
               </div>
-              <div className="text-caption">Unrealized P/L</div>
+              <div className="text-lg text-gray-300 mb-1">Unrealized P/L</div>
+              <div className="text-sm text-gray-500">Current profit/loss</div>
               {kpiData?.portfolioChange7d !== 0 && kpiData && (
-                <Badge 
-                  variant={kpiData.portfolioChange7d > 0 ? "default" : "destructive"} 
-                  className={`text-xs mt-2 ${
-                    kpiData.portfolioChange7d > 0 
-                      ? 'bg-positive text-positive' 
-                      : 'bg-negative text-negative'
-                  }`}
-                >
+                <div className={`text-sm mt-2 px-2 py-1 rounded-full inline-block ${
+                  kpiData.portfolioChange7d > 0 
+                    ? 'bg-green-500/20 text-green-400' 
+                    : 'bg-red-500/20 text-red-400'
+                }`}>
                   {kpiData.portfolioChange7d > 0 ? "+" : ""}{kpiData.portfolioChange7d.toFixed(1)}% 7d
-                </Badge>
+                </div>
               )}
             </div>
             
-            <div className="card-kpi">
-              <div className="text-xl sm:text-2xl font-bold text-neutral animate-slide-in-left" style={{ animationDelay: '0.4s' }}>
-                {kpiData?.watchlistCount || watchlist.length}
+            <div className="text-center p-6 bg-gray-800/30 rounded-xl">
+              <div className="text-4xl font-bold text-blue-400 mb-2">
+                {kpiData?.portfolioCount || portfolioSkins.length}
               </div>
-              <div className="text-caption">Watchlist</div>
+              <div className="text-lg text-gray-300 mb-1">Portfolio Skins</div>
+              <div className="text-sm text-gray-500">Total items owned</div>
+            </div>
+          </div>
+
+          {/* Secondary Info - Less prominent */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="text-center p-4 bg-gray-800/20 rounded-lg">
+              <div className="text-2xl font-bold text-gray-300">
+                ${kpiData?.totalInvested?.toFixed(2) || "0.00"}
+              </div>
+              <div className="text-sm text-gray-500">Total Invested</div>
             </div>
             
-            <div className="card-kpi">
-              <div className="text-xl sm:text-2xl font-bold text-neutral animate-slide-in-left" style={{ animationDelay: '0.5s' }}>
+            <div className="text-center p-4 bg-gray-800/20 rounded-lg">
+              <div className="text-2xl font-bold text-gray-300">
+                {kpiData?.watchlistCount || watchlist.length}
+              </div>
+              <div className="text-sm text-gray-500">Watchlist</div>
+            </div>
+            
+            <div className="text-center p-4 bg-gray-800/20 rounded-lg">
+              <div className="text-2xl font-bold text-gray-300">
                 {kpiData?.activeAlerts || 0}
               </div>
-              <div className="text-caption">Active Alerts</div>
+              <div className="text-sm text-gray-500">Active Alerts</div>
+            </div>
+            
+            <div className="text-center p-4 bg-gray-800/20 rounded-lg">
+              <div className="text-2xl font-bold text-gray-300">
+                {kpiData?.portfolioChange24h?.toFixed(1) || "0.0"}%
+              </div>
+              <div className="text-sm text-gray-500">24h Change</div>
             </div>
           </div>
 
@@ -224,18 +231,18 @@ export default function PortfolioPage() {
           </CardContent>
         </Card>
 
-        {/* Portfolio Chart Section */}
-        <Card className="card-standard">
-          <CardHeader className="pb-6">
-            <CardTitle className="text-h2 animate-slide-in-left mb-2">Portfolio Value History</CardTitle>
-            <CardDescription className="text-body animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
-              Track your portfolio performance over time
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <PortfolioChart history={history} />
-          </CardContent>
-        </Card>
+      {/* Portfolio Chart Section */}
+      <Card className="card-standard">
+        <CardHeader className="pb-8">
+          <CardTitle className="text-3xl font-bold text-white mb-3">Portfolio Value History</CardTitle>
+          <CardDescription className="text-lg text-gray-400">
+            Track your portfolio performance over time
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <PortfolioChart history={history} />
+        </CardContent>
+      </Card>
 
         {/* Portfolio and Watchlist Tabs - Moved directly under chart */}
         <Tabs defaultValue="portfolio" className="space-y-6">
@@ -286,17 +293,19 @@ export default function PortfolioPage() {
           </TabsContent>
         </Tabs>
 
-        {/* Premium Features Section */}
-        <div className="space-y-12">
-          {/* Section Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-700/50"></div>
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-slate-900 px-6 text-sm font-medium text-slate-400">Premium Features</span>
-            </div>
+      {/* Premium Features Section */}
+      <div className="space-y-16">
+        {/* Section Divider */}
+        <div className="relative my-16">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-700/30"></div>
           </div>
+          <div className="relative flex justify-center">
+            <span className="bg-slate-900 px-8 py-2 text-lg font-semibold text-slate-300 border border-slate-700/50 rounded-full">
+              Premium Features
+            </span>
+          </div>
+        </div>
 
           {/* Performance Dashboard */}
           <PremiumFeatureFlag feature="performance-dashboard">
@@ -307,31 +316,31 @@ export default function PortfolioPage() {
             />
           </PremiumFeatureFlag>
 
-          {/* Advanced Charts */}
-          <PremiumFeatureFlag feature="advanced-charts">
-            <Card className="card-standard">
-              <CardHeader className="pb-6">
-                <CardTitle className="text-h2 animate-slide-in-left mb-2">Advanced Charts</CardTitle>
-                <CardDescription className="text-body animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
-                  Professional-grade charting and analysis tools
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <AdvancedCharts 
-                  portfolio={portfolioSkins} 
-                  history={history}
-                  isPremium={true}
-                />
-              </CardContent>
-            </Card>
-          </PremiumFeatureFlag>
+        {/* Advanced Charts */}
+        <PremiumFeatureFlag feature="advanced-charts">
+          <Card className="card-standard">
+            <CardHeader className="pb-8">
+              <CardTitle className="text-2xl font-bold text-white mb-3">Advanced Charts</CardTitle>
+              <CardDescription className="text-lg text-gray-400">
+                Professional-grade charting and analysis tools
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <AdvancedCharts
+                portfolio={portfolioSkins}
+                history={history}
+                isPremium={true}
+              />
+            </CardContent>
+          </Card>
+        </PremiumFeatureFlag>
 
           {/* Smart Alerts */}
           <PremiumFeatureFlag feature="smart-alerts">
             <Card className="card-standard">
-              <CardHeader className="pb-6">
-                <CardTitle className="text-h2 animate-slide-in-left mb-2">Smart Alerts</CardTitle>
-                <CardDescription className="text-body animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+              <CardHeader className="pb-8">
+                <CardTitle className="text-2xl font-bold text-white mb-3">Smart Alerts</CardTitle>
+                <CardDescription className="text-lg text-gray-400">
                   Intelligent price alerts and notifications
                 </CardDescription>
               </CardHeader>
@@ -348,9 +357,9 @@ export default function PortfolioPage() {
           {/* Transaction Analytics */}
           <PremiumFeatureFlag feature="transaction-analytics">
             <Card className="card-standard">
-              <CardHeader className="pb-6">
-                <CardTitle className="text-h2 animate-slide-in-left mb-2">Transaction Analytics</CardTitle>
-                <CardDescription className="text-body animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+              <CardHeader className="pb-8">
+                <CardTitle className="text-2xl font-bold text-white mb-3">Transaction Analytics</CardTitle>
+                <CardDescription className="text-lg text-gray-400">
                   Detailed analysis of your trading activity
                 </CardDescription>
               </CardHeader>
@@ -367,9 +376,9 @@ export default function PortfolioPage() {
           {/* Portfolio Health Score */}
           <PremiumFeatureFlag feature="portfolio-health-score">
             <Card className="card-standard">
-              <CardHeader className="pb-6">
-                <CardTitle className="text-h2 animate-slide-in-left mb-2">Portfolio Health Score</CardTitle>
-                <CardDescription className="text-body animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+              <CardHeader className="pb-8">
+                <CardTitle className="text-2xl font-bold text-white mb-3">Portfolio Health Score</CardTitle>
+                <CardDescription className="text-lg text-gray-400">
                   Assess the health and risk of your portfolio
                 </CardDescription>
               </CardHeader>
@@ -386,9 +395,9 @@ export default function PortfolioPage() {
           {/* Market Intelligence */}
           <PremiumFeatureFlag feature="market-intelligence">
             <Card className="card-standard">
-              <CardHeader className="pb-6">
-                <CardTitle className="text-h2 animate-slide-in-left mb-2">Market Intelligence</CardTitle>
-                <CardDescription className="text-body animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+              <CardHeader className="pb-8">
+                <CardTitle className="text-2xl font-bold text-white mb-3">Market Intelligence</CardTitle>
+                <CardDescription className="text-lg text-gray-400">
                   Market insights and trends analysis
                 </CardDescription>
               </CardHeader>
