@@ -23,7 +23,9 @@ export function apiUrl(path: string) {
   const base = apiOrigin();
   // tolerantes Joinen ("/api..." vs "api...")
   const p = path.startsWith("/") ? path : `/${path}`;
-  return new URL(p, base).toString();
+  // Ensure /api/v1 prefix
+  const fullPath = p.startsWith("/api/v1") ? p : `/api/v1${p.startsWith("/api") ? p.substring(4) : p}`;
+  return new URL(fullPath, base).toString();
 }
 
 // Einheitlicher JSON-Fetcher mit Fehlerobjekt
