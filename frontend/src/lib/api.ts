@@ -123,6 +123,11 @@ export async function deletePortfolioEntry(entryId: number, token?: string) {
   });
 }
 
+// Generic API fetch function
+export async function apiFetch(path: string, options: RequestInit = {}) {
+  return fetchJson(apiUrl(path), options);
+}
+
 // Alias für bessere Kompatibilität
 export const apiUpdatePriceAlert = updatePriceAlert;
 export const apiRemoveFromWatchlist = removeFromWatchlist;
