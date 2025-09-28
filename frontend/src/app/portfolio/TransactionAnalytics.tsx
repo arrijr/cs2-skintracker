@@ -414,26 +414,26 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
           
           {/* Tax Summary */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
               <div className="text-lg font-bold text-blue-400">{taxLots.length}</div>
               <div className="text-xs text-gray-400">Total Tax Lots</div>
             </div>
             
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
               <div className="text-lg font-bold text-green-400">
                 ${taxLots.reduce((sum, lot) => sum + lot.costBasis, 0).toFixed(2)}
               </div>
               <div className="text-xs text-gray-400">Total Cost Basis</div>
             </div>
             
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
               <div className="text-lg font-bold text-purple-400">
                 {Math.round(taxLots.reduce((sum, lot) => sum + lot.holdingPeriod, 0) / taxLots.length)} days
               </div>
               <div className="text-xs text-gray-400">Avg Holding Period</div>
             </div>
             
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
               <div className="text-lg font-bold text-yellow-400">
                 {taxLots.filter(lot => lot.holdingPeriod > 365).length}
               </div>
@@ -442,7 +442,7 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
           </div>
 
           {/* Tax Lots Table */}
-          <div className="bg-gray-800 rounded-lg p-4">
+          <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -486,7 +486,7 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
           {performanceAttribution ? (
             <div className="space-y-3">
               {performanceAttribution.slice(0, 10).map(item => (
-                <div key={item.skinId} className="bg-gray-800 rounded-lg p-4">
+                <div key={item.skinId} className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="font-medium">{item.skinName}</div>
                     <div className={`text-sm font-medium ${

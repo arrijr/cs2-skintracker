@@ -275,9 +275,9 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">Portfolio Health Score</h3>
+        <h3 className="text-2xl font-bold text-white">Portfolio Health Score</h3>
         <div className="flex items-center gap-2">
           <div className="text-xs bg-amber-600/20 text-amber-400 px-2 py-1 rounded">
             🔒 Premium Feature
@@ -306,22 +306,22 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
 
       {/* Category Scores */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
+        <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-green-400 mb-1">
             {healthScore.diversification}
           </div>
           <div className="text-sm text-gray-400">Diversification</div>
         </div>
         
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
+        <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-blue-400 mb-1">
             {healthScore.risk}
           </div>
           <div className="text-sm text-gray-400">Risk Management</div>
         </div>
         
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-purple-400 mb-1">
+        <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-blue-400 mb-1">
             {healthScore.liquidity}
           </div>
           <div className="text-sm text-gray-400">Liquidity</div>

@@ -328,7 +328,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
 
   if (!isPremium) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+      <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
         <div className="text-center py-8">
           <Brain className="w-16 h-16 mx-auto mb-4 text-amber-400" />
           <h4 className="text-xl font-medium mb-2">Unlock Market Intelligence</h4>
@@ -344,9 +344,9 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">Market Intelligence</h3>
+        <h3 className="text-2xl font-bold text-white">Market Intelligence</h3>
         <div className="flex items-center gap-2">
           <div className="text-xs bg-amber-600/20 text-amber-400 px-2 py-1 rounded">
             🔒 Premium Feature
@@ -427,7 +427,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
           {pricePredictions.length > 0 ? (
             <div className="space-y-3">
               {pricePredictions.slice(0, 8).map(prediction => (
-                <div key={prediction.skinId} className="bg-gray-800 rounded-lg p-4">
+                <div key={prediction.skinId} className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="font-medium">{prediction.skinName}</div>
                     <div className="flex items-center gap-2">
@@ -490,7 +490,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
           
           {marketCycle ? (
             <div className="space-y-4">
-              <div className="bg-gray-800 rounded-lg p-6 text-center">
+              <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-6 text-center">
                 <div className="text-4xl font-bold text-blue-400 mb-2">
                   {marketCycle.phase.charAt(0).toUpperCase() + marketCycle.phase.slice(1)}
                 </div>
@@ -501,7 +501,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
                 <div className="text-sm text-gray-300">{marketCycle.recommendation}</div>
               </div>
 
-              <div className="bg-gray-800 rounded-lg p-4">
+              <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
                 <h5 className="font-medium mb-3">Key Indicators:</h5>
                 <div className="flex flex-wrap gap-2">
                   {marketCycle.indicators.map((indicator, index) => (
@@ -560,7 +560,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
           {marketEvents.length > 0 ? (
             <div className="space-y-3">
               {marketEvents.map(event => (
-                <div key={event.id} className="bg-gray-800 rounded-lg p-4">
+                <div key={event.id} className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h5 className="font-medium">{event.title}</h5>
                     <span className={`text-xs px-2 py-1 rounded ${getImpactColor(event.impact)}`}>
