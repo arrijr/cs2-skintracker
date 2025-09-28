@@ -180,52 +180,52 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
           
           <div className="card-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <Tooltip content="Risk-adjusted return. Higher is better. >1 is good, >2 is excellent.">
-              <div className="card-metric bg-neutral">
+              <div className="card-metric bg-gray-800/50 border-gray-700/50">
                 <div className="flex items-center justify-center gap-2 mb-3">
-                  <Activity className="w-5 h-5 text-neutral" />
+                  <Activity className="w-5 h-5 text-blue-400" />
                   <span className="text-caption">Sharpe Ratio</span>
                   <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
                 </div>
-                <div className="text-xl font-bold text-neutral">
+                <div className="text-xl font-bold text-blue-400">
                   {metrics.sharpeRatio.toFixed(3)}
                 </div>
               </div>
             </Tooltip>
 
             <Tooltip content="Portfolio volatility vs market. >1 = more volatile, <1 = less volatile.">
-              <div className="card-metric bg-neutral">
+              <div className="card-metric bg-gray-800/50 border-gray-700/50">
                 <div className="flex items-center justify-center gap-2 mb-3">
-                  <BarChart3 className="w-5 h-5 text-neutral" />
+                  <BarChart3 className="w-5 h-5 text-blue-400" />
                   <span className="text-caption">Beta</span>
                   <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
                 </div>
-                <div className="text-xl font-bold text-neutral">
+                <div className="text-xl font-bold text-blue-400">
                   {metrics.beta.toFixed(2)}
                 </div>
               </div>
             </Tooltip>
 
             <Tooltip content="Excess return vs market benchmark. Positive = outperforming market.">
-              <div className={`card-metric ${metrics.alpha >= 0 ? 'bg-positive' : 'bg-negative'}`}>
+              <div className={`card-metric ${metrics.alpha >= 0 ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
                 <div className="flex items-center justify-center gap-2 mb-3">
-                  <Target className={`w-5 h-5 ${metrics.alpha >= 0 ? 'text-positive' : 'text-negative'}`} />
+                  <Target className={`w-5 h-5 ${metrics.alpha >= 0 ? 'text-green-400' : 'text-red-400'}`} />
                   <span className="text-caption">Alpha</span>
                   <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
                 </div>
-                <div className={`text-xl font-bold ${metrics.alpha >= 0 ? 'text-positive' : 'text-negative'}`}>
+                <div className={`text-xl font-bold ${metrics.alpha >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {formatPercent(metrics.alpha * 100)}
                 </div>
               </div>
             </Tooltip>
 
             <Tooltip content="Maximum peak-to-trough decline. Lower is better.">
-              <div className="card-metric bg-negative">
+              <div className="card-metric bg-red-500/10 border-red-500/20">
                 <div className="flex items-center justify-center gap-2 mb-3">
-                  <Shield className="w-5 h-5 text-negative" />
+                  <Shield className="w-5 h-5 text-red-400" />
                   <span className="text-caption">Max Drawdown</span>
                   <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
                 </div>
-                <div className="text-xl font-bold text-negative">
+                <div className="text-xl font-bold text-red-400">
                   {metrics.maxDrawdown.toFixed(1)}%
                 </div>
               </div>
@@ -234,16 +234,16 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
 
           <div className="card-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <Tooltip content="Daily return volatility. Higher = more risk.">
-              <div className="card-metric bg-neutral">
-                <div className="text-lg font-bold text-neutral">
+              <div className="card-metric bg-gray-800/50 border-gray-700/50">
+                <div className="text-lg font-bold text-blue-400">
                   {metrics.volatility.toFixed(2)}%
                 </div>
                 <div className="text-caption">Daily Volatility</div>
               </div>
             </Tooltip>
 
-            <div className="card-metric bg-neutral">
-              <div className="text-lg font-bold text-neutral">
+            <div className="card-metric bg-gray-800/50 border-gray-700/50">
+              <div className="text-lg font-bold text-blue-400">
                 {metrics.dailyReturnsCount}
               </div>
               <div className="text-caption">Data Points</div>
