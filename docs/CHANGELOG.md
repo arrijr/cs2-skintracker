@@ -3,6 +3,17 @@
 ## [Unreleased]
 
 ### Added
+* feat(cases): comprehensive case system with market analytics
+  * Frontend: New case overview page at `/cases` with sortable table and filtering in `frontend/src/app/cases/page.tsx`.
+  * Frontend: Case detail page at `/cases/[id]` with comprehensive analytics in `frontend/src/app/cases/[id]/page.tsx`.
+  * Frontend: Breadcrumbs component for navigation in `frontend/src/components/Breadcrumbs.tsx`.
+  * Frontend: Added "Cases" link to main navigation menu in `frontend/src/app/components/AppHeader.tsx`.
+  * Backend: Case controller with full CRUD operations in `backend/src/controllers/caseController.js`.
+  * Backend: Case routes with filtering, sorting, and detailed endpoints in `backend/src/routes/cases.js`.
+  * Backend: Database schema for cases, supply tracking, price history, and case-skin relationships.
+  * Backend: Test data generation script with 10 sample cases in `backend/scripts/generateCaseData.js`.
+  * Docs: Case system feature documentation in `/docs/features/case-system.md`.
+  * Docs: Updated API documentation with case endpoints in `/docs/API.md`.
 * feat(ui): unified design system and UX improvements
   * Frontend: New design system with CSS variables for consistent spacing and styling in `frontend/src/app/globals.css`.
   * Frontend: Standardized card components (`.card-standard`, `.card-kpi`, `.card-metric`) with unified padding and styling.

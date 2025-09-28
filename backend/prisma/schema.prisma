@@ -91,6 +91,7 @@ model Skin {
   portfolio      Portfolio[]
   transactions   Transaction[]
   marketSnapshots MarketSnapshot[]
+  caseSkins      CaseSkin[]
 
   @@index([rarity])
   @@index([wear])
@@ -226,4 +227,97 @@ model MarketSnapshot {
   @@index([skinId, date])
   @@index([date])
   @@index([source])
+}
+
+model Case {
+  id              Int      @id @default(autoincrement())
+  name            String   @unique
+  imageUrl        String?
+  description     String?
+  releaseDate     DateTime?
+  discontinuedDate DateTime?
+  isDiscontinued  Boolean  @default(false)
+  
+  // Current market data
+  price           Float?   // Current price in USD
+  marketCap       Float?   // Market capitalization
+  remaining       Int?     // Remaining supply
+  dropped         Int?     // Total dropped
+  unboxed         Int?     // Total unboxed
+  timeToExtinction Float?  // Estimated months to extinction
+  
+  // Price changes
+  priceChange24h  Float?   // 24h price change %
+  priceChange7d   Float?   // 7d price change %
+  priceChange30d  Float?   // 30d price change %
+  
+  // Metadata
+  lastUpdated     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  caseSupply      CaseSupply[]
+  caseSkins       CaseSkin[]
+  casePriceHistory CasePriceHistory[]
+  
+  @@index([isDiscontinued])
+  @@index([price])
+  @@index([timeToExtinction])
+  @@index([lastUpdated])
+}
+
+model CaseSupply {
+  id          Int      @id @default(autoincrement())
+  case        Case     @relation(fields: [caseId], references: [id])
+  caseId      Int
+  date        DateTime @db.Date // YYYY-MM-DD format
+  remaining   Int      // Remaining supply
+  dropped     Int      // Total dropped
+  unboxed     Int      // Total unboxed
+  price       Float?   // Price on this date
+  marketCap   Float?   // Market cap on this date
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([caseId, date]) // One supply record per case per day
+  @@index([caseId, date])
+  @@index([date])
+}
+
+model CaseSkin {
+  id          Int      @id @default(autoincrement())
+  case        Case     @relation(fields: [caseId], references: [id])
+  caseId      Int
+  skin        Skin     @relation(fields: [skinId], references: [id])
+  skinId      Int
+  rarity      String   // Consumer, Industrial, Mil-Spec, Restricted, Classified, Covert, Exceedingly Rare
+  dropChance  Float?   // Drop chance percentage
+  isSpecial   Boolean  @default(false) // For special items like knives
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([caseId, skinId]) // One case-skin relationship
+  @@index([caseId])
+  @@index([skinId])
+  @@index([rarity])
+}
+
+model CasePriceHistory {
+  id          Int      @id @default(autoincrement())
+  case        Case     @relation(fields: [caseId], references: [id])
+  caseId      Int
+  date        DateTime @db.Date // YYYY-MM-DD format
+  price       Float    // Price on this date
+  marketCap   Float?   // Market cap on this date
+  remaining   Int?     // Remaining supply on this date
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([caseId, date]) // One price record per case per day
+  @@index([caseId, date])
+  @@index([date])
 }

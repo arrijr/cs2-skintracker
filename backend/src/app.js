@@ -8,7 +8,7 @@ import "./cron/index.js";
 
 import userRoutes from "./routes/userRoutes.js";
 import skinRoutes from "./routes/skinRoutes.js";
-import caseRoutes from "./routes/caseRoutes.js";
+import caseRoutes from "./routes/cases.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
 import portfolioRoutes from "./routes/portfolioRoutes.js";
 import portfolioHistoryRoutes from "./routes/portfolioHistoryRoutes.js";

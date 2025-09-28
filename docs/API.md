@@ -739,6 +739,44 @@ Code kopieren
 curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/admin/coverage/missing-skins?limit=50" \
   -H "Authorization: Bearer <clerk-jwt-token>"
 
+Cases
+
+Get All Cases
+
+bash
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/cases?search=bravo&sortBy=price&sortOrder=desc"
+
+Get Case Details
+
+bash
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/cases/1"
+
+Get Case Supply History
+
+bash
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/cases/1/supply?days=30"
+
+Get Case Price History
+
+bash
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/cases/1/price-history?days=90"
+
+Get Case Skins
+
+bash
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/cases/1/skins"
+
+Get Case Statistics
+
+bash
+Code kopieren
+curl "$NEXT_PUBLIC_API_ORIGIN/api/v1/cases/stats"
+
 Notes
 Alle Beispiele verwenden ${NEXT_PUBLIC_API_ORIGIN} als Host.
 

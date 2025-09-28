@@ -22,6 +22,7 @@ export default function AppHeader() {
   const navigation = [
     { name: 'Home', href: '/' },
     { name: 'Skins', href: '/skins' },
+    { name: 'Cases', href: '/cases' },
     ...(isSignedIn ? [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'Portfolio', href: '/portfolio' },
