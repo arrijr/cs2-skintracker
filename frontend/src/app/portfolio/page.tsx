@@ -135,34 +135,34 @@ export default function PortfolioPage() {
       )}
 
       {/* Main */}
-      <main className="max-w-6xl mx-auto flex flex-col gap-8 relative z-10">
+      <main className="max-w-6xl mx-auto flex flex-col gap-12 relative z-10">
         {/* Header KPIs Section */}
         <Card className="card-enhanced">
-          <CardHeader>
-            <CardTitle className="text-3xl sm:text-4xl font-extrabold text-white animate-slide-in-left">Your Portfolio</CardTitle>
+          <CardHeader className="pb-8">
+            <CardTitle className="text-4xl sm:text-5xl font-extrabold text-white animate-slide-in-left mb-4">Your Portfolio</CardTitle>
             <CardDescription className="text-base text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
               Overview of your skins, value history & watchlist
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
           
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6 mb-8">
             <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-brand-yellow animate-slide-in-left">
+              <CardContent className="p-4 sm:p-6">
+                <div className="text-xl sm:text-2xl font-bold text-brand-yellow animate-slide-in-left">
                   {kpiData?.portfolioCount || portfolioSkins.length}
                 </div>
-                <div className="text-sm text-slate-300">Portfolio Skins</div>
+                <div className="text-xs sm:text-sm text-slate-300">Portfolio Skins</div>
               </CardContent>
             </Card>
             
             <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-brand-green animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="text-xl sm:text-2xl font-bold text-brand-green animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
                   ${kpiData?.portfolioValue?.toFixed(2) || "0.00"}
                 </div>
-                <div className="text-sm text-slate-300">Total Value</div>
+                <div className="text-xs sm:text-sm text-slate-300">Total Value</div>
                 {kpiData?.portfolioChange24h !== 0 && kpiData && (
                   <Badge 
                     variant={kpiData.portfolioChange24h > 0 ? "default" : "destructive"} 
@@ -179,8 +179,8 @@ export default function PortfolioPage() {
             </Card>
             
             <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-brand-blue animate-slide-in-left" style={{ animationDelay: '0.2s' }}>
+              <CardContent className="p-6">
+                <div className="text-2xl font-bold text-blue-400 animate-slide-in-left" style={{ animationDelay: '0.2s' }}>
                   ${kpiData?.totalInvested?.toFixed(2) || "0.00"}
                 </div>
                 <div className="text-sm text-slate-300">Total Invested</div>
@@ -188,7 +188,7 @@ export default function PortfolioPage() {
             </Card>
             
             <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
-              <CardContent className="p-4">
+              <CardContent className="p-6">
                 <div className={`text-2xl font-bold animate-slide-in-left ${
                   (kpiData?.unrealizedPL || 0) >= 0 ? 'text-brand-green' : 'text-red-400'
                 }`} style={{ animationDelay: '0.3s' }}>
@@ -211,8 +211,8 @@ export default function PortfolioPage() {
             </Card>
             
             <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-brand-blue animate-slide-in-left" style={{ animationDelay: '0.4s' }}>
+              <CardContent className="p-6">
+                <div className="text-2xl font-bold text-blue-400 animate-slide-in-left" style={{ animationDelay: '0.4s' }}>
                   {kpiData?.watchlistCount || watchlist.length}
                 </div>
                 <div className="text-sm text-slate-300">Watchlist</div>
@@ -220,7 +220,7 @@ export default function PortfolioPage() {
             </Card>
             
             <Card className="card-enhanced text-center group hover:scale-105 transition-all duration-300">
-              <CardContent className="p-4">
+              <CardContent className="p-6">
                 <div className="text-2xl font-bold text-brand-orange animate-slide-in-left" style={{ animationDelay: '0.5s' }}>
                   {kpiData?.activeAlerts || 0}
                 </div>
@@ -238,13 +238,13 @@ export default function PortfolioPage() {
 
         {/* Portfolio Chart Section */}
         <Card className="card-enhanced">
-          <CardHeader>
-            <CardTitle className="text-white animate-slide-in-left">Portfolio Value History</CardTitle>
-            <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+          <CardHeader className="pb-6">
+            <CardTitle className="text-2xl font-bold text-white animate-slide-in-left mb-2">Portfolio Value History</CardTitle>
+            <CardDescription className="text-base text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
               Track your portfolio performance over time
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <PortfolioChart history={history} />
           </CardContent>
         </Card>
@@ -298,109 +298,132 @@ export default function PortfolioPage() {
           </TabsContent>
         </Tabs>
 
-        {/* Performance Dashboard */}
-        <PremiumFeatureFlag feature="performance-dashboard">
-          <PerformanceDashboard 
-            portfolio={portfolioSkins} 
-            history={history}
-            isPremium={true}
-          />
-        </PremiumFeatureFlag>
+        {/* Premium Features Section */}
+        <div className="space-y-12">
+          {/* Section Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-700/50"></div>
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-slate-900 px-6 text-sm font-medium text-slate-400">Premium Features</span>
+            </div>
+          </div>
 
-        {/* Advanced Charts */}
-        <PremiumFeatureFlag feature="advanced-charts">
-          <AdvancedCharts 
-            portfolio={portfolioSkins} 
-            history={history}
-            isPremium={true}
-          />
-        </PremiumFeatureFlag>
+          {/* Performance Dashboard */}
+          <PremiumFeatureFlag feature="performance-dashboard">
+            <PerformanceDashboard 
+              portfolio={portfolioSkins} 
+              history={history}
+              isPremium={true}
+            />
+          </PremiumFeatureFlag>
 
-        {/* Smart Alerts */}
-        <PremiumFeatureFlag feature="smart-alerts">
-          <Card className="card-enhanced">
-            <CardHeader>
-              <CardTitle className="text-white animate-slide-in-left">Smart Alerts</CardTitle>
-              <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
-                Intelligent price alerts and notifications
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <SmartAlerts 
-                portfolio={portfolioSkins} 
-                history={history}
-                isPremium={true}
-              />
-            </CardContent>
-          </Card>
-        </PremiumFeatureFlag>
+          {/* Advanced Charts */}
+          <PremiumFeatureFlag feature="advanced-charts">
+            <Card className="card-enhanced">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-2xl font-bold text-white animate-slide-in-left mb-2">Advanced Charts</CardTitle>
+                <CardDescription className="text-base text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+                  Professional-grade charting and analysis tools
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <AdvancedCharts 
+                  portfolio={portfolioSkins} 
+                  history={history}
+                  isPremium={true}
+                />
+              </CardContent>
+            </Card>
+          </PremiumFeatureFlag>
 
-        {/* Transaction Analytics */}
-        <PremiumFeatureFlag feature="transaction-analytics">
-          <Card className="card-enhanced">
-            <CardHeader>
-              <CardTitle className="text-white animate-slide-in-left">Transaction Analytics</CardTitle>
-              <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
-                Detailed analysis of your trading activity
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TransactionAnalytics 
-                portfolio={portfolioSkins} 
-                history={history}
-                isPremium={true}
-              />
-            </CardContent>
-          </Card>
-        </PremiumFeatureFlag>
+          {/* Smart Alerts */}
+          <PremiumFeatureFlag feature="smart-alerts">
+            <Card className="card-enhanced">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-2xl font-bold text-white animate-slide-in-left mb-2">Smart Alerts</CardTitle>
+                <CardDescription className="text-base text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+                  Intelligent price alerts and notifications
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <SmartAlerts 
+                  portfolio={portfolioSkins} 
+                  history={history}
+                  isPremium={true}
+                />
+              </CardContent>
+            </Card>
+          </PremiumFeatureFlag>
 
-        {/* Portfolio Health Score */}
-        <PremiumFeatureFlag feature="portfolio-health-score">
-          <Card className="card-enhanced">
-            <CardHeader>
-              <CardTitle className="text-white animate-slide-in-left">Portfolio Health Score</CardTitle>
-              <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
-                Assess the health and risk of your portfolio
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PortfolioHealthScore 
-                portfolio={portfolioSkins} 
-                history={history}
-                isPremium={true}
-              />
-            </CardContent>
-          </Card>
-        </PremiumFeatureFlag>
+          {/* Transaction Analytics */}
+          <PremiumFeatureFlag feature="transaction-analytics">
+            <Card className="card-enhanced">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-2xl font-bold text-white animate-slide-in-left mb-2">Transaction Analytics</CardTitle>
+                <CardDescription className="text-base text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+                  Detailed analysis of your trading activity
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <TransactionAnalytics 
+                  portfolio={portfolioSkins} 
+                  history={history}
+                  isPremium={true}
+                />
+              </CardContent>
+            </Card>
+          </PremiumFeatureFlag>
 
-        {/* Market Intelligence */}
-        <PremiumFeatureFlag feature="market-intelligence">
-          <Card className="card-enhanced">
-            <CardHeader>
-              <CardTitle className="text-white animate-slide-in-left">Market Intelligence</CardTitle>
-              <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
-                Market insights and trends analysis
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <MarketIntelligence 
-                portfolio={portfolioSkins} 
-                history={history}
-                isPremium={true}
-              />
-            </CardContent>
-          </Card>
-        </PremiumFeatureFlag>
+          {/* Portfolio Health Score */}
+          <PremiumFeatureFlag feature="portfolio-health-score">
+            <Card className="card-enhanced">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-2xl font-bold text-white animate-slide-in-left mb-2">Portfolio Health Score</CardTitle>
+                <CardDescription className="text-base text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+                  Assess the health and risk of your portfolio
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <PortfolioHealthScore 
+                  portfolio={portfolioSkins} 
+                  history={history}
+                  isPremium={true}
+                />
+              </CardContent>
+            </Card>
+          </PremiumFeatureFlag>
+
+          {/* Market Intelligence */}
+          <PremiumFeatureFlag feature="market-intelligence">
+            <Card className="card-enhanced">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-2xl font-bold text-white animate-slide-in-left mb-2">Market Intelligence</CardTitle>
+                <CardDescription className="text-base text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+                  Market insights and trends analysis
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <MarketIntelligence 
+                  portfolio={portfolioSkins} 
+                  history={history}
+                  isPremium={true}
+                />
+              </CardContent>
+            </Card>
+          </PremiumFeatureFlag>
+        </div>
 
         {/* Portfolio Allocation */}
         <Card className="card-enhanced">
-          <CardHeader>
-            <CardTitle className="text-white animate-slide-in-left">Portfolio Allocation</CardTitle>
-            <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+          <CardHeader className="pb-6">
+            <CardTitle className="text-2xl font-bold text-white animate-slide-in-left mb-2">Portfolio Allocation</CardTitle>
+            <CardDescription className="text-base text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
               See how your skins are distributed
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <PortfolioAllocation 
               portfolio={portfolioSkins} 
               onFilterChange={setActiveFilter}
