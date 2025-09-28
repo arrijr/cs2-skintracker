@@ -2,7 +2,8 @@
 import { useState, useMemo } from "react";
 import { Line, Bar, Doughnut } from "react-chartjs-2";
 import { Chart, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend, Title } from "chart.js";
-import { TrendingUp, TrendingDown, BarChart3, PieChart, Lock } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart3, PieChart, Lock, Info } from "lucide-react";
+import Tooltip from "../components/Tooltip";
 
 // Chart.js Registration
 Chart.register(
@@ -239,9 +240,9 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">Advanced Charts</h3>
+        <h3 className="text-2xl font-bold text-white">Advanced Charts</h3>
         {!isPremium && (
           <div className="text-xs bg-amber-600/20 text-amber-400 px-2 py-1 rounded">
             🔒 Premium Feature
@@ -320,7 +321,7 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="bg-gray-800 rounded-lg p-8 max-w-md mx-auto">
+          <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-8 max-w-md mx-auto">
             <Lock className="w-16 h-16 mx-auto mb-4 text-amber-400" />
             <h4 className="text-xl font-medium mb-2">Unlock Advanced Charts</h4>
             <p className="text-sm text-gray-400 mb-6">
@@ -337,24 +338,41 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
       {isPremium && selectedChart === "candlestick" && (
         <div className="mt-6 pt-6 border-t border-gray-700">
           <div className="grid grid-cols-3 gap-4 text-sm">
-            <div className="text-center">
-              <div className="text-gray-400">Best Day</div>
-              <div className="text-green-400 font-medium">
-                {Math.max(...chartData.candlestick.map(entry => entry.changePercent)).toFixed(2)}%
+            <Tooltip content="Highest single-day percentage gain in your portfolio">
+              <div className="text-center p-3 bg-gray-800/30 border border-gray-700/50 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
+                <div className="text-gray-400 flex items-center justify-center gap-1 mb-1">
+                  Best Day
+                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
+                </div>
+                <div className="text-green-400 font-medium">
+                  {Math.max(...chartData.candlestick.map(entry => entry.changePercent)).toFixed(2)}%
+                </div>
               </div>
-            </div>
-            <div className="text-center">
-              <div className="text-gray-400">Worst Day</div>
-              <div className="text-red-400 font-medium">
-                {Math.min(...chartData.candlestick.map(entry => entry.changePercent)).toFixed(2)}%
+            </Tooltip>
+            
+            <Tooltip content="Lowest single-day percentage loss in your portfolio">
+              <div className="text-center p-3 bg-gray-800/30 border border-gray-700/50 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
+                <div className="text-gray-400 flex items-center justify-center gap-1 mb-1">
+                  Worst Day
+                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
+                </div>
+                <div className="text-red-400 font-medium">
+                  {Math.min(...chartData.candlestick.map(entry => entry.changePercent)).toFixed(2)}%
+                </div>
               </div>
-            </div>
-            <div className="text-center">
-              <div className="text-gray-400">Avg Daily Change</div>
-              <div className="text-blue-400 font-medium">
-                {(chartData.candlestick.reduce((sum, entry) => sum + entry.changePercent, 0) / chartData.candlestick.length).toFixed(2)}%
+            </Tooltip>
+            
+            <Tooltip content="Average daily percentage change across all trading days">
+              <div className="text-center p-3 bg-gray-800/30 border border-gray-700/50 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
+                <div className="text-gray-400 flex items-center justify-center gap-1 mb-1">
+                  Avg Daily Change
+                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
+                </div>
+                <div className="text-blue-400 font-medium">
+                  {(chartData.candlestick.reduce((sum, entry) => sum + entry.changePercent, 0) / chartData.candlestick.length).toFixed(2)}%
+                </div>
               </div>
-            </div>
+            </Tooltip>
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { Bell, AlertTriangle, TrendingUp, TrendingDown, Settings, Zap, Shield } from "lucide-react";
+import { Bell, AlertTriangle, TrendingUp, TrendingDown, Settings, Zap, Shield, Info } from "lucide-react";
 import Tooltip from "../components/Tooltip";
 
 type PortfolioEntry = {
@@ -356,7 +356,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
               <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
                 <div className="text-gray-400 flex items-center justify-center gap-1">
                   RSI (14)
-                  <span className="text-xs">ℹ️</span>
+                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
                 </div>
                 <div className={`font-medium ${
                   technicalIndicators.rsi > 70 ? 'text-red-400' : 
@@ -371,7 +371,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
               <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
                 <div className="text-gray-400 flex items-center justify-center gap-1">
                   MACD
-                  <span className="text-xs">ℹ️</span>
+                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
                 </div>
                 <div className={`font-medium ${
                   technicalIndicators.macd > 0 ? 'text-green-400' : 'text-red-400'
@@ -385,7 +385,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
               <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
                 <div className="text-gray-400 flex items-center justify-center gap-1">
                   SMA 20
-                  <span className="text-xs">ℹ️</span>
+                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
                 </div>
                 <div className="font-medium text-blue-400">
                   ${technicalIndicators.sma20.toFixed(2)}
@@ -397,7 +397,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
               <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
                 <div className="text-gray-400 flex items-center justify-center gap-1">
                   SMA 50
-                  <span className="text-xs">ℹ️</span>
+                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
                 </div>
                 <div className="font-medium text-blue-400">
                   ${technicalIndicators.sma50.toFixed(2)}

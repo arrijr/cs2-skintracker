@@ -1,6 +1,6 @@
 "use client";
 import { useMemo } from "react";
-import { TrendingUp, TrendingDown, Activity, Shield, Target, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Shield, Target, BarChart3, Info } from "lucide-react";
 import Tooltip from "../components/Tooltip";
 
 type PortfolioEntry = {
@@ -184,7 +184,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Activity className="w-5 h-5 text-blue-400" />
                   <span className="text-caption">Sharpe Ratio</span>
-                  <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
+                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors cursor-help" />
                 </div>
                 <div className="text-xl font-bold text-blue-400">
                   {metrics.sharpeRatio.toFixed(3)}
@@ -197,7 +197,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <BarChart3 className="w-5 h-5 text-blue-400" />
                   <span className="text-caption">Beta</span>
-                  <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
+                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors cursor-help" />
                 </div>
                 <div className="text-xl font-bold text-blue-400">
                   {metrics.beta.toFixed(2)}
@@ -210,7 +210,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Target className={`w-5 h-5 ${metrics.alpha >= 0 ? 'text-green-400' : 'text-red-400'}`} />
                   <span className="text-caption">Alpha</span>
-                  <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
+                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors cursor-help" />
                 </div>
                 <div className={`text-xl font-bold ${metrics.alpha >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {formatPercent(metrics.alpha * 100)}
@@ -223,7 +223,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Shield className="w-5 h-5 text-red-400" />
                   <span className="text-caption">Max Drawdown</span>
-                  <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
+                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors cursor-help" />
                 </div>
                 <div className="text-xl font-bold text-red-400">
                   {metrics.maxDrawdown.toFixed(1)}%
