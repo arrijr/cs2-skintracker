@@ -234,7 +234,7 @@ export default function PortfolioPage() {
       {/* Portfolio Chart Section */}
       <Card className="card-standard">
         <CardHeader className="pb-8">
-          <CardTitle className="text-3xl font-bold text-white mb-3">Portfolio Value History</CardTitle>
+          <CardTitle className="text-2xl font-bold text-white mb-3">Portfolio Value History</CardTitle>
           <CardDescription className="text-lg text-gray-400">
             Track your portfolio performance over time
           </CardDescription>
@@ -294,7 +294,7 @@ export default function PortfolioPage() {
         </Tabs>
 
       {/* Premium Features Section */}
-      <div className="space-y-16">
+      <div className="space-y-20">
         {/* Section Divider */}
         <div className="relative my-16">
           <div className="absolute inset-0 flex items-center">
@@ -325,7 +325,7 @@ export default function PortfolioPage() {
                 Professional-grade charting and analysis tools
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 pb-8">
               <AdvancedCharts
                 portfolio={portfolioSkins}
                 history={history}
@@ -344,7 +344,7 @@ export default function PortfolioPage() {
                   Intelligent price alerts and notifications
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 pb-8">
                 <SmartAlerts 
                   portfolio={portfolioSkins} 
                   history={history}
@@ -363,7 +363,7 @@ export default function PortfolioPage() {
                   Detailed analysis of your trading activity
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 pb-8">
                 <TransactionAnalytics 
                   portfolio={portfolioSkins} 
                   history={history}
@@ -382,7 +382,7 @@ export default function PortfolioPage() {
                   Assess the health and risk of your portfolio
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 pb-8">
                 <PortfolioHealthScore 
                   portfolio={portfolioSkins} 
                   history={history}
@@ -401,7 +401,7 @@ export default function PortfolioPage() {
                   Market insights and trends analysis
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 pb-8">
                 <MarketIntelligence 
                   portfolio={portfolioSkins} 
                   history={history}

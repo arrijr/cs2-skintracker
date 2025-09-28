@@ -125,7 +125,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
   return (
     <div className="card-standard">
       <div className="flex items-center justify-between mb-12">
-        <h3 className="text-3xl font-bold text-white">Portfolio Performance</h3>
+        <h3 className="text-2xl font-bold text-white">Portfolio Performance</h3>
         {!isPremium && (
           <div className="text-xs bg-amber-600/20 text-amber-400 px-3 py-1 rounded-full">
             🔒 Premium Feature
@@ -169,7 +169,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
               <span className="text-lg font-medium text-white">Advanced Analytics</span>
               <span className="text-sm text-gray-400">(Optional)</span>
             </div>
-            <div className="text-gray-400 group-open:rotate-180 transition-transform">
+            <div className="text-gray-400 group-open:rotate-180 transition-transform duration-200">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -184,6 +184,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Activity className="w-5 h-5 text-neutral" />
                   <span className="text-caption">Sharpe Ratio</span>
+                  <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
                 </div>
                 <div className="text-xl font-bold text-neutral">
                   {metrics.sharpeRatio.toFixed(3)}
@@ -196,6 +197,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <BarChart3 className="w-5 h-5 text-neutral" />
                   <span className="text-caption">Beta</span>
+                  <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
                 </div>
                 <div className="text-xl font-bold text-neutral">
                   {metrics.beta.toFixed(2)}
@@ -208,6 +210,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Target className={`w-5 h-5 ${metrics.alpha >= 0 ? 'text-positive' : 'text-negative'}`} />
                   <span className="text-caption">Alpha</span>
+                  <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
                 </div>
                 <div className={`text-xl font-bold ${metrics.alpha >= 0 ? 'text-positive' : 'text-negative'}`}>
                   {formatPercent(metrics.alpha * 100)}
@@ -220,6 +223,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Shield className="w-5 h-5 text-negative" />
                   <span className="text-caption">Max Drawdown</span>
+                  <span className="text-xs text-gray-400 cursor-help">ℹ️</span>
                 </div>
                 <div className="text-xl font-bold text-negative">
                   {metrics.maxDrawdown.toFixed(1)}%
