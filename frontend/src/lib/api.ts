@@ -39,8 +39,8 @@ export async function fetchJson<T = unknown>(
       "Content-Type": "application/json",
       ...(init.headers || {}),
     },
-    // Keine Cookies zum Next.js-Host schicken; wir rufen direkt das Render-Backend
-    credentials: "omit",
+    // Include credentials for CORS
+    credentials: "include",
   });
 
   if (!res.ok) {
