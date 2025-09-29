@@ -8,7 +8,7 @@ const VERCEL_ENV = (process.env.NEXT_PUBLIC_VERCEL_ENV ||
 
 // Erlaube explizite DEV/PROD-Origins, fallback auf gemeinsame Variable:
 const ORIGIN_DEV =
-  process.env.NEXT_PUBLIC_API_ORIGIN_DEV || process.env.NEXT_PUBLIC_API_ORIGIN || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_ORIGIN_DEV || process.env.NEXT_PUBLIC_API_ORIGIN || "https://cs2-skintracker-dev.onrender.com";
 const ORIGIN_PROD =
   process.env.NEXT_PUBLIC_API_ORIGIN_PROD || process.env.NEXT_PUBLIC_API_ORIGIN || "https://cs2-skintracker.onrender.com";
 
