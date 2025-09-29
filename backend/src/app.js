@@ -25,8 +25,9 @@ dotenv.config();
 const app = express();
 
 // Force restart trigger for CORS fix
-console.log("[APP] Starting with updated CORS configuration - v1.3");
-console.log("[CORS] Allowing ALL origins to fix Vercel preview domain issues");
+console.log("[APP] Starting with updated CORS configuration - v1.4");
+console.log("[CORS] EMERGENCY FIX: Allowing ALL origins to fix persistent CORS issues");
+console.log("[CORS] Render deployment needed - CORS still blocking requests");
 
 // Security headers
 app.use(helmet({
@@ -75,13 +76,28 @@ const whitelist = [
 const corsOptions = {
   origin: true, // Allow all origins for now to fix CORS issues
   credentials: true, // Allow credentials
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['Content-Length', 'X-Foo'],
+  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+  preflightContinue: false
 };
 
 // {/* Global CORS for all requests */}
 app.use(cors(corsOptions));
+
+// {/* Emergency CORS fallback - allow everything */}
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
 // {/* Preflight for ALL paths (Regex, kein "*" mehr) */}
 app.options(/.*/, cors(corsOptions));
