@@ -93,6 +93,10 @@ const corsOptions = {
       return cb(null, true);
     }
     
+    // Allow all origins for debugging
+    console.log(`[CORS] Allowed (debug): ${origin}`);
+    return cb(null, true);
+    
     // Allow all Vercel preview domains
     if (/\.vercel\.app$/.test(origin)) {
       console.log(`[CORS] Allowed (Vercel): ${origin}`);
