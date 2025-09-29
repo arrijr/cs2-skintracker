@@ -55,9 +55,13 @@ export function EnhancedSkinGrid({
   onToggleSelection
 }: EnhancedSkinGridProps) {
   const { user, isLoaded } = useUser();
-  const { getToken } = useAuth();
+  const auth = useAuth();
+  const getToken = auth?.getToken;
   
-  // Guard against undefined getToken
+  // Guard against undefined auth or getToken
+  if (!auth) {
+    console.warn('[EnhancedSkinGrid] useAuth returned undefined');
+  }
   if (!getToken) {
     console.warn('[EnhancedSkinGrid] getToken is undefined');
   }
@@ -421,3 +425,5 @@ export function EnhancedSkinGrid({
     </div>
   );
 }
+
+export default EnhancedSkinGrid;
