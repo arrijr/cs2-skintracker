@@ -56,6 +56,11 @@ export function EnhancedSkinGrid({
 }: EnhancedSkinGridProps) {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
+  
+  // Guard against undefined getToken
+  if (!getToken) {
+    console.warn('[EnhancedSkinGrid] getToken is undefined');
+  }
   const router = useRouter();
   const observerRef = useRef<HTMLDivElement>(null);
   
@@ -123,6 +128,12 @@ export function EnhancedSkinGrid({
     if (onSkinAdd) {
       onSkinAdd(skinId);
     } else {
+      if (!getToken) {
+        console.error('[EnhancedSkinGrid] Cannot add to portfolio: getToken is undefined');
+        toast.error("Authentication error");
+        return;
+      }
+      
       try {
         const token = await getToken({ template: "backend" });
         await fetchJson(apiUrl('/api/v1/portfolio'), {
@@ -151,6 +162,12 @@ export function EnhancedSkinGrid({
     if (!user) { 
       router.push("/sign-in"); 
       return; 
+    }
+    
+    if (!getToken) {
+      console.error('[EnhancedSkinGrid] Cannot toggle watchlist: getToken is undefined');
+      toast.error("Authentication error");
+      return;
     }
     
     try {
