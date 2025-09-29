@@ -173,10 +173,11 @@ async function generateCaseData() {
     console.log('🎲 Generating case data...');
 
     // Clear existing case data
-    await prisma.caseSkin.deleteMany();
-    await prisma.caseSupply.deleteMany();
-    await prisma.casePriceHistory.deleteMany();
-    await prisma.case.deleteMany();
+    // ⚠️  DANGER: DESTRUCTIVE OPERATIONS - DO NOT RUN IN PRODUCTION!
+    // await prisma.caseSkin.deleteMany();
+    // await prisma.caseSupply.deleteMany();
+    // await prisma.casePriceHistory.deleteMany();
+    // await prisma.case.deleteMany();
 
     // Create cases
     for (const caseData of sampleCases) {
