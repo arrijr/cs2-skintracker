@@ -32,10 +32,32 @@ interface EnhancedSkinCardProps {
     quality?: string;
     isStattrak?: boolean;
     isStar?: boolean;
-    priceAvg?: number;
+    // Price fields from our realistic price generation
+    priceLatest?: number;
     priceMedian?: number;
-    offerVolume?: number;
+    priceAvg?: number;
+    priceSafe?: number;
+    priceMin?: number;
+    priceMax?: number;
+    priceMedian24h?: number;
+    priceMedian7d?: number;
+    priceMedian30d?: number;
+    priceMedian90d?: number;
+    priceAvg24h?: number;
+    priceAvg7d?: number;
+    priceAvg30d?: number;
+    priceAvg90d?: number;
+    // Market data
+    soldToday?: number;
     sold24h?: number;
+    sold7d?: number;
+    sold30d?: number;
+    sold90d?: number;
+    soldTotal?: number;
+    hoursToSold?: number;
+    offerVolume?: number;
+    buyOrderVolume?: number;
+    priceUpdatedAt?: string;
     change24h?: number;
     change7d?: number;
   };
@@ -175,7 +197,7 @@ export function EnhancedSkinCard({
                 {/* Price */}
                 <div className="text-right">
                   <div className="text-lg font-bold text-white">
-                    {formatUSD(skin.priceAvg)}
+                    {formatUSD(skin.priceLatest || skin.priceMedian || skin.priceAvg || 0)}
                   </div>
                   {skin.change24h !== undefined && (
                     <div className={cn(

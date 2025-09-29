@@ -53,12 +53,32 @@ type Skin = {
   quality?: string;
   isStattrak?: boolean;
   isStar?: boolean;
+  // Price fields from our realistic price generation
+  priceLatest?: number;
+  priceMedian?: number;
+  priceAvg?: number;
+  priceSafe?: number;
+  priceMin?: number;
+  priceMax?: number;
   priceMedian24h?: number;
   priceMedian7d?: number;
   priceMedian30d?: number;
   priceMedian90d?: number;
-  priceAvg?: number;
-  priceMedian?: number;
+  priceAvg24h?: number;
+  priceAvg7d?: number;
+  priceAvg30d?: number;
+  priceAvg90d?: number;
+  // Market data
+  soldToday?: number;
+  sold24h?: number;
+  sold7d?: number;
+  sold30d?: number;
+  sold90d?: number;
+  soldTotal?: number;
+  hoursToSold?: number;
+  offerVolume?: number;
+  buyOrderVolume?: number;
+  priceUpdatedAt?: string;
 };
 
 type PriceHistory = {
@@ -605,7 +625,7 @@ export default function SkinDetailPage() {
                 {/* P1 - Price mit 24h/7d-Change */}
                 <div className="space-y-2">
                   <div className="text-3xl font-bold text-primary">
-                    {formatUSD(skin.marketPrice)}
+                    {formatUSD(skin.priceLatest || skin.priceMedian || skin.priceAvg || skin.marketPrice || 0)}
              </div>
                   
                   {/* P2 - Price Deltas mit A11y Tooltips */}
@@ -613,21 +633,21 @@ export default function SkinDetailPage() {
                     <div className="flex items-center gap-1">
                       <span className="text-muted-foreground">24h:</span>
                       <div className="flex items-center gap-1">
-                        {skin.priceMedian24h && skin.marketPrice ? (
+                        {skin.priceMedian24h && (skin.priceLatest || skin.priceMedian || skin.priceAvg) ? (
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="flex items-center gap-1 cursor-help">
-                                  {skin.marketPrice > skin.priceMedian24h ? (
+                                  {(skin.priceLatest || skin.priceMedian || skin.priceAvg) > skin.priceMedian24h ? (
                                     <TrendingUp className="h-3 w-3 text-green-500" aria-label="Price increased" />
                                   ) : (
                                     <TrendingDown className="h-3 w-3 text-red-500" aria-label="Price decreased" />
                                   )}
                                   <span 
-                                    className={skin.marketPrice > skin.priceMedian24h ? "text-green-500" : "text-red-500"}
-                                    aria-label={`Price change: ${((skin.marketPrice - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%`}
+                                    className={(skin.priceLatest || skin.priceMedian || skin.priceAvg) > skin.priceMedian24h ? "text-green-500" : "text-red-500"}
+                                    aria-label={`Price change: ${(((skin.priceLatest || skin.priceMedian || skin.priceAvg) - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%`}
                                   >
-                                    {((skin.marketPrice - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%
+                                    {(((skin.priceLatest || skin.priceMedian || skin.priceAvg) - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%
                                   </span>
                                 </div>
                               </TooltipTrigger>
@@ -644,21 +664,21 @@ export default function SkinDetailPage() {
                     <div className="flex items-center gap-1">
                       <span className="text-muted-foreground">7d:</span>
                       <div className="flex items-center gap-1">
-                        {skin.priceMedian7d && skin.marketPrice ? (
+                        {skin.priceMedian7d && (skin.priceLatest || skin.priceMedian || skin.priceAvg) ? (
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="flex items-center gap-1 cursor-help">
-                                  {skin.marketPrice > skin.priceMedian7d ? (
+                                  {(skin.priceLatest || skin.priceMedian || skin.priceAvg) > skin.priceMedian7d ? (
                                     <TrendingUp className="h-3 w-3 text-green-500" aria-label="Price increased" />
                                   ) : (
                                     <TrendingDown className="h-3 w-3 text-red-500" aria-label="Price decreased" />
                                   )}
                                   <span 
-                                    className={skin.marketPrice > skin.priceMedian7d ? "text-green-500" : "text-red-500"}
-                                    aria-label={`Price change: ${((skin.marketPrice - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%`}
+                                    className={(skin.priceLatest || skin.priceMedian || skin.priceAvg) > skin.priceMedian7d ? "text-green-500" : "text-red-500"}
+                                    aria-label={`Price change: ${(((skin.priceLatest || skin.priceMedian || skin.priceAvg) - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%`}
                                   >
-                                    {((skin.marketPrice - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%
+                                    {(((skin.priceLatest || skin.priceMedian || skin.priceAvg) - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%
                                   </span>
                                 </div>
                               </TooltipTrigger>
