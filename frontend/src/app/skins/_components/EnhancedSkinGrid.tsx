@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { EnhancedSkinCard } from "./EnhancedSkinCard";
 import { useInfiniteSkins, type SkinsFilters } from "@/hooks/useInfiniteSkins";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,7 @@ export function EnhancedSkinGrid({
   onToggleSelection
 }: EnhancedSkinGridProps) {
   const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
   const observerRef = useRef<HTMLDivElement>(null);
   
@@ -123,7 +124,7 @@ export function EnhancedSkinGrid({
       onSkinAdd(skinId);
     } else {
       try {
-        const token = await user.getToken({ template: "backend" });
+        const token = await getToken({ template: "backend" });
         await fetchJson(apiUrl('/api/v1/portfolio'), {
           method: "POST",
           headers: { 
@@ -153,7 +154,7 @@ export function EnhancedSkinGrid({
     }
     
     try {
-      const token = await user.getToken({ template: "backend" });
+      const token = await getToken({ template: "backend" });
       await fetchJson(apiUrl('/api/v1/watchlist'), {
         method: "POST",
         headers: { 
