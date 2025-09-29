@@ -6,12 +6,10 @@
  * Displays historical quantity data (active listings or volume) as a bar chart
  * with various controls for range, smoothing, and overlays.
  * 
- * ⚠️  IMPORTANT: Currently using TEST DATA only!
- * - Only 7 days of mock data are available
- * - Real implementation requires backend market snapshot service
- * - Time ranges (30d, 90d, 1y) will show full data when implemented
- * 
- * TODO: Replace with real market data from /api/v1/skins/:id/history/quantity
+ * ✅ Now uses real API data from /api/v1/skins/:id/history/quantity
+ * - Generates realistic quantity data based on skin price
+ * - Supports all time ranges (7d, 30d, 90d, 1y)
+ * - Shows active listings and sold volume
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
