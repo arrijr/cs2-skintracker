@@ -24,8 +24,10 @@ async function getCurrentSteamPrice(marketHashName) {
 export const getPortfolio = async (req, res) => {
   try {
     const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
+    console.log('[PORTFOLIO-DEBUG] getPortfolio called with userId:', userId);
     
     if (!userId) {
+      console.log('[PORTFOLIO-DEBUG] No userId found, returning empty array');
       return res.json([]); // Return empty array if no user
     }
 
@@ -35,6 +37,9 @@ export const getPortfolio = async (req, res) => {
       include: { skin: true },           // enthält u.a. name, market_hash_name, image_url
       orderBy: { buyDate: 'asc' }
     });
+    
+    console.log('[PORTFOLIO-DEBUG] Found portfolio entries:', entries.length);
+    console.log('[PORTFOLIO-DEBUG] Entries:', entries);
 
     // 2) Nach Skin aggregieren
     const skinMap = {};

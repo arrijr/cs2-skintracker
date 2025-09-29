@@ -50,6 +50,12 @@ export function useAuthenticatedPortfolio() {
       refreshInterval: 30000,
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
+      onSuccess: (data) => {
+        console.log('[PORTFOLIO-DEBUG] Portfolio data received:', data);
+      },
+      onError: (error) => {
+        console.error('[PORTFOLIO-DEBUG] Portfolio error:', error);
+      },
     }
   );
 

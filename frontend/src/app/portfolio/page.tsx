@@ -21,7 +21,6 @@ import SmartAlerts from "./SmartAlerts";
 import TransactionAnalytics from "./TransactionAnalytics";
 import PortfolioHealthScore from "./PortfolioHealthScore";
 import MarketIntelligence from "./MarketIntelligence";
-import { EnhancedPortfolioGrid } from "./_components/EnhancedPortfolioGrid";
 
 
 // {/* Authentifizierte Hooks */}
@@ -262,16 +261,22 @@ export default function PortfolioPage() {
           </TabsList>
           
           <TabsContent value="portfolio" className="space-y-6">
-            <EnhancedPortfolioGrid
-              entries={portfolioSkins}
-              onDataChange={() => mutate()}
-              enableFilters={true}
-              enableSorting={true}
-              enableSearch={true}
-              showStats={false}
-              showSkeleton={isLoading}
-              skeletonCount={8}
-            />
+            <Card className="card-enhanced">
+              <CardHeader>
+                <CardTitle className="text-white animate-slide-in-left">Portfolio</CardTitle>
+                <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+                  Your current skin holdings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PortfolioTable
+                  skins={portfolioSkins}
+                  watchlist={[]}
+                  onDataChange={() => mutate()}
+                  activeFilter={null}
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
           
           <TabsContent value="watchlist" className="space-y-6">
