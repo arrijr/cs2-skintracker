@@ -63,15 +63,11 @@ export function useAuthenticatedPortfolio() {
     }
   );
 
-  const { data: history, error: historyError, isLoading: historyLoading, mutate: mutateHistory } = useSWR<PortfolioHistoryEntry[]>(
-    apiUrl('/api/v1/portfolio/history'),
-    authenticatedFetcher,
-    {
-      refreshInterval: 60000,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-    }
-  );
+  // Portfolio history endpoint doesn't exist yet, so we'll skip it for now
+  const history: PortfolioHistoryEntry[] = [];
+  const historyError = null;
+  const historyLoading = false;
+  const mutateHistory = () => {};
 
   return {
     portfolio: portfolio || [],
