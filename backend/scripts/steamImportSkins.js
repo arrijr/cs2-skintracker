@@ -11,8 +11,23 @@ const STEAM_API_KEY = process.env.STEAM_API_KEY;
 // Safety check: Only allow in development or with explicit production flag
 checkProductionSafety("Steam API skin import", false);
 
+// Command line arguments
+const args = process.argv.slice(2);
+const isDryRun = args.includes('--dry-run');
+const isRealRun = args.includes('--real-run');
+
+if (isDryRun) {
+  console.log("🔍 [DRY-RUN] Mode activated - no database writes will be performed");
+} else if (isRealRun) {
+  console.log("🚀 [REAL-RUN] Mode activated - database writes will be performed");
+} else {
+  console.log("⚠️ [MODE] Please specify --dry-run or --real-run");
+  console.log("Usage: node steamImportSkins.js --dry-run|--real-run");
+  process.exit(1);
+}
+
 // Rate limiting configuration
-const BATCH_SIZE = 100;
+const BATCH_SIZE = 10; // Small batch for testing
 const BATCH_DELAY = 1000; // 1 second between batches
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds base delay
@@ -48,14 +63,15 @@ async function retryWithBackoff(fn, maxRetries = MAX_RETRIES) {
 }
 
 /**
- * Fetch skins from Steam API with pagination
+ * Fetch skins from Steam Web API (using existing service endpoint)
  */
 async function fetchSteamSkins() {
   if (!STEAM_API_KEY) {
     throw new Error("❌ STEAM_API_KEY not found in environment variables");
   }
 
-  console.log("🔍 [STEAM] Starting Steam API skin fetch...");
+  console.log("🔍 [STEAM] Starting Steam Web API skin fetch...");
+  console.log(`🔑 [STEAM] API Key: ${STEAM_API_KEY.slice(-4)} (last 4 chars)`);
   
   const allSkins = [];
   let hasMore = true;
@@ -64,12 +80,16 @@ async function fetchSteamSkins() {
 
   while (hasMore) {
     try {
-      const url = `https://api.steampowered.com/IEconItems_730/GetItems/v0001/?key=${STEAM_API_KEY}&appid=730&start=${start}&count=${BATCH_SIZE}`;
+      // Use the same endpoint as our existing steamService
+      const url = `https://www.steamwebapi.com/steam/api/items?key=${STEAM_API_KEY}&game=cs2&start=${start}&count=${BATCH_SIZE}`;
       
       console.log(`📡 [STEAM] Fetching batch starting at ${start}...`);
       
       const response = await retryWithBackoff(async () => {
-        const res = await fetch(url);
+        const res = await fetch(url, { 
+          timeout: 30000, // 30 second timeout
+          signal: AbortSignal.timeout(30000)
+        });
         if (!res.ok) {
           const error = new Error(`HTTP ${res.status}: ${res.statusText}`);
           error.status = res.status;
@@ -80,12 +100,13 @@ async function fetchSteamSkins() {
 
       const data = await response.json();
       
-      if (!data.result || !data.result.items) {
+      if (!Array.isArray(data)) {
         console.log("⚠️ [STEAM] No items in response, stopping pagination");
+        console.log("📄 [STEAM] Response:", JSON.stringify(data, null, 2));
         break;
       }
 
-      const items = data.result.items;
+      const items = data;
       allSkins.push(...items);
       totalFetched += items.length;
       
@@ -111,35 +132,46 @@ async function fetchSteamSkins() {
 }
 
 /**
- * Map Steam API item to our database schema
+ * Map Steam Web API item to our database schema
  */
 function mapSteamItemToSkin(item) {
   return {
-    name: item.name || item.market_name || 'Unknown',
-    marketHashName: item.market_hash_name || item.name || 'Unknown',
-    imageUrl: item.icon_url || item.icon_url_large || null,
-    type: item.type || null,
-    weapon: item.weapon_type || null,
+    name: item.itemname || item.name || 'Unknown',
+    marketHashName: item.markethashname || item.market_hash_name || item.name || 'Unknown',
+    imageUrl: item.itemimage || item.icon_url || null,
+    weaponType: item.itemgroup || item.weapon_type || null,
     rarity: item.rarity || null,
     collection: item.collection || null,
-    case: item.case || null,
-    exterior: item.exterior || null,
+    wear: item.wear || item.exterior || null,
     quality: item.quality || null,
-    // Set default values for required fields
-    currentPrice: 0,
-    priceHistory: [],
-    lastUpdated: new Date(),
+    isStattrak: item.isstattrak || false,
+    isStar: item.isstar || false,
+    itemType: item.itemtype || item.type || null,
+    itemName: item.itemname || item.name || null,
+    itemGroup: item.itemgroup || item.weapon_type || null,
   };
 }
 
 /**
- * Upsert skin into database
+ * Upsert skin into database (with dry-run support)
  */
 async function upsertSkin(skinData) {
-  const where = {
-    marketHashName: skinData.marketHashName
-  };
+  if (isDryRun) {
+    // Dry run: just check if skin exists
+    const existingSkin = await prisma.skin.findUnique({
+      where: { marketHashName: skinData.marketHashName }
+    });
+    
+    if (existingSkin) {
+      console.log(`🔍 [DRY-RUN] Would UPDATE skin: ${skinData.name}`);
+      return { action: 'update', skin: existingSkin };
+    } else {
+      console.log(`🔍 [DRY-RUN] Would INSERT skin: ${skinData.name}`);
+      return { action: 'insert', skin: skinData };
+    }
+  }
 
+  // Real run: perform actual upsert
   const existingSkin = await prisma.skin.findUnique({
     where: { marketHashName: skinData.marketHashName }
   });
@@ -151,14 +183,16 @@ async function upsertSkin(skinData) {
       data: {
         name: skinData.name,
         imageUrl: skinData.imageUrl,
-        type: skinData.type,
-        weapon: skinData.weapon,
+        weaponType: skinData.weaponType,
         rarity: skinData.rarity,
         collection: skinData.collection,
-        case: skinData.case,
-        exterior: skinData.exterior,
+        wear: skinData.wear,
         quality: skinData.quality,
-        lastUpdated: new Date(),
+        isStattrak: skinData.isStattrak,
+        isStar: skinData.isStar,
+        itemType: skinData.itemType,
+        itemName: skinData.itemName,
+        itemGroup: skinData.itemGroup,
       }
     });
   } else {
@@ -173,14 +207,25 @@ async function upsertSkin(skinData) {
  * Create job run record
  */
 async function createJobRun() {
-  return await prisma.jobRun.create({
-    data: {
-      jobName: 'steam_skin_import',
-      status: 'running',
-      startedAt: new Date(),
-      details: 'Starting Steam API skin import...'
-    }
-  });
+  if (isDryRun) {
+    return await prisma.jobRun.create({
+      data: {
+        jobName: 'steam_skin_import_dry_run',
+        status: 'running',
+        startedAt: new Date(),
+        details: 'Starting Steam API skin import (DRY RUN)...'
+      }
+    });
+  } else {
+    return await prisma.jobRun.create({
+      data: {
+        jobName: 'steam_skin_import',
+        status: 'running',
+        startedAt: new Date(),
+        details: 'Starting Steam API skin import (REAL RUN)...'
+      }
+    });
+  }
 }
 
 /**
