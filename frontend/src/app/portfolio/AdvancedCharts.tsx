@@ -1,14 +1,14 @@
 "use client";
 import { useState, useMemo } from "react";
 import { Line, Bar, Doughnut } from "react-chartjs-2";
-import { Chart, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip as ChartTooltip, Legend, Title } from "chart.js";
+import { Chart, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip as ChartTooltip, Legend, Title, Filler } from "chart.js";
 import { TrendingUp, TrendingDown, BarChart3, PieChart, Lock, Info } from "lucide-react";
 import Tooltip from "../components/Tooltip";
 
 // Chart.js Registration
 Chart.register(
   CategoryScale, LinearScale, PointElement, LineElement, 
-  BarElement, ArcElement, ChartTooltip, Legend, Title
+  BarElement, ArcElement, ChartTooltip, Legend, Title, Filler
 );
 
 type PortfolioEntry = {
