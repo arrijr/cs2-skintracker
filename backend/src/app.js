@@ -87,6 +87,12 @@ const corsOptions = {
       return cb(null, true);
     }
     
+    // Check Vercel patterns
+    if (origin && origin.includes('vercel.app')) {
+      console.log(`[CORS] Allowed (Vercel): ${origin}`);
+      return cb(null, true);
+    }
+    
     // Allow all Vercel preview domains
     if (/\.vercel\.app$/.test(origin)) {
       console.log(`[CORS] Allowed (Vercel): ${origin}`);
