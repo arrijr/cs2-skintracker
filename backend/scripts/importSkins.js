@@ -1,7 +1,12 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import { checkProductionSafety, safeDatabaseOperation } from "./safety-guard.js";
+
 const prisma = new PrismaClient();
 const API_KEY = process.env.STEAM_API_KEY;
+
+// Safety check: Only allow in development or with explicit production flag
+checkProductionSafety("Skin import from Steam API", false);
 
 // node-fetch importieren (ESM)
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));

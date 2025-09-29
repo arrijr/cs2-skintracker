@@ -1,3 +1,29 @@
+🚨 **CRITICAL: Database Safety Rules**
+---------------------------------------
+
+**NEVER run destructive commands in production!**
+
+FORBIDDEN in production:
+* `prisma migrate reset`
+* `DROP TABLE` commands  
+* `TRUNCATE` commands
+* Any script that deletes data
+
+These commands are ONLY allowed in development (NODE_ENV=development)
+
+Script Safety:
+* All database scripts include safety guards
+* Scripts check `NODE_ENV` before running
+* Production database operations are blocked by default
+* Only idempotent operations (upserts) are allowed in production
+
+Skin Import Process:
+* Development: `NODE_ENV=development node backend/scripts/importSkins.js`
+* Production: Use Steam Web API (Premium) only, scripts upsert skins
+* Portfolio & User data is NEVER automatically deleted
+
+---
+
 Wrong Host for API Requests (404)
 ---------------------------------
 

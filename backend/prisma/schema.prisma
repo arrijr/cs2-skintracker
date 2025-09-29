@@ -202,20 +202,25 @@ enum TransactionType {
 
 model JobRun {
   id          String   @id @default(cuid())
-  jobName     String   // e.g., "updateSkinPrices", "rebuildSnapshots"
-  status      String   // "queued", "running", "done", "failed"
-  parameters  Json     // job parameters as JSON
-  dryRun      Boolean  @default(true)
+  jobName     String   // e.g., "updateSkinPrices", "rebuildSnapshots", "steam_skin_import"
+  status      String   // "queued", "running", "completed", "failed"
+  parameters  Json?    // job parameters as JSON
+  dryRun      Boolean  @default(false)
   estimatedImpact String? // e.g., "~50 price writes"
   actualCount Int?     // actual records processed
+  insertedCount Int?   // records inserted
+  updatedCount Int?    // records updated
+  failedCount Int?     // records that failed
+  finalCount Int?      // final count after job completion
+  details     String?  // detailed status message
   startedAt   DateTime @default(now())
   completedAt DateTime?
   error       String?  // error message if failed
-  adminId     Int      // who triggered the job
-  admin       User     @relation(fields: [adminId], references: [id])
+  adminId     Int?     // who triggered the job (optional for system jobs)
+  admin       User?    @relation(fields: [adminId], references: [id])
   
   // Rate limiting
-  rateLimitKey String  // for rate limiting (jobName + adminId)
+  rateLimitKey String?  // for rate limiting (jobName + adminId)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

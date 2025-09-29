@@ -2,8 +2,12 @@
 // {/* Generate test case data for development */}
 import { PrismaClient } from '@prisma/client';
 import "dotenv/config";
+import { checkProductionSafety, safeDatabaseOperation } from "./safety-guard.js";
 
 const prisma = new PrismaClient();
+
+// Safety check: Only allow in development
+checkProductionSafety("Case data generation", false);
 
 const sampleCases = [
   {

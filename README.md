@@ -1,6 +1,15 @@
 CS2 Skin Price Tracker
 Modern web app to monitor and analyze CS2 skin prices with Watchlist, Price Alerts, Portfolio, and price
 history.
+
+## 🚨 **CRITICAL: Database Safety**
+
+**NEVER run destructive commands in production!**
+
+- `prisma migrate reset` - **FORBIDDEN in production**
+- `DROP TABLE` / `TRUNCATE` - **FORBIDDEN in production**  
+- Scripts with safety guards prevent accidental data loss
+- Only idempotent operations (upserts) allowed in production
 - **Frontend:** Next.js (App Router, TypeScript), Tailwind
 - **Backend:** Node.js, Express, Prisma (PostgreSQL), Cron jobs
 - **Auth:** Clerk (OAuth + email/password)

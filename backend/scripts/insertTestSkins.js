@@ -3,8 +3,12 @@
 
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import { checkProductionSafety, safeDatabaseOperation } from "./safety-guard.js";
 
 const prisma = new PrismaClient();
+
+// Safety check: Only allow in development
+checkProductionSafety("Test skins insertion", false);
 
 const testSkins = [
   {
