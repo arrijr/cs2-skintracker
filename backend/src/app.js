@@ -25,9 +25,9 @@ dotenv.config();
 const app = express();
 
 // Force restart trigger for CORS fix
-console.log("[APP] Starting with updated CORS configuration - v1.4");
-console.log("[CORS] EMERGENCY FIX: Allowing ALL origins to fix persistent CORS issues");
-console.log("[CORS] Render deployment needed - CORS still blocking requests");
+console.log("[APP] Starting with updated CORS configuration - v1.5");
+console.log("[CORS] FIXED: Credentials + Origin function to resolve wildcard conflict");
+console.log("[CORS] Removed conflicting wildcard headers that blocked credentials");
 
 // Security headers
 app.use(helmet({
@@ -74,7 +74,10 @@ const whitelist = [
 ].filter(Boolean);
 
 const corsOptions = {
-  origin: true, // Allow all origins for now to fix CORS issues
+  origin: function (origin, callback) {
+    // Allow all origins for now, but handle credentials properly
+    callback(null, true);
+  },
   credentials: true, // Allow credentials
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
@@ -86,18 +89,7 @@ const corsOptions = {
 // {/* Global CORS for all requests */}
 app.use(cors(corsOptions));
 
-// {/* Emergency CORS fallback - allow everything */}
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+// {/* CORS handled by cors middleware above */}
 
 // {/* Preflight for ALL paths (Regex, kein "*" mehr) */}
 app.options(/.*/, cors(corsOptions));
