@@ -584,4 +584,79 @@ router.get("/:skinId/market-stats", getSkinMarketStats);
 router.get("/:skinId/related", getRelatedSkins);
 router.get("/:skinId/market", getSkinMarketStats); // Alias for compatibility
 
+// Get quantity history for a skin
+router.get("/:skinId/history/quantity", async (req, res) => {
+  const { skinId } = req.params;
+  const { range = '30d' } = req.query;
+  
+  try {
+    console.log(`[DEBUG] Fetching quantity history for skin ID: ${skinId}, range: ${range}`);
+    
+    // Calculate date range
+    const now = new Date();
+    const daysBack = range === '7d' ? 7 : range === '30d' ? 30 : range === '90d' ? 90 : range === '1y' ? 365 : 30;
+    const startDate = new Date(now.getTime() - (daysBack * 24 * 60 * 60 * 1000));
+    
+    // Check if skin exists
+    const skin = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      select: { id: true, name: true, priceLatest: true, priceMedian: true, priceAvg: true }
+    });
+    
+    if (!skin) {
+      return res.status(404).json({ error: 'Skin not found' });
+    }
+    
+    // For now, generate realistic sample data based on the skin's price
+    // In a real implementation, this would come from market snapshots
+    const currentPrice = skin.priceLatest || skin.priceMedian || skin.priceAvg || 50;
+    const quantityData = [];
+    
+    // Generate daily data points
+    for (let i = daysBack; i >= 0; i--) {
+      const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+      
+      // Generate realistic quantity data based on price
+      // Higher priced items have lower quantities
+      const baseQuantity = currentPrice > 1000 ? Math.floor(Math.random() * 5) + 1 :
+                          currentPrice > 500 ? Math.floor(Math.random() * 10) + 2 :
+                          currentPrice > 100 ? Math.floor(Math.random() * 20) + 5 :
+                          Math.floor(Math.random() * 50) + 10;
+      
+      // Add some daily variation
+      const variation = (Math.random() - 0.5) * 0.3; // ±15%
+      const activeListings = Math.max(1, Math.floor(baseQuantity * (1 + variation)));
+      
+      // Generate sold volume (typically 10-50% of active listings)
+      const soldVolume24h = Math.floor(activeListings * (0.1 + Math.random() * 0.4));
+      
+      // Generate price variation
+      const priceVariation = (Math.random() - 0.5) * 0.1; // ±5%
+      const priceUsd = Math.round(currentPrice * (1 + priceVariation) * 100) / 100;
+      
+      quantityData.push({
+        date: date.toISOString().split('T')[0],
+        activeListings,
+        soldVolume24h,
+        priceUsd
+      });
+    }
+    
+    console.log(`[DEBUG] Generated ${quantityData.length} quantity history entries for skin ${skinId}`);
+    
+    res.json({
+      skinId: parseInt(skinId),
+      skinName: skin.name,
+      range,
+      data: quantityData,
+      lastUpdated: now.toISOString(),
+      source: 'generated' // Indicates this is generated data, not real market data
+    });
+    
+  } catch (err) {
+    console.error(`[ERROR] Failed to fetch quantity history for skin ${skinId}:`, err);
+    res.status(500).json({ error: "Could not fetch quantity history" });
+  }
+});
+
 export default router;
