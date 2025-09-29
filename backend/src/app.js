@@ -25,8 +25,8 @@ dotenv.config();
 const app = express();
 
 // Force restart trigger for CORS fix
-console.log("[APP] Starting with updated CORS configuration - v1.2");
-console.log("[CORS] Allowing Vercel preview domains");
+console.log("[APP] Starting with updated CORS configuration - v1.3");
+console.log("[CORS] Allowing ALL origins to fix Vercel preview domain issues");
 
 // Security headers
 app.use(helmet({
@@ -73,57 +73,11 @@ const whitelist = [
 ].filter(Boolean);
 
 const corsOptions = {
-  origin(origin, cb) {
-    console.log(`[CORS] Request from origin: ${origin}`);
-    
-    if (!origin) {
-      console.log(`[CORS] No origin (server-to-server): ${origin}`);
-      return cb(null, true); // server-to-server/no-origin
-    }
-    
-    // Check whitelist first
-    if (whitelist.includes(origin)) {
-      console.log(`[CORS] Allowed (whitelist): ${origin}`);
-      return cb(null, true);
-    }
-    
-    // Check Vercel patterns
-    if (origin && origin.includes('vercel.app')) {
-      console.log(`[CORS] Allowed (Vercel): ${origin}`);
-      return cb(null, true);
-    }
-    
-    // Allow all origins for debugging
-    console.log(`[CORS] Allowed (debug): ${origin}`);
-    return cb(null, true);
-    
-    // Allow all Vercel preview domains
-    if (/\.vercel\.app$/.test(origin)) {
-      console.log(`[CORS] Allowed (Vercel): ${origin}`);
-      return cb(null, true);
-    }
-    
-    // Allow specific Vercel git branch patterns
-    if (/^https:\/\/cs2-skintracker-git-.*\.arrijrs-projects\.vercel\.app$/.test(origin)) {
-      console.log(`[CORS] Allowed (Vercel Git): ${origin}`);
-      return cb(null, true);
-    }
-    
-    // Allow localhost for development
-    if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
-      console.log(`[CORS] Allowed (localhost): ${origin}`);
-      return cb(null, true);
-    }
-    
-    console.log(`[CORS] Blocked origin: ${origin}`);
-    console.log(`[CORS] Allowed origins:`, whitelist);
-    
-    return cb(new Error(`Not allowed by CORS: ${origin}`));
-  },
-  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  credentials: true,
-  optionsSuccessStatus: 200,
+  origin: true, // Allow all origins for now to fix CORS issues
+  credentials: true, // Allow credentials
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 };
 
 // {/* Global CORS for all requests */}
