@@ -25,9 +25,10 @@ dotenv.config();
 const app = express();
 
 // Force restart trigger for CORS fix
-console.log("[APP] Starting with updated CORS configuration - v1.5");
-console.log("[CORS] FIXED: Credentials + Origin function to resolve wildcard conflict");
+console.log("[APP] Starting with updated CORS configuration - v1.6");
+console.log("[CORS] FINAL FIX: Credentials + Origin function to resolve wildcard conflict");
 console.log("[CORS] Removed conflicting wildcard headers that blocked credentials");
+console.log("[DEPLOY] Render must restart NOW - CORS v1.6 critical fix");
 
 // Security headers
 app.use(helmet({
