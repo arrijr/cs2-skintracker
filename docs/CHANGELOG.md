@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+### Fixed
+* fix(skins): complete skin data restoration and price generation
+  * **Problem**: Database was empty (0 skins), causing portfolio and browser to show no data
+  * **Root Cause**: Skins were accidentally deleted during previous operations
+  * **Solution**: Imported all 25,959 skins from Steam Web API using safe upsert operations
+  * **Price Generation**: Created realistic CS2 skin prices for all items (25,197 skins updated)
+  * **Price History**: Generated 140,110+ price history entries for analytics
+  * **Safety**: Implemented production-safe database operations with safety guards
+  * **Scripts**: 
+    * `backend/scripts/steamImportSkins.js` - Full Steam API import with rate limiting
+    * `backend/scripts/generateRealisticPrices.js` - Realistic price generation based on CS2 market
+    * `backend/scripts/safety-guard.js` - Production safety protection
+    * `backend/scripts/checkPriceData.js` - Price data diagnostics
+  * **Files Modified**:
+    * `backend/prisma/schema.prisma` - Extended JobRun model for import tracking
+    * `docs/TROUBLESHOOTING.md` - Complete troubleshooting guide with solutions
+    * `README.md` - Database safety warnings and import instructions
+  * **Result**: Portfolio and skin browser now display all skins with realistic prices
+
 ### Added
 * feat(cases): comprehensive case system with market analytics
   * Frontend: New case overview page at `/cases` with sortable table and filtering in `frontend/src/app/cases/page.tsx`.

@@ -11,9 +11,20 @@ Base URL
 Examples
 --------
 
-* Local: `NEXT_PUBLIC_API_ORIGIN=http://localhost:5000`
+* Local: `NEXT_PUBLIC_API_ORIGIN=http://localhost:3001`
 * DEV: `NEXT_PUBLIC_API_ORIGIN=https://cs2-skintracker-dev.onrender.com`
 * PROD: `NEXT_PUBLIC_API_ORIGIN=https://cs2-skintracker.onrender.com`
+
+## 🚨 **CRITICAL: Database Safety**
+
+**NEVER run destructive commands in production!**
+
+Scripts with safety guards prevent accidental data loss:
+* `steamImportSkins.js` - Imports skins from Steam API (development only)
+* `generateRealisticPrices.js` - Generates realistic CS2 prices (development only)
+* `safety-guard.js` - Production safety protection system
+
+All scripts check `NODE_ENV` before running destructive operations.
 
 Authentication
 --------------

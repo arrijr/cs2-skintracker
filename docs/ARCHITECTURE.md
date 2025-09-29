@@ -30,6 +30,41 @@ System Components
 Data Flow
 ---------
 
+### Skin Import & Price Generation Flow
+
+```mermaid
+flowchart TD
+    A[Steam Web API] --> B[steamImportSkins.js]
+    B --> C{Safety Check}
+    C -->|NODE_ENV=production| D[❌ BLOCKED - Safety Violation]
+    C -->|NODE_ENV=development| E[✅ Import Allowed]
+    
+    E --> F[Fetch Steam API Data]
+    F --> G[Map to Database Schema]
+    G --> H[Upsert Skins by marketHashName]
+    H --> I[25,959 Skins Imported]
+    
+    I --> J[generateRealisticPrices.js]
+    J --> K{Price Data Missing?}
+    K -->|Yes| L[Generate Realistic Prices]
+    K -->|No| M[Skip - Prices Exist]
+    
+    L --> N[Calculate CS2 Market Prices]
+    N --> O[Apply Rarity/Wear Multipliers]
+    O --> P[Create Price Variations]
+    P --> Q[Generate Price History]
+    Q --> R[25,197 Skins Updated]
+    
+    R --> S[Frontend Display]
+    M --> S
+    S --> T[Portfolio & Browser Show Prices]
+    
+    style A fill:#e1f5fe
+    style I fill:#c8e6c9
+    style R fill:#c8e6c9
+    style D fill:#ffcdd2
+```
+
 ### Responsive Layout System Flow
 
 ```mermaid

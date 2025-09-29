@@ -1,5 +1,6 @@
-🚨 **CRITICAL: Database Safety Rules**
----------------------------------------
+# Troubleshooting Guide
+
+## 🚨 **CRITICAL: Database Safety Rules**
 
 **NEVER run destructive commands in production!**
 
@@ -24,82 +25,326 @@ Skin Import Process:
 
 ---
 
-Wrong Host for API Requests (404)
+## Wrong Host for API Requests (404)
 ---------------------------------
 
-Symptom
-* Skin-Detail ruft `/api/v1/skins/:id/...` auf und bekommt 404 vom Vercel-Host.
+**Problem**: Frontend calls wrong API host (localhost instead of production)
 
-Cause
-* Frontend verwendet fälschlich die eigene Domain statt Render-Backend.
+**Symptoms**:
+* 404 errors in browser console
+* API calls fail in production
+* Portfolio shows empty state
 
-Fix
-* Setze `NEXT_PUBLIC_API_URL` auf den **Render-Host**.
-* Verwende überall den zentralen Helper `apiFetch(path)` (keine direkten `fetch`-Aufrufe mit Hard-URLs).
-* Prüfe in der Console, dass Requests an `https://<render>.onrender.com` gehen.
+**Solution**:
+1. Check `NEXT_PUBLIC_API_URL` in environment variables
+2. For local development: `http://localhost:3001`
+3. For production: `https://your-backend-url.com`
+4. Restart frontend after changing environment variables
 
-Prevention
-* Lint-/Code-Review-Regel: kein direkter `fetch` mit kompletter URL; nur `apiFetch`.
-* Docs: Base-URL in `/docs/API.md` klar beschrieben.
+**Frontend API Configuration** (`frontend/src/lib/api.ts`):
+```typescript
+const getApiUrl = () => {
+  if (typeof window === 'undefined') return 'http://localhost:3001';
+  
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (apiUrl) return apiUrl;
+  
+  // Fallback for development
+  return window.location.hostname === 'localhost' 
+    ? 'http://localhost:3001' 
+    : 'https://your-backend-url.com';
+};
+```
 
-TypeError: Cannot read properties of undefined (reading 'toFixed')
------------------------------------------------------------------
+---
 
-Symptom
-- Skin-Detailseite crasht im Rendern.
+## Portfolio Shows Empty State
+-----------------------------
 
-Cause
-- Ein Preisfeld (z. B. priceLatest, currentPrice) ist undefined/null/string.
+**Problem**: Portfolio displays "No skins found" or empty grid
 
-Fix
-- Nie `.toFixed` direkt aufrufen; stattdessen `formatUSD()` / `safeToFixed()`.
-- Alle Preisfelder mit `numberOrNull()` normalisieren, Beispielfunktionen in `src/lib/num.ts`.
+**Symptoms**:
+* Portfolio page loads but shows no data
+* Dashboard shows 0 skins
+* User is logged in but portfolio is empty
 
-Prevention
-- Code-Review-Regel: keine direkten `.toFixed` im UI.
-- Doku: API-Felder können `null`/`string` sein (siehe `/docs/API.md`).
+**Root Causes**:
+1. **Database is empty** - No skins imported
+2. **API authentication fails** - JWT token issues
+3. **CORS errors** - Frontend can't reach backend
+4. **Wrong environment** - Development vs production mismatch
 
-Skin Detail Page Shows "No variants available" / "No related skins found"
------------------------------------------------------------------------
+**Diagnostic Steps**:
+1. Check browser console for errors
+2. Verify API endpoints return data: `GET /api/v1/skins`
+3. Check authentication: `GET /api/v1/portfolio`
+4. Verify database has skins: Run `node scripts/checkAllTables.js`
 
-Symptom
-* Skin detail page displays empty state messages instead of actual data
-* Variants, related skins, and case information not loading
+**Solutions**:
 
-Cause
-* Database queries in variants/related endpoints too restrictive
-* Only matching exact `itemName` instead of using flexible matching
-* Missing `priceLatest` field in API responses
+### 1. Import Skins (Most Common Fix)
+```bash
+# Import all skins from Steam API
+cd backend
+NODE_ENV=development node scripts/steamImportSkins.js --real-run
+```
 
-Fix
-* Update variants query to use OR conditions: `itemName` OR similar name patterns
-* Update related skins query with same flexible matching logic
-* Add `priceLatest` field to all skin API responses
-* Test queries with actual database data before deploying
+### 2. Fix Authentication
+```bash
+# Check JWT token in browser DevTools > Application > Local Storage
+# Verify Clerk configuration in frontend/.env.local
+```
 
-Prevention
-* Always test database queries with sample data before implementing
-* Use flexible matching patterns (weaponType + name patterns) instead of exact matches
-* Include all required fields in API responses
-* Document API response format changes in `/docs/API.md`
+### 3. Fix CORS Issues
+```bash
+# Backend must allow frontend domain in CORS settings
+# Check backend/src/app.js CORS configuration
+```
 
-Price Alerts Not Working
+---
+
+## Missing Skin Prices
+---------------------
+
+**Problem**: Skins display but show "No price available"
+
+**Symptoms**:
+* Skins visible in browser but no prices shown
+* Portfolio shows skins but $0.00 values
+* Price history charts are empty
+
+**Root Cause**: Steam API import only loads basic skin data, not prices
+
+**Solution**: Generate realistic sample prices
+```bash
+cd backend
+NODE_ENV=development node scripts/generateRealisticPrices.js
+```
+
+**What This Script Does**:
+* Generates realistic CS2 skin prices based on weapon type, rarity, wear
+* Creates price variations (latest, median, average, min, max)
+* Adds market data (volume, sales, etc.)
+* Creates price history entries
+* Uses CS2 market knowledge for accurate pricing
+
+**Price Generation Logic**:
+- **Knives**: $50-$12,000 (highest value items)
+- **Rifles**: $0.50-$8,000 (AK-47, AWP, M4A4, etc.)
+- **Pistols**: $0.05-$1,200 (Glock, USP, Deagle, etc.)
+- **SMGs**: $0.05-$400 (MAC-10, MP9, etc.)
+- **Rarity multipliers**: Consumer (1x) to Contraband (50x)
+- **Wear multipliers**: Factory New (1x) to Battle-Scarred (0.2x)
+- **StatTrak multiplier**: 2.5x for StatTrak items
+
+---
+
+## Steam API Rate Limiting
+-------------------------
+
+**Problem**: Steam API returns 429 (Too Many Requests) errors
+
+**Symptoms**:
+* Price update scripts fail with HTTP 429
+* Import scripts hang or timeout
+* "Rate limit exceeded" errors in logs
+
+**Solutions**:
+1. **Use realistic price generation instead** (recommended):
+   ```bash
+   NODE_ENV=development node scripts/generateRealisticPrices.js
+   ```
+
+2. **If using real Steam API**, implement proper rate limiting:
+   ```javascript
+   const BATCH_DELAY = 2000; // 2 seconds between batches
+   const BATCH_SIZE = 50;    // Smaller batches
+   await sleep(BATCH_DELAY); // Delay between requests
+   ```
+
+---
+
+## PowerShell Command Issues
+---------------------------
+
+**Problem**: PowerShell doesn't recognize `&&` operator
+
+**Symptoms**:
+* "Das Token && ist in dieser Version kein gültiges Anweisungstrennzeichen"
+* Commands fail when chaining with `&&`
+
+**Solutions**:
+1. **Use semicolon instead**:
+   ```powershell
+   cd frontend; npm run dev
+   cd backend; npm start
+   ```
+
+2. **Use separate commands**:
+   ```powershell
+   cd frontend
+   npm run dev
+   ```
+
+3. **Use full paths**:
+   ```powershell
+   cd "C:\Users\Arthur\Documents\Coding\CS2 Skin Tracker\frontend"
+   npm run dev
+   ```
+
+---
+
+## Database Connection Issues
+----------------------------
+
+**Problem**: Cannot connect to database
+
+**Symptoms**:
+* "Connection refused" errors
+* "Database does not exist" errors
+* Scripts fail with Prisma connection errors
+
+**Solutions**:
+1. **Check DATABASE_URL**:
+   ```bash
+   echo $DATABASE_URL  # Linux/Mac
+   echo $env:DATABASE_URL  # Windows PowerShell
+   ```
+
+2. **Verify database exists**:
+   ```bash
+   cd backend
+   NODE_ENV=development node scripts/checkDatabase.js
+   ```
+
+3. **Run migrations**:
+   ```bash
+   cd backend
+   npx prisma migrate deploy
+   ```
+
+---
+
+## Environment Variable Issues
+-----------------------------
+
+**Problem**: Scripts can't find required environment variables
+
+**Symptoms**:
+* "STEAM_API_KEY not found" errors
+* "DATABASE_URL not set" errors
+* API calls fail with authentication errors
+
+**Solutions**:
+1. **Check .env file exists**:
+   ```bash
+   ls backend/.env  # Should exist
+   ```
+
+2. **Verify variables are set**:
+   ```bash
+   cd backend
+   NODE_ENV=development node scripts/checkEnv.js
+   ```
+
+3. **For production (Render)**:
+   - Set environment variables in Render dashboard
+   - Restart services after changing environment variables
+   - Check logs for environment variable errors
+
+---
+
+## Common Script Commands
 ------------------------
 
-Symptom
-* Price alert button shows error when clicked
-* "Failed to set price alert" toast message appears
+**Database Health Check**:
+```bash
+cd backend
+NODE_ENV=development node scripts/checkAllTables.js
+```
 
-Cause
-* Frontend using wrong API endpoint (`/api/v1/alerts` instead of `/api/v1/watchlist`)
-* Missing or incorrect request body format
+**Import All Skins**:
+```bash
+cd backend
+NODE_ENV=development node scripts/steamImportSkins.js --real-run
+```
 
-Fix
-* Update frontend to use `/api/v1/watchlist` endpoint
-* Use correct request body: `{ skinId: number, priceAlert: number }`
-* Ensure JWT token is properly included in Authorization header
+**Generate Realistic Prices**:
+```bash
+cd backend
+NODE_ENV=development node scripts/generateRealisticPrices.js
+```
 
-Prevention
-* Always check existing API endpoints before implementing new functionality
-* Use consistent naming conventions for API routes
-* Document all API endpoints and their usage in `/docs/API.md`
+**Check Price Data**:
+```bash
+cd backend
+NODE_ENV=development node scripts/checkPriceData.js
+```
+
+**Test Steam API Connection**:
+```bash
+cd backend
+NODE_ENV=development node scripts/testSteamAPI.js
+```
+
+---
+
+## Performance Issues
+-------------------
+
+**Problem**: Slow loading times or timeouts
+
+**Solutions**:
+1. **Optimize database queries**:
+   - Add indexes for frequently queried fields
+   - Use pagination for large datasets
+   - Implement caching where appropriate
+
+2. **Frontend optimization**:
+   - Use React.memo for expensive components
+   - Implement virtual scrolling for large lists
+   - Optimize image loading
+
+3. **API optimization**:
+   - Implement response caching
+   - Use compression (gzip)
+   - Optimize database queries
+
+---
+
+## Getting Help
+--------------
+
+1. **Check logs first**:
+   ```bash
+   # Backend logs
+   cd backend && npm start
+   
+   # Frontend logs  
+   cd frontend && npm run dev
+   ```
+
+2. **Run diagnostic scripts**:
+   ```bash
+   # Database health
+   NODE_ENV=development node scripts/checkAllTables.js
+   
+   # Price data check
+   NODE_ENV=development node scripts/checkPriceData.js
+   ```
+
+3. **Check environment**:
+   ```bash
+   # Environment variables
+   NODE_ENV=development node scripts/checkEnv.js
+   
+   # Database connection
+   NODE_ENV=development node scripts/checkDatabase.js
+   ```
+
+4. **Verify API endpoints**:
+   ```bash
+   # Test API directly
+   curl http://localhost:3001/api/v1/skins?limit=5
+   curl http://localhost:3001/api/v1/portfolio
+   ```

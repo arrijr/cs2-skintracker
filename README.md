@@ -10,10 +10,18 @@ history.
 - `DROP TABLE` / `TRUNCATE` - **FORBIDDEN in production**  
 - Scripts with safety guards prevent accidental data loss
 - Only idempotent operations (upserts) allowed in production
-- **Frontend:** Next.js (App Router, TypeScript), Tailwind
-- **Backend:** Node.js, Express, Prisma (PostgreSQL), Cron jobs
-- **Auth:** Clerk (OAuth + email/password)
-- **App language:** English · **Currency:** $
+
+### Skin Import System
+- **25,959 CS2 skins** imported from Steam Web API
+- **Realistic price generation** based on CS2 market knowledge
+- **140,110+ price history entries** for analytics
+- **Production-safe** import scripts with safety guards
+- **Rate limiting** and error handling for API calls
+
+**Frontend:** Next.js (App Router, TypeScript), Tailwind  
+**Backend:** Node.js, Express, Prisma (PostgreSQL), Cron jobs  
+**Auth:** Clerk (OAuth + email/password)  
+**App language:** English · **Currency:** $
 
 Features (MVP)
 - Authentication via Clerk (OAuth + email/password)
