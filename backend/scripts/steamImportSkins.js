@@ -27,8 +27,8 @@ if (isDryRun) {
 }
 
 // Rate limiting configuration
-const BATCH_SIZE = 10; // Small batch for testing
-const BATCH_DELAY = 1000; // 1 second between batches
+const BATCH_SIZE = 50; // Medium batch for import
+const BATCH_DELAY = 2000; // 2 seconds between batches
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds base delay
 
