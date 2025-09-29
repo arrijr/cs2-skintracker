@@ -36,6 +36,7 @@ import { useAnalytics } from "@/lib/analytics";
 import { CaseSection } from "@/components/CaseSection";
 import QuantityBarChart from "@/components/QuantityBarChart";
 import OverlayPriceQuantityChart from "@/components/OverlayPriceQuantityChart";
+import { PremiumFeatureFlag } from "@/app/portfolio/PremiumFeatureFlag";
 
 // Chart components are now handled by Shadcn UI Charts
 
@@ -697,24 +698,27 @@ export default function SkinDetailPage() {
 
                 {/* P1 - Quick Actions - immer sichtbar */}
                 <div className="flex flex-wrap gap-2">
-                  <Button
-                    onClick={addToWatchlist}
-                    disabled={watchlistLoading || isInWatchlist}
-                    variant={isInWatchlist ? "secondary" : "default"}
-                    size="sm"
-                    className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                    aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
-                    aria-pressed={isInWatchlist}
-                  >
-                    {watchlistLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : isInWatchlist ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <Heart className="h-4 w-4" />
-                    )}
-                    {isInWatchlist ? "Added ✓" : "Add to Watchlist"}
-                  </Button>
+                  {/* Premium Feature: Add to Watchlist */}
+                  <PremiumFeatureFlag feature="watchlist">
+                    <Button
+                      onClick={addToWatchlist}
+                      disabled={watchlistLoading || isInWatchlist}
+                      variant={isInWatchlist ? "secondary" : "default"}
+                      size="sm"
+                      className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                      aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+                      aria-pressed={isInWatchlist}
+                    >
+                      {watchlistLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : isInWatchlist ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <Heart className="h-4 w-4" />
+                      )}
+                      {isInWatchlist ? "Added ✓" : "Add to Watchlist"}
+                    </Button>
+                  </PremiumFeatureFlag>
 
                   <Button
                     onClick={addToPortfolio}
