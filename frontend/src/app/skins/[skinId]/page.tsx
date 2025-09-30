@@ -75,7 +75,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useUser();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, getToken } = useAuth();
   const analytics = useAnalytics();
 
   const [skin, setSkin] = useState<Skin | null>(null);
@@ -106,9 +106,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         } else {
           setError(response.error || 'Skin not found');
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error loading skin:', err);
-        setError('Failed to load skin data');
+        if (err.message?.includes('404')) {
+          setError('Skin not found. Please check the URL or try a different skin.');
+        } else {
+          setError('Failed to load skin data');
+        }
       } finally {
         setLoading(false);
       }
@@ -125,9 +129,10 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
       if (!isSignedIn) return;
 
       try {
+        const token = await getToken({ template: "backend" });
         const [watchlistData, portfolioData] = await Promise.all([
-          getWatchlist(),
-          getPortfolio()
+          getWatchlist(token),
+          getPortfolio(token)
         ]);
 
         if (watchlistData.success) {

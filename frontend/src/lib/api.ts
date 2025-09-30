@@ -84,8 +84,12 @@ export async function searchSkins(query: string) {
   return fetchJson(apiUrl(`/api/v1/skins/search?query=${encodeURIComponent(query)}`));
 }
 
-export async function getWatchlist() {
-  return fetchJson(apiUrl('/api/v1/watchlist'));
+export async function getWatchlist(token?: string) {
+  return fetchJson(apiUrl('/api/v1/watchlist'), {
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+  });
 }
 
 export async function addToWatchlist(skinId: number) {
@@ -108,8 +112,12 @@ export async function updatePriceAlert(skinId: number, priceAlert: number) {
   });
 }
 
-export async function getPortfolio() {
-  return fetchJson(apiUrl('/api/v1/portfolio'));
+export async function getPortfolio(token?: string) {
+  return fetchJson(apiUrl('/api/v1/portfolio'), {
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+  });
 }
 
 export async function getPortfolioHistory() {
