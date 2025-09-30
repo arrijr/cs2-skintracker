@@ -82,7 +82,7 @@ export function SimplePriceChart({
             bottom: 20,
           }}
         >
-          <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
+          <CartesianGrid strokeDasharray="1 3" className="stroke-muted/15" />
           <XAxis 
             dataKey="date" 
             className="text-xs fill-muted-foreground"

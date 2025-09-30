@@ -257,10 +257,10 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
     };
   };
 
-  // Get bar color based on value and outliers
+  // Get bar color based on value and outliers - softer green tones
   const getBarColor = (value: number, maxValue: number, avgValue: number) => {
-    // Use consistent primary color for all bars - more transparent
-    return 'bg-primary/40';
+    // Use softer, more transparent green tones
+    return 'bg-emerald-400/30 hover:bg-emerald-400/50';
   };
 
   if (loading) {
@@ -606,15 +606,15 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
         <div className="space-y-4">
           {/* Chart Area */}
           <div className="relative">
-            {/* Average line */}
+            {/* Average line - more subtle */}
             {stats && (
               <div 
-                className="absolute left-0 right-0 border-t-2 border-dashed border-muted-foreground/50 z-10"
+                className="absolute left-0 right-0 border-t border-dashed border-muted-foreground/20 z-10"
                 style={{ 
                   bottom: `${100 - (stats.avgListings / (stats.maxListings || 1)) * 100}%` 
                 }}
               >
-                <div className="absolute -top-3 left-2 bg-background px-1 text-xs text-muted-foreground">
+                <div className="absolute -top-3 left-2 bg-background px-1 text-xs text-muted-foreground/70">
                   Avg: {(stats.avgListings || 0).toLocaleString()}
                 </div>
               </div>
@@ -729,8 +729,8 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
               )}
             </div>
             
-            {/* Y-axis labels */}
-            <div className="absolute -left-8 top-0 h-full flex flex-col justify-between text-xs text-muted-foreground">
+            {/* Y-axis labels - more subtle */}
+            <div className="absolute -left-8 top-0 h-full flex flex-col justify-between text-xs text-muted-foreground/60">
               <span>{(stats?.maxListings || 0).toLocaleString()}</span>
               <span>{Math.round((stats?.maxListings || 0) * 0.5).toLocaleString()}</span>
               <span>0</span>
