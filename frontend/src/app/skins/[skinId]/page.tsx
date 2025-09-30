@@ -99,6 +99,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         
         const response = await fetchJson(apiUrl(`/skins/${params.skinId}`));
         if (response.success) {
+          console.log('Skin data loaded:', response.data);
+          console.log('History data:', response.data.history);
           setSkin(response.data);
         } else if (response.id) {
           // Fallback for old API format
@@ -553,7 +555,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         </div>
 
         {/* Market Statistics - 3-Spalten-Grid */}
-        <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
+        <Card className="border border-border bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
@@ -562,21 +564,21 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-6 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl hover:shadow-2xl rounded-xl">
+              <div className="text-center p-6 border border-border bg-card shadow-sm hover:shadow-2xl rounded-xl">
                 <div className="text-2xl font-bold text-primary">
                   {marketStats.medianPrice ? formatUSD(marketStats.medianPrice) : 'N/A'}
                 </div>
                 <div className="text-sm text-muted-foreground">Median Price</div>
               </div>
               
-              <div className="text-center p-6 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl hover:shadow-2xl rounded-xl">
+              <div className="text-center p-6 border border-border bg-card shadow-sm hover:shadow-2xl rounded-xl">
                 <div className="text-2xl font-bold text-primary">
                   {marketStats.priceChange24h ? formatUSD(marketStats.priceChange24h) : 'N/A'}
                 </div>
                 <div className="text-sm text-muted-foreground">24h Change</div>
               </div>
               
-              <div className="text-center p-6 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl hover:shadow-2xl rounded-xl">
+              <div className="text-center p-6 border border-border bg-card shadow-sm hover:shadow-2xl rounded-xl">
                 <div className="text-2xl font-bold text-primary">
                   {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
                 </div>
@@ -587,7 +589,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         </Card>
 
         {/* Price History Chart */}
-        <Card className="mb-12 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
+        <Card className="mb-12 border border-border bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
@@ -606,7 +608,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         </Card>
 
         {/* Quantity History Chart */}
-        <Card className="mb-12 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
+        <Card className="mb-12 border border-border bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
@@ -626,7 +628,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
         {/* Related Skins */}
         {variants.length > 0 && (
-          <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
+          <Card className="border border-border bg-card shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5" />
