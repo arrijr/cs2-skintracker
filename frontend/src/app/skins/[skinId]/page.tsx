@@ -97,7 +97,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         setLoading(true);
         setError(null);
         
-        const response = await fetchJson(`/api/skins/${params.skinId}`);
+        const response = await fetchJson(apiUrl(`/skins/${params.skinId}`));
         if (response.success) {
           setSkin(response.data);
         } else if (response.id) {
@@ -218,7 +218,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     if (!skin || !isSignedIn) return;
 
     try {
-      const response = await fetchJson(`/api/watchlist/${skin.id}`, {
+      const response = await fetchJson(apiUrl(`/watchlist/${skin.id}`), {
         method: 'DELETE'
       });
 
@@ -267,7 +267,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     if (!skin || !isSignedIn) return;
 
     try {
-      const response = await fetchJson(`/api/portfolio/${skin.id}`, {
+      const response = await fetchJson(apiUrl(`/portfolio/${skin.id}`), {
         method: 'DELETE'
       });
 
