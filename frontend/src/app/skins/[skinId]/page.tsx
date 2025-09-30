@@ -621,76 +621,77 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 <div className="text-sm text-muted-foreground">Volume 24h</div>
               </div>
             </div>
+          </div>
 
-            {/* Price Range */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="space-y-3">
-                <h4 className="font-semibold text-sm text-muted-foreground">Price Range</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center p-3 border border-border bg-card rounded-lg">
-                    <div className="text-lg font-bold text-green-600">
-                      {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Min Price</div>
-                  </div>
-                  <div className="text-center p-3 border border-border bg-card rounded-lg">
-                    <div className="text-lg font-bold text-red-600">
-                      {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Max Price</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <h4 className="font-semibold text-sm text-muted-foreground">Price Changes</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center p-2 border border-border bg-card rounded">
-                    <span className="text-sm">24h Change</span>
-                    <span className={`font-semibold ${marketStats.priceChangePercent24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {marketStats.priceChangePercent24h ? `${marketStats.priceChangePercent24h >= 0 ? '+' : ''}${safeToFixed(marketStats.priceChangePercent24h, 2)}%` : 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 border border-border bg-card rounded">
-                    <span className="text-sm">7d Change</span>
-                    <span className="text-sm text-muted-foreground">
-                      {skin.priceMedian7d ? `${((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(2)}%` : 'N/A'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sales Data */}
+          {/* Price Range */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="space-y-3">
-              <h4 className="font-semibold text-sm text-muted-foreground">Sales Data</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <h4 className="font-semibold text-sm text-muted-foreground">Price Range</h4>
+              <div className="grid grid-cols-2 gap-3">
                 <div className="text-center p-3 border border-border bg-card rounded-lg">
-                  <div className="text-lg font-bold text-primary">
-                    {skin.sold24h || 0}
+                  <div className="text-lg font-bold text-green-600">
+                    {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
                   </div>
-                  <div className="text-xs text-muted-foreground">Sold 24h</div>
+                  <div className="text-xs text-muted-foreground">Min Price</div>
                 </div>
                 <div className="text-center p-3 border border-border bg-card rounded-lg">
-                  <div className="text-lg font-bold text-primary">
-                    {skin.sold7d || 0}
+                  <div className="text-lg font-bold text-red-600">
+                    {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
                   </div>
-                  <div className="text-xs text-muted-foreground">Sold 7d</div>
-                </div>
-                <div className="text-center p-3 border border-border bg-card rounded-lg">
-                  <div className="text-lg font-bold text-primary">
-                    {skin.sold30d || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Sold 30d</div>
-                </div>
-                <div className="text-center p-3 border border-border bg-card rounded-lg">
-                  <div className="text-lg font-bold text-primary">
-                    {skin.offerVolume || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Active Offers</div>
+                  <div className="text-xs text-muted-foreground">Max Price</div>
                 </div>
               </div>
             </div>
+            
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm text-muted-foreground">Price Changes</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center p-2 border border-border bg-card rounded">
+                  <span className="text-sm">24h Change</span>
+                  <span className={`font-semibold ${marketStats.priceChangePercent24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {marketStats.priceChangePercent24h ? `${marketStats.priceChangePercent24h >= 0 ? '+' : ''}${safeToFixed(marketStats.priceChangePercent24h, 2)}%` : 'N/A'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-2 border border-border bg-card rounded">
+                  <span className="text-sm">7d Change</span>
+                  <span className="text-sm text-muted-foreground">
+                    {skin.priceMedian7d ? `${((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(2)}%` : 'N/A'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sales Data */}
+          <div className="space-y-3">
+            <h4 className="font-semibold text-sm text-muted-foreground">Sales Data</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="text-center p-3 border border-border bg-card rounded-lg">
+                <div className="text-lg font-bold text-primary">
+                  {skin.sold24h || 0}
+                </div>
+                <div className="text-xs text-muted-foreground">Sold 24h</div>
+              </div>
+              <div className="text-center p-3 border border-border bg-card rounded-lg">
+                <div className="text-lg font-bold text-primary">
+                  {skin.sold7d || 0}
+                </div>
+                <div className="text-xs text-muted-foreground">Sold 7d</div>
+              </div>
+              <div className="text-center p-3 border border-border bg-card rounded-lg">
+                <div className="text-lg font-bold text-primary">
+                  {skin.sold30d || 0}
+                </div>
+                <div className="text-xs text-muted-foreground">Sold 30d</div>
+              </div>
+              <div className="text-center p-3 border border-border bg-card rounded-lg">
+                <div className="text-lg font-bold text-primary">
+                  {skin.offerVolume || 0}
+                </div>
+                <div className="text-xs text-muted-foreground">Active Offers</div>
+              </div>
+            </div>
+          </div>
           </CardContent>
         </Card>
 
