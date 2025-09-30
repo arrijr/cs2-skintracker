@@ -597,23 +597,6 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Chart Controls */}
-            <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
-              <div className="flex gap-2">
-                <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
-                  <ToggleGroupItem value="7d">7D</ToggleGroupItem>
-                  <ToggleGroupItem value="30d">30D</ToggleGroupItem>
-                  <ToggleGroupItem value="90d">90D</ToggleGroupItem>
-                  <ToggleGroupItem value="1y">ALL</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-              <div className="flex gap-2">
-                <ToggleGroup type="single" value={chartType} onValueChange={(value) => value && setChartType(value as any)}>
-                  <ToggleGroupItem value="price">Price</ToggleGroupItem>
-                  <ToggleGroupItem value="overlay">Price Overlay</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-            </div>
             
             {history.length > 0 ? (
               <SimplePriceChart 
@@ -639,23 +622,6 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Chart Controls */}
-            <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
-              <div className="flex gap-2">
-                <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
-                  <ToggleGroupItem value="7d">7D</ToggleGroupItem>
-                  <ToggleGroupItem value="30d">30D</ToggleGroupItem>
-                  <ToggleGroupItem value="90d">90D</ToggleGroupItem>
-                  <ToggleGroupItem value="1y">ALL</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-              <div className="flex gap-2">
-                <ToggleGroup type="single" value="quantity" onValueChange={(value) => value && setChartType(value as any)}>
-                  <ToggleGroupItem value="quantity">Listings</ToggleGroupItem>
-                  <ToggleGroupItem value="volume">Volume</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-            </div>
             
             {history.length > 0 ? (
               <QuantityBarChart 
