@@ -948,7 +948,6 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         {caseInfo && (
           <CaseSection caseName={caseInfo.name} />
         )}
-        </div>
       </TooltipProvider>
   );
 }
