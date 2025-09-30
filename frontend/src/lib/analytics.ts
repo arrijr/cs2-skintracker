@@ -197,6 +197,11 @@ export const analytics = new AnalyticsService();
 
 // P3 - Hook for easy usage in components
 export function useAnalytics() {
+  // Ensure analytics is always available
+  if (!analytics) {
+    console.error('[Analytics] Analytics service not initialized');
+    return new AnalyticsService();
+  }
   return analytics;
 }
 

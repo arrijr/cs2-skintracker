@@ -95,6 +95,12 @@ export default function SkinDetailPage() {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
   const analytics = useAnalytics();
+  
+  // Ensure analytics is available
+  if (!analytics) {
+    console.error('[SkinDetailPage] Analytics not available');
+    return <div>Error: Analytics service not available</div>;
+  }
 
   const [mounted, setMounted] = useState(false);
   const [skin, setSkin] = useState<Skin | null>(null);
@@ -132,7 +138,16 @@ export default function SkinDetailPage() {
     
     const newURL = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
     router.replace(newURL, { scroll: false });
-  }, [chartRange, chartScale, movingAverage, activeTab, overlayMode, router]);
+    
+    // P3 - Analytics: Track URL changes
+    if (analytics) {
+      try {
+        analytics.trackEngagement('url_update', params.toString().split('&').length);
+      } catch (error) {
+        console.error('[Analytics] Failed to track URL update:', error);
+      }
+    }
+  }, [chartRange, chartScale, movingAverage, activeTab, overlayMode, router, analytics]);
 
   // Update URL when overlay mode changes
   useEffect(() => {
@@ -181,10 +196,22 @@ export default function SkinDetailPage() {
       setLoadingEnhanced(true);
       try {
         const [caseRes, marketRes, relatedRes, variantsRes] = await Promise.all([
-          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/case-info`)),
-          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/market-stats`)),
-          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/related`)),
-          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/variants`))
+          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/case-info`)).catch(err => {
+            console.warn('Failed to load case info:', err);
+            return null;
+          }),
+          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/market-stats`)).catch(err => {
+            console.warn('Failed to load market stats:', err);
+            return null;
+          }),
+          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/related`)).catch(err => {
+            console.warn('Failed to load related skins:', err);
+            return [];
+          }),
+          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/variants`)).catch(err => {
+            console.warn('Failed to load variants:', err);
+            return [];
+          })
         ]);
         setCaseInfo(caseRes?.case || null); // New endpoint returns { case: {...} }
         setMarketStats(marketRes || null);
@@ -192,6 +219,11 @@ export default function SkinDetailPage() {
         setVariants(variantsRes?.variants || []);
       } catch (error) {
         console.error("Failed to load enhanced data:", error);
+        // Set fallback values
+        setCaseInfo(null);
+        setMarketStats(null);
+        setRelatedSkins([]);
+        setVariants([]);
       } finally {
         setLoadingEnhanced(false);
       }
@@ -277,12 +309,24 @@ export default function SkinDetailPage() {
       setWatchlist(prev => [...prev, { skinId: skin.id, skin: skin }]);
       
       // P3 - Analytics: Track watchlist add
-      analytics.trackWatchlistAdd(skin.id, skin.name, skin.marketPrice || 0);
+      if (analytics) {
+        try {
+          analytics.trackWatchlistAdd(skin.id, skin.name, skin.marketPrice || 0);
+        } catch (analyticsError) {
+          console.error('[Analytics] Failed to track watchlist add:', analyticsError);
+        }
+      }
       
       toast.success("Added to watchlist");
     } catch (error) {
       // P3 - Analytics: Track error
-      analytics.trackError("watchlist_add_failed", "addToWatchlist", skin.id);
+      if (analytics) {
+        try {
+          analytics.trackError("watchlist_add_failed", "addToWatchlist", skin.id);
+        } catch (analyticsError) {
+          console.error('[Analytics] Failed to track error:', analyticsError);
+        }
+      }
       toast.error("Failed to add to watchlist");
     } finally {
       setWatchlistLoading(false);
@@ -307,12 +351,24 @@ export default function SkinDetailPage() {
       setPortfolioSkins(prev => [...prev, { skinId: skin.id, skin: skin, quantity: 1 }]);
       
       // P3 - Analytics: Track portfolio add
-      analytics.trackPortfolioAdd(skin.id, skin.name, skin.marketPrice || 0);
+      if (analytics) {
+        try {
+          analytics.trackPortfolioAdd(skin.id, skin.name, skin.marketPrice || 0);
+        } catch (analyticsError) {
+          console.error('[Analytics] Failed to track portfolio add:', analyticsError);
+        }
+      }
       
       toast.success("Added to portfolio");
     } catch (error) {
       // P3 - Analytics: Track error
-      analytics.trackError("portfolio_add_failed", "addToPortfolio", skin.id);
+      if (analytics) {
+        try {
+          analytics.trackError("portfolio_add_failed", "addToPortfolio", skin.id);
+        } catch (analyticsError) {
+          console.error('[Analytics] Failed to track error:', analyticsError);
+        }
+      }
       toast.error("Failed to add to portfolio");
     } finally {
       setPortfolioLoading(false);
@@ -339,13 +395,25 @@ export default function SkinDetailPage() {
       });
       
       // P3 - Analytics: Track alert creation
-      analytics.trackAlertCreate(skin.id, skin.name, alertPrice);
+      if (analytics) {
+        try {
+          analytics.trackAlertCreate(skin.id, skin.name, alertPrice);
+        } catch (analyticsError) {
+          console.error('[Analytics] Failed to track alert creation:', analyticsError);
+        }
+      }
       
       toast.success(`Price alert set at ${formatUSD(alertPrice)}`);
       setAlertPrice("");
     } catch (error) {
       // P3 - Analytics: Track error
-      analytics.trackError("alert_create_failed", "addPriceAlert", skin.id);
+      if (analytics) {
+        try {
+          analytics.trackError("alert_create_failed", "addPriceAlert", skin.id);
+        } catch (analyticsError) {
+          console.error('[Analytics] Failed to track error:', analyticsError);
+        }
+      }
       toast.error("Failed to set price alert");
     } finally {
       setAddingAlert(false);
@@ -413,8 +481,12 @@ export default function SkinDetailPage() {
     await navigator.clipboard.writeText(url);
     
     // P3 - Analytics: Track copy link
-    if (skin) {
-      analytics.trackCopyLink(skin.id, skin.name);
+    if (skin && analytics) {
+      try {
+        analytics.trackCopyLink(skin.id, skin.name);
+      } catch (error) {
+        console.error('[Analytics] Failed to track copy link:', error);
+      }
     }
     
     toast.success("Link copied to clipboard");
@@ -432,13 +504,25 @@ export default function SkinDetailPage() {
         setSkin(skinData);
         
         // P3 - Analytics: Track page view
-        analytics.trackPageView(parseInt(skinId), skinData.name);
+        if (analytics) {
+          try {
+            analytics.trackPageView(parseInt(skinId), skinData.name);
+          } catch (error) {
+            console.error('[Analytics] Failed to track page view:', error);
+          }
+        }
       } catch (error) {
         console.error("Failed to load skin:", error);
         // P3 - Analytics: Track error
-        analytics.trackError("skin_load_failed", "loadSkin", parseInt(skinId));
+        if (analytics) {
+          try {
+            analytics.trackError("skin_load_failed", "loadSkin", parseInt(skinId));
+          } catch (analyticsError) {
+            console.error('[Analytics] Failed to track error:', analyticsError);
+          }
+        }
         toast.error("Failed to load skin data");
-    } finally {
+      } finally {
         setLoading(false);
       }
     }
