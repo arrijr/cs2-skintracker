@@ -857,8 +857,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 ❌ No skin data available. Skin: {JSON.stringify(skin)}
               </div>
             )}
-                              </CardContent>
-                            </Card>
+          </div>
 
         {/* Related Skins */}
         {variants.length > 0 && (
