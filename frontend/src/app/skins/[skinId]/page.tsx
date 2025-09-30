@@ -36,7 +36,6 @@ import { useAnalytics } from "@/lib/analytics";
 import { CaseSection } from "@/components/CaseSection";
 import QuantityBarChart from "@/components/QuantityBarChart";
 import OverlayPriceQuantityChart from "@/components/OverlayPriceQuantityChart";
-import PremiumFeatureFlag from "@/app/portfolio/PremiumFeatureFlag";
 
 // Chart components are now handled by Shadcn UI Charts
 
@@ -619,10 +618,10 @@ export default function SkinDetailPage() {
               </div>
             </div>
           ) : skin ? (
-            <div className="flex flex-col md:flex-row gap-8">
-              {/* Skin Image */}
-              <div className="flex-shrink-0">
-                <div className="relative w-64 h-64 mx-auto md:mx-0">
+            <div className="flex flex-col lg:flex-row gap-12 items-start">
+              {/* Skin Image - größer und im Fokus */}
+              <div className="flex-shrink-0 w-full lg:w-auto">
+                <div className="relative w-80 h-80 mx-auto lg:mx-0 bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-2xl p-8 shadow-2xl">
                   {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
                     <SkinImage
                       src={skinImageUrl}
@@ -630,27 +629,26 @@ export default function SkinDetailPage() {
                       fill
                       priority
                       quality={90}
+                      className="object-contain p-4"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-primary/30 rounded-lg flex items-center justify-center">
-                      <Image
-                        src={skinImageUrl}
-                        alt={skin.name}
-                        fill
-                        className="object-contain p-4"
-                        priority
-                        quality={90}
-                      />
-                    </div>
+                    <Image
+                      src={skinImageUrl}
+                      alt={skin.name}
+                      fill
+                      className="object-contain p-4"
+                      priority
+                      quality={90}
+                    />
                   )}
                 </div>
               </div>
            
-              {/* Skin Info */}
-              <div className="flex-1 space-y-4">
+              {/* Skin Info - rechts vom Bild */}
+              <div className="flex-1 space-y-6 text-center lg:text-left">
                 <div>
                   {/* Breadcrumb navigation: Cases > Case > Skin */}
-                  <Breadcrumb className="mb-4">
+                  <Breadcrumb className="mb-6">
                     <BreadcrumbList>
                       <BreadcrumbItem>
                         <BreadcrumbLink href="/" className="flex items-center gap-1">
@@ -681,8 +679,9 @@ export default function SkinDetailPage() {
                     </BreadcrumbList>
                   </Breadcrumb>
                   
-                  <h1 className="text-3xl font-bold mb-2">{skin.name}</h1>
-                  <p className="text-muted-foreground mb-4">{skin.marketHashName}</p>
+                  <div className="space-y-4">
+                    <h1 className="text-4xl font-bold leading-tight">{skin.name}</h1>
+                    <p className="text-lg text-muted-foreground">{skin.marketHashName}</p>
                   
                   {/* P1 - Badges - farbcodiert und konsistent */}
                   <div className="flex items-center gap-2 mb-4">
@@ -798,27 +797,25 @@ export default function SkinDetailPage() {
 
                 {/* P1 - Quick Actions - immer sichtbar */}
                 <div className="flex flex-wrap gap-2">
-                  {/* Premium Feature: Add to Watchlist */}
-                  <PremiumFeatureFlag feature="watchlist">
-                    <Button
-                      onClick={addToWatchlist}
-                      disabled={watchlistLoading || isInWatchlist}
-                      variant={isInWatchlist ? "secondary" : "default"}
-                      size="sm"
-                      className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                      aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
-                      aria-pressed={isInWatchlist}
-                    >
-                      {watchlistLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : isInWatchlist ? (
-                        <Check className="h-4 w-4" />
-                      ) : (
-                        <Heart className="h-4 w-4" />
-                      )}
-                      {isInWatchlist ? "Added ✓" : "Add to Watchlist"}
-                    </Button>
-                  </PremiumFeatureFlag>
+                  {/* Add to Watchlist */}
+                  <Button
+                    onClick={addToWatchlist}
+                    disabled={watchlistLoading || isInWatchlist}
+                    variant={isInWatchlist ? "secondary" : "default"}
+                    size="sm"
+                    className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+                    aria-pressed={isInWatchlist}
+                  >
+                    {watchlistLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : isInWatchlist ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Heart className="h-4 w-4" />
+                    )}
+                    {isInWatchlist ? "Added ✓" : "Add to Watchlist"}
+                  </Button>
 
                   <Button
                     onClick={addToPortfolio}
@@ -859,7 +856,7 @@ export default function SkinDetailPage() {
               <p className="text-muted-foreground">Skin not found</p>
             </div>
           )}
-                </div>
+        )}
 
 
         {/* P1 - Price History */}
@@ -1046,27 +1043,26 @@ export default function SkinDetailPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Top Row */}
-                  <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Median Price */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                          <Card className="border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 transition-all duration-200 cursor-help group">
-                            <CardContent className="p-4">
-                              <div className="flex items-center gap-3">
-                                <div className="p-3 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors">
-                                  <DollarSign className="h-6 w-6 text-primary" />
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform">
-                                    {formatUSD(marketStats?.medianPrice || 0)}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground font-medium">Median Price</p>
-                                </div>
+                        <Card className="border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 transition-all duration-200 cursor-help group">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-3">
+                              <div className="p-3 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors">
+                                <DollarSign className="h-6 w-6 text-primary" />
                               </div>
-                            </CardContent>
-                          </Card>
+                              <div className="flex-1">
+                                <p className="text-2xl font-bold text-primary group-hover:scale-105 transition-transform">
+                                  {formatUSD(marketStats?.medianPrice || 0)}
+                                </p>
+                                <p className="text-sm text-muted-foreground font-medium">Median Price</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className="text-center">
@@ -1078,24 +1074,25 @@ export default function SkinDetailPage() {
                     </Tooltip>
                   </TooltipProvider>
                   
+                  {/* Buy Orders */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                          <Card className="border border-green-500/20 bg-gradient-to-r from-green-500/5 to-green-500/10 hover:from-green-500/10 hover:to-green-500/15 transition-all duration-200 cursor-help group">
-                            <CardContent className="p-4">
-                              <div className="flex items-center gap-3">
-                                <div className="p-3 rounded-full bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
-                                  <TrendingUp className="h-6 w-6 text-green-500" />
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-3xl font-bold text-green-500 group-hover:scale-105 transition-transform">
-                                    {marketStats?.buyOrders || 0}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground font-medium">Buy Orders</p>
-                                </div>
+                        <Card className="border border-green-500/20 bg-gradient-to-r from-green-500/5 to-green-500/10 hover:from-green-500/10 hover:to-green-500/15 transition-all duration-200 cursor-help group">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-3">
+                              <div className="p-3 rounded-full bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
+                                <TrendingUp className="h-6 w-6 text-green-500" />
                               </div>
-                            </CardContent>
-                          </Card>
+                              <div className="flex-1">
+                                <p className="text-2xl font-bold text-green-500 group-hover:scale-105 transition-transform">
+                                  {marketStats?.buyOrders || 0}
+                                </p>
+                                <p className="text-sm text-muted-foreground font-medium">Buy Orders</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className="text-center">
@@ -1106,27 +1103,25 @@ export default function SkinDetailPage() {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  </div>
                   
-                  {/* Bottom Row */}
-                  <div className="space-y-4">
+                  {/* Active Listings */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                          <Card className="border border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-blue-500/10 hover:from-blue-500/10 hover:to-blue-500/15 transition-all duration-200 cursor-help group">
-                            <CardContent className="p-4">
-                              <div className="flex items-center gap-3">
-                                <div className="p-3 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
-                                  <Users className="h-6 w-6 text-blue-500" />
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-3xl font-bold text-blue-500 group-hover:scale-105 transition-transform">
-                                    {marketStats?.activeListings || 0}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground font-medium">Active Listings</p>
-                                </div>
+                        <Card className="border border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-blue-500/10 hover:from-blue-500/10 hover:to-blue-500/15 transition-all duration-200 cursor-help group">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-3">
+                              <div className="p-3 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
+                                <Users className="h-6 w-6 text-blue-500" />
                               </div>
-                            </CardContent>
+                              <div className="flex-1">
+                                <p className="text-2xl font-bold text-blue-500 group-hover:scale-105 transition-transform">
+                                  {marketStats?.activeListings || 0}
+                                </p>
+                                <p className="text-sm text-muted-foreground font-medium">Active Listings</p>
+                              </div>
+                            </div>
+                          </CardContent>
                           </Card>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -1138,36 +1133,6 @@ export default function SkinDetailPage() {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                          <Card className="border border-orange-500/20 bg-gradient-to-r from-orange-500/5 to-orange-500/10 hover:from-orange-500/10 hover:to-orange-500/15 transition-all duration-200 cursor-help group">
-                            <CardContent className="p-4">
-                              <div className="flex items-center gap-3">
-                                <div className="p-3 rounded-full bg-orange-500/20 group-hover:bg-orange-500/30 transition-colors">
-                                  <Clock className="h-6 w-6 text-orange-500" />
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-3xl font-bold text-orange-500 group-hover:scale-105 transition-transform">
-                                    {marketStats?.volume24h || 0}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground font-medium">Volume 24h</p>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="text-center">
-                          <p className="font-semibold">Volume 24h</p>
-                          <p className="text-sm">Items sold in the last 24 hours</p>
-                          <p className="text-xs text-muted-foreground mt-1">Market activity indicator</p>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1186,15 +1151,15 @@ export default function SkinDetailPage() {
               Related Skins
             </h2>
             {loadingEnhanced ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-48 w-full" />
+                  <Skeleton key={i} className="h-48 w-full rounded-xl" />
                 ))}
               </div>
             ) : (relatedSkins || []).length > 0 ? (
               <>
-                {/* Desktop Grid */}
-                <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-4">
+                {/* Desktop Grid - mehr Whitespace und Hover-Effekte */}
+                <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-6">
                   {(relatedSkins || []).map((relatedSkin) => (
                   <div key={relatedSkin.id} className="group relative">
                     <Link 

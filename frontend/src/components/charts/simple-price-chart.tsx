@@ -73,7 +73,7 @@ export function SimplePriceChart({
             bottom: 20,
           }}
         >
-          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+          <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
           <XAxis 
             dataKey="date" 
             className="text-xs fill-muted-foreground"
@@ -102,8 +102,8 @@ export function SimplePriceChart({
             dataKey="price"
             stroke="hsl(221.2 83.2% 53.3%)"
             fill="hsl(221.2 83.2% 53.3%)"
-            fillOpacity={0.1}
-            strokeWidth={2}
+            fillOpacity={0.05}
+            strokeWidth={1.5}
             dot={false}
             activeDot={{
               r: 4,
@@ -118,8 +118,9 @@ export function SimplePriceChart({
               dataKey="ma7"
               stroke="hsl(142.1 76.2% 36.3%)"
               fill="transparent"
-              strokeWidth={2}
+              strokeWidth={1.5}
               strokeDasharray="5 5"
+              strokeOpacity={0.8}
               dot={false}
               activeDot={false}
             />
@@ -131,8 +132,9 @@ export function SimplePriceChart({
               dataKey="ma30"
               stroke="hsl(0 84.2% 60.2%)"
               fill="transparent"
-              strokeWidth={2}
+              strokeWidth={1.5}
               strokeDasharray="10 5"
+              strokeOpacity={0.8}
               dot={false}
               activeDot={false}
             />

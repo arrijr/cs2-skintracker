@@ -259,8 +259,8 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
 
   // Get bar color based on value and outliers
   const getBarColor = (value: number, maxValue: number, avgValue: number) => {
-    // Use consistent primary color for all bars
-    return 'bg-primary/80';
+    // Use consistent primary color for all bars - more transparent
+    return 'bg-primary/40';
   };
 
   if (loading) {
