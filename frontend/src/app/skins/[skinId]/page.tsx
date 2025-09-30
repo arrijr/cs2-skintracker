@@ -48,528 +48,304 @@ type Skin = {
   itemImage?: string;
   image_url?: string;
   imageUrl?: string;
-  wear?: string;
-  rarity?: string;
-  quality?: string;
-  isStattrak?: boolean;
-  isStar?: boolean;
-  // Price fields from our realistic price generation
-  priceLatest?: number;
-  priceMedian?: number;
-  priceAvg?: number;
-  priceSafe?: number;
-  priceMin?: number;
-  priceMax?: number;
-  priceMedian24h?: number;
-  priceMedian7d?: number;
-  priceMedian30d?: number;
-  priceMedian90d?: number;
-  priceAvg24h?: number;
-  priceAvg7d?: number;
-  priceAvg30d?: number;
-  priceAvg90d?: number;
-  // Market data
-  soldToday?: number;
-  sold24h?: number;
-  sold7d?: number;
-  sold30d?: number;
-  sold90d?: number;
-  soldTotal?: number;
-  hoursToSold?: number;
-  offerVolume?: number;
-  buyOrderVolume?: number;
-  priceUpdatedAt?: string;
+  marketStats?: {
+    medianPrice?: number;
+    volume24h?: number;
+    priceChange24h?: number;
+    priceChangePercent24h?: number;
+  };
+  caseInfo?: {
+    name: string;
+    id: number;
+  };
+  variants?: Array<{
+    id: number;
+    name: string;
+    marketPrice?: number;
+    imageUrl?: string;
+  }>;
+  history?: Array<{
+    date: string;
+    price: number;
+    quantity: number;
+  }>;
 };
 
-type PriceHistory = {
-  date: string;
-  price: number;
-};
-
-type Range = "24h" | "7d" | "30d" | "90d" | "1y" | "all";
-
-export default function SkinDetailPage() {
+export default function SkinDetailPage({ params }: { params: { skinId: string } }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, isLoaded } = useUser();
-  const { getToken } = useAuth();
+  const { user } = useUser();
+  const { isSignedIn } = useAuth();
   const analytics = useAnalytics();
-  
-  // Ensure analytics is available
-  if (!analytics) {
-    console.error('[SkinDetailPage] Analytics not available');
-    return <div>Error: Analytics service not available</div>;
-  }
 
-  const [mounted, setMounted] = useState(false);
   const [skin, setSkin] = useState<Skin | null>(null);
   const [loading, setLoading] = useState(true);
-  const [history, setHistory] = useState<PriceHistory[]>([]);
-  const [caseInfo, setCaseInfo] = useState<any>(null);
-  const [marketStats, setMarketStats] = useState<any>(null);
-  const [relatedSkins, setRelatedSkins] = useState<any[]>([]);
-  const [variants, setVariants] = useState<any[]>([]);
-  const [loadingEnhanced, setLoadingEnhanced] = useState(false);
-  
-  // P1 - URL Sync States
-  const [chartRange, setChartRange] = useState<Range>((searchParams.get("range") as Range) || "30d");
-  const [chartScale, setChartScale] = useState(searchParams.get("scale") === "log" ? "log" : "linear");
-  const [movingAverage, setMovingAverage] = useState(searchParams.get("ma") || "none");
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
-  const [overlayMode, setOverlayMode] = useState(searchParams.get("overlay") === "true");
+  const [error, setError] = useState<string | null>(null);
+  const [watchlist, setWatchlist] = useState<number[]>([]);
+  const [portfolioSkins, setPortfolioSkins] = useState<number[]>([]);
+  const [priceAlert, setPriceAlert] = useState({ enabled: false, targetPrice: 0 });
+  const [chartType, setChartType] = useState<'price' | 'quantity' | 'overlay'>('price');
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
+  const [showPriceHistory, setShowPriceHistory] = useState(true);
+  const [showQuantityHistory, setShowQuantityHistory] = useState(true);
+  const [showOverlayChart, setShowOverlayChart] = useState(false);
 
-  // Watchlist & Portfolio
-  const [watchlist, setWatchlist] = useState<any[]>([]);
-  const [portfolioSkins, setPortfolioSkins] = useState<any[]>([]);
-  const [watchlistLoading, setWatchlistLoading] = useState(false);
-  const [portfolioLoading, setPortfolioLoading] = useState(false);
-  const [alertPrice, setAlertPrice] = useState<number | "">("");
-  const [addingAlert, setAddingAlert] = useState(false);
-
-  // P1 - URL Sync with P3 Analytics
-  const updateURL = useCallback(() => {
-    const params = new URLSearchParams();
-    if (chartRange !== "30d") params.set("range", chartRange);
-    if (chartScale !== "linear") params.set("scale", chartScale);
-    if (movingAverage && movingAverage !== "none") params.set("ma", movingAverage);
-    if (activeTab !== "overview") params.set("tab", activeTab);
-    if (overlayMode) params.set("overlay", "true");
-    
-    const newURL = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
-    router.replace(newURL, { scroll: false });
-    
-    // P3 - Analytics: Track URL changes
-    if (analytics) {
+  // Load skin data
+  useEffect(() => {
+    const loadSkin = async () => {
       try {
-        analytics.trackEngagement('url_update', params.toString().split('&').length);
-      } catch (error) {
-        console.error('[Analytics] Failed to track URL update:', error);
-      }
-    }
-  }, [chartRange, chartScale, movingAverage, activeTab, overlayMode, router, analytics]);
-
-  // Update URL when overlay mode changes
-  useEffect(() => {
-    updateURL();
-  }, [overlayMode, updateURL]);
-
-  // P3 - Analytics: Track parameter changes
-  const [previousParams, setPreviousParams] = useState({
-    chartRange: "30d" as Range,
-    chartScale: "linear",
-    movingAverage: "none",
-  });
-
-  useEffect(() => {
-    // Track range change
-    if (chartRange !== previousParams.chartRange) {
-      analytics.trackRangeChange(chartRange, previousParams.chartRange);
-    }
-
-    // Track scale toggle
-    if (chartScale !== previousParams.chartScale) {
-      analytics.trackScaleToggle(chartScale, previousParams.chartScale);
-    }
-
-    // Track moving average toggle
-    if (movingAverage !== previousParams.movingAverage) {
-      analytics.trackMovingAverageToggle(movingAverage, previousParams.movingAverage);
-    }
-
-    setPreviousParams({
-      chartRange,
-      chartScale,
-      movingAverage,
-    });
-  }, [chartRange, chartScale, movingAverage, skin, analytics]);
-
-  useEffect(() => {
-    updateURL();
-  }, [updateURL]);
-
-  // P1 - Enhanced Data Loading
-  useEffect(() => {
-    async function loadEnhancedData() {
-      if (!skin?.id) return;
-      
-      setLoadingEnhanced(true);
-      try {
-        const [caseRes, marketRes, relatedRes, variantsRes] = await Promise.all([
-          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/case-info`)).catch(err => {
-            console.warn('Failed to load case info:', err);
-            return null;
-          }),
-          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/market-stats`)).catch(err => {
-            console.warn('Failed to load market stats:', err);
-            return null;
-          }),
-          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/related`)).catch(err => {
-            console.warn('Failed to load related skins:', err);
-            return [];
-          }),
-          fetchJson(apiUrl(`/api/v1/skins/${skin.id}/variants`)).catch(err => {
-            console.warn('Failed to load variants:', err);
-            return [];
-          })
-        ]);
-        setCaseInfo(caseRes?.case || null); // New endpoint returns { case: {...} }
-        setMarketStats(marketRes || null);
-        setRelatedSkins(relatedRes || []);
-        setVariants(variantsRes?.variants || []);
-      } catch (error) {
-        console.error("Failed to load enhanced data:", error);
-        // Set fallback values
-        setCaseInfo(null);
-        setMarketStats(null);
-        setRelatedSkins([]);
-        setVariants([]);
-      } finally {
-        setLoadingEnhanced(false);
-      }
-    }
-    
-    loadEnhancedData();
-  }, [skin?.id]);
-
-  // P1 - Price History with better states
-  useEffect(() => {
-    async function loadPriceHistory() {
-      if (!skin?.id) return;
-      
-      try {
-        const historyData = await fetchJson(apiUrl(`/api/v1/skins/${skin.id}/history`));
-        setHistory(historyData || []);
-      } catch (error) {
-        console.error("Failed to load price history:", error);
-        setHistory([]);
-      }
-    }
-    
-    loadPriceHistory();
-  }, [skin?.id]);
-
-  // Filter history based on selected range
-  const filteredHistory = useMemo(() => {
-    if (!history || !history.length) return [];
-    
-    const now = new Date();
-    const filtered = (history || []).filter(item => {
-      const itemDate = new Date(item.date);
-      const daysDiff = (now.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24);
-      
-      switch (chartRange) {
-        case "24h":
-          return daysDiff <= 1;
-        case "7d":
-          return daysDiff <= 7;
-        case "30d":
-          return daysDiff <= 30;
-        case "90d":
-          return daysDiff <= 90;
-        case "1y":
-          return daysDiff <= 365;
-        case "all":
-        default:
-          return true;
-      }
-    });
-    
-    return filtered;
-  }, [history, chartRange]);
-
-  // Chart data is now handled by the PriceHistoryChart component
-
-  // P1 - Watchlist & Portfolio Management
-  const isInWatchlist = useMemo(() => 
-    (watchlist || []).some(item => item.skinId === skin?.id), 
-    [watchlist, skin?.id]
-  );
-
-  const isInPortfolio = useMemo(() => 
-    (portfolioSkins || []).some(item => item.skinId === skin?.id), 
-    [portfolioSkins, skin?.id]
-  );
-
-  const addToWatchlist = async () => {
-    if (!skin?.id || !user) return;
-    
-    setWatchlistLoading(true);
-    try {
-      const token = await getToken({ template: "backend" });
-      await fetchJson(apiUrl("/api/v1/watchlist"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({ skinId: skin.id }),
-      });
-      
-      setWatchlist(prev => [...prev, { skinId: skin.id, skin: skin }]);
-      
-      // P3 - Analytics: Track watchlist add
-      if (analytics) {
-        try {
-          analytics.trackWatchlistAdd(skin.id, skin.name, skin.marketPrice || 0);
-        } catch (analyticsError) {
-          console.error('[Analytics] Failed to track watchlist add:', analyticsError);
-        }
-      }
-      
-      toast.success("Added to watchlist");
-    } catch (error) {
-      // P3 - Analytics: Track error
-      if (analytics) {
-        try {
-          analytics.trackError("watchlist_add_failed", "addToWatchlist", skin.id);
-        } catch (analyticsError) {
-          console.error('[Analytics] Failed to track error:', analyticsError);
-        }
-      }
-      toast.error("Failed to add to watchlist");
-    } finally {
-      setWatchlistLoading(false);
-    }
-  };
-
-  const addToPortfolio = async () => {
-    if (!skin?.id || !user) return;
-    
-    setPortfolioLoading(true);
-    try {
-      const token = await getToken({ template: "backend" });
-      await fetchJson(apiUrl("/api/v1/portfolio"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({ skinId: skin.id, quantity: 1 }),
-      });
-      
-      setPortfolioSkins(prev => [...prev, { skinId: skin.id, skin: skin, quantity: 1 }]);
-      
-      // P3 - Analytics: Track portfolio add
-      if (analytics) {
-        try {
-          analytics.trackPortfolioAdd(skin.id, skin.name, skin.marketPrice || 0);
-        } catch (analyticsError) {
-          console.error('[Analytics] Failed to track portfolio add:', analyticsError);
-        }
-      }
-      
-      toast.success("Added to portfolio");
-    } catch (error) {
-      // P3 - Analytics: Track error
-      if (analytics) {
-        try {
-          analytics.trackError("portfolio_add_failed", "addToPortfolio", skin.id);
-        } catch (analyticsError) {
-          console.error('[Analytics] Failed to track error:', analyticsError);
-        }
-      }
-      toast.error("Failed to add to portfolio");
-    } finally {
-      setPortfolioLoading(false);
-    }
-  };
-
-  // P1 - Price Alert Management with P3 Analytics
-  const addPriceAlert = async () => {
-    if (!skin?.id || !user || !alertPrice) return;
-    
-    setAddingAlert(true);
-    try {
-      const token = await getToken({ template: "backend" });
-      await fetchJson(apiUrl("/api/v1/watchlist"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          skinId: skin.id,
-          priceAlert: alertPrice
-        }),
-      });
-      
-      // P3 - Analytics: Track alert creation
-      if (analytics) {
-        try {
-          analytics.trackAlertCreate(skin.id, skin.name, alertPrice);
-        } catch (analyticsError) {
-          console.error('[Analytics] Failed to track alert creation:', analyticsError);
-        }
-      }
-      
-      toast.success(`Price alert set at ${formatUSD(alertPrice)}`);
-      setAlertPrice("");
-    } catch (error) {
-      // P3 - Analytics: Track error
-      if (analytics) {
-        try {
-          analytics.trackError("alert_create_failed", "addPriceAlert", skin.id);
-        } catch (analyticsError) {
-          console.error('[Analytics] Failed to track error:', analyticsError);
-        }
-      }
-      toast.error("Failed to set price alert");
-    } finally {
-      setAddingAlert(false);
-    }
-  };
-
-  // P2 - Export Data (CSV/JSON) with P3 Analytics
-  const exportData = useCallback((format: 'csv' | 'json' = 'csv') => {
-    if (!filteredHistory.length) {
-      toast.error("No data to export");
-      return;
-    }
-    
-    let content: string;
-    let filename: string;
-    let mimeType: string;
-    
-    if (format === 'json') {
-      content = JSON.stringify(filteredHistory, null, 2);
-      filename = `${skin?.name || 'skin'}-price-history-${chartRange}.json`;
-      mimeType = "application/json";
-    } else {
-      content = [
-        "Date,Price",
-        ...filteredHistory.map(h => `${h.date},${h.price}`)
-      ].join("\n");
-      filename = `${skin?.name || 'skin'}-price-history-${chartRange}.csv`;
-      mimeType = "text/csv";
-    }
-    
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    // P3 - Analytics: Track export
-    if (skin) {
-      analytics.trackExportData(skin.id, skin.name, format, filteredHistory.length);
-    }
-    
-    toast.success(`Data exported as ${format.toUpperCase()}`);
-  }, [filteredHistory, skin, analytics, chartRange]);
-
-  // P2 - Scroll Position Restoration
-  useEffect(() => {
-    const savedScrollPosition = sessionStorage.getItem('skin-detail-scroll');
-    if (savedScrollPosition) {
-      window.scrollTo(0, parseInt(savedScrollPosition));
-      sessionStorage.removeItem('skin-detail-scroll');
-    }
-  }, []);
-
-  // P2 - Save scroll position before navigation
-  const handleBackToResults = useCallback(() => {
-    sessionStorage.setItem('skin-detail-scroll', window.scrollY.toString());
-    router.back();
-  }, [router]);
-
-  // P2 - Copy Link with P3 Analytics
-  const copyLink = useCallback(async () => {
-    const url = window.location.href;
-    await navigator.clipboard.writeText(url);
-    
-    // P3 - Analytics: Track copy link
-    if (skin && analytics) {
-      try {
-        analytics.trackCopyLink(skin.id, skin.name);
-      } catch (error) {
-        console.error('[Analytics] Failed to track copy link:', error);
-      }
-    }
-    
-    toast.success("Link copied to clipboard");
-  }, [skin, analytics]);
-
-  // Load skin data with P3 Analytics
-  useEffect(() => {
-    async function loadSkin() {
-      const skinId = window.location.pathname.split('/').pop();
-      if (!skinId) return;
-      
-      setLoading(true);
-      try {
-        const skinData = await fetchJson(apiUrl(`/api/v1/skins/${skinId}`));
-        setSkin(skinData);
+        setLoading(true);
+        setError(null);
         
-        // P3 - Analytics: Track page view
-        if (analytics) {
-          try {
-            analytics.trackPageView(parseInt(skinId), skinData.name);
-          } catch (error) {
-            console.error('[Analytics] Failed to track page view:', error);
-          }
+        const response = await fetchJson(`/api/skins/${params.skinId}`);
+        if (response.success) {
+          setSkin(response.data);
+        } else {
+          setError(response.error || 'Skin not found');
         }
-      } catch (error) {
-        console.error("Failed to load skin:", error);
-        // P3 - Analytics: Track error
-        if (analytics) {
-          try {
-            analytics.trackError("skin_load_failed", "loadSkin", parseInt(skinId));
-          } catch (analyticsError) {
-            console.error('[Analytics] Failed to track error:', analyticsError);
-          }
-        }
-        toast.error("Failed to load skin data");
+      } catch (err) {
+        console.error('Error loading skin:', err);
+        setError('Failed to load skin data');
       } finally {
         setLoading(false);
       }
-    }
-    
-    loadSkin();
-  }, [analytics]);
+    };
 
-  // Load watchlist and portfolio
+    if (params.skinId) {
+      loadSkin();
+    }
+  }, [params.skinId]);
+
+  // Load user data
   useEffect(() => {
-    async function loadUserData() {
-      if (!user || !isLoaded) return;
-      
+    const loadUserData = async () => {
+      if (!isSignedIn) return;
+
       try {
-        const token = await getToken({ template: "backend" });
         const [watchlistData, portfolioData] = await Promise.all([
-          fetchJson(apiUrl("/api/v1/watchlist"), {
-            headers: { "Authorization": `Bearer ${token}` }
-          }),
-          fetchJson(apiUrl("/api/v1/portfolio"), {
-            headers: { "Authorization": `Bearer ${token}` }
-          })
+          getWatchlist(),
+          getPortfolio()
         ]);
-        
-        setWatchlist(watchlistData || []);
-        setPortfolioSkins(portfolioData || []);
-      } catch (error) {
-        console.error("Failed to load user data:", error);
+
+        if (watchlistData.success) {
+          setWatchlist(watchlistData.data.map((item: any) => item.skinId));
+        }
+
+        if (portfolioData.success) {
+          setPortfolioSkins(portfolioData.data.map((item: any) => item.skinId));
+        }
+      } catch (err) {
+        console.error('Error loading user data:', err);
+      }
+    };
+
+    loadUserData();
+  }, [isSignedIn]);
+
+  // Analytics tracking
+  useEffect(() => {
+    if (skin && analytics) {
+      try {
+        analytics.trackPageView('skin-detail', {
+          skinId: skin.id,
+          skinName: skin.name,
+          marketPrice: skin.marketPrice
+        });
+      } catch (err) {
+        console.error('Analytics error:', err);
       }
     }
-    
-    loadUserData();
-  }, [user, isLoaded, getToken]);
+  }, [skin, analytics]);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Computed values
+  const skinImageUrl = useMemo(() => {
+    if (!skin) return '/images/placeholder-skin.png';
+    return skin.imageUrl || skin.image_url || skin.itemImage || skin.itemimage || '/images/placeholder-skin.png';
+  }, [skin]);
 
-  if (!mounted) return null;
+  const isInWatchlist = useMemo(() => {
+    return skin ? watchlist.includes(skin.id) : false;
+  }, [skin, watchlist]);
 
-  // Show loading state while skin data is being fetched
-  if (loading || !skin) {
+  const isInPortfolio = useMemo(() => {
+    return skin ? portfolioSkins.includes(skin.id) : false;
+  }, [skin, portfolioSkins]);
+
+  const marketStats = skin?.marketStats || {};
+  const caseInfo = skin?.caseInfo;
+  const variants = skin?.variants || [];
+  const history = skin?.history || [];
+
+  // Event handlers
+  const handleAddToWatchlist = useCallback(async () => {
+    if (!skin || !isSignedIn) return;
+
+    try {
+      const response = await fetchJson('/api/watchlist', {
+        method: 'POST',
+        body: JSON.stringify({ skinId: skin.id })
+      });
+
+      if (response.success) {
+        setWatchlist(prev => [...prev, skin.id]);
+        toast.success('Added to watchlist');
+        
+        if (analytics) {
+          try {
+            analytics.trackWatchlistAdd(skin.id, skin.name);
+          } catch (err) {
+            console.error('Analytics error:', err);
+          }
+        }
+      } else {
+        toast.error(response.error || 'Failed to add to watchlist');
+      }
+    } catch (err) {
+      console.error('Error adding to watchlist:', err);
+      toast.error('Failed to add to watchlist');
+    }
+  }, [skin, isSignedIn, analytics]);
+
+  const handleRemoveFromWatchlist = useCallback(async () => {
+    if (!skin || !isSignedIn) return;
+
+    try {
+      const response = await fetchJson(`/api/watchlist/${skin.id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.success) {
+        setWatchlist(prev => prev.filter(id => id !== skin.id));
+        toast.success('Removed from watchlist');
+      } else {
+        toast.error(response.error || 'Failed to remove from watchlist');
+      }
+    } catch (err) {
+      console.error('Error removing from watchlist:', err);
+      toast.error('Failed to remove from watchlist');
+    }
+  }, [skin, isSignedIn]);
+
+  const handleAddToPortfolio = useCallback(async () => {
+    if (!skin || !isSignedIn) return;
+
+    try {
+      const response = await fetchJson('/api/portfolio', {
+        method: 'POST',
+        body: JSON.stringify({ skinId: skin.id })
+      });
+
+      if (response.success) {
+        setPortfolioSkins(prev => [...prev, skin.id]);
+        toast.success('Added to portfolio');
+        
+        if (analytics) {
+          try {
+            analytics.trackPortfolioAdd(skin.id, skin.name);
+          } catch (err) {
+            console.error('Analytics error:', err);
+          }
+        }
+      } else {
+        toast.error(response.error || 'Failed to add to portfolio');
+      }
+    } catch (err) {
+      console.error('Error adding to portfolio:', err);
+      toast.error('Failed to add to portfolio');
+    }
+  }, [skin, isSignedIn, analytics]);
+
+  const handleRemoveFromPortfolio = useCallback(async () => {
+    if (!skin || !isSignedIn) return;
+
+    try {
+      const response = await fetchJson(`/api/portfolio/${skin.id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.success) {
+        setPortfolioSkins(prev => prev.filter(id => id !== skin.id));
+        toast.success('Removed from portfolio');
+      } else {
+        toast.error(response.error || 'Failed to remove from portfolio');
+      }
+    } catch (err) {
+      console.error('Error removing from portfolio:', err);
+      toast.error('Failed to remove from portfolio');
+    }
+  }, [skin, isSignedIn]);
+
+  const handleCreatePriceAlert = useCallback(async () => {
+    if (!skin || !isSignedIn || !priceAlert.enabled) return;
+
+    try {
+      const response = await fetchJson('/api/alerts', {
+        method: 'POST',
+        body: JSON.stringify({
+          skinId: skin.id,
+          targetPrice: priceAlert.targetPrice,
+          type: 'price_alert'
+        })
+      });
+
+      if (response.success) {
+        toast.success('Price alert created');
+        
+        if (analytics) {
+          try {
+            analytics.trackAlertCreate(skin.id, skin.name, priceAlert.targetPrice);
+          } catch (err) {
+            console.error('Analytics error:', err);
+          }
+        }
+      } else {
+        toast.error(response.error || 'Failed to create price alert');
+      }
+    } catch (err) {
+      console.error('Error creating price alert:', err);
+      toast.error('Failed to create price alert');
+    }
+  }, [skin, isSignedIn, priceAlert, analytics]);
+
+  const handleCopyLink = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied to clipboard');
+      
+      if (analytics) {
+        try {
+          analytics.trackCopyLink(skin?.id, skin?.name);
+        } catch (err) {
+          console.error('Analytics error:', err);
+        }
+      }
+    }
+  }, [skin, analytics]);
+
+  const handleRelatedSkinClick = useCallback((relatedSkin: any) => {
+    if (analytics) {
+      try {
+        analytics.trackRelatedClick(relatedSkin.id, relatedSkin.name);
+      } catch (err) {
+        console.error('Analytics error:', err);
+      }
+    }
+    router.push(`/skins/${relatedSkin.id}`);
+  }, [router, analytics]);
+
+  if (loading) {
     return (
-      <div className="dashboard-bg">
-        <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8 relative z-10">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading skin data...</p>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          <Skeleton className="w-64 h-64 mx-auto md:mx-0" />
+          <div className="flex-1 space-y-4">
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-6 w-1/4" />
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-32" />
             </div>
           </div>
         </div>
@@ -577,964 +353,318 @@ export default function SkinDetailPage() {
     );
   }
 
-  const skinImageUrl = skin?.itemimage || 
-    skin?.itemImage || 
-    skin?.image_url || 
-    skin?.imageUrl || 
-    "/images/placeholder-skin.png";
+  if (error || !skin) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Skin not found</h1>
+          <p className="text-muted-foreground mb-4">{error || 'The requested skin could not be found.'}</p>
+          <Button onClick={() => router.push('/skins')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Skins
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="dashboard-bg">
-      <TooltipProvider>
-        <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8 relative z-10">
-        {/* P1 - Skin Header */}
-        {/* Skin Header - Preis + 24h/7d-Change, konsistente Badges & Quick-Actions */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBackToResults}
-              className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
-              aria-label="Go back to previous page"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to results
-            </Button>
-          </div>
+    <TooltipProvider>
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Back Button */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to results
+          </Button>
+        </div>
 
-          {loading ? (
-            <div className="flex flex-col md:flex-row gap-8">
-              <Skeleton className="w-64 h-64 mx-auto md:mx-0" />
-              <div className="flex-1 space-y-4">
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-6 w-1/4" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-10 w-32" />
-                  <Skeleton className="h-10 w-32" />
-                  <Skeleton className="h-10 w-32" />
-                </div>
-              </div>
-            </div>
-          ) : skin ? (
-            <div className="flex flex-col lg:flex-row gap-12 items-start">
-              {/* Skin Image - größer und im Fokus */}
-              <div className="flex-shrink-0 w-full lg:w-auto">
-                <div className="relative w-80 h-80 mx-auto lg:mx-0 bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-2xl p-8 shadow-2xl">
-                  {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
-                    <SkinImage
-                      src={skinImageUrl}
-                      alt={skin.name}
-                      fill
-                      priority
-                      quality={90}
-                      className="object-contain p-4"
-                    />
-                  ) : (
-                    <Image
-                      src={skinImageUrl}
-                      alt={skin.name}
-                      fill
-                      className="object-contain p-4"
-                      priority
-                      quality={90}
-                    />
-                  )}
-                </div>
-              </div>
-           
-              {/* Skin Info - rechts vom Bild */}
-              <div className="flex-1 space-y-6 text-center lg:text-left">
-                <div>
-                  {/* Breadcrumb navigation: Cases > Case > Skin */}
-                  <Breadcrumb className="mb-6">
-                    <BreadcrumbList>
-                      <BreadcrumbItem>
-                        <BreadcrumbLink href="/" className="flex items-center gap-1">
-                          <Home className="h-4 w-4" />
-                          Home
-                        </BreadcrumbLink>
-                      </BreadcrumbItem>
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                        <BreadcrumbLink href="/skins">Skins</BreadcrumbLink>
-                      </BreadcrumbItem>
-                      {caseInfo && (
-                        <>
-                          <BreadcrumbSeparator />
-                          <BreadcrumbItem>
-                            <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo?.name || '')}`}>
-                              {caseInfo?.name || 'Unknown Case'}
-                            </BreadcrumbLink>
-                          </BreadcrumbItem>
-                        </>
-                      )}
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                        <BreadcrumbPage className="font-medium">
-                          {skin.name}
-                        </BreadcrumbPage>
-                      </BreadcrumbItem>
-                    </BreadcrumbList>
-                  </Breadcrumb>
-                  
-                  <div className="space-y-4">
-                    <h1 className="text-4xl font-bold leading-tight">{skin.name}</h1>
-                    <p className="text-lg text-muted-foreground">{skin.marketHashName}</p>
-                  
-                  {/* P1 - Badges - farbcodiert und konsistent */}
-                  <div className="flex items-center gap-2 mb-4">
-                    {/* Rarity Badge - farbcodiert mit abgestufter Palette */}
-                    <Badge 
-                      variant="outline" 
-                      className={`text-sm font-semibold ${
-                        skin.rarity === 'Covert' ? 'border-red-500 text-red-500 bg-red-500/10 dark:bg-red-500/10 dark:text-red-500' :
-                        skin.rarity === 'Classified' ? 'border-pink-500 text-pink-500 bg-pink-500/10 dark:bg-pink-500/10 dark:text-pink-500' :
-                        skin.rarity === 'Restricted' ? 'border-brand-purple-600 text-brand-purple-600 bg-brand-purple-600/10 dark:bg-brand-purple-600/10 dark:text-brand-purple-600' :
-                        skin.rarity === 'Mil-Spec' ? 'border-brand-slate-500 text-brand-slate-500 bg-brand-slate-500/10 dark:bg-brand-slate-500/10 dark:text-brand-slate-500' :
-                        skin.rarity === 'Industrial' ? 'border-cyan-500 text-cyan-500 bg-cyan-500/10 dark:bg-cyan-500/10 dark:text-cyan-500' :
-                        skin.rarity === 'Consumer' ? 'border-brand-slate-400 text-brand-slate-400 bg-brand-slate-400/10 dark:bg-brand-slate-400/10 dark:text-brand-slate-400' :
-                        'border-brand-slate-400 text-brand-slate-400 bg-brand-slate-400/10 dark:bg-brand-slate-400/10 dark:text-brand-slate-400'
-                      }`}
-                    >
-                      {skin.rarity || 'Unknown'}
-                    </Badge>
-                    
-                    {/* Wear Badge */}
-                    <Badge variant="secondary" className="text-sm">
-                      {skin.wear || 'Unknown'}
-                    </Badge>
-                    
-                    {/* StatTrak Badge - nur wenn aktiv */}
-                    {skin.isStattrak && (
-                      <Badge variant="default" className="text-sm bg-orange-500 hover:bg-orange-600">
-                        StatTrak™
-                      </Badge>
-                    )}
-                    
-                    {/* Star Badge */}
-                    {skin.isStar && (
-                      <Badge variant="outline" className="text-sm">
-                        ★
-                      </Badge>
-                    )}
-             </div>
-           </div>
-
-                {/* P1 - Price mit 24h/7d-Change */}
-                <div className="space-y-2">
-                  <div className="text-3xl font-bold text-primary">
-                    {formatUSD(skin.priceLatest || skin.priceMedian || skin.priceAvg || skin.marketPrice || 0)}
-             </div>
-                  
-                  {/* P2 - Price Deltas mit A11y Tooltips */}
-                  <div className="flex gap-4 text-sm">
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">24h:</span>
-                      <div className="flex items-center gap-1">
-                        {skin.priceMedian24h && (skin.priceLatest || skin.priceMedian || skin.priceAvg) ? (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center gap-1 cursor-help">
-                                  {(skin.priceLatest || skin.priceMedian || skin.priceAvg) > skin.priceMedian24h ? (
-                                    <TrendingUp className="h-3 w-3 text-green-500" aria-label="Price increased" />
-                                  ) : (
-                                    <TrendingDown className="h-3 w-3 text-red-500" aria-label="Price decreased" />
-                                  )}
-                                  <span 
-                                    className={(skin.priceLatest || skin.priceMedian || skin.priceAvg) > skin.priceMedian24h ? "text-green-500" : "text-red-500"}
-                                    aria-label={`Price change: ${(((skin.priceLatest || skin.priceMedian || skin.priceAvg) - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%`}
-                                  >
-                                    {(((skin.priceLatest || skin.priceMedian || skin.priceAvg) - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(1)}%
-                                  </span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>24-hour price change from ${formatUSD(skin.priceMedian24h)}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        ) : (
-                          <span className="text-muted-foreground" aria-label="No 24h data available">N/A</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">7d:</span>
-                      <div className="flex items-center gap-1">
-                        {skin.priceMedian7d && (skin.priceLatest || skin.priceMedian || skin.priceAvg) ? (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center gap-1 cursor-help">
-                                  {(skin.priceLatest || skin.priceMedian || skin.priceAvg) > skin.priceMedian7d ? (
-                                    <TrendingUp className="h-3 w-3 text-green-500" aria-label="Price increased" />
-                                  ) : (
-                                    <TrendingDown className="h-3 w-3 text-red-500" aria-label="Price decreased" />
-                                  )}
-                                  <span 
-                                    className={(skin.priceLatest || skin.priceMedian || skin.priceAvg) > skin.priceMedian7d ? "text-green-500" : "text-red-500"}
-                                    aria-label={`Price change: ${(((skin.priceLatest || skin.priceMedian || skin.priceAvg) - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%`}
-                                  >
-                                    {(((skin.priceLatest || skin.priceMedian || skin.priceAvg) - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(1)}%
-                                  </span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>7-day price change from ${formatUSD(skin.priceMedian7d)}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        ) : (
-                          <span className="text-muted-foreground" aria-label="No 7d data available">N/A</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* P1 - Quick Actions - immer sichtbar */}
-                <div className="flex flex-wrap gap-2">
-                  {/* Add to Watchlist */}
-                  <Button
-                    onClick={addToWatchlist}
-                    disabled={watchlistLoading || isInWatchlist}
-                    variant={isInWatchlist ? "secondary" : "default"}
-                    size="sm"
-                    className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                    aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
-                    aria-pressed={isInWatchlist}
-                  >
-                    {watchlistLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : isInWatchlist ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <Heart className="h-4 w-4" />
-                    )}
-                    {isInWatchlist ? "Added ✓" : "Add to Watchlist"}
-                  </Button>
-
-                  <Button
-                    onClick={addToPortfolio}
-                    disabled={portfolioLoading || isInPortfolio}
-                    variant={isInPortfolio ? "secondary" : "outline"}
-                    size="sm"
-                    className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                    aria-label={isInPortfolio ? "Remove from portfolio" : "Add to portfolio"}
-                    aria-pressed={isInPortfolio}
-                  >
-                    {portfolioLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : isInPortfolio ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <Plus className="h-4 w-4" />
-                    )}
-                    {isInPortfolio ? "Added ✓" : "Add to Portfolio"}
-                  </Button>
-
-                  <Button variant="outline" size="sm" asChild>
-                    <a
-                      href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                      aria-label="Open skin on Steam Market in new tab"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      View on Steam Market
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Skin not found</p>
-            </div>
-          )}
-        )}
-
-
-        {/* P1 - Price History */}
-        {/* Price History Chart with ToggleGroup and Tooltip */}
-        <Card className="mb-12 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                {overlayMode ? "Price & Quantity Overlay" : "Price History"}
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="text-center">
-                        <p className="font-semibold">{overlayMode ? "Overlay Chart" : "Price History Chart"}</p>
-                        <p className="text-sm">{overlayMode ? "Combined price line and quantity bars" : "Historical price data from Steam Market"}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Updated every few minutes</p>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </CardTitle>
-              <div className="flex items-center gap-4">
-                {/* Overlay Mode Toggle */}
-                <ToggleGroup 
-                  type="single" 
-                  value={overlayMode ? "overlay" : "separate"} 
-                  onValueChange={(value) => setOverlayMode(value === "overlay")}
-                  className="bg-muted/50 p-1 rounded-lg"
-                >
-                  <ToggleGroupItem value="separate" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                    <BarChart3 className="h-4 w-4 mr-1" />
-                    Separate
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="overlay" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                    Overlay
-                  </ToggleGroupItem>
-                </ToggleGroup>
-
-                <ToggleGroup 
-                  type="single" 
-                  value={chartRange} 
-                  onValueChange={(value: Range) => value && setChartRange(value)}
-                  className="bg-muted/50 p-1 rounded-lg"
-                >
-                  <ToggleGroupItem value="24h" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                    24h
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="7d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                    7d
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="30d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                    30d
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="90d" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                    90d
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="1y" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                    1y
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="all" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                    All
-                  </ToggleGroupItem>
-                </ToggleGroup>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                <Select value={chartScale} onValueChange={setChartScale}>
-                  <SelectTrigger className="w-24">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="linear">Linear</SelectItem>
-                    <SelectItem value="log">Log</SelectItem>
-                  </SelectContent>
-                </Select>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Chart scale type</p>
-                  </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                <Select value={movingAverage} onValueChange={setMovingAverage}>
-                  <SelectTrigger className="w-20">
-                    <SelectValue placeholder="MA" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="7">MA 7</SelectItem>
-                    <SelectItem value="30">MA 30</SelectItem>
-                  </SelectContent>
-                </Select>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Moving average smoothing</p>
-                  </TooltipContent>
-                </Tooltip>
-
-                {/* P2 - Share/Export Dropdown */}
-                <div className="flex gap-1">
-                  <Button variant="outline" size="sm" onClick={() => exportData('csv')}>
-                    <Download className="h-4 w-4 mr-1" />
-                    CSV
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => exportData('json')}>
-                    <BarChart3 className="h-4 w-4 mr-1" />
-                    JSON
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={copyLink}>
-                    <Copy className="h-4 w-4 mr-1" />
-                    Copy Link
-                  </Button>
-                  </div>
-                  </div>
-                </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-96">
-              {overlayMode ? (
-                <OverlayPriceQuantityChart
-                  skinId={skin?.id || 0}
-                  skinName={skin?.name || ""}
-                  className="w-full h-full"
+        {/* Hero Section */}
+        <div className="flex flex-col lg:flex-row gap-12 items-start">
+          {/* Skin Image - größer und im Fokus */}
+          <div className="flex-shrink-0 w-full lg:w-auto">
+            <div className="relative w-80 h-80 mx-auto lg:mx-0 bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-2xl p-8 shadow-2xl">
+              {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
+                <SkinImage
+                  src={skinImageUrl}
+                  alt={skin.name}
+                  fill
+                  priority
+                  quality={90}
+                  className="object-contain p-4"
                 />
               ) : (
-                <SimplePriceChart
-                  data={filteredHistory}
-                  range={chartRange}
-                  scale={chartScale}
-                  movingAverage={movingAverage as "7" | "30" | "none"}
-                  className="w-full h-full"
+                <Image
+                  src={skinImageUrl}
+                  alt={skin.name}
+                  fill
+                  className="object-contain p-4"
+                  priority
+                  quality={90}
                 />
               )}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Quantity History Section — only show in separate mode */}
-        {!overlayMode && skin && (
-          <QuantityBarChart
-            skinId={skin.id}
-            skinName={skin.name}
-            className="mb-8"
-          />
-        )}
-
-        {/* P1 - Market Statistics */}
-        {/* Market Stats Card — price, orders, listings, volume */}
-        {loadingEnhanced ? (
-          <Skeleton className="h-32 w-full mb-12" />
-        ) : marketStats ? (
-          <div className="mb-12">
-            <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl hover:shadow-2xl transition-all duration-300">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-primary" />
-                    Market Statistics
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="text-center">
-                            <p className="font-semibold">Live Market Data</p>
-                            <p className="text-sm">Real-time statistics from Steam Market</p>
-                            <p className="text-xs text-muted-foreground mt-1">Updated every few minutes</p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </CardTitle>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    <span>Live Data</span>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Median Price */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Card className="border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 transition-all duration-200 cursor-help group">
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-3">
-                              <div className="p-3 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors">
-                                <DollarSign className="h-6 w-6 text-primary" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-2xl font-bold text-primary group-hover:scale-105 transition-transform">
-                                  {formatUSD(marketStats?.medianPrice || 0)}
-                                </p>
-                                <p className="text-sm text-muted-foreground font-medium">Median Price</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="text-center">
-                          <p className="font-semibold">Median Price</p>
-                          <p className="text-sm">Median price over the last 30 days</p>
-                          <p className="text-xs text-muted-foreground mt-1">Based on Steam Market data</p>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  
-                  {/* Buy Orders */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Card className="border border-green-500/20 bg-gradient-to-r from-green-500/5 to-green-500/10 hover:from-green-500/10 hover:to-green-500/15 transition-all duration-200 cursor-help group">
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-3">
-                              <div className="p-3 rounded-full bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
-                                <TrendingUp className="h-6 w-6 text-green-500" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-2xl font-bold text-green-500 group-hover:scale-105 transition-transform">
-                                  {marketStats?.buyOrders || 0}
-                                </p>
-                                <p className="text-sm text-muted-foreground font-medium">Buy Orders</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="text-center">
-                          <p className="font-semibold">Buy Orders</p>
-                          <p className="text-sm">Current buy orders on the Steam Market</p>
-                          <p className="text-xs text-muted-foreground mt-1">People waiting to buy at this price</p>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  
-                  {/* Active Listings */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Card className="border border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-blue-500/10 hover:from-blue-500/10 hover:to-blue-500/15 transition-all duration-200 cursor-help group">
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-3">
-                              <div className="p-3 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
-                                <Users className="h-6 w-6 text-blue-500" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-2xl font-bold text-blue-500 group-hover:scale-105 transition-transform">
-                                  {marketStats?.activeListings || 0}
-                                </p>
-                                <p className="text-sm text-muted-foreground font-medium">Active Listings</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                          </Card>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="text-center">
-                          <p className="font-semibold">Active Listings</p>
-                          <p className="text-sm">Currently active sell listings on Steam Market</p>
-                          <p className="text-xs text-muted-foreground mt-1">Items available for purchase</p>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </CardContent>
-            </Card>
           </div>
-        ) : null}
-
-
-        {/* Contained in Case — shows the case of this skin + grid of all skins from that case */}
-        {skin && <CaseSection skinId={skin.id} />}
-
-        {/* P1 - Related Skins */}
-        {/* Related Skins Grid with interactive Cards and Quick Actions */}
-        <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Heart className="h-6 w-6 text-primary" />
-              Related Skins
-            </h2>
-            {loadingEnhanced ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-48 w-full rounded-xl" />
-                ))}
-              </div>
-            ) : (relatedSkins || []).length > 0 ? (
-              <>
-                {/* Desktop Grid - mehr Whitespace und Hover-Effekte */}
-                <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-6">
-                  {(relatedSkins || []).map((relatedSkin) => (
-                  <div key={relatedSkin.id} className="group relative">
-                    <Link 
-                      href={`/skins/${relatedSkin.id}`}
-                          onClick={() => {
-                        // P3 - Analytics: Track related skin click
-                        if (skin) {
-                          analytics.trackRelatedClick(skin.id, relatedSkin.id, relatedSkin.name);
-                        }
-                      }}
-                    >
-                      <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-2 hover:border-primary/30 bg-gradient-to-br from-background to-muted/20">
-                        <CardContent className="p-4">
-                          <div className="aspect-square relative mb-3">
-                            <SkinImage
-                              src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
-                              alt={relatedSkin.name}
-                              fill
-                              className="group-hover:scale-110 transition-transform duration-300"
-                            />
-                            {/* Quick Actions Overlay */}
-                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <div className="flex gap-1">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          // Add to watchlist logic
-                                          console.log("Add to watchlist:", relatedSkin.id);
-                                        }}
-                                      >
-                                        <Heart className="h-4 w-4" />
-                                      </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                      <p>Add to Watchlist</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                      <Button
-                                        size="sm"
-                                        variant="secondary" 
-                                        className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          // Add to portfolio logic
-                                          console.log("Add to portfolio:", relatedSkin.id);
-                                        }}
-                                      >
-                                        <BarChart3 className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Add to Portfolio</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-            </div>
-                          </div>
-                                </div>
-                          
-                          <h3 className="font-medium text-sm truncate mb-2 group-hover:text-primary transition-colors">
-                            {relatedSkin.name}
-                          </h3>
-                          
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <p className="text-primary font-bold text-lg">
-                                {formatUSD(relatedSkin.priceAvg || relatedSkin.priceMedian || relatedSkin.priceLatest)}
-                              </p>
-                              <div className="flex gap-1">
-                                {relatedSkin.isStattrak && (
-                                  <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
-                                    ST
-                                  </Badge>
-                                )}
-                                {relatedSkin.isStar && (
-                                  <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
-                                    ★
-                                  </Badge>
-            )}
-          </div>
-                        </div>
-                            
-                            {relatedSkin.wear && (
-                <div className="flex items-center justify-between">
-                                <Badge 
-                                  variant="outline" 
-                                  className={`text-xs ${
-                                    relatedSkin.wear === 'Factory New' ? 'border-green-500 text-green-600' :
-                                    relatedSkin.wear === 'Minimal Wear' ? 'border-blue-500 text-blue-600' :
-                                    relatedSkin.wear === 'Field-Tested' ? 'border-yellow-500 text-yellow-600' :
-                                    relatedSkin.wear === 'Well-Worn' ? 'border-orange-500 text-orange-600' :
-                                    relatedSkin.wear === 'Battle-Scarred' ? 'border-red-500 text-red-600' :
-                                    'border-gray-500 text-gray-600'
-                                  }`}
-                                >
-                                  {relatedSkin.wear}
-                                </Badge>
-                                
-                                {relatedSkin.rarity && (
-                                  <Badge 
-                                    variant="outline" 
-                                    className={`text-xs font-semibold ${
-                                      relatedSkin.rarity === 'Covert' ? 'border-red-500 text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-300' :
-                                      relatedSkin.rarity === 'Classified' ? 'border-purple-500 text-purple-600 bg-purple-50 dark:bg-purple-950 dark:text-purple-300' :
-                                      relatedSkin.rarity === 'Restricted' ? 'border-pink-500 text-pink-600 bg-pink-50 dark:bg-pink-950 dark:text-pink-300' :
-                                      relatedSkin.rarity === 'Mil-Spec' ? 'border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950 dark:text-blue-300' :
-                                      relatedSkin.rarity === 'Industrial' ? 'border-cyan-500 text-cyan-600 bg-cyan-50 dark:bg-cyan-950 dark:text-cyan-300' :
-                                      relatedSkin.rarity === 'Consumer' ? 'border-green-500 text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-300' :
-                                      'border-gray-500 text-gray-600 bg-gray-50 dark:bg-gray-950 dark:text-gray-300'
-                                    }`}
-                                  >
-                                    {relatedSkin.rarity}
-                                  </Badge>
-                                    )}
-                                  </div>
-                                )}
-                          </div>
-                              </CardContent>
-                            </Card>
-            </Link>
-          </div>
-                ))}
-              </div>
+       
+          {/* Skin Info - rechts vom Bild */}
+          <div className="flex-1 space-y-6 text-center lg:text-left">
+            <div>
+              {/* Breadcrumb navigation: Cases > Case > Skin */}
+              <Breadcrumb className="mb-6">
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href="/" className="flex items-center gap-1">
+                      <Home className="h-4 w-4" />
+                      Home
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href="/skins">Skins</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  {caseInfo && (
+                    <>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo?.name || '')}`}>
+                          {caseInfo?.name || 'Unknown Case'}
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                    </>
+                  )}
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="font-medium">
+                      {skin.name}
+                    </BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+              
+              <div className="space-y-4">
+                <h1 className="text-4xl font-bold leading-tight">{skin.name}</h1>
+                <p className="text-lg text-muted-foreground">{skin.marketHashName}</p>
                 
-                {/* Mobile Carousel for Skins (Case + Related) */}
-                <div className="md:hidden">
-                  <Carousel className="w-full">
-                    <CarouselContent className="-ml-2 md:-ml-4">
-                {(relatedSkins || []).map((relatedSkin) => (
-                        <CarouselItem key={relatedSkin.id} className="pl-2 md:pl-4 basis-1/2">
-                          <div className="group relative">
-                  <Link 
-                    href={`/skins/${relatedSkin.id}`}
-                    onClick={() => {
-                      // P3 - Analytics: Track related skin click
-                      if (skin) {
-                        analytics.trackRelatedClick(skin.id, relatedSkin.id, relatedSkin.name);
-                      }
-                    }}
-                  >
-                              <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-2 hover:border-primary/30 bg-gradient-to-br from-background to-muted/20">
-                                <CardContent className="p-3">
-                                  <div className="aspect-square relative mb-2">
-                          <SkinImage
-                            src={relatedSkin.imageUrl || "/images/placeholder-skin.png"}
-                            alt={relatedSkin.name}
-                            fill
-                            className="group-hover:scale-110 transition-transform duration-300"
-                          />
-                        </div>
-                                  
-                                  <h3 className="font-medium text-xs truncate mb-1 group-hover:text-primary transition-colors">
-                                    {relatedSkin.name}
-                                  </h3>
-                                  
-                                  <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                                      <p className="text-primary font-bold text-sm">
-                                        {formatUSD(relatedSkin.priceAvg || relatedSkin.priceMedian || relatedSkin.priceLatest)}
-                                      </p>
-                          <div className="flex gap-1">
-                            {relatedSkin.isStattrak && (
-                                          <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
-                                            ST
-                                          </Badge>
-                            )}
-                            {relatedSkin.isStar && (
-                                          <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
-                                            ★
-                                          </Badge>
-                            )}
-                          </div>
-                        </div>
-                                    
-                        {relatedSkin.wear && (
-                                      <Badge 
-                                        variant="outline" 
-                                        className={`text-xs ${
-                                          relatedSkin.wear === 'Factory New' ? 'border-green-500 text-green-600' :
-                                          relatedSkin.wear === 'Minimal Wear' ? 'border-blue-500 text-blue-600' :
-                                          relatedSkin.wear === 'Field-Tested' ? 'border-yellow-500 text-yellow-600' :
-                                          relatedSkin.wear === 'Well-Worn' ? 'border-orange-500 text-orange-600' :
-                                          relatedSkin.wear === 'Battle-Scarred' ? 'border-red-500 text-red-600' :
-                                          'border-gray-500 text-gray-600'
-                                        }`}
-                                      >
-                                        {relatedSkin.wear}
-                                      </Badge>
-                                    )}
-                                  </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                          </div>
-                        </CarouselItem>
-                ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="left-2" />
-                    <CarouselNext className="right-2" />
-                  </Carousel>
+                {/* Price Display */}
+                <div className="flex items-center gap-4">
+                  <span className="text-3xl font-bold">
+                    {skin.marketPrice ? formatUSD(skin.marketPrice) : 'N/A'}
+                  </span>
+                  {marketStats.priceChangePercent24h && (
+                    <Badge 
+                      variant={marketStats.priceChangePercent24h >= 0 ? "default" : "destructive"}
+                      className="text-sm"
+                    >
+                      {marketStats.priceChangePercent24h >= 0 ? (
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                      ) : (
+                        <TrendingDown className="h-3 w-3 mr-1" />
+                      )}
+                      {safeToFixed(marketStats.priceChangePercent24h, 2)}%
+                    </Badge>
+                  )}
+                </div>
               </div>
-              </>
-            ) : (
-              <Card className="border-2 border-dashed border-muted-foreground/25 bg-gradient-to-br from-muted/5 to-muted/10">
-                <CardContent className="text-center py-16">
-                  <div className="mx-auto w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mb-6">
-                    <Heart className="h-8 w-8 text-muted-foreground/60" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No Related Skins Found</h3>
-                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    We couldn't find any related skins for this item. Try exploring different weapon types or collections.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => window.history.back()}>
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Go Back
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+            </div>
 
-        {/* P1 - Skin Variants Table */}
-        {/* Skin Variants - Same skins in different wear conditions */}
-        {loadingEnhanced ? (
-          <Skeleton className="h-64 w-full mb-12" />
-        ) : variants && variants.length > 0 ? (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <Eye className="h-6 w-6 text-primary" />
-              Skin Variants
-            </h2>
-            <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-b border-accent/20">
-                      <TableHead className="font-semibold text-primary">Wear Condition</TableHead>
-                      <TableHead className="font-semibold text-primary">Price</TableHead>
-                      <TableHead className="font-semibold text-primary">Change 24h</TableHead>
-                      <TableHead className="font-semibold text-primary">Volume</TableHead>
-                      <TableHead className="font-semibold text-primary">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {(variants || []).map((variant) => (
-                      <TableRow key={variant.id} className="hover:bg-accent/5 transition-colors">
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Badge 
-                              variant="outline" 
-                              className={`font-semibold ${
-                                variant.wear === 'Factory New' ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300' :
-                                variant.wear === 'Minimal Wear' ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300' :
-                                variant.wear === 'Field-Tested' ? 'border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300' :
-                                variant.wear === 'Well-Worn' ? 'border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300' :
-                                variant.wear === 'Battle-Scarred' ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300' :
-                                'border-gray-500 bg-gray-50 text-gray-700 dark:bg-gray-950 dark:text-gray-300'
-                              }`}
-                            >
-                              {variant.wear}
-                            </Badge>
-                            {variant.isStattrak && (
-                              <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                                ST
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-bold text-lg text-primary">
-                            {formatUSD(variant.priceAvg || variant.priceMedian || variant.priceLatest)}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {variant.priceChange24h ? (
-                            <div className="flex items-center gap-1">
-                              {variant.priceChange24h > 0 ? (
-                                <TrendingUp className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <TrendingDown className="h-4 w-4 text-red-500" />
-                              )}
-                              <span className={variant.priceChange24h > 0 ? "text-green-500" : "text-red-500"}>
-                                {Math.abs(variant.priceChange24h).toFixed(1)}%
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">N/A</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-muted-foreground">
-                            {variant.volume24h || variant.volume7d || 'N/A'}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => window.open(`/skins/${variant.id}`, '_blank')}
-                            >
-                              View
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => console.log("Add to watchlist:", variant.id)}
-                            >
-                              <Heart className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-        ) : null}
-
-        {/* P1 - Price Alerts & Watchlist */}
-        {/* Price Alerts & Watchlist - Preisalarm sauber integrieren */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Price Alerts & Watchlist</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                placeholder="Alert price"
-                value={alertPrice}
-                onChange={(e) => setAlertPrice(e.target.value ? Number(e.target.value) : "")}
-                className="flex-1"
-                min="0"
-                step="0.01"
-              />
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3">
+              {isSignedIn ? (
+                <>
+                  {isInWatchlist ? (
+                    <Button
+                      variant="outline"
+                      onClick={handleRemoveFromWatchlist}
+                      className="flex items-center gap-2"
+                    >
+                      <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                      Remove from Watchlist
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleAddToWatchlist}
+                      className="flex items-center gap-2"
+                    >
+                      <Heart className="h-4 w-4" />
+                      Add to Watchlist
+                    </Button>
+                  )}
+                  
+                  {isInPortfolio ? (
+                    <Button
+                      variant="outline"
+                      onClick={handleRemoveFromPortfolio}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Remove from Portfolio
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleAddToPortfolio}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add to Portfolio
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <Button
+                  onClick={() => router.push('/sign-in')}
+                  className="flex items-center gap-2"
+                >
+                  <Heart className="h-4 w-4" />
+                  Sign in to track
+                </Button>
+              )}
+              
               <Button
-                onClick={addPriceAlert}
-                disabled={addingAlert || !alertPrice || alertPrice <= 0}
+                variant="outline"
+                onClick={handleCopyLink}
+                className="flex items-center gap-2"
               >
-                {addingAlert ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Set Alert"
-                )}
+                <Share2 className="h-4 w-4" />
+                Share
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || skin.name)}`, '_blank')}
+                className="flex items-center gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                View on Steam Market
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Get notified when the price reaches your target.
-            </p>
+          </div>
+        </div>
+
+        {/* Market Statistics - 3-Spalten-Grid */}
+        <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Market Statistics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center p-6 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl hover:shadow-2xl rounded-xl">
+                <div className="text-2xl font-bold text-primary">
+                  {marketStats.medianPrice ? formatUSD(marketStats.medianPrice) : 'N/A'}
+                </div>
+                <div className="text-sm text-muted-foreground">Median Price</div>
+              </div>
+              
+              <div className="text-center p-6 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl hover:shadow-2xl rounded-xl">
+                <div className="text-2xl font-bold text-primary">
+                  {marketStats.priceChange24h ? formatUSD(marketStats.priceChange24h) : 'N/A'}
+                </div>
+                <div className="text-sm text-muted-foreground">24h Change</div>
+              </div>
+              
+              <div className="text-center p-6 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl hover:shadow-2xl rounded-xl">
+                <div className="text-2xl font-bold text-primary">
+                  {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
+                </div>
+                <div className="text-sm text-muted-foreground">Volume 24h</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
-        </div>
-      </TooltipProvider>
-    </div>
+
+        {/* Price History Chart */}
+        <Card className="mb-12 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Price History
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {history.length > 0 ? (
+              <SimplePriceChart data={history} />
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No price history available
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Quantity History Chart */}
+        <Card className="mb-12 border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Quantity History
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {history.length > 0 ? (
+              <QuantityBarChart data={history} />
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No quantity history available
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Related Skins */}
+        {variants.length > 0 && (
+          <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 via-background to-accent/5 shadow-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Eye className="h-5 w-5" />
+                Related Skins
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {variants.map((variant) => (
+                  <Card
+                    key={variant.id}
+                    className="border-2 hover:border-primary/30 bg-gradient-to-br from-background to-muted/20 group-hover:scale-[1.02] transition-all duration-200 cursor-pointer"
+                    onClick={() => handleRelatedSkinClick(variant)}
+                  >
+                    <CardContent className="p-6">
+                      <div className="aspect-square relative mb-4 rounded-lg overflow-hidden">
+                        {variant.imageUrl ? (
+                          <Image
+                            src={variant.imageUrl}
+                            alt={variant.name}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <Image className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="font-semibold mb-2 line-clamp-2">{variant.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {variant.marketPrice ? formatUSD(variant.marketPrice) : 'N/A'}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Case Information */}
+        {caseInfo && (
+          <CaseSection caseName={caseInfo.name} />
+        )}
+      </div>
+    </TooltipProvider>
   );
 }
