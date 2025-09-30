@@ -598,7 +598,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </CardHeader>
           <CardContent>
             
-            {history.length > 0 ? (
+            {history && history.length > 0 ? (
               <SimplePriceChart 
                 data={history} 
                 range={timeRange}
@@ -623,7 +623,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </CardHeader>
           <CardContent>
             
-            {history.length > 0 ? (
+            {skin && skin.id ? (
               <QuantityBarChart 
                 skinId={skin.id} 
                 skinName={skin.name}
