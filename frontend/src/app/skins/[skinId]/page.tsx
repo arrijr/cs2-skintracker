@@ -608,7 +608,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 </ToggleGroup>
               </div>
               <div className="flex gap-2">
-                <ToggleGroup type="single" value="price" onValueChange={(value) => value && setChartType(value as any)}>
+                <ToggleGroup type="single" value={chartType} onValueChange={(value) => value && setChartType(value as any)}>
                   <ToggleGroupItem value="price">Price</ToggleGroupItem>
                   <ToggleGroupItem value="overlay">Price Overlay</ToggleGroupItem>
                 </ToggleGroup>
