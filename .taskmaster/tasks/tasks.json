@@ -1,0 +1,181 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Portfolio Rebalancing System",
+        "description": "Implement automated portfolio rebalancing recommendations based on risk tolerance and market conditions",
+        "details": "Create a system that analyzes current portfolio allocation and suggests rebalancing actions to maintain optimal risk-return profile. Include risk tolerance assessment, market condition analysis, and automated recommendation engine.",
+        "testStrategy": "Test with various portfolio configurations, different risk tolerances, and market scenarios. Verify recommendations are actionable and financially sound.",
+        "dependencies": [],
+        "priority": "high",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Tax Loss Harvesting Engine",
+        "description": "Develop smart selling strategies to optimize tax efficiency for portfolio positions",
+        "details": "Build an algorithm that identifies opportunities for tax loss harvesting by analyzing position performance, holding periods, and tax implications. Include wash sale rule compliance and optimization strategies.",
+        "testStrategy": "Test with various portfolio scenarios, different tax jurisdictions, and edge cases like wash sales. Verify compliance with tax regulations.",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "high",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Dynamic Risk Management Rules",
+        "description": "Implement dynamic position sizing based on volatility and market conditions",
+        "details": "Create a risk management system that automatically adjusts position sizes based on asset volatility, market conditions, and portfolio risk metrics. Include stop-loss recommendations and position sizing algorithms.",
+        "testStrategy": "Test with different market conditions, volatility levels, and portfolio sizes. Verify risk calculations are accurate and recommendations are appropriate.",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "high",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Community Insights Platform",
+        "description": "Build social features for sharing portfolio strategies and performance with the community",
+        "details": "Create a social platform where users can share portfolio strategies, performance metrics, and insights. Include privacy controls, performance verification, and community engagement features.",
+        "testStrategy": "Test social features with multiple users, verify privacy controls work correctly, and ensure performance data is accurate and secure.",
+        "dependencies": [],
+        "priority": "medium",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Social Trading System",
+        "description": "Enable users to follow successful traders and copy their strategies",
+        "details": "Implement a social trading system where users can follow top performers, copy their strategies, and track performance. Include leaderboards, strategy sharing, and performance attribution.",
+        "testStrategy": "Test with simulated trading data, verify strategy copying works correctly, and ensure performance tracking is accurate and transparent.",
+        "dependencies": [
+          "4"
+        ],
+        "priority": "medium",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Market Sentiment Analysis",
+        "description": "Implement community-driven market sentiment tracking and analysis",
+        "details": "Create a system that aggregates community sentiment, social media mentions, and market discussions to provide real-time sentiment analysis for CS2 skin markets.",
+        "testStrategy": "Test sentiment analysis accuracy with known market events, verify data sources are reliable, and ensure real-time updates work correctly.",
+        "dependencies": [
+          "4"
+        ],
+        "priority": "medium",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Advanced Reporting Dashboard",
+        "description": "Build professional-grade analytics and reporting tools for institutional clients",
+        "details": "Create comprehensive reporting tools with advanced analytics, customizable dashboards, and professional-grade visualizations. Include export capabilities and compliance reporting.",
+        "testStrategy": "Test with various data sets, verify export functionality works correctly, and ensure reports meet professional standards and compliance requirements.",
+        "dependencies": [],
+        "priority": "high",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Compliance and Audit Tools",
+        "description": "Implement regulatory reporting and audit trail functionality",
+        "details": "Build compliance tools for regulatory reporting, audit trails, and data retention. Include automated compliance checks and reporting capabilities for different jurisdictions.",
+        "testStrategy": "Test compliance features with various regulatory scenarios, verify audit trails are complete and accurate, and ensure reporting meets regulatory requirements.",
+        "dependencies": [
+          "7"
+        ],
+        "priority": "high",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Multi-Portfolio Management",
+        "description": "Enable institutional account management with multiple portfolios",
+        "details": "Create a system for managing multiple portfolios under one account, with role-based access, portfolio grouping, and institutional features like team management.",
+        "testStrategy": "Test with multiple portfolios, verify access controls work correctly, and ensure team management features function as expected.",
+        "dependencies": [
+          "7"
+        ],
+        "priority": "medium",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "API Access and Developer Tools",
+        "description": "Provide third-party integrations and developer access through comprehensive API",
+        "details": "Build a comprehensive API for third-party integrations, including authentication, rate limiting, documentation, and developer tools. Include webhooks and real-time data access.",
+        "testStrategy": "Test API endpoints with various clients, verify rate limiting works correctly, and ensure documentation is comprehensive and accurate.",
+        "dependencies": [],
+        "priority": "medium",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "Real News API Integration",
+        "description": "Replace mock data with actual CS2 market news and sentiment data",
+        "details": "Integrate real news APIs to provide actual market news, sentiment analysis, and economic calendar data instead of mock data. Include multiple news sources and real-time updates.",
+        "testStrategy": "Test with real news data, verify sentiment analysis accuracy, and ensure real-time updates work correctly without overwhelming the system.",
+        "dependencies": [],
+        "priority": "high",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Advanced ML Models",
+        "description": "Improve prediction accuracy with machine learning models",
+        "details": "Develop and integrate advanced machine learning models for price predictions, market analysis, and portfolio optimization. Include model training, validation, and continuous improvement.",
+        "testStrategy": "Test ML models with historical data, verify prediction accuracy, and ensure models can be retrained and improved over time.",
+        "dependencies": [
+          "11"
+        ],
+        "priority": "high",
+        "status": "pending",
+        "createdAt": "2024-12-19T10:00:00Z",
+        "updatedAt": "2024-12-19T10:00:00Z",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-30T07:33:19.196Z",
+      "updated": "2025-09-30T07:33:19.196Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

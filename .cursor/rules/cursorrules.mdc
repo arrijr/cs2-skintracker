@@ -60,6 +60,16 @@ Research & Information Gathering (MANDATORY)
 - Find recent solutions for troubleshooting and debugging.
 - Document research findings and sources in Memory MCP Server.
 
+Task Master MCP Server (MANDATORY)
+- ALWAYS use Task Master MCP Server for structured task management and project planning.
+- Initialize Task Master project structure for new features and major refactoring.
+- Parse PRDs and feature documents to generate actionable tasks automatically.
+- Use AI-powered task expansion and complexity analysis for better planning.
+- Integrate task management with existing documentation workflow.
+- Track task progress and dependencies using Task Master's built-in system.
+- Use research capabilities for informed task generation and updates.
+- Store task management decisions and workflows in Memory MCP Server.
+
 Frontend (Next.js App Router, TS, Tailwind)
 - Keep components small and commented.
 - Prefer explicit types, no `any`.

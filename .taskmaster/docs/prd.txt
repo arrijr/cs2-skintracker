@@ -1,0 +1,86 @@
+# CS2 Skin Tracker - Phase 5: Advanced Automation & Social Features
+
+## Product Overview
+The CS2 Skin Tracker is a comprehensive web application for monitoring and analyzing CS2 skin prices with advanced portfolio management, market intelligence, and social features. Phase 5 focuses on advanced automation, social trading features, and institutional-grade tools.
+
+## Current Status
+- Phase 4 Complete: Portfolio Health Score + Market Intelligence
+- 25,959 CS2 skins imported from Steam Web API
+- 140,110+ price history entries for analytics
+- Full authentication via Clerk (OAuth + email/password)
+- Complete portfolio management with P/L tracking
+- Advanced market analysis and health scoring
+
+## Phase 5 Objectives
+
+### 1. Advanced Portfolio Automation
+- **Portfolio Rebalancing**: Automated rebalancing recommendations based on risk tolerance and market conditions
+- **Tax Loss Harvesting**: Smart selling strategies to optimize tax efficiency
+- **Risk Management Rules**: Dynamic position sizing based on volatility and market conditions
+- **Performance Optimization**: AI-driven suggestions for portfolio improvement
+
+### 2. Social Trading Features
+- **Community Insights**: Share portfolio strategies and performance with the community
+- **Social Trading**: Follow successful traders and copy their strategies
+- **Market Sentiment**: Community-driven analysis and sentiment tracking
+- **Collaborative Tools**: Team portfolio management and shared watchlists
+
+### 3. Institutional Features
+- **Advanced Reporting**: Professional-grade analytics and reporting tools
+- **Compliance Tools**: Regulatory reporting and audit trails
+- **Multi-Portfolio Management**: Institutional account management with multiple portfolios
+- **API Access**: Third-party integrations and developer access
+
+### 4. Enhanced Market Intelligence
+- **Real News API Integration**: Replace mock data with actual CS2 market news
+- **Advanced ML Models**: Improve prediction accuracy with machine learning
+- **Custom Thresholds**: User-defined health score parameters and alerts
+- **Mobile Optimization**: Enhanced responsive design for mobile devices
+
+## Technical Requirements
+
+### Frontend (Next.js, TypeScript, Tailwind)
+- New social components for community features
+- Enhanced portfolio automation UI
+- Advanced reporting dashboards
+- Mobile-optimized responsive design
+- Real-time updates for social features
+
+### Backend (Node.js, Express, Prisma, PostgreSQL)
+- New API endpoints for social features
+- Advanced portfolio calculation services
+- Real-time WebSocket connections for social updates
+- Enhanced cron jobs for market data collection
+- New database models for social and institutional features
+
+### Third-Party Integrations
+- Real news API for market intelligence
+- WebSocket connections for real-time updates
+- Advanced ML services for predictions
+- Social media integration for community features
+
+## Success Metrics
+- User engagement increase through social features
+- Premium conversion rate improvement
+- Portfolio performance optimization
+- Community growth and activity
+- Institutional client acquisition
+
+## Timeline
+- Phase 5A (Advanced Automation): 4-6 weeks
+- Phase 5B (Social Features): 6-8 weeks  
+- Phase 5C (Institutional Tools): 8-10 weeks
+- Phase 5D (Enhanced Intelligence): 4-6 weeks
+
+## Dependencies
+- Existing Phase 4 infrastructure
+- Real news API access
+- ML model development
+- WebSocket infrastructure
+- Social media platform integration
+
+## Risk Mitigation
+- Gradual rollout of social features
+- A/B testing for automation features
+- Comprehensive testing for institutional tools
+- Backup plans for third-party API failures
