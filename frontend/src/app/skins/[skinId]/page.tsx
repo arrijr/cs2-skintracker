@@ -99,8 +99,6 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         
         const response = await fetchJson(apiUrl(`/skins/${params.skinId}`));
         if (response.success) {
-          console.log('Skin data loaded:', response.data);
-          console.log('History data:', response.data.history);
           setSkin(response.data);
         } else if (response.id) {
           // Fallback for old API format
@@ -598,7 +596,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </CardHeader>
           <CardContent>
             {history.length > 0 ? (
-              <SimplePriceChart data={history} />
+              <SimplePriceChart 
+                data={history} 
+                range={timeRange}
+                scale="linear"
+                movingAverage="7"
+              />
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 No price history available
@@ -617,7 +620,10 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </CardHeader>
           <CardContent>
             {history.length > 0 ? (
-              <QuantityBarChart data={history} />
+              <QuantityBarChart 
+                skinId={skin.id} 
+                skinName={skin.name}
+              />
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 No quantity history available
