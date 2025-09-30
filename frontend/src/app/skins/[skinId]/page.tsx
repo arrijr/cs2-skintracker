@@ -380,7 +380,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
   return (
     <TooltipProvider>
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="dashboard-bg text-white min-h-screen">
+        <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Back Button */}
         <div className="flex items-center gap-4">
           <Button
@@ -585,7 +586,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 </div>
 
         {/* Price History Chart - Directly under Hero */}
-        <Card className="mt-8 border border-border bg-card">
+        <Card className="mt-8 border border-border/50 bg-card/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
@@ -617,9 +618,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         </Card>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left Column - Market Statistics */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4">
             {/* Market Statistics */}
             <Card>
           <CardHeader>
@@ -631,45 +632,45 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {/* Latest Price */}
-                  <div className="text-center p-4 border border-border bg-muted/50 rounded-lg">
+                  <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
                     <div className="flex items-center justify-center mb-2">
                       <DollarSign className="h-4 w-4 text-slate-400 mr-1" />
                       <span className="text-sm text-slate-400">Latest</span>
                     </div>
-                    <div className="text-xl font-bold text-white">
+                    <div className="text-lg font-bold text-white">
                       {skin.priceLatest ? formatUSD(skin.priceLatest) : 'N/A'}
                     </div>
                   </div>
                   
                   {/* Median Price */}
-                  <div className="text-center p-4 border border-border bg-muted/50 rounded-lg">
+                  <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
                     <div className="flex items-center justify-center mb-2">
                       <BarChart3 className="h-4 w-4 text-slate-400 mr-1" />
                       <span className="text-sm text-slate-400">Median</span>
                     </div>
-                    <div className="text-xl font-bold text-white">
+                    <div className="text-lg font-bold text-white">
                       {skin.priceMedian ? formatUSD(skin.priceMedian) : 'N/A'}
                     </div>
                                 </div>
               
                   {/* Average Price */}
-                  <div className="text-center p-4 border border-border bg-muted/50 rounded-lg">
+                  <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
                     <div className="flex items-center justify-center mb-2">
                       <TrendingUp className="h-4 w-4 text-slate-400 mr-1" />
                       <span className="text-sm text-slate-400">Average</span>
                     </div>
-                    <div className="text-xl font-bold text-white">
+                    <div className="text-lg font-bold text-white">
                       {skin.priceAvg ? formatUSD(skin.priceAvg) : 'N/A'}
                     </div>
                   </div>
                   
                   {/* Volume 24h */}
-                  <div className="text-center p-4 border border-border bg-muted/50 rounded-lg">
+                  <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
                     <div className="flex items-center justify-center mb-2">
                       <Users className="h-4 w-4 text-slate-400 mr-1" />
                       <span className="text-sm text-slate-400">Volume</span>
                     </div>
-                    <div className="text-xl font-bold text-white">
+                    <div className="text-lg font-bold text-white">
                       {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
                     </div>
                                 </div>
@@ -691,13 +692,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   <div className="space-y-4">
                     <h4 className="text-sm font-medium text-slate-400">Price Range</h4>
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="text-center p-3 border border-border bg-muted/50 rounded-lg">
+                      <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
                         <div className="text-lg font-bold text-green-400">
                           {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
                         </div>
                         <div className="text-xs text-slate-400">Min</div>
                       </div>
-                      <div className="text-center p-3 border border-border bg-muted/50 rounded-lg">
+                      <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
                         <div className="text-lg font-bold text-red-500">
                           {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
                         </div>
@@ -710,7 +711,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   <div className="space-y-4">
                     <h4 className="text-sm font-medium text-slate-400">Price Changes</h4>
                     <div className="space-y-2">
-                      <div className="flex justify-between items-center p-3 border border-border bg-muted/50 rounded-lg">
+                      <div className="flex justify-between items-center p-3 border border-border/50 bg-card/50 rounded-lg">
                         <span className="text-sm text-slate-400">24h Change</span>
                         <Badge variant={marketStats.priceChangePercent24h >= 0 ? "default" : "destructive"} className="text-xs">
                           {marketStats.priceChangePercent24h >= 0 ? (
@@ -721,7 +722,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                           {marketStats.priceChangePercent24h ? `${marketStats.priceChangePercent24h >= 0 ? '+' : ''}${safeToFixed(marketStats.priceChangePercent24h, 2)}%` : 'N/A'}
                         </Badge>
                       </div>
-                      <div className="flex justify-between items-center p-3 border border-border bg-muted/50 rounded-lg">
+                      <div className="flex justify-between items-center p-3 border border-border/50 bg-card/50 rounded-lg">
                         <span className="text-sm text-slate-400">7d Change</span>
                         <Badge variant={skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? "default" : "destructive"} className="text-xs">
                           {skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? (
@@ -749,26 +750,26 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </CardHeader>
               <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-3 border border-border bg-muted/50 rounded-lg">
-                <div className="text-lg font-bold text-white">
+              <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
+                <div className="text-base font-bold text-white">
                   {skin.sold24h || 0}
                 </div>
                 <div className="text-xs text-slate-400">24h</div>
               </div>
-              <div className="text-center p-3 border border-border bg-muted/50 rounded-lg">
-                <div className="text-lg font-bold text-white">
+              <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
+                <div className="text-base font-bold text-white">
                   {skin.sold7d || 0}
                 </div>
                 <div className="text-xs text-slate-400">7d</div>
               </div>
-              <div className="text-center p-3 border border-border bg-muted/50 rounded-lg">
-                <div className="text-lg font-bold text-white">
+              <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
+                <div className="text-base font-bold text-white">
                   {skin.sold30d || 0}
                 </div>
                 <div className="text-xs text-slate-400">30d</div>
               </div>
-              <div className="text-center p-3 border border-border bg-muted/50 rounded-lg">
-                <div className="text-lg font-bold text-white">
+              <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
+                <div className="text-base font-bold text-white">
                   {skin.offerVolume || 0}
                 </div>
                 <div className="text-xs text-slate-400">Offers</div>
@@ -779,7 +780,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </div>
 
           {/* Right Column - Charts */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-4">
             {/* Quantity History Chart */}
             <Card>
               <CardHeader>
@@ -881,7 +882,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   return (
                   <Card
                     key={variant.id}
-                    className="group border border-border bg-card hover:border-primary/50 cursor-pointer transition-all duration-200 hover:shadow-md"
+                    className="group border border-border/50 bg-card/50 hover:border-primary/50 cursor-pointer transition-all duration-200 hover:shadow-md"
                     onClick={() => handleRelatedSkinClick(variant)}
                   >
                     <CardContent className="p-3">
@@ -949,6 +950,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         {caseInfo && (
           <CaseSection caseName={caseInfo.name} />
         )}
+        </div>
       </TooltipProvider>
   );
 }
