@@ -23,7 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2, Copy, BarChart3, Users, Clock, DollarSign, Home, RefreshCw, HelpCircle, Eye, Shield, Settings } from "lucide-react";
+import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2, Copy, BarChart3, Users, Clock, DollarSign, Home, RefreshCw, HelpCircle, Eye, Shield, Settings, Star } from "lucide-react";
 // {/* Central API helpers */}
 import {
   getPortfolio,
@@ -457,6 +457,36 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 <h1 className="text-4xl font-bold leading-tight">{skin.name}</h1>
                 <p className="text-lg text-muted-foreground">{skin.marketHashName}</p>
                 
+                {/* Skin Details */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {skin.weaponType && (
+                    <Badge variant="outline" className="text-xs">
+                      {skin.weaponType}
+                    </Badge>
+                  )}
+                  {skin.wear && (
+                    <Badge variant="outline" className="text-xs">
+                      {skin.wear.toUpperCase()}
+                    </Badge>
+                  )}
+                  {skin.rarity && (
+                    <Badge variant="outline" className="text-xs">
+                      {skin.rarity}
+                    </Badge>
+                  )}
+                  {skin.isStattrak && (
+                    <Badge variant="outline" className="text-xs text-orange-400 border-orange-400/30 bg-orange-400/10">
+                      StatTrak™
+                    </Badge>
+                  )}
+                  {skin.isStar && (
+                    <Badge variant="outline" className="text-xs text-yellow-400 border-yellow-400/30 bg-yellow-400/10">
+                      <Star className="h-3 w-3 mr-1" />
+                      Special
+                    </Badge>
+                  )}
+                </div>
+                
                 {/* Price Display */}
                 <div className="flex items-center gap-4">
                   <span className="text-3xl font-bold">
@@ -552,39 +582,117 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   </div>
                 </div>
 
-        {/* Market Statistics - 3-Spalten-Grid */}
+        {/* Enhanced Market Statistics */}
         <Card className="border border-border bg-card shadow-sm">
           <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-                    Market Statistics
-                  </CardTitle>
-              </CardHeader>
-              <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-6 border border-border bg-card shadow-sm hover:shadow-2xl rounded-xl">
-                <div className="text-2xl font-bold text-primary">
-                  {marketStats.medianPrice ? formatUSD(marketStats.medianPrice) : 'N/A'}
-                                </div>
-                <div className="text-sm text-muted-foreground">Median Price</div>
-                                </div>
+              Market Statistics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Main Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="text-center p-4 border border-border bg-card shadow-sm hover:shadow-lg rounded-lg">
+                <div className="text-xl font-bold text-primary">
+                  {skin.priceLatest ? formatUSD(skin.priceLatest) : 'N/A'}
+                </div>
+                <div className="text-sm text-muted-foreground">Latest Price</div>
+              </div>
               
-              <div className="text-center p-6 border border-border bg-card shadow-sm hover:shadow-2xl rounded-xl">
-                <div className="text-2xl font-bold text-primary">
-                  {marketStats.priceChange24h ? formatUSD(marketStats.priceChange24h) : 'N/A'}
-                                </div>
-                <div className="text-sm text-muted-foreground">24h Change</div>
-                  </div>
-                  
-              <div className="text-center p-6 border border-border bg-card shadow-sm hover:shadow-2xl rounded-xl">
-                <div className="text-2xl font-bold text-primary">
+              <div className="text-center p-4 border border-border bg-card shadow-sm hover:shadow-lg rounded-lg">
+                <div className="text-xl font-bold text-primary">
+                  {skin.priceMedian ? formatUSD(skin.priceMedian) : 'N/A'}
+                </div>
+                <div className="text-sm text-muted-foreground">Median Price</div>
+              </div>
+              
+              <div className="text-center p-4 border border-border bg-card shadow-sm hover:shadow-lg rounded-lg">
+                <div className="text-xl font-bold text-primary">
+                  {skin.priceAvg ? formatUSD(skin.priceAvg) : 'N/A'}
+                </div>
+                <div className="text-sm text-muted-foreground">Average Price</div>
+              </div>
+              
+              <div className="text-center p-4 border border-border bg-card shadow-sm hover:shadow-lg rounded-lg">
+                <div className="text-xl font-bold text-primary">
                   {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
-                                </div>
+                </div>
                 <div className="text-sm text-muted-foreground">Volume 24h</div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
+              </div>
+            </div>
+
+            {/* Price Range */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm text-muted-foreground">Price Range</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center p-3 border border-border bg-card rounded-lg">
+                    <div className="text-lg font-bold text-green-600">
+                      {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Min Price</div>
+                  </div>
+                  <div className="text-center p-3 border border-border bg-card rounded-lg">
+                    <div className="text-lg font-bold text-red-600">
+                      {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Max Price</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm text-muted-foreground">Price Changes</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center p-2 border border-border bg-card rounded">
+                    <span className="text-sm">24h Change</span>
+                    <span className={`font-semibold ${marketStats.priceChangePercent24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {marketStats.priceChangePercent24h ? `${marketStats.priceChangePercent24h >= 0 ? '+' : ''}${safeToFixed(marketStats.priceChangePercent24h, 2)}%` : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 border border-border bg-card rounded">
+                    <span className="text-sm">7d Change</span>
+                    <span className="text-sm text-muted-foreground">
+                      {skin.priceMedian7d ? `${((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(2)}%` : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sales Data */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm text-muted-foreground">Sales Data</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="text-center p-3 border border-border bg-card rounded-lg">
+                  <div className="text-lg font-bold text-primary">
+                    {skin.sold24h || 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Sold 24h</div>
+                </div>
+                <div className="text-center p-3 border border-border bg-card rounded-lg">
+                  <div className="text-lg font-bold text-primary">
+                    {skin.sold7d || 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Sold 7d</div>
+                </div>
+                <div className="text-center p-3 border border-border bg-card rounded-lg">
+                  <div className="text-lg font-bold text-primary">
+                    {skin.sold30d || 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Sold 30d</div>
+                </div>
+                <div className="text-center p-3 border border-border bg-card rounded-lg">
+                  <div className="text-lg font-bold text-primary">
+                    {skin.offerVolume || 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Active Offers</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Price History Chart */}
         <Card className="mb-12 border border-border bg-card shadow-sm">
@@ -593,6 +701,14 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               <TrendingUp className="h-5 w-5" />
               Price History
             </CardTitle>
+            <div className="flex items-center gap-2 mt-2">
+              <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
+                <ToggleGroupItem value="7d" size="sm">7D</ToggleGroupItem>
+                <ToggleGroupItem value="30d" size="sm">30D</ToggleGroupItem>
+                <ToggleGroupItem value="90d" size="sm">90D</ToggleGroupItem>
+                <ToggleGroupItem value="1y" size="sm">1Y</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </CardHeader>
           <CardContent>
             
