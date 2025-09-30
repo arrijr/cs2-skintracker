@@ -35,9 +35,16 @@ export function SimplePriceChart({
   className,
 }: Props) {
   const chartData = useMemo(() => {
-    if (!data.length) return [];
+    console.log('[SimplePriceChart] Processing data:', data.length, 'items');
+    console.log('[SimplePriceChart] First item:', data[0]);
+    
+    if (!data.length) {
+      console.log('[SimplePriceChart] No data available');
+      return [];
+    }
 
     const prices = data.map((item) => item.price);
+    console.log('[SimplePriceChart] Prices range:', Math.min(...prices), 'to', Math.max(...prices));
 
     const result = data.map((item, index) => ({
       date: new Date(item.date).toLocaleDateString(),
@@ -50,6 +57,8 @@ export function SimplePriceChart({
       }),
     }));
 
+    console.log('[SimplePriceChart] Chart data prepared:', result.length, 'points');
+    console.log('[SimplePriceChart] Sample data:', result.slice(0, 3));
     return result;
   }, [data, movingAverage]);
 

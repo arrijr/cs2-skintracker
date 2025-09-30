@@ -597,16 +597,21 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           <CardContent>
             
             {history && history.length > 0 ? (
-              <SimplePriceChart 
-                data={history} 
-                range={timeRange}
-                scale="linear"
-                movingAverage="7"
-              />
+              <>
+                <div className="mb-4 p-2 bg-green-100 text-green-800 rounded text-sm">
+                  ✅ Price History: {history.length} Datenpunkte geladen
+                </div>
+                <SimplePriceChart 
+                  data={history} 
+                  range={timeRange}
+                  scale="linear"
+                  movingAverage="7"
+                />
+              </>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No price history available
-                                </div>
+                ❌ No price history available. History: {JSON.stringify(history?.slice(0, 2))}
+              </div>
             )}
                             </CardContent>
                           </Card>
@@ -622,14 +627,19 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           <CardContent>
             
             {skin && skin.id ? (
-              <QuantityBarChart 
-                skinId={skin.id} 
-                skinName={skin.name}
-              />
+              <>
+                <div className="mb-4 p-2 bg-blue-100 text-blue-800 rounded text-sm">
+                  ✅ Quantity Chart: Skin ID {skin.id} - {skin.name}
+                </div>
+                <QuantityBarChart 
+                  skinId={skin.id} 
+                  skinName={skin.name}
+                />
+              </>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No quantity history available
-            </div>
+                ❌ No skin data available. Skin: {JSON.stringify(skin)}
+              </div>
             )}
                               </CardContent>
                             </Card>
