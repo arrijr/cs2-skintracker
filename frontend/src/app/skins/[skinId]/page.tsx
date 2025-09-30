@@ -392,39 +392,10 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </Button>
         </div>
 
-        {/* Hero Section - Clean Dashboard Style */}
-        <div className="flex flex-col xl:flex-row gap-8 xl:gap-16 items-start">
-          {/* Skin Image - Clean Design */}
-          <div className="flex-shrink-0 w-full xl:w-auto">
-            <div className="relative w-96 h-96 mx-auto xl:mx-0 bg-card border border-border rounded-lg p-12">
-              
-                  {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
-                    <SkinImage
-                      src={skinImageUrl}
-                      alt={skin.name}
-                      fill
-                      priority
-                  quality={95}
-                  className="object-contain p-6 relative z-10"
-                    />
-                  ) : (
-                      <Image
-                        src={skinImageUrl}
-                        alt={skin.name}
-                        fill
-                  className="object-contain p-6 relative z-10"
-                        priority
-                  quality={95}
-                      />
-                  )}
-                </div>
-              </div>
-           
-          {/* Skin Info - rechts vom Bild */}
-          <div className="flex-1 space-y-6 text-center lg:text-left">
-                <div>
-                  {/* Enhanced Breadcrumb navigation */}
-              <Breadcrumb className="mb-8">
+        {/* Hero Section - Modern Design */}
+        <div className="relative">
+          {/* Breadcrumb */}
+              <Breadcrumb className="mb-6">
                     <BreadcrumbList>
                       <BreadcrumbItem>
                         <BreadcrumbLink href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
@@ -457,47 +428,80 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     </BreadcrumbList>
                   </Breadcrumb>
                   
-              <div className="space-y-8">
-              <div className="space-y-4">
-                  <h1 className="text-6xl xl:text-7xl font-black leading-tight bg-gradient-to-r from-foreground via-primary to-foreground/90 bg-clip-text text-transparent drop-shadow-sm">
-                    {skin.name}
-                  </h1>
-                  <p className="text-2xl text-muted-foreground font-medium tracking-wide">{skin.marketHashName}</p>
-                </div>
-                
-                {/* Skin Details */}
-                <div className="flex flex-wrap items-center gap-2">
-                  {skin.weaponType && (
-                    <Badge variant="outline" className="text-xs">
-                      {skin.weaponType}
-                    </Badge>
-                  )}
-                  {skin.wear && (
-                    <Badge variant="outline" className="text-xs">
-                      {skin.wear.toUpperCase()}
-                    </Badge>
-                  )}
-                  {skin.rarity && (
-                    <Badge variant="outline" className="text-xs">
-                      {skin.rarity}
-                    </Badge>
-                  )}
-                  {skin.isStattrak && (
-                    <Badge variant="outline" className="text-xs text-orange-400 border-orange-400/30 bg-orange-400/10">
-                      StatTrak™
-                    </Badge>
-                  )}
-                  {skin.isStar && (
-                    <Badge variant="outline" className="text-xs text-yellow-400 border-yellow-400/30 bg-yellow-400/10">
-                      <Star className="h-3 w-3 mr-1" />
-                      Special
-                    </Badge>
+          {/* Main Hero Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            {/* Skin Image - Left Column */}
+            <div className="lg:col-span-1">
+              <div className="relative w-full max-w-md mx-auto lg:mx-0">
+                <div className="aspect-square bg-card border border-border rounded-2xl p-8 shadow-sm">
+                  {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
+                    <SkinImage
+                      src={skinImageUrl}
+                      alt={skin.name}
+                      fill
+                      priority
+                      quality={95}
+                      className="object-contain"
+                    />
+                  ) : (
+                    <Image
+                      src={skinImageUrl}
+                      alt={skin.name}
+                      fill
+                      className="object-contain"
+                      priority
+                      quality={95}
+                    />
                   )}
                 </div>
-                
-                {/* Price Display */}
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl font-bold">
+              </div>
+            </div>
+
+            {/* Skin Info - Right Column */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Title & Subtitle */}
+              <div className="space-y-3">
+                <h1 className="text-4xl lg:text-5xl font-bold text-foreground">
+                  {skin.name}
+                </h1>
+                <p className="text-xl text-muted-foreground">
+                  {skin.marketHashName}
+                </p>
+              </div>
+
+              {/* Badges */}
+              <div className="flex flex-wrap gap-2">
+                {skin.weaponType && (
+                  <Badge variant="secondary" className="text-sm px-3 py-1">
+                    {skin.weaponType}
+                  </Badge>
+                )}
+                {skin.wear && (
+                  <Badge variant="secondary" className="text-sm px-3 py-1">
+                    {skin.wear.toUpperCase()}
+                  </Badge>
+                )}
+                {skin.rarity && (
+                  <Badge variant="secondary" className="text-sm px-3 py-1">
+                    {skin.rarity}
+                  </Badge>
+                )}
+                {skin.isStattrak && (
+                  <Badge variant="outline" className="text-sm px-3 py-1 text-orange-500 border-orange-500/30">
+                    StatTrak™
+                  </Badge>
+                )}
+                {skin.isStar && (
+                  <Badge variant="outline" className="text-sm px-3 py-1 text-yellow-500 border-yellow-500/30">
+                    <Star className="h-3 w-3 mr-1" />
+                    Special
+                  </Badge>
+                )}
+              </div>
+
+              {/* Price & Change */}
+              <div className="flex items-baseline gap-4">
+                <span className="text-4xl font-bold text-primary">
                     {skin.marketPrice ? formatUSD(skin.marketPrice) : 'N/A'}
                   </span>
                   {marketStats.priceChangePercent24h && (
@@ -514,50 +518,45 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       </Badge>
                     )}
              </div>
-           </div>
-             </div>
                   
-            {/* Action Buttons - Clear Primary/Secondary Design */}
-            <div className="flex flex-wrap gap-4">
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3">
               {isSignedIn ? (
                 <>
-                  {/* Primary CTA - Watchlist */}
                   {isInWatchlist ? (
                     <Button
-                      variant="destructive"
+                        variant="destructive"
                       onClick={handleRemoveFromWatchlist}
-                      className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold px-6 py-3"
+                      className="flex items-center gap-2"
                     >
-                      <Heart className="h-4 w-4 fill-white" />
+                        <Heart className="h-4 w-4 fill-white" />
                       Remove from Watchlist
                     </Button>
                   ) : (
                     <Button
                       onClick={handleAddToWatchlist}
-                      className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold px-6 py-3"
+                      className="flex items-center gap-2"
                     >
                         <Heart className="h-4 w-4" />
                       Add to Watchlist
                     </Button>
                   )}
-
-                  {/* Secondary CTA - Portfolio */}
                   {isInPortfolio ? (
                   <Button
                       variant="outline"
                       onClick={handleRemoveFromPortfolio}
-                      className="flex items-center gap-2 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium px-6 py-3"
+                      className="flex items-center gap-2"
                     >
-                      <Plus className="h-4 w-4" />
+                        <Wallet className="h-4 w-4" />
                       Remove from Portfolio
                   </Button>
                   ) : (
                     <Button
+                        variant="outline"
                       onClick={handleAddToPortfolio}
-                      variant="outline"
-                      className="flex items-center gap-2 border-2 border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-all duration-200 font-medium px-6 py-3"
+                      className="flex items-center gap-2"
                     >
-                      <Plus className="h-4 w-4" />
+                        <Wallet className="h-4 w-4" />
                       Add to Portfolio
                   </Button>
                   )}
@@ -565,36 +564,56 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               ) : (
                 <Button
                   onClick={() => router.push('/sign-in')}
-                  className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold px-6 py-3"
+                  className="flex items-center gap-2"
                 >
                   <Heart className="h-4 w-4" />
-                  Sign in to track
+                    Sign in to Track
                 </Button>
               )}
-              
-              {/* Tertiary Actions */}
-              <div className="flex gap-2">
               <Button
-                  variant="ghost"
-                onClick={handleCopyLink}
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 px-4 py-3"
-              >
-                <Share2 className="h-4 w-4" />
-                Share
-              </Button>
-              
-              <Button
-                  variant="ghost"
+                  variant="secondary"
                 onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || skin.name)}`, '_blank')}
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 px-4 py-3"
+                className="flex items-center gap-2"
               >
                 <ExternalLink className="h-4 w-4" />
-                  Steam Market
+                  Buy on Steam Market
                   </Button>
               </div>
                   </div>
                   </div>
                 </div>
+
+        {/* Price History Chart - Directly under Hero */}
+        <Card className="mt-8 border border-border bg-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Price History
+            </CardTitle>
+            <div className="flex items-center gap-2 mt-2">
+              <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
+                <ToggleGroupItem value="7d" size="sm">7D</ToggleGroupItem>
+                <ToggleGroupItem value="30d" size="sm">30D</ToggleGroupItem>
+                <ToggleGroupItem value="90d" size="sm">90D</ToggleGroupItem>
+                <ToggleGroupItem value="1y" size="sm">1Y</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {history && history.length > 0 ? (
+              <SimplePriceChart 
+                data={history} 
+                range={timeRange}
+                scale="linear"
+                movingAverage="7"
+              />
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No price history available
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Market Statistics - Clean Dashboard Style */}
         <Card className="border border-border bg-card">
