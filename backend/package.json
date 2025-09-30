@@ -16,7 +16,9 @@
     "db:seed": "node scripts/seed.js",
     "render:deploy": "node scripts/render-deploy.js",
     "render:start": "node scripts/render-start.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:api-contract": "node ../scripts/test-api-contract.js",
+    "test:contract": "node tests/api-contract.test.js"
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,51 @@
+name: API Contract Tests
+
+on:
+  push:
+    branches: [ main, feature/cursor-workflow ]
+    paths:
+      - 'backend/src/**'
+      - 'frontend/src/**'
+      - 'scripts/test-api-contract.js'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend/src/**'
+      - 'frontend/src/**'
+
+jobs:
+  api-contract-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'backend/package-lock.json'
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        npm ci
+    
+    - name: Run API Contract Tests
+      run: |
+        cd backend
+        npm run test:api-contract
+      env:
+        API_BASE_URL: https://cs2-skintracker.onrender.com
+        FRONTEND_URL: https://cs2-skintracker-git-feature-cursor-workflow-arrijrs-projects.vercel.app
+    
+    - name: Test Backend API locally (if needed)
+      run: |
+        cd backend
+        npm start &
+        sleep 10
+        npm run test:api-contract
+        pkill -f "node src/server.js"
+      env:
+        API_BASE_URL: http://localhost:5000

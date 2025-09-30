@@ -312,6 +312,34 @@ NODE_ENV=development node scripts/testSteamAPI.js
 
 ---
 
+## API Response Format Issues
+
+### Problem: Skin Browser zeigt keine Skins an
+**Symptom:** Skin Browser ist leer, obwohl Backend läuft
+**Ursache:** API Response Format Mismatch zwischen Backend und Frontend
+**Lösung:**
+1. Prüfe Backend API: `curl https://cs2-skintracker.onrender.com/api/v1/skins?page=1&pageSize=5`
+2. Erwartetes Format: `{"items": [...], "total": ..., "page": ...}`
+3. Falls altes Format: Backend/Frontend Types synchronisieren
+4. API Contract Tests ausführen: `npm run test:api-contract`
+
+### Problem: Frontend erwartet anderes API Format
+**Symptom:** Frontend Fehler beim Laden der Skins
+**Ursache:** Backend API geändert, Frontend Types nicht aktualisiert
+**Lösung:**
+1. Backend Types prüfen: `backend/src/types/api.ts`
+2. Frontend Types synchronisieren: `frontend/src/types/api.ts`
+3. API Contract Tests laufen lassen
+4. Beide Seiten deployen
+
+### Prevention
+- Immer API Contract Tests vor Deploy ausführen
+- Backend/Frontend Types synchron halten
+- Breaking Changes dokumentieren
+- Code Review Checklist befolgen
+
+---
+
 ## Getting Help
 --------------
 
