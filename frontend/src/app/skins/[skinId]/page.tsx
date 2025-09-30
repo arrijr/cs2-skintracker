@@ -380,8 +380,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
   return (
     <TooltipProvider>
-      <div className="dashboard-bg text-white min-h-screen">
-        <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 py-6 space-y-6">
         {/* Back Button */}
         <div className="flex items-center gap-4">
           <Button
@@ -394,48 +394,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </Button>
         </div>
 
-        {/* Hero Section - Modern Design */}
-        <div className="relative">
-          {/* Breadcrumb */}
-              <Breadcrumb className="mb-6">
-                    <BreadcrumbList>
-                      <BreadcrumbItem>
-                        <BreadcrumbLink href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                          <Home className="h-4 w-4" />
-                          Home
-                        </BreadcrumbLink>
-                      </BreadcrumbItem>
-                      <BreadcrumbSeparator className="text-muted-foreground" />
-                      <BreadcrumbItem>
-                        <BreadcrumbLink href="/skins" className="text-muted-foreground hover:text-foreground transition-colors">
-                          Skins
-                        </BreadcrumbLink>
-                      </BreadcrumbItem>
-                      {caseInfo && (
-                        <>
-                          <BreadcrumbSeparator className="text-muted-foreground" />
-                          <BreadcrumbItem>
-                        <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo?.name || '')}`} className="text-muted-foreground hover:text-foreground transition-colors">
-                          {caseInfo?.name || 'Unknown Case'}
-                            </BreadcrumbLink>
-                          </BreadcrumbItem>
-                        </>
-                      )}
-                      <BreadcrumbSeparator className="text-muted-foreground" />
-                      <BreadcrumbItem>
-                        <BreadcrumbPage className="font-semibold text-foreground">
-                          {skin.name}
-                        </BreadcrumbPage>
-                      </BreadcrumbItem>
-                    </BreadcrumbList>
-                  </Breadcrumb>
-                  
-          {/* Main Hero Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            {/* Skin Image - Left Column */}
-            <div className="lg:col-span-1">
-              <div className="relative w-full max-w-md mx-auto lg:mx-0">
-                <div className="aspect-square bg-card border border-border rounded-2xl p-8 shadow-sm">
+        {/* Hero Section - Compact */}
+        <Card className="rounded-2xl shadow-sm">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Skin Image */}
+              <div className="md:col-span-1">
+                <div className="aspect-square relative rounded-xl overflow-hidden bg-muted">
                   {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
                     <SkinImage
                       src={skinImageUrl}
@@ -457,55 +422,41 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   )}
                 </div>
               </div>
-            </div>
-
-            {/* Skin Info - Right Column */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Title & Subtitle */}
-              <div className="space-y-3">
-                <h1 className="text-4xl lg:text-5xl font-bold text-foreground">
-                  {skin.name}
-                </h1>
-                <p className="text-xl text-muted-foreground">
-                  {skin.marketHashName}
-                </p>
-              </div>
-
-              {/* Badges */}
-              <div className="flex flex-wrap gap-2">
-                {skin.weaponType && (
-                  <Badge variant="secondary" className="text-sm px-3 py-1">
-                    {skin.weaponType}
-                  </Badge>
-                )}
-                {skin.wear && (
-                  <Badge variant="secondary" className="text-sm px-3 py-1">
-                    {skin.wear.toUpperCase()}
-                  </Badge>
-                )}
-                {skin.rarity && (
-                  <Badge variant="secondary" className="text-sm px-3 py-1">
-                    {skin.rarity}
-                  </Badge>
-                )}
-                {skin.isStattrak && (
-                  <Badge variant="outline" className="text-sm px-3 py-1 text-orange-500 border-orange-500/30">
-                    StatTrak™
-                  </Badge>
-                )}
-                {skin.isStar && (
-                  <Badge variant="outline" className="text-sm px-3 py-1 text-yellow-500 border-yellow-500/30">
-                    <Star className="h-3 w-3 mr-1" />
-                    Special
-                  </Badge>
-                )}
-              </div>
-
-              {/* Price & Change */}
-              <div className="flex items-baseline gap-4">
-                <span className="text-4xl font-bold text-primary">
+              
+              {/* Skin Info */}
+              <div className="md:col-span-2 space-y-4">
+                {/* Breadcrumb */}
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbLink href="/skins">Skins</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>{skin.name}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+                
+                {/* Skin Title */}
+                <div>
+                  <h1 className="text-3xl font-bold text-foreground mb-1">
+                    {skin.name}
+                  </h1>
+                  <p className="text-muted-foreground">
+                    {skin.marketHashName}
+                  </p>
+                </div>
+                
+                {/* Price & Stats */}
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="text-2xl font-bold text-foreground">
                     {skin.marketPrice ? formatUSD(skin.marketPrice) : 'N/A'}
-                  </span>
+                  </div>
                   {marketStats.priceChangePercent24h && (
                     <Badge 
                       variant={marketStats.priceChangePercent24h >= 0 ? "default" : "destructive"}
@@ -516,79 +467,111 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       ) : (
                         <TrendingDown className="h-3 w-3 mr-1" />
                       )}
-                      {safeToFixed(marketStats.priceChangePercent24h, 2)}%
-                      </Badge>
-                    )}
-             </div>
-                  
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3">
-              {isSignedIn ? (
-                <>
-                  {isInWatchlist ? (
-                    <Button
-                        variant="destructive"
-                      onClick={handleRemoveFromWatchlist}
-                      className="flex items-center gap-2"
-                    >
-                        <Heart className="h-4 w-4 fill-white" />
-                      Remove from Watchlist
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleAddToWatchlist}
-                      className="flex items-center gap-2"
-                    >
-                        <Heart className="h-4 w-4" />
-                      Add to Watchlist
-                    </Button>
+                      {marketStats.priceChangePercent24h >= 0 ? '+' : ''}{safeToFixed(marketStats.priceChangePercent24h, 2)}%
+                    </Badge>
                   )}
-                  {isInPortfolio ? (
-                  <Button
-                      variant="outline"
-                      onClick={handleRemoveFromPortfolio}
-                      className="flex items-center gap-2"
-                    >
-                        <Wallet className="h-4 w-4" />
-                      Remove from Portfolio
-                  </Button>
-                  ) : (
-                    <Button
-                        variant="outline"
-                      onClick={handleAddToPortfolio}
-                      className="flex items-center gap-2"
-                    >
-                        <Wallet className="h-4 w-4" />
-                      Add to Portfolio
-                  </Button>
-                  )}
-                </>
-              ) : (
-                <Button
-                  onClick={() => router.push('/sign-in')}
-                  className="flex items-center gap-2"
-                >
-                  <Heart className="h-4 w-4" />
-                    Sign in to Track
-                </Button>
-              )}
-              <Button
-                  variant="secondary"
-                onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || skin.name)}`, '_blank')}
-                className="flex items-center gap-2"
-              >
-                <ExternalLink className="h-4 w-4" />
-                  Buy on Steam Market
-                  </Button>
-              </div>
-                  </div>
-                  </div>
                 </div>
+                
+                {/* Tags */}
+                <div className="flex flex-wrap gap-2">
+                  {skin.weaponType && (
+                    <Badge variant="secondary" className="text-xs">
+                      {skin.weaponType}
+                    </Badge>
+                  )}
+                  {skin.wear && (
+                    <Badge variant="outline" className="text-xs">
+                      {skin.wear.toUpperCase()}
+                    </Badge>
+                  )}
+                  {skin.rarity && (
+                    <Badge variant="outline" className="text-xs">
+                      {skin.rarity}
+                    </Badge>
+                  )}
+                  {skin.isStattrak && (
+                    <Badge variant="default" className="text-xs">
+                      <Star className="h-3 w-3 mr-1" />
+                      StatTrak™
+                    </Badge>
+                  )}
+                  {skin.isStar && (
+                    <Badge variant="default" className="text-xs">
+                      <Star className="h-3 w-3 mr-1" />
+                      Special
+                    </Badge>
+                  )}
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3">
+                  {isSignedIn ? (
+                    <>
+                      {isInWatchlist ? (
+                        <Button
+                          variant="destructive"
+                          onClick={handleRemoveFromWatchlist}
+                          className="flex items-center gap-2"
+                        >
+                          <Heart className="h-4 w-4 fill-white" />
+                          Remove from Watchlist
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleAddToWatchlist}
+                          className="flex items-center gap-2"
+                        >
+                          <Heart className="h-4 w-4" />
+                          Add to Watchlist
+                        </Button>
+                      )}
+                      {isInPortfolio ? (
+                        <Button
+                          variant="outline"
+                          onClick={handleRemoveFromPortfolio}
+                          className="flex items-center gap-2"
+                        >
+                          <Wallet className="h-4 w-4" />
+                          Remove from Portfolio
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          onClick={handleAddToPortfolio}
+                          className="flex items-center gap-2"
+                        >
+                          <Wallet className="h-4 w-4" />
+                          Add to Portfolio
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <Button
+                      onClick={() => router.push('/sign-in')}
+                      className="flex items-center gap-2"
+                    >
+                      <Heart className="h-4 w-4" />
+                      Sign in to Track
+                    </Button>
+                  )}
+                  <Button
+                    variant="secondary"
+                    onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || skin.name)}`, '_blank')}
+                    className="flex items-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Buy on Steam Market
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Price History Chart - Directly under Hero */}
-        <Card className="mt-8 border border-border/50 bg-card/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        {/* Price History Chart - Compact */}
+        <Card className="rounded-2xl shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <TrendingUp className="h-5 w-5" />
               Price History
             </CardTitle>
@@ -603,12 +586,14 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </CardHeader>
           <CardContent>
             {history && history.length > 0 ? (
-              <SimplePriceChart 
-                data={history} 
-                range={timeRange}
-                scale="linear"
-                movingAverage="7"
-              />
+              <div className="h-[280px] md:h-[200px] sm:h-[160px]">
+                <SimplePriceChart 
+                  data={history} 
+                  range={timeRange}
+                  scale="linear"
+                  movingAverage="7"
+                />
+              </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 No price history available
@@ -618,182 +603,113 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         </Card>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Market Statistics */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Market Statistics */}
-            <Card>
-          <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-                    Market Statistics
-                  </CardTitle>
+          <div className="lg:col-span-2 space-y-6">
+            {/* Market Statistics - Consolidated */}
+            <Card className="rounded-2xl shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <BarChart3 className="h-5 w-5" />
+                  Market Statistics
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {/* Latest Price */}
-                  <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                    <div className="flex items-center justify-center mb-2">
-                      <DollarSign className="h-4 w-4 text-slate-400 mr-1" />
-                      <span className="text-sm text-slate-400">Latest</span>
-                    </div>
-                    <div className="text-lg font-bold text-white">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {/* Price Stats */}
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Latest Price</div>
+                    <div className="text-xl font-bold text-foreground">
                       {skin.priceLatest ? formatUSD(skin.priceLatest) : 'N/A'}
                     </div>
                   </div>
                   
-                  {/* Median Price */}
-                  <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                    <div className="flex items-center justify-center mb-2">
-                      <BarChart3 className="h-4 w-4 text-slate-400 mr-1" />
-                      <span className="text-sm text-slate-400">Median</span>
-                    </div>
-                    <div className="text-lg font-bold text-white">
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Median Price</div>
+                    <div className="text-xl font-bold text-foreground">
                       {skin.priceMedian ? formatUSD(skin.priceMedian) : 'N/A'}
                     </div>
-                                </div>
-              
-                  {/* Average Price */}
-                  <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                    <div className="flex items-center justify-center mb-2">
-                      <TrendingUp className="h-4 w-4 text-slate-400 mr-1" />
-                      <span className="text-sm text-slate-400">Average</span>
-                    </div>
-                    <div className="text-lg font-bold text-white">
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Average Price</div>
+                    <div className="text-xl font-bold text-foreground">
                       {skin.priceAvg ? formatUSD(skin.priceAvg) : 'N/A'}
                     </div>
                   </div>
                   
-                  {/* Volume 24h */}
-                  <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                    <div className="flex items-center justify-center mb-2">
-                      <Users className="h-4 w-4 text-slate-400 mr-1" />
-                      <span className="text-sm text-slate-400">Volume</span>
-                    </div>
-                    <div className="text-lg font-bold text-white">
-                      {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
-                    </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-
-            {/* Price Range & Changes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Price Analysis
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Price Range */}
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium text-slate-400">Price Range</h4>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                        <div className="text-lg font-bold text-green-400">
-                          {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
-                        </div>
-                        <div className="text-xs text-slate-400">Min</div>
-                      </div>
-                      <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                        <div className="text-lg font-bold text-red-500">
-                          {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
-                        </div>
-                        <div className="text-xs text-slate-400">Max</div>
-                      </div>
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Min Price</div>
+                    <div className="text-xl font-bold text-green-600">
+                      {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
                     </div>
                   </div>
                   
-                  {/* Price Changes */}
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium text-slate-400">Price Changes</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                        <span className="text-sm text-slate-400">24h Change</span>
-                        <Badge variant={marketStats.priceChangePercent24h >= 0 ? "default" : "destructive"} className="text-xs">
-                          {marketStats.priceChangePercent24h >= 0 ? (
-                            <TrendingUp className="h-3 w-3 mr-1" />
-                          ) : (
-                            <TrendingDown className="h-3 w-3 mr-1" />
-                          )}
-                          {marketStats.priceChangePercent24h ? `${marketStats.priceChangePercent24h >= 0 ? '+' : ''}${safeToFixed(marketStats.priceChangePercent24h, 2)}%` : 'N/A'}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                        <span className="text-sm text-slate-400">7d Change</span>
-                        <Badge variant={skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? "default" : "destructive"} className="text-xs">
-                          {skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? (
-                            <TrendingUp className="h-3 w-3 mr-1" />
-                          ) : (
-                            <TrendingDown className="h-3 w-3 mr-1" />
-                          )}
-                          {skin.priceMedian7d ? `${((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(2)}%` : 'N/A'}
-                        </Badge>
-                      </div>
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Max Price</div>
+                    <div className="text-xl font-bold text-red-600">
+                      {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Volume 24h</div>
+                    <div className="text-xl font-bold text-foreground">
+                      {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Price Changes */}
+                <div className="mt-6 pt-6 border-t border-border">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">24h Change</span>
+                      <Badge variant={marketStats.priceChangePercent24h >= 0 ? "default" : "destructive"} className="text-sm">
+                        {marketStats.priceChangePercent24h >= 0 ? (
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3 mr-1" />
+                        )}
+                        {marketStats.priceChangePercent24h ? `${marketStats.priceChangePercent24h >= 0 ? '+' : ''}${safeToFixed(marketStats.priceChangePercent24h, 2)}%` : 'N/A'}
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">7d Change</span>
+                      <Badge variant={skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? "default" : "destructive"} className="text-sm">
+                        {skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? (
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3 mr-1" />
+                        )}
+                        {skin.priceMedian7d ? `${((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(2)}%` : 'N/A'}
+                      </Badge>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-            {/* Sales Data */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Sales Data
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                <div className="text-base font-bold text-white">
-                  {skin.sold24h || 0}
-                </div>
-                <div className="text-xs text-slate-400">24h</div>
-              </div>
-              <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                <div className="text-base font-bold text-white">
-                  {skin.sold7d || 0}
-                </div>
-                <div className="text-xs text-slate-400">7d</div>
-              </div>
-              <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                <div className="text-base font-bold text-white">
-                  {skin.sold30d || 0}
-                </div>
-                <div className="text-xs text-slate-400">30d</div>
-              </div>
-              <div className="text-center p-3 border border-border/50 bg-card/50 rounded-lg">
-                <div className="text-base font-bold text-white">
-                  {skin.offerVolume || 0}
-                </div>
-                <div className="text-xs text-slate-400">Offers</div>
-              </div>
-            </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Right Column - Charts */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* Quantity History Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+          <div className="lg:col-span-1 space-y-6">
+            {/* Quantity History Chart - Compact */}
+            <Card className="rounded-2xl shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <BarChart3 className="h-5 w-5" />
                   Quantity History
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {quantityData && quantityData.length > 0 ? (
-                  <QuantityBarChart data={quantityData} />
+                  <div className="h-[280px] md:h-[200px] sm:h-[160px]">
+                    <QuantityBarChart data={quantityData} />
+                  </div>
                 ) : (
-                  <div className="text-center py-8 text-slate-400">
+                  <div className="text-center py-8 text-muted-foreground">
                     No quantity data available
                   </div>
                 )}
@@ -802,77 +718,19 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </div>
         </div>
 
-        {/* Price History Chart - Full Width */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Price History
-            </CardTitle>
-            <div className="flex items-center gap-2 mt-2">
-              <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
-                <ToggleGroupItem value="7d" size="sm">7D</ToggleGroupItem>
-                <ToggleGroupItem value="30d" size="sm">30D</ToggleGroupItem>
-                <ToggleGroupItem value="90d" size="sm">90D</ToggleGroupItem>
-                <ToggleGroupItem value="1y" size="sm">1Y</ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-          </CardHeader>
-          <CardContent>
-            
-            {history && history.length > 0 ? (
-              <>
-                <SimplePriceChart 
-                  data={history} 
-                  range={timeRange}
-                  scale="linear"
-                  movingAverage="7"
-                />
-              </>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                ❌ No price history available. History: {JSON.stringify(history?.slice(0, 2))}
-              </div>
-            )}
-                            </CardContent>
-                          </Card>
 
-        {/* Quantity History Chart - Clean Dashboard Style */}
-        <Card className="mb-12 border border-border bg-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Quantity History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            
-            {skin && skin.id ? (
-              <>
-                <QuantityBarChart 
-                  skinId={skin.id} 
-                  skinName={skin.name}
-                />
-              </>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                ❌ No skin data available. Skin: {JSON.stringify(skin)}
-              </div>
-            )}
-                              </CardContent>
-                            </Card>
 
-        {/* Related Skins */}
+        {/* Related Skins - Compact */}
         {variants.length > 0 && (
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
                 <Eye className="h-5 w-5" />
                 Related Skins
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {variants.map((variant, index) => {
                   // Determine if this is a popular, rare, or discounted skin
                   const isPopular = variant.marketPrice && variant.marketPrice > 50;
@@ -882,12 +740,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   return (
                   <Card
                     key={variant.id}
-                    className="group border border-border/50 bg-card/50 hover:border-primary/50 cursor-pointer transition-all duration-200 hover:shadow-md"
+                    className="group border border-border bg-card hover:border-primary/50 cursor-pointer transition-all duration-200 hover:shadow-sm rounded-xl"
                     onClick={() => handleRelatedSkinClick(variant)}
                   >
                     <CardContent className="p-3">
                       {/* Image Container */}
-                      <div className="aspect-square relative mb-3 rounded-lg overflow-hidden bg-muted">
+                      <div className="aspect-square relative mb-2 rounded-lg overflow-hidden bg-muted">
                         {variant.imageUrl ? (
                           <Image
                             src={variant.imageUrl}
@@ -897,48 +755,48 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                           />
                         ) : (
                           <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <Image className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                          )}
-                          
-                          {/* Optional Labels - Clean Design */}
-                          <div className="absolute top-2 left-2 flex flex-col gap-1">
-                            {isPopular && (
-                              <Badge variant="secondary" className="text-xs">
-                                Popular
-                              </Badge>
-                            )}
-                            {isRare && (
-                              <Badge variant="secondary" className="text-xs">
-                                Rare
-                              </Badge>
-                            )}
-                            {isDiscounted && (
-                              <Badge variant="secondary" className="text-xs">
-                                Discounted
-                              </Badge>
-                            )}
+                            <Image className="h-6 w-6 text-muted-foreground" />
                           </div>
-                        </div>
+                        )}
                         
-                        {/* Content - Clean Design */}
-                        <div className="p-3">
-                          <h3 className="font-semibold mb-2 line-clamp-2 text-sm text-white">
-                            {variant.name}
-                          </h3>
-                          <div className="flex items-center justify-between">
-                            <p className="text-base font-bold text-white">
-                              {variant.marketPrice ? formatUSD(variant.marketPrice) : 'N/A'}
-                            </p>
-                            {variant.rarity && (
-                              <Badge variant="outline" className="text-xs">
-                                {variant.rarity}
-                              </Badge>
-                            )}
-                          </div>
+                        {/* Optional Labels */}
+                        <div className="absolute top-1 left-1">
+                          {isPopular && (
+                            <Badge variant="secondary" className="text-xs px-1 py-0">
+                              Popular
+                            </Badge>
+                          )}
+                          {isRare && (
+                            <Badge variant="secondary" className="text-xs px-1 py-0">
+                              Rare
+                            </Badge>
+                          )}
+                          {isDiscounted && (
+                            <Badge variant="secondary" className="text-xs px-1 py-0">
+                              Discounted
+                            </Badge>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="space-y-1">
+                        <h3 className="font-medium text-sm line-clamp-2 text-foreground">
+                          {variant.name}
+                        </h3>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-bold text-foreground">
+                            {variant.marketPrice ? formatUSD(variant.marketPrice) : 'N/A'}
+                          </p>
+                          {variant.rarity && (
+                            <Badge variant="outline" className="text-xs px-1 py-0">
+                              {variant.rarity}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                   );
                 })}
                   </div>
@@ -946,11 +804,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </Card>
             )}
 
-        {/* Case Information */}
-        {caseInfo && (
-          <CaseSection caseName={caseInfo.name} />
-        )}
+          {/* Case Information */}
+          {caseInfo && (
+            <CaseSection caseName={caseInfo.name} />
+          )}
         </div>
-      </TooltipProvider>
+      </div>
+    </TooltipProvider>
   );
 }
+
