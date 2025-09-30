@@ -11,15 +11,26 @@ export interface Skin {
   marketHashName: string;
   imageUrl: string;
   weaponType: string;
+  collection: string;
   wear: string;
   rarity: string;
   quality: string;
   isStattrak: boolean;
   isStar: boolean;
+  itemType: string;
+  itemName: string;
+  itemGroup: string;
+  priceLatest: number | null;
   priceAvg: number | null;
   priceMedian: number | null;
-  offerVolume: number | null;
+  priceMin: number | null;
+  priceMax: number | null;
   sold24h: number | null;
+  sold7d: number | null;
+  sold30d: number | null;
+  priceUpdatedAt: string | null;
+  unstable: boolean | null;
+  unstableReason: string | null;
 }
 
 export interface SkinsResponse {

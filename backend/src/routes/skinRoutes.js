@@ -118,14 +118,17 @@ router.get("/", optionalClerkAuth, async (req, res) => {
       prisma.skin.count({ where })
     ]);
 
+    const currentPage = Number(page);
+    const totalPages = Math.ceil(total / take);
+    
     const result = {
-      skins,
-      pagination: {
-        page: Number(page),
-        pageSize: take,
-        total,
-        totalPages: Math.ceil(total / take)
-      }
+      items: skins,
+      total,
+      page: currentPage,
+      pageSize: take,
+      totalPages,
+      hasNextPage: currentPage < totalPages,
+      hasPrevPage: currentPage > 1
     };
 
     // Cache the result
