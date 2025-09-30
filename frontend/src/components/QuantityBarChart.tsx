@@ -548,15 +548,15 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Avg (30d)</p>
-                <p className="text-lg font-semibold">{stats.avgListings.toLocaleString()}</p>
+                <p className="text-lg font-semibold">{(stats.avgListings || 0).toLocaleString()}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Min (30d)</p>
-                <p className="text-lg font-semibold text-red-600">{stats.minListings.toLocaleString()}</p>
+                <p className="text-lg font-semibold text-red-600">{(stats.minListings || 0).toLocaleString()}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Max (30d)</p>
-                <p className="text-lg font-semibold text-green-600">{stats.maxListings.toLocaleString()}</p>
+                <p className="text-lg font-semibold text-green-600">{(stats.maxListings || 0).toLocaleString()}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Δ7d</p>
@@ -579,15 +579,15 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mt-3 pt-3 border-t border-muted-foreground/20">
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Avg Vol</p>
-                  <p className="text-lg font-semibold">{stats.avgVolume.toLocaleString()}</p>
+                  <p className="text-lg font-semibold">{(stats.avgVolume || 0).toLocaleString()}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Min Vol</p>
-                  <p className="text-lg font-semibold text-red-600">{stats.minVolume.toLocaleString()}</p>
+                  <p className="text-lg font-semibold text-red-600">{(stats.minVolume || 0).toLocaleString()}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Max Vol</p>
-                  <p className="text-lg font-semibold text-green-600">{stats.maxVolume.toLocaleString()}</p>
+                  <p className="text-lg font-semibold text-green-600">{(stats.maxVolume || 0).toLocaleString()}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Data Freshness</p>
@@ -615,7 +615,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                 }}
               >
                 <div className="absolute -top-3 left-2 bg-background px-1 text-xs text-muted-foreground">
-                  Avg: {stats.avgListings.toLocaleString()}
+                  Avg: {(stats.avgListings || 0).toLocaleString()}
                 </div>
               </div>
             )}
@@ -681,10 +681,10 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                         <div className="text-center">
                           <p className="font-semibold">{formatDate(item.date)}</p>
                           <p className="text-sm">
-                            {showVolume ? '24h Volume' : 'Active Listings'}: <span className="font-bold text-primary">{value.toLocaleString()}</span>
+                            {showVolume ? '24h Volume' : 'Active Listings'}: <span className="font-bold text-primary">{(value || 0).toLocaleString()}</span>
                             {smoothing && rawValue !== value && (
                               <span className="text-xs text-muted-foreground ml-1">
-                                (raw: {rawValue.toLocaleString()})
+                                (raw: {(rawValue || 0).toLocaleString()})
                               </span>
                             )}
                           </p>
@@ -731,7 +731,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
             
             {/* Y-axis labels */}
             <div className="absolute -left-8 top-0 h-full flex flex-col justify-between text-xs text-muted-foreground">
-              <span>{stats?.maxListings.toLocaleString()}</span>
+              <span>{(stats?.maxListings || 0).toLocaleString()}</span>
               <span>{Math.round((stats?.maxListings || 0) * 0.5).toLocaleString()}</span>
               <span>0</span>
             </div>
@@ -741,7 +741,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
               {data.map((item, index) => (
                 <div key={item.date} className="text-center">
                   <div className="text-xs font-medium">
-                    {showVolume ? item.soldVolume24h?.toLocaleString() || '0' : item.activeListings.toLocaleString()}
+                    {showVolume ? (item.soldVolume24h || 0).toLocaleString() : (item.activeListings || 0).toLocaleString()}
                   </div>
                   <div className="text-xs opacity-70">
                     {format(new Date(item.date), 'MMM dd')}
