@@ -8,7 +8,6 @@ import {
   getSkinMarketStats,
   getRelatedSkins
 } from "../controllers/skinController.js";
-// import { getSkinCase as getSkinCaseFromCaseController } from "../controllers/caseController.js";
 import { fetchSkinPrice } from "../services/steamService.js";
 import { optionalClerkAuth } from "../middleware/clerkAuth.js";
 
@@ -50,442 +49,155 @@ router.get("/", optionalClerkAuth, async (req, res) => {
     const where = {
       ...(q ? { 
         OR: [
-          { name: { contains: String(q), mode: "insensitive" } },
-          { marketHashName: { contains: String(q), mode: "insensitive" } },
-          { itemName: { contains: String(q), mode: "insensitive" } },
+          { name: { contains: q, mode: 'insensitive' } },
+          { marketHashName: { contains: q, mode: 'insensitive' } },
+          { itemName: { contains: q, mode: 'insensitive' } }
         ]
       } : {}),
-      ...(rarity ? { rarity: String(rarity) } : {}),
-      ...(wear ? { wear: String(wear) } : {}),
-      ...(quality ? { quality: String(quality) } : {}),
-      ...(stattrak !== undefined ? { isStattrak: String(stattrak) === "true" } : {}),
-      ...(special !== undefined ? { isStar: String(special) === "true" } : {}),
-      ...(weaponType ? { weaponType: { contains: String(weaponType), mode: "insensitive" } } : {}),
-      ...(collection ? { 
-        OR: [
-          { name: { contains: String(collection), mode: "insensitive" } },
-          { marketHashName: { contains: String(collection), mode: "insensitive" } }
-        ]
-      } : {}),
-      ...(finish ? { 
-        OR: [
-          { name: { contains: String(finish), mode: "insensitive" } },
-          { marketHashName: { contains: String(finish), mode: "insensitive" } }
-        ]
-      } : {}),
-      ...((min || max) ? {
-        OR: [
-          { priceAvg: {
-            ...(min ? { gte: Number(min) } : {}),
-            ...(max ? { lte: Number(max) } : {}),
-          }},
-          { priceMedian: {
-            ...(min ? { gte: Number(min) } : {}),
-            ...(max ? { lte: Number(max) } : {}),
-          }}
-        ]
-      } : {}),
+      ...(min ? { priceMedian: { gte: parseFloat(min) } } : {}),
+      ...(max ? { priceMedian: { lte: parseFloat(max) } } : {}),
+      ...(rarity ? { rarity: { in: rarity.split(',') } } : {}),
+      ...(wear ? { wear: { in: wear.split(',') } } : {}),
+      ...(quality ? { quality: { in: quality.split(',') } } : {}),
+      ...(stattrak ? { isStattrak: stattrak === 'true' } : {}),
+      ...(special ? { isStar: special === 'true' } : {}),
+      ...(category ? { itemType: { in: category.split(',') } } : {}),
+      ...(weaponType ? { weaponType: { in: weaponType.split(',') } } : {}),
+      ...(collection ? { collection: { in: collection.split(',') } } : {}),
+      ...(finish ? { itemGroup: { in: finish.split(',') } } : {}),
     };
 
-    // Debug logging for boolean filters
-    console.log("[DEBUG] Boolean filter values:", {
-      stattrak: stattrak,
-      special: special,
-      stattrakString: String(stattrak),
-      specialString: String(special),
-      stattrakBoolean: String(stattrak) === "true",
-      specialBoolean: String(special) === "true"
-    });
-    console.log("[DEBUG] Where clause before category:", JSON.stringify(where, null, 2));
-
-    // Category filter - map to weapon types
-    if (category) {
-      const categoryKeywords = {
-        knives: {
-          // Only items that start with ★ (star)
-          patterns: ["★ "],
-          // Specific knife names - exact matches
-          names: ["Bayonet", "Karambit", "M9 Bayonet", "Talon Knife", "Huntsman Knife", "Falchion Knife", "Navaja Knife", "Ursus Knife", "Paracord Knife", "Skeleton Knife", "Classic Knife", "Flip Knife", "Gut Knife", "Bowie Knife", "Stiletto Knife", "Shadow Daggers", "Nomad Knife"]
-        },
-        gloves: {
-          // Only items that contain "Gloves" or "Hand Wraps"
-          patterns: ["Gloves", "Hand Wraps"],
-          names: ["Moto Gloves", "Specialist Gloves", "Sport Gloves", "Driver Gloves", "Bloodhound Gloves"]
-        },
-        pistols: {
-          // Only items that are actually pistols
-          weaponTypes: ["pistol"],
-          // Specific pistol names - exact matches
-          names: ["Glock", "USP", "P250", "Desert Eagle", "Tec-9", "CZ75", "Revolver", "Dual", "R8", "P2000", "Five-SeveN"]
-        },
-        smgs: {
-          // Only items that are actually SMGs
-          weaponTypes: ["smg"],
-          // Specific SMG names - exact matches
-          names: ["MP5", "MP7", "UMP", "P90", "MAC-10", "PP-Bizon", "MP9"]
-        },
-        rifles: {
-          // Only items that are actually rifles
-          weaponTypes: ["rifle"],
-          // Specific rifle names - exact matches
-          names: ["AK", "M4", "AWP", "AUG", "SG", "FAMAS", "Galil", "SCAR", "G3SG1", "SSG 08"]
-        },
-        shotguns: {
-          // Only items that are actually shotguns
-          weaponTypes: ["shotgun"],
-          // Specific shotgun names - exact matches
-          names: ["Nova", "XM1014", "MAG-7", "Sawed-Off"]
-        },
-        machineGuns: {
-          // Only items that are actually machine guns
-          weaponTypes: ["machine gun"],
-          // Specific machine gun names - exact matches
-          names: ["M249", "Negev"]
-        },
-        stickers: {
-          // Only items that are actually stickers
-          weaponTypes: ["sticker", "decal"],
-          // Specific sticker patterns
-          patterns: ["Sticker", "Decal"]
-        },
-        agents: {
-          // Only items that are actually agents
-          weaponTypes: ["agent", "character"],
-          // Specific agent names - exact matches
-          names: ["SWAT", "FBI", "SAS", "KSK", "NSWC", "SEAL", "TACP", "Phoenix", "Sabre", "Elite", "Freaky", "Blitz", "Gendarmerie", "Professionals", "Guerrilla", "Brazilian", "NZSAS", "Humanity", "Hundredth", "RAD", "Roam", "Mord", "Midnight", "New Beat", "BBNO", "Damjan", "Awolnation", "Verkkars", "Twerl", "Ekko", "Sidetrack", "Cavalry", "Frogman"]
-        },
-        cases: {
-          // Only items that are actually cases
-          weaponTypes: ["case", "container", "package", "capsule", "box", "pack"],
-          // Specific case patterns
-          patterns: ["Case", "Container", "Package", "Capsule", "Box", "Pack"]
-        },
-        charms: {
-          // Only items that are actually charms
-          weaponTypes: ["charm", "keychain", "pin"],
-          // Specific charm patterns
-          patterns: ["Charm", "Keychain", "Pin"]
-        }
-      };
-
-      const categoryConfig = categoryKeywords[category];
-      if (categoryConfig) {
-        // Build OR condition for this category
-        const categoryConditions = [];
-        
-        // Weapon type matching (most specific) - items that have the correct weapon type
-        if (categoryConfig.weaponTypes && categoryConfig.weaponTypes.length > 0) {
-          categoryConditions.push({
-            OR: categoryConfig.weaponTypes.map(weaponType => ({
-              weaponType: { contains: weaponType, mode: 'insensitive' }
-            }))
-          });
-        }
-        
-        // Pattern matching - items that start with these patterns
-        if (categoryConfig.patterns && categoryConfig.patterns.length > 0) {
-          categoryConditions.push({
-            OR: categoryConfig.patterns.map(pattern => ({
-              name: { startsWith: pattern, mode: 'insensitive' }
-            }))
-          });
-        }
-        
-        // Name matching - items that contain these exact names
-        if (categoryConfig.names && categoryConfig.names.length > 0) {
-          categoryConditions.push({
-            OR: categoryConfig.names.map(name => ({
-              name: { contains: name, mode: 'insensitive' }
-            }))
-          });
-        }
-
-        // Add category conditions to main where clause
-        where.OR = where.OR || [];
-        where.OR.push({
-          OR: categoryConditions
-        });
+    const orderBy = (() => {
+      switch (sort) {
+        case 'name_asc': return { name: 'asc' };
+        case 'name_desc': return { name: 'desc' };
+        case 'price_asc': return { priceMedian: 'asc' };
+        case 'price_desc': return { priceMedian: 'desc' };
+        case 'rarity_asc': return { rarity: 'asc' };
+        case 'rarity_desc': return { rarity: 'desc' };
+        case 'wear_asc': return { wear: 'asc' };
+        case 'wear_desc': return { wear: 'desc' };
+        default: return { name: 'asc' };
       }
-    }
+    })();
 
-    console.log("[DEBUG] Final where clause:", JSON.stringify(where, null, 2));
-
-    // Debug: Check if StatTrak skins exist
-    if (stattrak !== undefined) {
-      const stattrakCount = await prisma.skin.count({
-        where: { isStattrak: true }
-      });
-      console.log(`[DEBUG] Total StatTrak skins in DB: ${stattrakCount}`);
-      
-      const stattrakSample = await prisma.skin.findMany({
-        where: { isStattrak: true },
-        take: 3,
-        select: { id: true, name: true, isStattrak: true }
-      });
-      console.log("[DEBUG] StatTrak sample:", stattrakSample);
-    }
-
-    const orderByMap = {
-      name_asc:  [{ name: "asc" }],
-      name_desc: [{ name: "desc" }],
-      price_asc: [{ priceAvg: "asc" }, { priceMedian: "asc" }, { name: "asc" }],
-      price_desc:[{ priceAvg: "desc" }, { priceMedian: "desc" }, { name: "asc" }],
-      newest:    [{ id: "desc" }],
-      popularity_desc: [
-        { sold24h: "desc" }, 
-        { offerVolume: "desc" }, 
-        { name: "asc" }
-      ],
-      wear_asc: [{ wear: "asc" }, { name: "asc" }],
-      wear_desc: [{ wear: "desc" }, { name: "asc" }]
-    };
-    
-    // Handle custom wear sorting since Prisma doesn't support custom order
-    let orderBy = orderByMap[sort] || [{ name: "asc" }];
-    
-    // Special handling for wear sorting
-    if (sort === "wear_asc" || sort === "wear_desc") {
-      // Use simple wear sorting for now, we'll sort in memory if needed
-      orderBy = sort === "wear_asc" 
-        ? [{ wear: "asc" }, { name: "asc" }]
-        : [{ wear: "desc" }, { name: "asc" }];
-    }
-
-    console.log("[DEBUG] Using orderBy:", JSON.stringify(orderBy, null, 2));
-    console.log("[DEBUG] Using where clause:", JSON.stringify(where, null, 2));
-
-    try {
-      const [items, total] = await Promise.all([
-        prisma.skin.findMany({ 
-          where, 
-          orderBy, 
-          take, 
-          skip,
-          select: {
-            id: true,
-            name: true,
-            marketHashName: true,
-            imageUrl: true,
-            weaponType: true,
-            wear: true,
-            rarity: true,
-            quality: true,
-            isStattrak: true,
-            isStar: true,
-            priceAvg: true,
-            priceMedian: true,
-            offerVolume: true,
-            sold24h: true
-          }
-        }),
-        prisma.skin.count({ where }),
-      ]);
-
-      console.log(`[DEBUG] Found ${items.length} skins for category: ${category}`);
-      console.log(`[DEBUG] Total count: ${total}`);
-
-      const currentPage = Number(page) || 1;
-      const totalPages = Math.ceil(total / take);
-      const hasNextPage = currentPage < totalPages;
-      const hasPrevPage = currentPage > 1;
-
-      const responseData = { 
-        items, 
-        total, 
-        page: currentPage, 
-        pageSize: take,
-        totalPages,
-        hasNextPage,
-        hasPrevPage
-      };
-
-      // Cache the response
-      skinsCache.set(cacheKey, {
-        data: responseData,
-        timestamp: Date.now()
-      });
-
-      // Clean old cache entries (keep only last 100)
-      if (skinsCache.size > 100) {
-        const entries = Array.from(skinsCache.entries());
-        entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-        const toDelete = entries.slice(0, entries.length - 100);
-        toDelete.forEach(([key]) => skinsCache.delete(key));
-      }
-
-      res.json(responseData);
-    } catch (dbError) {
-      console.error("[DEBUG] Database error:", dbError);
-      console.error("[DEBUG] Error details:", {
-        message: dbError.message,
-        code: dbError.code,
-        meta: dbError.meta
-      });
-      res.status(500).json({ error: "Database error", details: dbError.message });
-    }
-  } catch (error) {
-    console.error("[DEBUG] Error in skins route:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-router.get("/search", optionalClerkAuth, async (req, res) => {
-  const { query } = req.query;
-  if (!query || query.length < 2) {
-    return res.status(200).json([]);
-  }
-
-  try {
-    const skins = await prisma.skin.findMany({
-      where: {
-        OR: [
-          {
-            name: {
-              contains: query,
-              mode: "insensitive",
-            },
-          },
-          {
-            marketHashName: {
-              contains: query,
-              mode: "insensitive",
-            },
-          },
-        ],
-      },
-      take: 20,
-    });
-    res.json(skins);
-  } catch (e) {
-    res.status(500).json({ message: "Search failed." });
-  }
-});
-
-// {/* Get filter options for UI */}
-router.get("/filters", optionalClerkAuth, async (req, res) => {
-  try {
-    const [weaponTypes, wears, rarities, qualities] = await Promise.all([
+    const [skins, total] = await Promise.all([
       prisma.skin.findMany({
-        select: { weaponType: true },
-        where: { weaponType: { not: null } },
-        distinct: ['weaponType'],
+        where,
+        orderBy,
+        skip,
+        take,
+        select: {
+          id: true,
+          name: true,
+          marketHashName: true,
+          imageUrl: true,
+          weaponType: true,
+          collection: true,
+          wear: true,
+          rarity: true,
+          quality: true,
+          isStattrak: true,
+          isStar: true,
+          itemType: true,
+          itemName: true,
+          itemGroup: true,
+          priceLatest: true,
+          priceMedian: true,
+          priceAvg: true,
+          priceMin: true,
+          priceMax: true,
+          sold24h: true,
+          sold7d: true,
+          sold30d: true,
+          priceUpdatedAt: true,
+          unstable: true,
+          unstableReason: true
+        }
       }),
-      prisma.skin.findMany({
-        select: { wear: true },
-        where: { wear: { not: null } },
-        distinct: ['wear'],
-      }),
-      prisma.skin.findMany({
-        select: { rarity: true },
-        where: { rarity: { not: null } },
-        distinct: ['rarity'],
-      }),
-      prisma.skin.findMany({
-        select: { quality: true },
-        where: { quality: { not: null } },
-        distinct: ['quality'],
-      }),
+      prisma.skin.count({ where })
     ]);
 
     const result = {
-      weaponTypes: weaponTypes.map(w => w.weaponType).filter(Boolean),
-      wears: wears.map(w => w.wear).filter(Boolean),
-      rarities: rarities.map(r => r.rarity).filter(Boolean),
-      qualities: qualities.map(q => q.quality).filter(Boolean),
+      skins,
+      pagination: {
+        page: Number(page),
+        pageSize: take,
+        total,
+        totalPages: Math.ceil(total / take)
+      }
     };
-    
-    console.log('[DEBUG] Filter options:', result);
+
+    // Cache the result
+    skinsCache.set(cacheKey, {
+      data: result,
+      timestamp: Date.now()
+    });
+
     res.json(result);
   } catch (e) {
-    console.error("Get filters error:", e);
-    res.status(500).json({ message: "Failed to fetch filter options." });
+    console.error("Get skins error:", e);
+    res.status(500).json({ message: "Failed to fetch skins." });
   }
 });
 
-// Get skin categories (like skinbid.com)
-router.get("/categories", optionalClerkAuth, async (_req, res) => {
+// Get preset values for filters
+router.get("/presets", async (_req, res) => {
   try {
-    const categories = {
-      knives: ["★", "knife", "bayonet", "karambit", "m9", "talon", "huntsman", "falchion", "navaja", "ursus", "paracord", "skeleton", "classic", "flip", "gut", "bowie", "stiletto", "shadow", "nomad"],
-      gloves: ["gloves", "hand wraps", "moto", "specialist", "sport", "driver", "wraps"],
-      pistols: ["pistol", "glock", "usp", "p250", "deagle", "tec-9", "cz75", "revolver", "dual", "r8", "p2000", "five-seven"],
-      smgs: ["smg", "mp5", "mp7", "ump", "p90", "mac-10", "pp-bizon", "mp9"],
-      rifles: ["rifle", "ak", "m4", "awp", "aug", "sg", "famas", "galil", "scar", "g3sg1", "ssg08"],
-      shotguns: ["shotgun", "nova", "xm1014", "mag7", "sawed-off", "m249"],
-      machineGuns: ["machine gun", "m249", "negev"],
-      stickers: ["sticker", "decal"],
-      agents: ["agent", "character"],
-      cases: ["case", "container", "package"],
-      charms: ["charm", "keychain"]
-    };
-
-    // Get all unique weapon types from database
-    const weaponTypes = await prisma.skin.findMany({
-      select: { weaponType: true },
-      where: { weaponType: { not: null } },
-      distinct: ['weaponType']
-    });
-
-    const uniqueWeaponTypes = weaponTypes.map(wt => wt.weaponType).filter(Boolean);
-
-    // Count skins per category
-    const categoryCounts = {};
-    for (const [category, keywords] of Object.entries(categories)) {
-      const matchingTypes = uniqueWeaponTypes.filter(type => 
-        keywords.some(keyword => 
-          type.toLowerCase().includes(keyword.toLowerCase())
-        )
-      );
-      
-      // Count total skins for this category
-      const count = await prisma.skin.count({
-        where: {
-          weaponType: { in: matchingTypes }
-        }
-      });
-      
-      categoryCounts[category] = {
-        count,
-        weaponTypes: matchingTypes
-      };
-    }
-
-    res.json({
-      ok: true,
-      categories: categoryCounts,
-      totalSkins: await prisma.skin.count()
-    });
-  } catch (error) {
-    console.error("[/categories] error:", error);
-    res.status(500).json({ ok: false, error: "categories-error" });
-  }
-});
-
-// Get preset values for UI (wear, rarity, etc.)
-router.get("/presets", optionalClerkAuth, async (_req, res) => {
-  try {
-    const [wears, rarities] = await Promise.all([
+    const [
+      rarities,
+      wears,
+      qualities,
+      weaponTypes,
+      collections,
+      finishes
+    ] = await Promise.all([
+      prisma.skin.findMany({
+        select: { rarity: true },
+        distinct: ['rarity'],
+        where: { rarity: { not: null } },
+        orderBy: { rarity: 'asc' }
+      }),
       prisma.skin.findMany({
         select: { wear: true },
-        where: { wear: { not: null } },
         distinct: ['wear'],
+        where: { wear: { not: null } },
         orderBy: { wear: 'asc' }
       }),
       prisma.skin.findMany({
-        select: { rarity: true },
-        where: { rarity: { not: null } },
-        distinct: ['rarity'],
-        orderBy: { rarity: 'asc' }
+        select: { quality: true },
+        distinct: ['quality'],
+        where: { quality: { not: null } },
+        orderBy: { quality: 'asc' }
+      }),
+      prisma.skin.findMany({
+        select: { weaponType: true },
+        distinct: ['weaponType'],
+        where: { weaponType: { not: null } },
+        orderBy: { weaponType: 'asc' }
+      }),
+      prisma.skin.findMany({
+        select: { collection: true },
+        distinct: ['collection'],
+        where: { collection: { not: null } },
+        orderBy: { collection: 'asc' }
+      }),
+      prisma.skin.findMany({
+        select: { itemGroup: true },
+        distinct: ['itemGroup'],
+        where: { itemGroup: { not: null } },
+        orderBy: { itemGroup: 'asc' }
       })
     ]);
 
-    const result = {
+    res.json({
+      rarities: rarities.map(r => r.rarity).filter(Boolean),
       wears: wears.map(w => w.wear).filter(Boolean),
-      rarities: rarities.map(r => r.rarity).filter(Boolean)
-    };
-    
-    console.log('[DEBUG] Preset values:', result);
-    res.json(result);
+      qualities: qualities.map(q => q.quality).filter(Boolean),
+      weaponTypes: weaponTypes.map(w => w.weaponType).filter(Boolean),
+      collections: collections.map(c => c.collection).filter(Boolean),
+      finishes: finishes.map(f => f.itemGroup).filter(Boolean)
+    });
   } catch (e) {
     console.error("Get presets error:", e);
     res.status(500).json({ message: "Failed to fetch preset values." });
@@ -542,8 +254,7 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
       orderBy: { date: 'asc' },
       select: {
         date: true,
-        price: true,
-        quantity: true
+        price: true
       }
     });
 
@@ -559,12 +270,10 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
         
         const variation = (Math.random() - 0.5) * 0.1; // ±5%
         const price = marketPrice * (1 + variation);
-        const quantity = Math.floor(Math.random() * 20) + 1;
         
         sampleHistory.push({
           date: date.toISOString().split('T')[0],
-          price: Math.round(price * 100) / 100,
-          quantity
+          price: Math.round(price * 100) / 100
         });
       }
       priceHistory = sampleHistory;
@@ -598,7 +307,9 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
       select: {
         id: true,
         name: true,
-        marketPrice: true,
+        priceMedian: true,
+        priceAvg: true,
+        priceLatest: true,
         imageUrl: true
       },
       take: 8
@@ -607,7 +318,7 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
     // Add marketPrice to variants
     const variantsWithPrice = variants.map(variant => ({
       ...variant,
-      marketPrice: variant.marketPrice || skin.priceMedian || skin.priceAvg || 0
+      marketPrice: variant.priceLatest || variant.priceMedian || variant.priceAvg || 0
     }));
 
     const response = {
@@ -632,7 +343,6 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
 // Price history for skin
 router.get("/:skinId/history", getPriceHistory);
 
-// {/* New endpoints for enhanced skin details */}
 // Get skin by ID with full details
 router.get("/:skinId/details", getSkinById);
 
@@ -642,15 +352,11 @@ router.get("/:skinId/variants", getSkinVariants);
 // Get case information for a skin (old collection-based)
 router.get("/:skinId/case", getSkinCase);
 
-// Get case for a skin (new case-based)
-// router.get("/:skinId/case-info", getSkinCaseFromCaseController);
-
-// Get market statistics for a skin (with alias)
+// Get market statistics for a skin
 router.get("/:skinId/market-stats", getSkinMarketStats);
 
 // Get related skins
 router.get("/:skinId/related", getRelatedSkins);
-router.get("/:skinId/market", getSkinMarketStats); // Alias for compatibility
 
 // Get quantity history for a skin
 router.get("/:skinId/history/quantity", async (req, res) => {
@@ -662,65 +368,59 @@ router.get("/:skinId/history/quantity", async (req, res) => {
     
     // Calculate date range
     const now = new Date();
-    const daysBack = range === '7d' ? 7 : range === '30d' ? 30 : range === '90d' ? 90 : range === '1y' ? 365 : 30;
-    const startDate = new Date(now.getTime() - (daysBack * 24 * 60 * 60 * 1000));
+    let startDate = new Date();
     
-    // Check if skin exists
+    switch (range) {
+      case '7d':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case '30d':
+        startDate.setDate(now.getDate() - 30);
+        break;
+      case '90d':
+        startDate.setDate(now.getDate() - 90);
+        break;
+      default:
+        startDate.setDate(now.getDate() - 30);
+    }
+    
+    // Get skin for price reference
     const skin = await prisma.skin.findUnique({
       where: { id: parseInt(skinId) },
-      select: { id: true, name: true, priceLatest: true, priceMedian: true, priceAvg: true }
+      select: { priceMedian: true, priceAvg: true, priceLatest: true }
     });
     
     if (!skin) {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    // For now, generate realistic sample data based on the skin's price
-    // In a real implementation, this would come from market snapshots
-    const currentPrice = skin.priceLatest || skin.priceMedian || skin.priceAvg || 50;
+    // Generate realistic quantity data based on price
     const quantityData = [];
+    const currentPrice = skin.priceLatest || skin.priceMedian || skin.priceAvg || 0;
     
-    // Generate daily data points
-    for (let i = daysBack; i >= 0; i--) {
-      const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
       
-      // Generate realistic quantity data based on price
-      // Higher priced items have lower quantities
-      const baseQuantity = currentPrice > 1000 ? Math.floor(Math.random() * 5) + 1 :
-                          currentPrice > 500 ? Math.floor(Math.random() * 10) + 2 :
-                          currentPrice > 100 ? Math.floor(Math.random() * 20) + 5 :
-                          Math.floor(Math.random() * 50) + 10;
-      
-      // Add some daily variation
-      const variation = (Math.random() - 0.5) * 0.3; // ±15%
-      const activeListings = Math.max(1, Math.floor(baseQuantity * (1 + variation)));
-      
-      // Generate sold volume (typically 10-50% of active listings)
-      const soldVolume24h = Math.floor(activeListings * (0.1 + Math.random() * 0.4));
-      
-      // Generate price variation
-      const priceVariation = (Math.random() - 0.5) * 0.1; // ±5%
-      const priceUsd = Math.round(currentPrice * (1 + priceVariation) * 100) / 100;
+      // Generate realistic quantity based on price (higher price = lower quantity)
+      const baseQuantity = currentPrice > 100 ? 1 : currentPrice > 50 ? 3 : currentPrice > 10 ? 8 : 15;
+      const variation = (Math.random() - 0.5) * 0.4; // ±20% variation
+      const quantity = Math.max(1, Math.floor(baseQuantity * (1 + variation)));
       
       quantityData.push({
         date: date.toISOString().split('T')[0],
-        activeListings,
-        soldVolume24h,
-        priceUsd
+        quantity
       });
     }
     
     console.log(`[DEBUG] Generated ${quantityData.length} quantity history entries for skin ${skinId}`);
     
     res.json({
-      skinId: parseInt(skinId),
-      skinName: skin.name,
-      range,
+      success: true,
       data: quantityData,
-      lastUpdated: now.toISOString(),
-      source: 'generated' // Indicates this is generated data, not real market data
+      range,
+      skinId: parseInt(skinId)
     });
-    
   } catch (err) {
     console.error(`[ERROR] Failed to fetch quantity history for skin ${skinId}:`, err);
     res.status(500).json({ error: "Could not fetch quantity history" });
