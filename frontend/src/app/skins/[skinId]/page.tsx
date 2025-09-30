@@ -101,6 +101,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         if (response.success) {
           console.log('Skin data loaded:', response.data);
           console.log('History data:', response.data.history);
+          console.log('History length:', response.data.history?.length);
+          console.log('History type:', typeof response.data.history);
+          console.log('History is array:', Array.isArray(response.data.history));
           setSkin(response.data);
         } else if (response.id) {
           // Fallback for old API format
