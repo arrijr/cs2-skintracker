@@ -35,17 +35,9 @@ export function SimplePriceChart({
   className,
 }: Props) {
   const chartData = useMemo(() => {
-    console.log('[SimplePriceChart] Data received:', data);
-    console.log('[SimplePriceChart] Data length:', data.length);
-    console.log('[SimplePriceChart] First item:', data[0]);
-    
-    if (!data.length) {
-      console.log('[SimplePriceChart] No data, returning empty array');
-      return [];
-    }
+    if (!data.length) return [];
 
     const prices = data.map((item) => item.price);
-    console.log('[SimplePriceChart] Prices:', prices.slice(0, 5));
 
     const result = data.map((item, index) => ({
       date: new Date(item.date).toLocaleDateString(),
@@ -58,14 +50,10 @@ export function SimplePriceChart({
       }),
     }));
 
-    console.log('[SimplePriceChart] Chart data:', result.slice(0, 3));
     return result;
   }, [data, movingAverage]);
 
-  console.log('[SimplePriceChart] Rendering with chartData length:', chartData.length);
-  
   if (!data.length) {
-    console.log('[SimplePriceChart] No data, showing no data message');
     return (
       <div className="flex items-center justify-center h-96 text-muted-foreground">
         No price data available for this time range

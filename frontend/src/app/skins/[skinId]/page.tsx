@@ -99,11 +99,6 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         
         const response = await fetchJson(apiUrl(`/skins/${params.skinId}`));
         if (response.success) {
-          console.log('Skin data loaded:', response.data);
-          console.log('History data:', response.data.history);
-          console.log('History length:', response.data.history?.length);
-          console.log('History type:', typeof response.data.history);
-          console.log('History is array:', Array.isArray(response.data.history));
           setSkin(response.data);
         } else if (response.id) {
           // Fallback for old API format
@@ -602,23 +597,18 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           <CardContent>
             
             {history && history.length > 0 ? (
-              <>
-                <div className="mb-4 p-2 bg-yellow-100 text-yellow-800 rounded">
-                  DEBUG: History data found! Length: {history.length}
-                </div>
-                <SimplePriceChart 
-                  data={history} 
-                  range={timeRange}
-                  scale="linear"
-                  movingAverage="7"
-                />
-              </>
+              <SimplePriceChart 
+                data={history} 
+                range={timeRange}
+                scale="linear"
+                movingAverage="7"
+              />
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                DEBUG: No price history available. History: {JSON.stringify(history)}
-              </div>
+                No price history available
+                                </div>
             )}
-          </CardContent>
+                            </CardContent>
                           </Card>
 
         {/* Quantity History Chart */}
@@ -639,9 +629,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 No quantity history available
-              </div>
+            </div>
             )}
-          </CardContent>
+                              </CardContent>
                             </Card>
 
         {/* Related Skins */}
