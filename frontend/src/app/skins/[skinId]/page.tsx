@@ -36,7 +36,7 @@ import { useAnalytics } from "@/lib/analytics";
 import { CaseSection } from "@/components/CaseSection";
 import QuantityBarChart from "@/components/QuantityBarChart";
 import OverlayPriceQuantityChart from "@/components/OverlayPriceQuantityChart";
-import { PremiumFeatureFlag } from "@/app/portfolio/PremiumFeatureFlag";
+import PremiumFeatureFlag from "@/app/portfolio/PremiumFeatureFlag";
 
 // Chart components are now handled by Shadcn UI Charts
 
@@ -251,10 +251,10 @@ export default function SkinDetailPage() {
 
   // Filter history based on selected range
   const filteredHistory = useMemo(() => {
-    if (!history.length) return [];
+    if (!history || !history.length) return [];
     
     const now = new Date();
-    const filtered = history.filter(item => {
+    const filtered = (history || []).filter(item => {
       const itemDate = new Date(item.date);
       const daysDiff = (now.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24);
       
@@ -282,12 +282,12 @@ export default function SkinDetailPage() {
 
   // P1 - Watchlist & Portfolio Management
   const isInWatchlist = useMemo(() => 
-    watchlist.some(item => item.skinId === skin?.id), 
+    (watchlist || []).some(item => item.skinId === skin?.id), 
     [watchlist, skin?.id]
   );
 
   const isInPortfolio = useMemo(() => 
-    portfolioSkins.some(item => item.skinId === skin?.id), 
+    (portfolioSkins || []).some(item => item.skinId === skin?.id), 
     [portfolioSkins, skin?.id]
   );
 
@@ -562,6 +562,22 @@ export default function SkinDetailPage() {
 
   if (!mounted) return null;
 
+  // Show loading state while skin data is being fetched
+  if (loading || !skin) {
+    return (
+      <div className="dashboard-bg">
+        <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8 relative z-10">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading skin data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const skinImageUrl = skin?.itemimage || 
     skin?.itemImage || 
     skin?.image_url || 
@@ -650,8 +666,8 @@ export default function SkinDetailPage() {
                         <>
                           <BreadcrumbSeparator />
                           <BreadcrumbItem>
-                            <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo.name)}`}>
-                              {caseInfo.name}
+                            <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo?.name || '')}`}>
+                              {caseInfo?.name || 'Unknown Case'}
                             </BreadcrumbLink>
                           </BreadcrumbItem>
                         </>
@@ -1044,7 +1060,7 @@ export default function SkinDetailPage() {
                                 </div>
                                 <div className="flex-1">
                                   <p className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform">
-                                    {formatUSD(marketStats.medianPrice || 0)}
+                                    {formatUSD(marketStats?.medianPrice || 0)}
                                   </p>
                                   <p className="text-sm text-muted-foreground font-medium">Median Price</p>
                                 </div>
@@ -1073,7 +1089,7 @@ export default function SkinDetailPage() {
                                 </div>
                                 <div className="flex-1">
                                   <p className="text-3xl font-bold text-green-500 group-hover:scale-105 transition-transform">
-                                    {marketStats.buyOrders || 0}
+                                    {marketStats?.buyOrders || 0}
                                   </p>
                                   <p className="text-sm text-muted-foreground font-medium">Buy Orders</p>
                                 </div>
@@ -1105,7 +1121,7 @@ export default function SkinDetailPage() {
                                 </div>
                                 <div className="flex-1">
                                   <p className="text-3xl font-bold text-blue-500 group-hover:scale-105 transition-transform">
-                                    {marketStats.activeListings || 0}
+                                    {marketStats?.activeListings || 0}
                                   </p>
                                   <p className="text-sm text-muted-foreground font-medium">Active Listings</p>
                                 </div>
@@ -1134,7 +1150,7 @@ export default function SkinDetailPage() {
                                 </div>
                                 <div className="flex-1">
                                   <p className="text-3xl font-bold text-orange-500 group-hover:scale-105 transition-transform">
-                                    {marketStats.volume24h || 0}
+                                    {marketStats?.volume24h || 0}
                                   </p>
                                   <p className="text-sm text-muted-foreground font-medium">Volume 24h</p>
                                 </div>
@@ -1175,11 +1191,11 @@ export default function SkinDetailPage() {
                   <Skeleton key={i} className="h-48 w-full" />
                 ))}
               </div>
-            ) : relatedSkins.length > 0 ? (
+            ) : (relatedSkins || []).length > 0 ? (
               <>
                 {/* Desktop Grid */}
                 <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-4">
-                  {relatedSkins.map((relatedSkin) => (
+                  {(relatedSkins || []).map((relatedSkin) => (
                   <div key={relatedSkin.id} className="group relative">
                     <Link 
                       href={`/skins/${relatedSkin.id}`}
@@ -1320,7 +1336,7 @@ export default function SkinDetailPage() {
                 <div className="md:hidden">
                   <Carousel className="w-full">
                     <CarouselContent className="-ml-2 md:-ml-4">
-                {relatedSkins.map((relatedSkin) => (
+                {(relatedSkins || []).map((relatedSkin) => (
                         <CarouselItem key={relatedSkin.id} className="pl-2 md:pl-4 basis-1/2">
                           <div className="group relative">
                   <Link 
@@ -1442,7 +1458,7 @@ export default function SkinDetailPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {variants.map((variant) => (
+                    {(variants || []).map((variant) => (
                       <TableRow key={variant.id} className="hover:bg-accent/5 transition-colors">
                         <TableCell>
                           <div className="flex items-center gap-2">
