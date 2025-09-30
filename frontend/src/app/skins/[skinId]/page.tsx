@@ -184,6 +184,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const caseInfo = skin?.caseInfo;
   const variants = skin?.variants || [];
   const history = skin?.history || [];
+  const quantityData = skin?.quantityData || [];
 
   // Event handlers
   const handleAddToWatchlist = useCallback(async () => {
@@ -621,11 +622,11 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           <div className="lg:col-span-2 space-y-6">
             {/* Market Statistics */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Market Statistics
-                </CardTitle>
+          <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+                    Market Statistics
+                  </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -648,9 +649,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     </div>
                     <div className="text-xl font-bold">
                       {skin.priceMedian ? formatUSD(skin.priceMedian) : 'N/A'}
-                    </div>
-                  </div>
-                  
+                                </div>
+                                </div>
+              
                   {/* Average Price */}
                   <div className="text-center p-4 border border-border bg-muted/50 rounded-lg">
                     <div className="flex items-center justify-center mb-2">
@@ -659,7 +660,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     </div>
                     <div className="text-xl font-bold">
                       {skin.priceAvg ? formatUSD(skin.priceAvg) : 'N/A'}
-                    </div>
+                                </div>
                   </div>
                   
                   {/* Volume 24h */}
@@ -669,12 +670,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       <span className="text-sm text-muted-foreground">Volume</span>
                     </div>
                     <div className="text-xl font-bold">
-                      {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
+                                </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
 
             {/* Price Range & Changes */}
             <Card>
@@ -857,8 +858,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 ❌ No skin data available. Skin: {JSON.stringify(skin)}
               </div>
             )}
-          </CardContent>
-        </Card>
+                              </CardContent>
+                            </Card>
 
         {/* Related Skins */}
         {variants.length > 0 && (
@@ -896,7 +897,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                         ) : (
                           <div className="w-full h-full bg-muted flex items-center justify-center">
                             <Image className="h-8 w-8 text-muted-foreground" />
-                          </div>
+                        </div>
                           )}
                           
                           {/* Optional Labels - Clean Design */}
@@ -926,8 +927,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                           </h3>
                           <div className="flex items-center justify-between">
                             <p className="text-base font-bold text-primary">
-                              {variant.marketPrice ? formatUSD(variant.marketPrice) : 'N/A'}
-                            </p>
+                        {variant.marketPrice ? formatUSD(variant.marketPrice) : 'N/A'}
+                      </p>
                             {variant.rarity && (
                               <Badge variant="outline" className="text-xs">
                                 {variant.rarity}
