@@ -645,10 +645,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 </div>
               </div>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Price Range & Changes - Enhanced */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Price Range & Changes - Enhanced */}
+        <Card className="mb-12 border border-border/50 bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {/* Price Range */}
             <div className="space-y-4">
               <h4 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
