@@ -100,6 +100,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         const response = await fetchJson(`/api/skins/${params.skinId}`);
         if (response.success) {
           setSkin(response.data);
+        } else if (response.id) {
+          // Fallback for old API format
+          setSkin(response);
         } else {
           setError(response.error || 'Skin not found');
         }
