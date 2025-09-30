@@ -602,15 +602,20 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           <CardContent>
             
             {history && history.length > 0 ? (
-              <SimplePriceChart 
-                data={history} 
-                range={timeRange}
-                scale="linear"
-                movingAverage="7"
-              />
+              <>
+                <div className="mb-4 p-2 bg-yellow-100 text-yellow-800 rounded">
+                  DEBUG: History data found! Length: {history.length}
+                </div>
+                <SimplePriceChart 
+                  data={history} 
+                  range={timeRange}
+                  scale="linear"
+                  movingAverage="7"
+                />
+              </>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No price history available
+                DEBUG: No price history available. History: {JSON.stringify(history)}
               </div>
             )}
           </CardContent>
