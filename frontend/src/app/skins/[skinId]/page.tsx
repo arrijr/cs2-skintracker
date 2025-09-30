@@ -584,9 +584,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </ToggleGroup>
             </div>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="pt-0 pb-4">
             {history && history.length > 0 ? (
-              <div className="h-[200px] md:h-[160px] sm:h-[140px]">
+              <div className="h-[180px] md:h-[150px] sm:h-[120px] -mx-2">
                 <SimplePriceChart 
                   data={history} 
                   range={timeRange}
@@ -595,7 +595,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 />
               </div>
             ) : (
-              <div className="text-center py-6 text-muted-foreground">
+              <div className="text-center py-4 text-muted-foreground">
                 No price history available
               </div>
             )}
@@ -614,58 +614,58 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   Market Statistics
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <CardContent className="pt-0 pb-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {/* Price Stats */}
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="text-xs text-muted-foreground">Latest Price</div>
-                    <div className="text-lg font-bold text-foreground">
+                    <div className="text-sm font-semibold text-foreground">
                       {skin.priceLatest ? formatUSD(skin.priceLatest) : 'N/A'}
                     </div>
                   </div>
                   
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="text-xs text-muted-foreground">Median Price</div>
-                    <div className="text-lg font-bold text-foreground">
+                    <div className="text-sm font-semibold text-foreground">
                       {skin.priceMedian ? formatUSD(skin.priceMedian) : 'N/A'}
                     </div>
                   </div>
                   
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="text-xs text-muted-foreground">Average Price</div>
-                    <div className="text-lg font-bold text-foreground">
+                    <div className="text-sm font-semibold text-foreground">
                       {skin.priceAvg ? formatUSD(skin.priceAvg) : 'N/A'}
                     </div>
                   </div>
                   
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="text-xs text-muted-foreground">Min Price</div>
-                    <div className="text-lg font-bold text-green-600">
+                    <div className="text-sm font-semibold text-green-600">
                       {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
                     </div>
                   </div>
                   
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="text-xs text-muted-foreground">Max Price</div>
-                    <div className="text-lg font-bold text-red-600">
+                    <div className="text-sm font-semibold text-red-600">
                       {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
                     </div>
                   </div>
                   
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="text-xs text-muted-foreground">Volume 24h</div>
-                    <div className="text-lg font-bold text-foreground">
+                    <div className="text-sm font-semibold text-foreground">
                       {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
                     </div>
                   </div>
                 </div>
                 
                 {/* Price Changes */}
-                <div className="mt-4 pt-4 border-t border-border">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="mt-3 pt-3 border-t border-border">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-muted-foreground">24h Change</span>
-                      <Badge variant={marketStats.priceChangePercent24h >= 0 ? "default" : "destructive"} className="text-xs">
+                      <Badge variant={marketStats.priceChangePercent24h >= 0 ? "default" : "destructive"} className="text-xs px-2 py-0.5">
                         {marketStats.priceChangePercent24h >= 0 ? (
                           <TrendingUp className="h-3 w-3 mr-1" />
                         ) : (
@@ -677,7 +677,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-muted-foreground">7d Change</span>
-                      <Badge variant={skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? "default" : "destructive"} className="text-xs">
+                      <Badge variant={skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? "default" : "destructive"} className="text-xs px-2 py-0.5">
                         {skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? (
                           <TrendingUp className="h-3 w-3 mr-1" />
                         ) : (
@@ -703,13 +703,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   Quantity History
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 pb-4">
                 {quantityData && quantityData.length > 0 ? (
-                  <div className="h-[200px] md:h-[160px] sm:h-[140px]">
+                  <div className="h-[180px] md:h-[150px] sm:h-[120px] -mx-2">
                     <QuantityBarChart data={quantityData} />
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-muted-foreground">
+                  <div className="text-center py-4 text-muted-foreground">
                     No quantity data available
                   </div>
                 )}
