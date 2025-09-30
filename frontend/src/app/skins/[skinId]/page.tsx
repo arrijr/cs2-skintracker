@@ -392,35 +392,33 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           </Button>
         </div>
 
-        {/* Hero Section - Enhanced Product Highlight */}
+        {/* Hero Section - Clean Dashboard Style */}
         <div className="flex flex-col xl:flex-row gap-8 xl:gap-16 items-start">
-          {/* Skin Image - größer mit Shadow/Glow */}
+          {/* Skin Image - Clean Design */}
           <div className="flex-shrink-0 w-full xl:w-auto">
-            <div className="relative w-96 h-96 mx-auto xl:mx-0 bg-gradient-to-br from-gray-900/60 to-gray-800/40 rounded-3xl p-12 shadow-2xl border border-gray-700/30">
-              {/* Glow Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-3xl blur-xl"></div>
+            <div className="relative w-96 h-96 mx-auto xl:mx-0 bg-card border border-border rounded-lg p-12">
               
-              {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
-                <SkinImage
-                  src={skinImageUrl}
-                  alt={skin.name}
-                  fill
-                  priority
+                  {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
+                    <SkinImage
+                      src={skinImageUrl}
+                      alt={skin.name}
+                      fill
+                      priority
                   quality={95}
                   className="object-contain p-6 relative z-10"
-                />
-              ) : (
-                <Image
-                  src={skinImageUrl}
-                  alt={skin.name}
-                  fill
+                    />
+                  ) : (
+                      <Image
+                        src={skinImageUrl}
+                        alt={skin.name}
+                        fill
                   className="object-contain p-6 relative z-10"
-                  priority
+                        priority
                   quality={95}
-                />
-              )}
-            </div>
-          </div>
+                      />
+                  )}
+                </div>
+              </div>
            
           {/* Skin Info - rechts vom Bild */}
           <div className="flex-1 space-y-6 text-center lg:text-left">
@@ -460,7 +458,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   </Breadcrumb>
                   
               <div className="space-y-8">
-                <div className="space-y-4">
+              <div className="space-y-4">
                   <h1 className="text-6xl xl:text-7xl font-black leading-tight bg-gradient-to-r from-foreground via-primary to-foreground/90 bg-clip-text text-transparent drop-shadow-sm">
                     {skin.name}
                   </h1>
@@ -576,88 +574,88 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               
               {/* Tertiary Actions */}
               <div className="flex gap-2">
-                <Button
+              <Button
                   variant="ghost"
-                  onClick={handleCopyLink}
+                onClick={handleCopyLink}
                   className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 px-4 py-3"
-                >
-                  <Share2 className="h-4 w-4" />
-                  Share
-                </Button>
-                
-                <Button
+              >
+                <Share2 className="h-4 w-4" />
+                Share
+              </Button>
+              
+              <Button
                   variant="ghost"
-                  onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || skin.name)}`, '_blank')}
+                onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || skin.name)}`, '_blank')}
                   className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 px-4 py-3"
-                >
-                  <ExternalLink className="h-4 w-4" />
+              >
+                <ExternalLink className="h-4 w-4" />
                   Steam Market
-                </Button>
+                  </Button>
               </div>
                   </div>
                   </div>
                 </div>
 
-        {/* Enhanced Market Statistics */}
-        <Card className="border border-border/50 bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
+        {/* Market Statistics - Clean Dashboard Style */}
+        <Card className="border border-border bg-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-              Market Statistics
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Main Stats Grid - Enhanced with Icons & Color Logic */}
+                    Market Statistics
+                  </CardTitle>
+              </CardHeader>
+              <CardContent>
+            {/* Main Stats Grid - Clean Dashboard Style */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              {/* Latest Price - Primary Green */}
-              <div className="text-center p-6 border border-green-200 bg-gradient-to-br from-green-50 to-green-100/50 shadow-md hover:shadow-lg rounded-xl transition-all duration-300 min-h-[120px] flex flex-col justify-center">
+              {/* Latest Price */}
+              <div className="text-center p-6 border border-border bg-card rounded-lg min-h-[120px] flex flex-col justify-center">
                 <div className="flex items-center justify-center mb-2">
-                  <DollarSign className="h-5 w-5 text-green-600 mr-2" />
-                  <span className="text-sm font-medium text-green-700">Latest Price</span>
+                  <DollarSign className="h-5 w-5 text-muted-foreground mr-2" />
+                  <span className="text-sm font-medium text-muted-foreground">Latest Price</span>
                 </div>
-                <div className="text-2xl font-bold text-green-800">
+                <div className="text-2xl font-bold text-foreground">
                   {skin.priceLatest ? formatUSD(skin.priceLatest) : 'N/A'}
                 </div>
               </div>
               
-              {/* Median Price - Neutral Blue */}
-              <div className="text-center p-6 border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-md hover:shadow-lg rounded-xl transition-all duration-300 min-h-[120px] flex flex-col justify-center">
+              {/* Median Price */}
+              <div className="text-center p-6 border border-border bg-card rounded-lg min-h-[120px] flex flex-col justify-center">
                 <div className="flex items-center justify-center mb-2">
-                  <BarChart3 className="h-5 w-5 text-blue-600 mr-2" />
-                  <span className="text-sm font-medium text-blue-700">Median Price</span>
+                  <BarChart3 className="h-5 w-5 text-muted-foreground mr-2" />
+                  <span className="text-sm font-medium text-muted-foreground">Median Price</span>
                 </div>
-                <div className="text-2xl font-bold text-blue-800">
+                <div className="text-2xl font-bold text-foreground">
                   {skin.priceMedian ? formatUSD(skin.priceMedian) : 'N/A'}
-                </div>
-              </div>
+                                </div>
+                                </div>
               
-              {/* Average Price - Neutral Purple */}
-              <div className="text-center p-6 border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-md hover:shadow-lg rounded-xl transition-all duration-300 min-h-[120px] flex flex-col justify-center">
+              {/* Average Price */}
+              <div className="text-center p-6 border border-border bg-card rounded-lg min-h-[120px] flex flex-col justify-center">
                 <div className="flex items-center justify-center mb-2">
-                  <TrendingUp className="h-5 w-5 text-purple-600 mr-2" />
-                  <span className="text-sm font-medium text-purple-700">Average Price</span>
+                  <TrendingUp className="h-5 w-5 text-muted-foreground mr-2" />
+                  <span className="text-sm font-medium text-muted-foreground">Average Price</span>
                 </div>
-                <div className="text-2xl font-bold text-purple-800">
+                <div className="text-2xl font-bold text-foreground">
                   {skin.priceAvg ? formatUSD(skin.priceAvg) : 'N/A'}
-                </div>
-              </div>
-              
-              {/* Volume 24h - Activity Orange */}
-              <div className="text-center p-6 border border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100/50 shadow-md hover:shadow-lg rounded-xl transition-all duration-300 min-h-[120px] flex flex-col justify-center">
+                                </div>
+                  </div>
+                  
+              {/* Volume 24h */}
+              <div className="text-center p-6 border border-border bg-card rounded-lg min-h-[120px] flex flex-col justify-center">
                 <div className="flex items-center justify-center mb-2">
-                  <Users className="h-5 w-5 text-orange-600 mr-2" />
-                  <span className="text-sm font-medium text-orange-700">Volume 24h</span>
+                  <Users className="h-5 w-5 text-muted-foreground mr-2" />
+                  <span className="text-sm font-medium text-muted-foreground">Volume 24h</span>
                 </div>
-                <div className="text-2xl font-bold text-orange-800">
+                <div className="text-2xl font-bold text-foreground">
                   {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
-                </div>
+                                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Price Range & Changes - Enhanced */}
-        <Card className="mb-12 border border-border/50 bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
+        {/* Price Range & Changes - Clean Dashboard Style */}
+        <Card className="mb-12 border border-border bg-card">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {/* Price Range */}
@@ -667,17 +665,17 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 Price Range
               </h4>
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 border border-green-200 bg-gradient-to-br from-green-50 to-green-100/50 rounded-lg min-h-[80px] flex flex-col justify-center">
-                  <div className="text-lg font-bold text-green-700">
+                <div className="text-center p-4 border border-border bg-card rounded-lg min-h-[80px] flex flex-col justify-center">
+                  <div className="text-lg font-bold text-foreground">
                     {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
                   </div>
-                  <div className="text-xs text-green-600 font-medium">Min Price</div>
+                  <div className="text-xs text-muted-foreground font-medium">Min Price</div>
                 </div>
-                <div className="text-center p-4 border border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 rounded-lg min-h-[80px] flex flex-col justify-center">
-                  <div className="text-lg font-bold text-red-700">
+                <div className="text-center p-4 border border-border bg-card rounded-lg min-h-[80px] flex flex-col justify-center">
+                  <div className="text-lg font-bold text-foreground">
                     {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
                   </div>
-                  <div className="text-xs text-red-600 font-medium">Max Price</div>
+                  <div className="text-xs text-muted-foreground font-medium">Max Price</div>
                 </div>
               </div>
             </div>
@@ -689,8 +687,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 Price Changes
               </h4>
               <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 border border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-700">24h Change</span>
+                <div className="flex justify-between items-center p-3 border border-border bg-card rounded-lg">
+                  <span className="text-sm font-medium text-muted-foreground">24h Change</span>
                   <span className={`font-semibold flex items-center gap-1 ${marketStats.priceChangePercent24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {marketStats.priceChangePercent24h >= 0 ? (
                       <TrendingUp className="h-4 w-4" />
@@ -700,9 +698,14 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     {marketStats.priceChangePercent24h ? `${marketStats.priceChangePercent24h >= 0 ? '+' : ''}${safeToFixed(marketStats.priceChangePercent24h, 2)}%` : 'N/A'}
                   </span>
                 </div>
-                <div className="flex justify-between items-center p-3 border border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-700">7d Change</span>
-                  <span className="text-sm font-semibold text-gray-600">
+                <div className="flex justify-between items-center p-3 border border-border bg-card rounded-lg">
+                  <span className="text-sm font-medium text-muted-foreground">7d Change</span>
+                  <span className={`font-semibold flex items-center gap-1 ${skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? (
+                      <TrendingUp className="h-4 w-4" />
+                    ) : (
+                      <TrendingDown className="h-4 w-4" />
+                    )}
                     {skin.priceMedian7d ? `${((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(2)}%` : 'N/A'}
                   </span>
                 </div>
@@ -717,37 +720,37 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               Sales Data
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg min-h-[80px] flex flex-col justify-center">
-                <div className="text-lg font-bold text-blue-700">
+              <div className="text-center p-4 border border-border bg-card rounded-lg min-h-[80px] flex flex-col justify-center">
+                <div className="text-lg font-bold text-foreground">
                   {skin.sold24h || 0}
                 </div>
-                <div className="text-xs text-blue-600 font-medium">Sold 24h</div>
+                <div className="text-xs text-muted-foreground font-medium">Sold 24h</div>
               </div>
-              <div className="text-center p-4 border border-indigo-200 bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-lg min-h-[80px] flex flex-col justify-center">
-                <div className="text-lg font-bold text-indigo-700">
+              <div className="text-center p-4 border border-border bg-card rounded-lg min-h-[80px] flex flex-col justify-center">
+                <div className="text-lg font-bold text-foreground">
                   {skin.sold7d || 0}
                 </div>
-                <div className="text-xs text-indigo-600 font-medium">Sold 7d</div>
+                <div className="text-xs text-muted-foreground font-medium">Sold 7d</div>
               </div>
-              <div className="text-center p-4 border border-violet-200 bg-gradient-to-br from-violet-50 to-violet-100/50 rounded-lg min-h-[80px] flex flex-col justify-center">
-                <div className="text-lg font-bold text-violet-700">
+              <div className="text-center p-4 border border-border bg-card rounded-lg min-h-[80px] flex flex-col justify-center">
+                <div className="text-lg font-bold text-foreground">
                   {skin.sold30d || 0}
                 </div>
-                <div className="text-xs text-violet-600 font-medium">Sold 30d</div>
+                <div className="text-xs text-muted-foreground font-medium">Sold 30d</div>
               </div>
-              <div className="text-center p-4 border border-cyan-200 bg-gradient-to-br from-cyan-50 to-cyan-100/50 rounded-lg min-h-[80px] flex flex-col justify-center">
-                <div className="text-lg font-bold text-cyan-700">
+              <div className="text-center p-4 border border-border bg-card rounded-lg min-h-[80px] flex flex-col justify-center">
+                <div className="text-lg font-bold text-foreground">
                   {skin.offerVolume || 0}
                 </div>
-                <div className="text-xs text-cyan-600 font-medium">Active Offers</div>
+                <div className="text-xs text-muted-foreground font-medium">Active Offers</div>
               </div>
-            </div>
-          </div>
-          </CardContent>
-        </Card>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
 
-        {/* Price History Chart */}
-        <Card className="mb-12 border border-border/50 bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
+        {/* Price History Chart - Clean Dashboard Style */}
+        <Card className="mb-12 border border-border bg-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
@@ -766,9 +769,6 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             
             {history && history.length > 0 ? (
               <>
-                <div className="mb-4 p-2 bg-green-100 text-green-800 rounded text-sm">
-                  ✅ Price History: {history.length} Datenpunkte geladen
-                </div>
                 <SimplePriceChart 
                   data={history} 
                   range={timeRange}
@@ -784,8 +784,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                             </CardContent>
                           </Card>
 
-        {/* Quantity History Chart */}
-        <Card className="mb-12 border border-border/50 bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
+        {/* Quantity History Chart - Clean Dashboard Style */}
+        <Card className="mb-12 border border-border bg-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
@@ -796,9 +796,6 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             
             {skin && skin.id ? (
               <>
-                <div className="mb-4 p-2 bg-blue-100 text-blue-800 rounded text-sm">
-                  ✅ Quantity Chart: Skin ID {skin.id} - {skin.name}
-                </div>
                 <QuantityBarChart 
                   skinId={skin.id} 
                   skinName={skin.name}
@@ -812,9 +809,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                               </CardContent>
                             </Card>
 
-        {/* Related Skins - Enhanced */}
+        {/* Related Skins - Clean Dashboard Style */}
         {variants.length > 0 && (
-          <Card className="border border-border/50 bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <Card className="border border-border bg-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5" />
@@ -822,7 +819,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                 {variants.map((variant, index) => {
                   // Determine if this is a popular, rare, or discounted skin
                   const isPopular = variant.marketPrice && variant.marketPrice > 50;
@@ -830,68 +827,58 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   const isDiscounted = variant.marketPrice && variant.marketPrice < 10;
                   
                   return (
-                    <Card
-                      key={variant.id}
-                      className="group border-2 border-gray-200 hover:border-primary/50 bg-gradient-to-br from-background to-muted/10 hover:shadow-xl hover:scale-[1.02] sm:hover:scale-[1.03] transition-all duration-300 cursor-pointer overflow-hidden"
-                      onClick={() => handleRelatedSkinClick(variant)}
-                    >
+                  <Card
+                    key={variant.id}
+                      className="group border border-border bg-card hover:border-primary/50 cursor-pointer"
+                    onClick={() => handleRelatedSkinClick(variant)}
+                  >
                       <CardContent className="p-2 sm:p-4">
-                        {/* Image Container with Enhanced Hover Effect */}
-                        <div className="aspect-square relative mb-2 sm:mb-4 rounded-t-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 group-hover:shadow-lg transition-all duration-300">
-                          {variant.imageUrl ? (
-                            <Image
-                              src={variant.imageUrl}
-                              alt={variant.name}
-                              fill
+                        {/* Image Container - Clean Design */}
+                        <div className="aspect-square relative mb-2 sm:mb-4 rounded-lg overflow-hidden bg-muted">
+                        {variant.imageUrl ? (
+                          <Image
+                            src={variant.imageUrl}
+                            alt={variant.name}
+                            fill
                               className="object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-500 ease-out"
-                            />
-                          ) : (
+                          />
+                        ) : (
                             <div className="w-full h-full bg-muted flex items-center justify-center group-hover:bg-muted/80 transition-colors duration-300">
                               <Image className="h-8 w-8 text-muted-foreground group-hover:scale-110 transition-transform duration-300" />
                             </div>
                           )}
                           
-                          {/* Optional Labels with Micro-Interactions */}
+                          {/* Optional Labels - Clean Design */}
                           <div className="absolute top-2 left-2 flex flex-col gap-1">
                             {isPopular && (
-                              <Badge className="bg-orange-500 text-white text-xs px-2 py-1 group-hover:scale-105 group-hover:shadow-md transition-all duration-200">
+                              <Badge variant="secondary" className="text-xs">
                                 Popular
                               </Badge>
                             )}
                             {isRare && (
-                              <Badge className="bg-purple-500 text-white text-xs px-2 py-1 group-hover:scale-105 group-hover:shadow-md transition-all duration-200">
+                              <Badge variant="secondary" className="text-xs">
                                 Rare
                               </Badge>
                             )}
                             {isDiscounted && (
-                              <Badge className="bg-green-500 text-white text-xs px-2 py-1 group-hover:scale-105 group-hover:shadow-md transition-all duration-200">
+                              <Badge variant="secondary" className="text-xs">
                                 Discounted
                               </Badge>
                             )}
                           </div>
-                          
-                          {/* Enhanced Hover Overlay with Gradient */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-                          
-                          {/* Hover Icon */}
-                          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                            <div className="bg-white/90 rounded-full p-2 shadow-lg">
-                              <Eye className="h-4 w-4 text-gray-700" />
-                            </div>
-                          </div>
                         </div>
                         
-                        {/* Content with Enhanced Animations */}
-                        <div className="p-3 sm:p-6 pt-0 group-hover:bg-gradient-to-br from-muted/20 to-transparent transition-all duration-300">
-                          <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary group-hover:translate-x-1 transition-all duration-200 text-sm sm:text-base">
+                        {/* Content - Clean Design */}
+                        <div className="p-3">
+                          <h3 className="font-semibold mb-2 line-clamp-2 text-sm">
                             {variant.name}
                           </h3>
                           <div className="flex items-center justify-between">
-                            <p className="text-base sm:text-lg font-bold text-primary group-hover:scale-105 transition-transform duration-200">
+                            <p className="text-base font-bold text-primary">
                               {variant.marketPrice ? formatUSD(variant.marketPrice) : 'N/A'}
                             </p>
                             {variant.rarity && (
-                              <Badge variant="outline" className="text-xs hidden sm:inline-flex group-hover:bg-primary/10 group-hover:border-primary/30 transition-all duration-200">
+                              <Badge variant="outline" className="text-xs">
                                 {variant.rarity}
                               </Badge>
                             )}
@@ -901,10 +888,10 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     </Card>
                   );
                 })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
         {/* Case Information */}
         {caseInfo && (
