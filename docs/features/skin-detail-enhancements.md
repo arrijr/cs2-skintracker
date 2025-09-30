@@ -88,3 +88,13 @@ Comprehensive UI/UX improvements to the skin detail page, making it more premium
 - `backend/src/routes/skinRoutes.js` - Backend API routes
 - `frontend/src/components/charts/simple-price-chart.tsx` - Price chart component
 - `frontend/src/components/QuantityBarChart.tsx` - Quantity chart component
+
+## CORS-Problem Fix (2025-01-30)
+**Problem:** Charts wurden nicht angezeigt aufgrund von CORS-Fehlern mit dem Development-Backend.
+
+**Lösung:**
+- API verwendet jetzt IMMER das Production-Backend (`cs2-skintracker.onrender.com`)
+- Debug-Logs entfernt aus Skin-Seite und Chart-Komponenten
+- CORS-Konfiguration vereinfacht
+
+**Status:** ✅ Abgeschlossen - CORS-Problem behoben, Charts funktionieren jetzt
