@@ -13,6 +13,53 @@ General
 - Never hardcode secrets. Use process.env and document new env keys in README.
 - Respect existing structure and naming.
 
+Memory MCP Server (MANDATORY)
+- ALWAYS use Memory MCP Server for project context management.
+- Store important decisions, features, bugs, and architecture changes in knowledge graph.
+- Create entities for: new features, recurring bugs, technical decisions, dependencies.
+- Update memory when implementing features or fixing issues.
+- Use memory to track project evolution and maintain context across sessions.
+- Search memory before starting new tasks to understand existing context.
+
+Deployment Monitoring (MANDATORY)
+- ALWAYS use Render MCP Server for backend infrastructure monitoring and management.
+- ALWAYS use Vercel MCP Server for frontend deployment monitoring and optimization.
+- Check deployment status, logs, and metrics when investigating issues.
+- Use Render MCP to monitor backend services, databases, and cron jobs.
+- Use Vercel MCP to monitor frontend deployments, build logs, and performance.
+- Proactively check deployment health before and after major changes.
+- Store deployment issues and solutions in Memory MCP Server.
+
+UI Component Management (MANDATORY)
+- ALWAYS use Shadcn MCP Server for UI component discovery and management.
+- Search for components before creating custom ones.
+- Use Shadcn MCP to find examples and get installation commands.
+- Maintain consistency with existing Shadcn/UI component library.
+- Document component usage and decisions in Memory MCP Server.
+
+Testing & Debugging (MANDATORY)
+- ALWAYS use Browser Tools MCP Server for frontend debugging and testing.
+- Use console logs, network monitoring, and accessibility audits.
+- Run performance audits before major releases.
+- Use Puppeteer MCP Server for comprehensive E2E testing.
+- Take screenshots for visual regression testing.
+- Document testing results and issues in Memory MCP Server.
+
+Problem Solving (MANDATORY)
+- ALWAYS use Sequential Thinking MCP Server for complex problems.
+- Break down complex issues into structured steps.
+- Use hypothesis generation and verification for debugging.
+- Apply structured thinking for architectural decisions.
+- Document problem-solving process in Memory MCP Server.
+
+Research & Information Gathering (MANDATORY)
+- ALWAYS use Web Search MCP Server for real-time information and research.
+- Look up current API documentation, market data, and solutions.
+- Research CS2 skin market trends and Steam API updates.
+- Verify current facts before implementing features.
+- Find recent solutions for troubleshooting and debugging.
+- Document research findings and sources in Memory MCP Server.
+
 Frontend (Next.js App Router, TS, Tailwind)
 - Keep components small and commented.
 - Prefer explicit types, no `any`.
