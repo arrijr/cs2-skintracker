@@ -22,8 +22,11 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2, Copy, BarChart3, Users, Clock, DollarSign, Home, RefreshCw, HelpCircle, Eye, Shield, Settings, Star } from "lucide-react";
+import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2, Copy, BarChart3, Users, Clock, DollarSign, Home, RefreshCw, HelpCircle, Eye, Shield, Settings, Star, AlertCircle } from "lucide-react";
 // {/* Central API helpers */}
 import {
   getPortfolio,
@@ -342,35 +345,69 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   }, [router, analytics]);
 
   if (loading) {
-  return (
-      <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row gap-8">
-              <Skeleton className="w-64 h-64 mx-auto md:mx-0" />
-              <div className="flex-1 space-y-4">
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-6 w-1/4" />
-                <div className="flex gap-2">
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+        <div className="container mx-auto px-4 py-8">
+          <div className="space-y-8">
+            {/* Header Skeleton */}
+            <div className="flex flex-col lg:flex-row gap-8">
+              <Skeleton className="w-full lg:w-96 h-96 rounded-xl" />
+              <div className="flex-1 space-y-6">
+                <div className="space-y-4">
+                  <Skeleton className="h-12 w-3/4" />
+                  <Skeleton className="h-6 w-1/2" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-24" />
+                  </div>
+                </div>
+                <div className="flex gap-3">
                   <Skeleton className="h-10 w-32" />
                   <Skeleton className="h-10 w-32" />
                   <Skeleton className="h-10 w-32" />
                 </div>
               </div>
             </div>
+            
+            {/* Stats Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 rounded-lg" />
+              ))}
+            </div>
+            
+            {/* Chart Skeleton */}
+            <Skeleton className="h-96 rounded-xl" />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !skin) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Skin not found</h1>
-          <p className="text-muted-foreground mb-4">{error || 'The requested skin could not be found.'}</p>
-          <Button onClick={() => router.push('/skins')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Skins
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center space-y-6">
+            <div className="w-24 h-24 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
+              <AlertCircle className="h-12 w-12 text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold">Skin Not Found</h1>
+              <p className="text-muted-foreground text-lg">{error || 'The skin you\'re looking for doesn\'t exist'}</p>
+            </div>
+            <div className="flex gap-4 justify-center">
+              <Button onClick={() => router.back()} variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Go Back
+              </Button>
+              <Button onClick={() => router.push('/skins')}>
+                <Eye className="h-4 w-4 mr-2" />
+                Browse Skins
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -378,80 +415,84 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
   return (
     <TooltipProvider>
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Back Button */}
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to results
-          </Button>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+        <div className="container mx-auto px-4 py-8 space-y-8">
+          {/* Back Button */}
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => router.back()}
+              className="flex items-center gap-2 hover:bg-muted/50 transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to results
+            </Button>
+          </div>
 
         {/* Hero Section */}
-        <div className="flex flex-col lg:flex-row gap-12 items-start">
-          {/* Skin Image - größer und im Fokus */}
-          <div className="flex-shrink-0 w-full lg:w-auto">
-            <div className="relative w-80 h-80 mx-auto lg:mx-0 bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-2xl p-8 shadow-2xl">
-                  {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
-                    <SkinImage
-                      src={skinImageUrl}
-                      alt={skin.name}
-                      fill
-                      priority
-                      quality={90}
-                  className="object-contain p-4"
-                    />
-                  ) : (
-                      <Image
-                        src={skinImageUrl}
-                        alt={skin.name}
-                        fill
-                        className="object-contain p-4"
-                        priority
-                        quality={90}
-                      />
-                  )}
-                </div>
+        <Card className="overflow-hidden border-0 bg-gradient-to-br from-card to-card/50 shadow-2xl">
+          <div className="flex flex-col lg:flex-row gap-8 p-8">
+            {/* Skin Image - größer und im Fokus */}
+            <div className="flex-shrink-0 w-full lg:w-auto">
+              <div className="relative w-80 h-80 mx-auto lg:mx-0 rounded-2xl overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50 shadow-xl group">
+                {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
+                  <SkinImage
+                    src={skinImageUrl}
+                    alt={skin.name}
+                    fill
+                    priority
+                    quality={90}
+                    className="object-contain p-6 transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <Image
+                    src={skinImageUrl}
+                    alt={skin.name}
+                    fill
+                    className="object-contain p-6 transition-transform duration-500 group-hover:scale-105"
+                    priority
+                    quality={90}
+                  />
+                )}
+                {/* Glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
+            </div>
            
-          {/* Skin Info - rechts vom Bild */}
-          <div className="flex-1 space-y-6 text-center lg:text-left">
-                <div>
-                  {/* Breadcrumb navigation: Cases > Case > Skin */}
-              <Breadcrumb className="mb-6">
-                    <BreadcrumbList>
-                      <BreadcrumbItem>
-                        <BreadcrumbLink href="/" className="flex items-center gap-1">
-                          <Home className="h-4 w-4" />
-                          Home
-                        </BreadcrumbLink>
-                      </BreadcrumbItem>
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                        <BreadcrumbLink href="/skins">Skins</BreadcrumbLink>
-                      </BreadcrumbItem>
-                      {caseInfo && (
-                        <>
-                          <BreadcrumbSeparator />
-                          <BreadcrumbItem>
-                        <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo?.name || '')}`}>
-                          {caseInfo?.name || 'Unknown Case'}
-                            </BreadcrumbLink>
-                          </BreadcrumbItem>
-                        </>
-                      )}
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                        <BreadcrumbPage className="font-medium">
-                          {skin.name}
-                        </BreadcrumbPage>
-                      </BreadcrumbItem>
-                    </BreadcrumbList>
-                  </Breadcrumb>
+            {/* Skin Info - rechts vom Bild */}
+            <div className="flex-1 space-y-6 text-center lg:text-left">
+              <div>
+                {/* Breadcrumb navigation: Cases > Case > Skin */}
+                <Breadcrumb className="mb-6">
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink href="/" className="flex items-center gap-1 hover:text-primary transition-colors">
+                        <Home className="h-4 w-4" />
+                        Home
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbLink href="/skins" className="hover:text-primary transition-colors">Skins</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    {caseInfo && (
+                      <>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                          <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo?.name || '')}`} className="hover:text-primary transition-colors">
+                            {caseInfo?.name || 'Unknown Case'}
+                          </BreadcrumbLink>
+                        </BreadcrumbItem>
+                      </>
+                    )}
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage className="font-medium">
+                        {skin.name}
+                      </BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
                   
               <div className="space-y-4">
                 <h1 className="text-4xl font-bold leading-tight">{skin.name}</h1>
@@ -509,88 +550,98 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
            </div>
              </div>
                   
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3">
-              {isSignedIn ? (
-                <>
-                  {isInWatchlist ? (
-                    <Button
-                      variant="outline"
-                      onClick={handleRemoveFromWatchlist}
-                      className="flex items-center gap-2"
-                    >
-                      <Heart className="h-4 w-4 fill-red-500 text-red-500" />
-                      Remove from Watchlist
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleAddToWatchlist}
-                      className="flex items-center gap-2"
-                    >
-                        <Heart className="h-4 w-4" />
-                      Add to Watchlist
-                    </Button>
-                  )}
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3">
+                  {isSignedIn ? (
+                    <>
+                      {isInWatchlist ? (
+                        <Button
+                          variant="outline"
+                          onClick={handleRemoveFromWatchlist}
+                          className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all duration-200"
+                        >
+                          <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                          Remove from Watchlist
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleAddToWatchlist}
+                          className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-200 shadow-lg hover:shadow-xl"
+                        >
+                          <Heart className="h-4 w-4" />
+                          Add to Watchlist
+                        </Button>
+                      )}
 
-                  {isInPortfolio ? (
-                  <Button
-                      variant="outline"
-                      onClick={handleRemoveFromPortfolio}
-                      className="flex items-center gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Remove from Portfolio
-                  </Button>
+                      {isInPortfolio ? (
+                        <Button
+                          variant="outline"
+                          onClick={handleRemoveFromPortfolio}
+                          className="flex items-center gap-2 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-600 transition-all duration-200"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Remove from Portfolio
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleAddToPortfolio}
+                          className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white transition-all duration-200 shadow-lg hover:shadow-xl"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Add to Portfolio
+                        </Button>
+                      )}
+                    </>
                   ) : (
                     <Button
-                      onClick={handleAddToPortfolio}
-                      className="flex items-center gap-2"
+                      onClick={() => router.push('/sign-in')}
+                      className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-200 shadow-lg hover:shadow-xl"
                     >
-                      <Plus className="h-4 w-4" />
-                      Add to Portfolio
-                  </Button>
+                      <Heart className="h-4 w-4" />
+                      Sign in to track
+                    </Button>
                   )}
-                </>
-              ) : (
-                <Button
-                  onClick={() => router.push('/sign-in')}
-                  className="flex items-center gap-2"
-                >
-                  <Heart className="h-4 w-4" />
-                  Sign in to track
-                </Button>
-              )}
-              
-              <Button
-                variant="outline"
-                onClick={handleCopyLink}
-                className="flex items-center gap-2"
-              >
-                <Share2 className="h-4 w-4" />
-                Share
-              </Button>
-              
-              <Button
-                variant="outline"
-                onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || skin.name)}`, '_blank')}
-                className="flex items-center gap-2"
-              >
-                <ExternalLink className="h-4 w-4" />
-                View on Steam Market
+                  
+                  <Button
+                    variant="outline"
+                    onClick={handleCopyLink}
+                    className="flex items-center gap-2 hover:bg-muted/50 transition-all duration-200"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    Share
                   </Button>
-                  </div>
-                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || skin.name)}`, '_blank')}
+                    className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all duration-200"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View on Steam Market
+                  </Button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         {/* Enhanced Market Statistics */}
-        <Card className="border border-border bg-card shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+        <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <BarChart3 className="h-6 w-6 text-primary" />
               Market Statistics
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="prices">Price Analysis</TabsTrigger>
+                <TabsTrigger value="sales">Sales Data</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="overview" className="space-y-6 mt-6">
             {/* Main Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <div className="text-center p-4 border border-border bg-card shadow-sm hover:shadow-lg rounded-lg">
@@ -661,100 +712,202 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </div>
             </div>
 
-            {/* Sales Data */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-sm text-muted-foreground">Sales Data</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="text-center p-3 border border-border bg-card rounded-lg">
-                  <div className="text-lg font-bold text-primary">
-                    {skin.sold24h || 0}
+              </TabsContent>
+              
+              <TabsContent value="prices" className="space-y-6 mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg">Price Range</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">Minimum Price</span>
+                        <span className="text-lg font-bold text-green-600">
+                          {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">Maximum Price</span>
+                        <span className="text-lg font-bold text-red-600">
+                          {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">Average Price</span>
+                        <span className="text-lg font-bold text-primary">
+                          {skin.priceAvg ? formatUSD(skin.priceAvg) : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Sold 24h</div>
-                </div>
-                <div className="text-center p-3 border border-border bg-card rounded-lg">
-                  <div className="text-lg font-bold text-primary">
-                    {skin.sold7d || 0}
+                  
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg">Price Trends</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">24h Change</span>
+                        <span className={`font-semibold ${marketStats.priceChangePercent24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {marketStats.priceChangePercent24h ? `${marketStats.priceChangePercent24h >= 0 ? '+' : ''}${safeToFixed(marketStats.priceChangePercent24h, 2)}%` : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">7d Change</span>
+                        <span className="text-sm text-muted-foreground">
+                          {skin.priceMedian7d ? `${((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(2)}%` : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">30d Change</span>
+                        <span className="text-sm text-muted-foreground">
+                          {skin.priceMedian30d ? `${((skin.priceLatest - skin.priceMedian30d) / skin.priceMedian30d * 100).toFixed(2)}%` : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Sold 7d</div>
                 </div>
-                <div className="text-center p-3 border border-border bg-card rounded-lg">
-                  <div className="text-lg font-bold text-primary">
-                    {skin.sold30d || 0}
+              </TabsContent>
+              
+              <TabsContent value="sales" className="space-y-6 mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg">Sales Volume</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">Sold 24h</span>
+                        <span className="text-lg font-bold text-primary">
+                          {skin.sold24h || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">Sold 7d</span>
+                        <span className="text-lg font-bold text-primary">
+                          {skin.sold7d || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">Sold 30d</span>
+                        <span className="text-lg font-bold text-primary">
+                          {skin.sold30d || 0}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Sold 30d</div>
-                </div>
-                <div className="text-center p-3 border border-border bg-card rounded-lg">
-                  <div className="text-lg font-bold text-primary">
-                    {skin.offerVolume || 0}
+                  
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg">Market Activity</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">Active Offers</span>
+                        <span className="text-lg font-bold text-primary">
+                          {skin.offerVolume || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">Volume 24h</span>
+                        <span className="text-lg font-bold text-primary">
+                          {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-4 border border-border bg-card rounded-lg">
+                        <span className="text-sm font-medium">Last Updated</span>
+                        <span className="text-sm text-muted-foreground">
+                          {skin.priceUpdatedAt ? new Date(skin.priceUpdatedAt).toLocaleDateString() : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Active Offers</div>
                 </div>
-              </div>
-            </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 
         {/* Price History Chart */}
-        <Card className="mb-12 border border-border bg-card shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
+        <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <TrendingUp className="h-6 w-6 text-primary" />
               Price History
             </CardTitle>
-            <div className="flex items-center gap-2 mt-2">
-              <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
-                <ToggleGroupItem value="7d" size="sm">7D</ToggleGroupItem>
-                <ToggleGroupItem value="30d" size="sm">30D</ToggleGroupItem>
-                <ToggleGroupItem value="90d" size="sm">90D</ToggleGroupItem>
-                <ToggleGroupItem value="1y" size="sm">1Y</ToggleGroupItem>
+            <div className="flex items-center gap-2 mt-4">
+              <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)} className="bg-muted/50 p-1 rounded-lg">
+                <ToggleGroupItem value="7d" size="sm" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">7D</ToggleGroupItem>
+                <ToggleGroupItem value="30d" size="sm" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">30D</ToggleGroupItem>
+                <ToggleGroupItem value="90d" size="sm" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">90D</ToggleGroupItem>
+                <ToggleGroupItem value="1y" size="sm" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">1Y</ToggleGroupItem>
               </ToggleGroup>
             </div>
           </CardHeader>
           <CardContent>
             
             {history && history.length > 0 ? (
-              <>
-                <div className="mb-4 p-2 bg-green-100 text-green-800 rounded text-sm">
-                  ✅ Price History: {history.length} Datenpunkte geladen
+              <div className="space-y-4">
+                <Alert className="border-green-200 bg-green-50">
+                  <Check className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">
+                    Price history loaded: {history.length} data points available
+                  </AlertDescription>
+                </Alert>
+                <div className="h-96 rounded-lg border border-border/50 bg-card/50 p-4">
+                  <SimplePriceChart 
+                    data={history} 
+                    range={timeRange}
+                    scale="linear"
+                    movingAverage="7"
+                  />
                 </div>
-                <SimplePriceChart 
-                  data={history} 
-                  range={timeRange}
-                  scale="linear"
-                  movingAverage="7"
-                />
-              </>
+              </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                ❌ No price history available. History: {JSON.stringify(history?.slice(0, 2))}
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 bg-muted/50 rounded-full flex items-center justify-center">
+                  <BarChart3 className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">No Price History Available</h3>
+                <p className="text-muted-foreground">Price data for this skin is not available at the moment.</p>
               </div>
             )}
                             </CardContent>
                           </Card>
 
         {/* Quantity History Chart */}
-        <Card className="mb-12 border border-border bg-card shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+        <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <BarChart3 className="h-6 w-6 text-primary" />
               Quantity History
             </CardTitle>
+            <div className="flex items-center gap-2 mt-4">
+              <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)} className="bg-muted/50 p-1 rounded-lg">
+                <ToggleGroupItem value="7d" size="sm" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">7D</ToggleGroupItem>
+                <ToggleGroupItem value="30d" size="sm" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">30D</ToggleGroupItem>
+                <ToggleGroupItem value="90d" size="sm" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">90D</ToggleGroupItem>
+                <ToggleGroupItem value="1y" size="sm" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">1Y</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </CardHeader>
           <CardContent>
             
             {skin && skin.id ? (
-              <>
-                <div className="mb-4 p-2 bg-blue-100 text-blue-800 rounded text-sm">
-                  ✅ Quantity Chart: Skin ID {skin.id} - {skin.name}
+              <div className="space-y-4">
+                <Alert className="border-blue-200 bg-blue-50">
+                  <BarChart3 className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800">
+                    Quantity data loaded for {skin.name}
+                  </AlertDescription>
+                </Alert>
+                <div className="h-96 rounded-lg border border-border/50 bg-card/50 p-4">
+                  <QuantityBarChart 
+                    skinId={skin.id} 
+                    skinName={skin.name}
+                  />
                 </div>
-                <QuantityBarChart 
-                  skinId={skin.id} 
-                  skinName={skin.name}
-                />
-              </>
+              </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                ❌ No skin data available. Skin: {JSON.stringify(skin)}
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 bg-muted/50 rounded-full flex items-center justify-center">
+                  <BarChart3 className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">No Quantity Data Available</h3>
+                <p className="text-muted-foreground">Quantity data for this skin is not available at the moment.</p>
               </div>
             )}
                               </CardContent>
@@ -762,10 +915,10 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
         {/* Related Skins */}
         {variants.length > 0 && (
-          <Card className="border border-border bg-card shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="h-5 w-5" />
+          <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <Eye className="h-6 w-6 text-primary" />
                 Related Skins
               </CardTitle>
             </CardHeader>
@@ -774,30 +927,39 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 {variants.map((variant) => (
                   <Card
                     key={variant.id}
-                    className="border-2 hover:border-primary/30 bg-gradient-to-br from-background to-muted/20 group-hover:scale-[1.02] transition-all duration-200 cursor-pointer"
+                    className="group border-2 hover:border-primary/30 bg-gradient-to-br from-background to-muted/20 hover:scale-[1.02] transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl"
                     onClick={() => handleRelatedSkinClick(variant)}
                   >
                     <CardContent className="p-6">
-                      <div className="aspect-square relative mb-4 rounded-lg overflow-hidden">
+                      <div className="aspect-square relative mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10 border border-border/50 group-hover:border-primary/20 transition-colors">
                         {variant.imageUrl ? (
                           <Image
                             src={variant.imageUrl}
                             alt={variant.name}
                             fill
-                            className="object-cover"
+                            className="object-contain p-3 group-hover:scale-110 transition-transform duration-300"
                           />
                         ) : (
-                          <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <Image className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                            )}
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                            <Eye className="h-8 w-8" />
                           </div>
-                      <h3 className="font-semibold mb-2 line-clamp-2">{variant.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {variant.marketPrice ? formatUSD(variant.marketPrice) : 'N/A'}
-                      </p>
-                      </CardContent>
-                    </Card>
+                        )}
+                        {/* Glow effect */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
+                          {variant.name}
+                        </h3>
+                        <div className="flex items-center justify-between">
+                          <p className="text-lg font-bold text-primary">
+                            {variant.marketPrice ? formatUSD(variant.marketPrice) : 'N/A'}
+                          </p>
+                          <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
                   </div>
                 </CardContent>
@@ -809,6 +971,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           <CaseSection caseName={caseInfo.name} />
         )}
         </div>
-      </TooltipProvider>
+      </div>
+    </TooltipProvider>
   );
 }
