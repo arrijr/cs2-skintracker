@@ -570,12 +570,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
         {/* Price History Chart - Compact */}
         <Card className="rounded-2xl shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <TrendingUp className="h-5 w-5" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TrendingUp className="h-4 w-4" />
               Price History
             </CardTitle>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-1">
               <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
                 <ToggleGroupItem value="7d" size="sm">7D</ToggleGroupItem>
                 <ToggleGroupItem value="30d" size="sm">30D</ToggleGroupItem>
@@ -584,9 +584,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </ToggleGroup>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             {history && history.length > 0 ? (
-              <div className="h-[280px] md:h-[200px] sm:h-[160px]">
+              <div className="h-[200px] md:h-[160px] sm:h-[140px]">
                 <SimplePriceChart 
                   data={history} 
                   range={timeRange}
@@ -595,7 +595,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 />
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-6 text-muted-foreground">
                 No price history available
               </div>
             )}
@@ -608,64 +608,64 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           <div className="lg:col-span-2 space-y-6">
             {/* Market Statistics - Consolidated */}
             <Card className="rounded-2xl shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <BarChart3 className="h-5 w-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <BarChart3 className="h-4 w-4" />
                   Market Statistics
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {/* Price Stats */}
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Latest Price</div>
-                    <div className="text-xl font-bold text-foreground">
+                  <div className="space-y-1">
+                    <div className="text-xs text-muted-foreground">Latest Price</div>
+                    <div className="text-lg font-bold text-foreground">
                       {skin.priceLatest ? formatUSD(skin.priceLatest) : 'N/A'}
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Median Price</div>
-                    <div className="text-xl font-bold text-foreground">
+                  <div className="space-y-1">
+                    <div className="text-xs text-muted-foreground">Median Price</div>
+                    <div className="text-lg font-bold text-foreground">
                       {skin.priceMedian ? formatUSD(skin.priceMedian) : 'N/A'}
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Average Price</div>
-                    <div className="text-xl font-bold text-foreground">
+                  <div className="space-y-1">
+                    <div className="text-xs text-muted-foreground">Average Price</div>
+                    <div className="text-lg font-bold text-foreground">
                       {skin.priceAvg ? formatUSD(skin.priceAvg) : 'N/A'}
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Min Price</div>
-                    <div className="text-xl font-bold text-green-600">
+                  <div className="space-y-1">
+                    <div className="text-xs text-muted-foreground">Min Price</div>
+                    <div className="text-lg font-bold text-green-600">
                       {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Max Price</div>
-                    <div className="text-xl font-bold text-red-600">
+                  <div className="space-y-1">
+                    <div className="text-xs text-muted-foreground">Max Price</div>
+                    <div className="text-lg font-bold text-red-600">
                       {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Volume 24h</div>
-                    <div className="text-xl font-bold text-foreground">
+                  <div className="space-y-1">
+                    <div className="text-xs text-muted-foreground">Volume 24h</div>
+                    <div className="text-lg font-bold text-foreground">
                       {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
                     </div>
                   </div>
                 </div>
                 
                 {/* Price Changes */}
-                <div className="mt-6 pt-6 border-t border-border">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">24h Change</span>
-                      <Badge variant={marketStats.priceChangePercent24h >= 0 ? "default" : "destructive"} className="text-sm">
+                      <span className="text-xs text-muted-foreground">24h Change</span>
+                      <Badge variant={marketStats.priceChangePercent24h >= 0 ? "default" : "destructive"} className="text-xs">
                         {marketStats.priceChangePercent24h >= 0 ? (
                           <TrendingUp className="h-3 w-3 mr-1" />
                         ) : (
@@ -676,8 +676,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     </div>
                     
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">7d Change</span>
-                      <Badge variant={skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? "default" : "destructive"} className="text-sm">
+                      <span className="text-xs text-muted-foreground">7d Change</span>
+                      <Badge variant={skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? "default" : "destructive"} className="text-xs">
                         {skin.priceMedian7d && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? (
                           <TrendingUp className="h-3 w-3 mr-1" />
                         ) : (
@@ -697,19 +697,19 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           <div className="lg:col-span-1 space-y-6">
             {/* Quantity History Chart - Compact */}
             <Card className="rounded-2xl shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <BarChart3 className="h-5 w-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <BarChart3 className="h-4 w-4" />
                   Quantity History
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 {quantityData && quantityData.length > 0 ? (
-                  <div className="h-[280px] md:h-[200px] sm:h-[160px]">
+                  <div className="h-[200px] md:h-[160px] sm:h-[140px]">
                     <QuantityBarChart data={quantityData} />
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
+                  <div className="text-center py-6 text-muted-foreground">
                     No quantity data available
                   </div>
                 )}
