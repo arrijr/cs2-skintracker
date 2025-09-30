@@ -97,11 +97,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         setLoading(true);
         setError(null);
         
-        const url = apiUrl(`/skins/${params.skinId}`);
-        console.log('[DEBUG] Loading skin from URL:', url);
-        
-        const response = await fetchJson(url);
-        console.log('[DEBUG] Skin response:', response);
+        const response = await fetchJson(apiUrl(`/skins/${params.skinId}`));
         
         if (response.success) {
           setSkin(response.data);
