@@ -65,8 +65,8 @@ type Skin = {
     imageUrl?: string;
   }>;
   history?: Array<{
-    date: string;
-    price: number;
+  date: string;
+  price: number;
     quantity: number;
   }>;
 };
@@ -99,6 +99,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         
         const response = await fetchJson(apiUrl(`/skins/${params.skinId}`));
         if (response.success) {
+          console.log('Skin data loaded:', response.data);
+          console.log('History data:', response.data.history);
           setSkin(response.data);
         } else if (response.id) {
           // Fallback for old API format
@@ -306,7 +308,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             console.error('Analytics error:', err);
           }
         }
-      } else {
+    } else {
         toast.error(response.error || 'Failed to create price alert');
       }
     } catch (err) {
@@ -342,21 +344,21 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   }, [router, analytics]);
 
   if (loading) {
-    return (
+  return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row gap-8">
-          <Skeleton className="w-64 h-64 mx-auto md:mx-0" />
-          <div className="flex-1 space-y-4">
-            <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-6 w-1/4" />
-            <div className="flex gap-2">
-              <Skeleton className="h-10 w-32" />
-              <Skeleton className="h-10 w-32" />
-              <Skeleton className="h-10 w-32" />
+            <div className="flex flex-col md:flex-row gap-8">
+              <Skeleton className="w-64 h-64 mx-auto md:mx-0" />
+              <div className="flex-1 space-y-4">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-6 w-1/4" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-10 w-32" />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
       </div>
     );
   }
@@ -396,63 +398,63 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           {/* Skin Image - größer und im Fokus */}
           <div className="flex-shrink-0 w-full lg:w-auto">
             <div className="relative w-80 h-80 mx-auto lg:mx-0 bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-2xl p-8 shadow-2xl">
-              {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
-                <SkinImage
-                  src={skinImageUrl}
-                  alt={skin.name}
-                  fill
-                  priority
-                  quality={90}
+                  {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
+                    <SkinImage
+                      src={skinImageUrl}
+                      alt={skin.name}
+                      fill
+                      priority
+                      quality={90}
                   className="object-contain p-4"
-                />
-              ) : (
-                <Image
-                  src={skinImageUrl}
-                  alt={skin.name}
-                  fill
-                  className="object-contain p-4"
-                  priority
-                  quality={90}
-                />
-              )}
-            </div>
-          </div>
-       
+                    />
+                  ) : (
+                      <Image
+                        src={skinImageUrl}
+                        alt={skin.name}
+                        fill
+                        className="object-contain p-4"
+                        priority
+                        quality={90}
+                      />
+                  )}
+                </div>
+              </div>
+           
           {/* Skin Info - rechts vom Bild */}
           <div className="flex-1 space-y-6 text-center lg:text-left">
-            <div>
-              {/* Breadcrumb navigation: Cases > Case > Skin */}
+                <div>
+                  {/* Breadcrumb navigation: Cases > Case > Skin */}
               <Breadcrumb className="mb-6">
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink href="/" className="flex items-center gap-1">
-                      <Home className="h-4 w-4" />
-                      Home
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbLink href="/skins">Skins</BreadcrumbLink>
-                  </BreadcrumbItem>
-                  {caseInfo && (
-                    <>
-                      <BreadcrumbSeparator />
+                    <BreadcrumbList>
                       <BreadcrumbItem>
-                        <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo?.name || '')}`}>
-                          {caseInfo?.name || 'Unknown Case'}
+                        <BreadcrumbLink href="/" className="flex items-center gap-1">
+                          <Home className="h-4 w-4" />
+                          Home
                         </BreadcrumbLink>
                       </BreadcrumbItem>
-                    </>
-                  )}
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage className="font-medium">
-                      {skin.name}
-                    </BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-              
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbLink href="/skins">Skins</BreadcrumbLink>
+                      </BreadcrumbItem>
+                      {caseInfo && (
+                        <>
+                          <BreadcrumbSeparator />
+                          <BreadcrumbItem>
+                        <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo?.name || '')}`}>
+                          {caseInfo?.name || 'Unknown Case'}
+                            </BreadcrumbLink>
+                          </BreadcrumbItem>
+                        </>
+                      )}
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbPage className="font-medium">
+                          {skin.name}
+                        </BreadcrumbPage>
+                      </BreadcrumbItem>
+                    </BreadcrumbList>
+                  </Breadcrumb>
+                  
               <div className="space-y-4">
                 <h1 className="text-4xl font-bold leading-tight">{skin.name}</h1>
                 <p className="text-lg text-muted-foreground">{skin.marketHashName}</p>
@@ -473,12 +475,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                         <TrendingDown className="h-3 w-3 mr-1" />
                       )}
                       {safeToFixed(marketStats.priceChangePercent24h, 2)}%
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </div>
-
+                      </Badge>
+                    )}
+             </div>
+           </div>
+             </div>
+                  
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3">
               {isSignedIn ? (
@@ -497,20 +499,20 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       onClick={handleAddToWatchlist}
                       className="flex items-center gap-2"
                     >
-                      <Heart className="h-4 w-4" />
+                        <Heart className="h-4 w-4" />
                       Add to Watchlist
                     </Button>
                   )}
-                  
+
                   {isInPortfolio ? (
-                    <Button
+                  <Button
                       variant="outline"
                       onClick={handleRemoveFromPortfolio}
                       className="flex items-center gap-2"
                     >
                       <Plus className="h-4 w-4" />
                       Remove from Portfolio
-                    </Button>
+                  </Button>
                   ) : (
                     <Button
                       onClick={handleAddToPortfolio}
@@ -518,7 +520,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     >
                       <Plus className="h-4 w-4" />
                       Add to Portfolio
-                    </Button>
+                  </Button>
                   )}
                 </>
               ) : (
@@ -547,44 +549,44 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               >
                 <ExternalLink className="h-4 w-4" />
                 View on Steam Market
-              </Button>
-            </div>
-          </div>
-        </div>
+                  </Button>
+                  </div>
+                  </div>
+                </div>
 
         {/* Market Statistics - 3-Spalten-Grid */}
         <Card className="border border-border bg-card shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-              Market Statistics
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+                    Market Statistics
+                  </CardTitle>
+              </CardHeader>
+              <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center p-6 border border-border bg-card shadow-sm hover:shadow-2xl rounded-xl">
                 <div className="text-2xl font-bold text-primary">
                   {marketStats.medianPrice ? formatUSD(marketStats.medianPrice) : 'N/A'}
-                </div>
+                                </div>
                 <div className="text-sm text-muted-foreground">Median Price</div>
-              </div>
+                                </div>
               
               <div className="text-center p-6 border border-border bg-card shadow-sm hover:shadow-2xl rounded-xl">
                 <div className="text-2xl font-bold text-primary">
                   {marketStats.priceChange24h ? formatUSD(marketStats.priceChange24h) : 'N/A'}
-                </div>
+                                </div>
                 <div className="text-sm text-muted-foreground">24h Change</div>
-              </div>
-              
+                  </div>
+                  
               <div className="text-center p-6 border border-border bg-card shadow-sm hover:shadow-2xl rounded-xl">
                 <div className="text-2xl font-bold text-primary">
                   {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
-                </div>
+                                </div>
                 <div className="text-sm text-muted-foreground">Volume 24h</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
 
         {/* Price History Chart */}
         <Card className="mb-12 border border-border bg-card shadow-sm">
@@ -595,6 +597,24 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Chart Controls */}
+            <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
+              <div className="flex gap-2">
+                <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
+                  <ToggleGroupItem value="7d">7D</ToggleGroupItem>
+                  <ToggleGroupItem value="30d">30D</ToggleGroupItem>
+                  <ToggleGroupItem value="90d">90D</ToggleGroupItem>
+                  <ToggleGroupItem value="1y">ALL</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              <div className="flex gap-2">
+                <ToggleGroup type="single" value="price" onValueChange={(value) => value && setChartType(value as any)}>
+                  <ToggleGroupItem value="price">Price</ToggleGroupItem>
+                  <ToggleGroupItem value="overlay">Price Overlay</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            </div>
+            
             {history.length > 0 ? (
               <SimplePriceChart 
                 data={history} 
@@ -608,7 +628,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </div>
             )}
           </CardContent>
-        </Card>
+                          </Card>
 
         {/* Quantity History Chart */}
         <Card className="mb-12 border border-border bg-card shadow-sm">
@@ -619,6 +639,24 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Chart Controls */}
+            <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
+              <div className="flex gap-2">
+                <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
+                  <ToggleGroupItem value="7d">7D</ToggleGroupItem>
+                  <ToggleGroupItem value="30d">30D</ToggleGroupItem>
+                  <ToggleGroupItem value="90d">90D</ToggleGroupItem>
+                  <ToggleGroupItem value="1y">ALL</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              <div className="flex gap-2">
+                <ToggleGroup type="single" value="quantity" onValueChange={(value) => value && setChartType(value as any)}>
+                  <ToggleGroupItem value="quantity">Listings</ToggleGroupItem>
+                  <ToggleGroupItem value="volume">Volume</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            </div>
+            
             {history.length > 0 ? (
               <QuantityBarChart 
                 skinId={skin.id} 
@@ -630,7 +668,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </div>
             )}
           </CardContent>
-        </Card>
+                            </Card>
 
         {/* Related Skins */}
         {variants.length > 0 && (
@@ -661,26 +699,26 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                         ) : (
                           <div className="w-full h-full bg-muted flex items-center justify-center">
                             <Image className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                            )}
                           </div>
-                        )}
-                      </div>
                       <h3 className="font-semibold mb-2 line-clamp-2">{variant.name}</h3>
                       <p className="text-sm text-muted-foreground">
                         {variant.marketPrice ? formatUSD(variant.marketPrice) : 'N/A'}
                       </p>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
         {/* Case Information */}
         {caseInfo && (
           <CaseSection caseName={caseInfo.name} />
         )}
-      </div>
-    </TooltipProvider>
+        </div>
+      </TooltipProvider>
   );
 }
