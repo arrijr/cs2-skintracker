@@ -424,44 +424,46 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           {/* Skin Info - rechts vom Bild */}
           <div className="flex-1 space-y-6 text-center lg:text-left">
                 <div>
-                  {/* Breadcrumb navigation: Cases > Case > Skin */}
-              <Breadcrumb className="mb-6">
+                  {/* Enhanced Breadcrumb navigation */}
+              <Breadcrumb className="mb-8">
                     <BreadcrumbList>
                       <BreadcrumbItem>
-                        <BreadcrumbLink href="/" className="flex items-center gap-1">
+                        <BreadcrumbLink href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
                           <Home className="h-4 w-4" />
                           Home
                         </BreadcrumbLink>
                       </BreadcrumbItem>
-                      <BreadcrumbSeparator />
+                      <BreadcrumbSeparator className="text-muted-foreground" />
                       <BreadcrumbItem>
-                        <BreadcrumbLink href="/skins">Skins</BreadcrumbLink>
+                        <BreadcrumbLink href="/skins" className="text-muted-foreground hover:text-foreground transition-colors">
+                          Skins
+                        </BreadcrumbLink>
                       </BreadcrumbItem>
                       {caseInfo && (
                         <>
-                          <BreadcrumbSeparator />
+                          <BreadcrumbSeparator className="text-muted-foreground" />
                           <BreadcrumbItem>
-                        <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo?.name || '')}`}>
+                        <BreadcrumbLink href={`/cases/${encodeURIComponent(caseInfo?.name || '')}`} className="text-muted-foreground hover:text-foreground transition-colors">
                           {caseInfo?.name || 'Unknown Case'}
                             </BreadcrumbLink>
                           </BreadcrumbItem>
                         </>
                       )}
-                      <BreadcrumbSeparator />
+                      <BreadcrumbSeparator className="text-muted-foreground" />
                       <BreadcrumbItem>
-                        <BreadcrumbPage className="font-medium">
+                        <BreadcrumbPage className="font-semibold text-foreground">
                           {skin.name}
                         </BreadcrumbPage>
                       </BreadcrumbItem>
                     </BreadcrumbList>
                   </Breadcrumb>
                   
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <h1 className="text-5xl xl:text-6xl font-bold leading-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <h1 className="text-6xl xl:text-7xl font-black leading-tight bg-gradient-to-r from-foreground via-primary to-foreground/90 bg-clip-text text-transparent drop-shadow-sm">
                     {skin.name}
                   </h1>
-                  <p className="text-xl text-muted-foreground font-medium">{skin.marketHashName}</p>
+                  <p className="text-2xl text-muted-foreground font-medium tracking-wide">{skin.marketHashName}</p>
                 </div>
                 
                 {/* Skin Details */}
@@ -516,34 +518,36 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
            </div>
              </div>
                   
-            {/* Action Buttons - Primary/Secondary Design */}
+            {/* Action Buttons - Clear Primary/Secondary Design */}
             <div className="flex flex-wrap gap-4">
               {isSignedIn ? (
                 <>
+                  {/* Primary CTA - Watchlist */}
                   {isInWatchlist ? (
                     <Button
-                      variant="outline"
+                      variant="destructive"
                       onClick={handleRemoveFromWatchlist}
-                      className="flex items-center gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                      className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold px-6 py-3"
                     >
-                      <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                      <Heart className="h-4 w-4 fill-white" />
                       Remove from Watchlist
                     </Button>
                   ) : (
                     <Button
                       onClick={handleAddToWatchlist}
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                      className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold px-6 py-3"
                     >
                         <Heart className="h-4 w-4" />
                       Add to Watchlist
                     </Button>
                   )}
 
+                  {/* Secondary CTA - Portfolio */}
                   {isInPortfolio ? (
                   <Button
                       variant="outline"
                       onClick={handleRemoveFromPortfolio}
-                      className="flex items-center gap-2 border-gray-300 text-gray-600 hover:bg-gray-50"
+                      className="flex items-center gap-2 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium px-6 py-3"
                     >
                       <Plus className="h-4 w-4" />
                       Remove from Portfolio
@@ -552,7 +556,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     <Button
                       onClick={handleAddToPortfolio}
                       variant="outline"
-                      className="flex items-center gap-2 border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
+                      className="flex items-center gap-2 border-2 border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-all duration-200 font-medium px-6 py-3"
                     >
                       <Plus className="h-4 w-4" />
                       Add to Portfolio
@@ -562,30 +566,33 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               ) : (
                 <Button
                   onClick={() => router.push('/sign-in')}
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold px-6 py-3"
                 >
                   <Heart className="h-4 w-4" />
                   Sign in to track
                 </Button>
               )}
               
-              <Button
-                variant="outline"
-                onClick={handleCopyLink}
-                className="flex items-center gap-2"
-              >
-                <Share2 className="h-4 w-4" />
-                Share
-              </Button>
-              
-              <Button
-                variant="outline"
-                onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || skin.name)}`, '_blank')}
-                className="flex items-center gap-2"
-              >
-                <ExternalLink className="h-4 w-4" />
-                View on Steam Market
-                  </Button>
+              {/* Tertiary Actions */}
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={handleCopyLink}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 px-4 py-3"
+                >
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || skin.name)}`, '_blank')}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 px-4 py-3"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Steam Market
+                </Button>
+              </div>
                   </div>
                   </div>
                 </div>
@@ -814,7 +821,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                 {variants.map((variant, index) => {
                   // Determine if this is a popular, rare, or discounted skin
                   const isPopular = variant.marketPrice && variant.marketPrice > 50;
@@ -824,59 +831,66 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   return (
                     <Card
                       key={variant.id}
-                      className="group border-2 border-gray-200 hover:border-primary/50 bg-gradient-to-br from-background to-muted/10 hover:shadow-xl hover:scale-[1.03] transition-all duration-300 cursor-pointer overflow-hidden"
+                      className="group border-2 border-gray-200 hover:border-primary/50 bg-gradient-to-br from-background to-muted/10 hover:shadow-xl hover:scale-[1.02] sm:hover:scale-[1.03] transition-all duration-300 cursor-pointer overflow-hidden"
                       onClick={() => handleRelatedSkinClick(variant)}
                     >
-                      <CardContent className="p-0">
-                        {/* Image Container with Hover Effect */}
-                        <div className="aspect-square relative mb-4 rounded-t-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+                      <CardContent className="p-2 sm:p-4">
+                        {/* Image Container with Enhanced Hover Effect */}
+                        <div className="aspect-square relative mb-2 sm:mb-4 rounded-t-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 group-hover:shadow-lg transition-all duration-300">
                           {variant.imageUrl ? (
                             <Image
                               src={variant.imageUrl}
                               alt={variant.name}
                               fill
-                              className="object-cover group-hover:scale-110 transition-transform duration-300"
+                              className="object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-500 ease-out"
                             />
                           ) : (
-                            <div className="w-full h-full bg-muted flex items-center justify-center">
-                              <Image className="h-8 w-8 text-muted-foreground" />
+                            <div className="w-full h-full bg-muted flex items-center justify-center group-hover:bg-muted/80 transition-colors duration-300">
+                              <Image className="h-8 w-8 text-muted-foreground group-hover:scale-110 transition-transform duration-300" />
                             </div>
                           )}
                           
-                          {/* Optional Labels */}
+                          {/* Optional Labels with Micro-Interactions */}
                           <div className="absolute top-2 left-2 flex flex-col gap-1">
                             {isPopular && (
-                              <Badge className="bg-orange-500 text-white text-xs px-2 py-1">
+                              <Badge className="bg-orange-500 text-white text-xs px-2 py-1 group-hover:scale-105 group-hover:shadow-md transition-all duration-200">
                                 Popular
                               </Badge>
                             )}
                             {isRare && (
-                              <Badge className="bg-purple-500 text-white text-xs px-2 py-1">
+                              <Badge className="bg-purple-500 text-white text-xs px-2 py-1 group-hover:scale-105 group-hover:shadow-md transition-all duration-200">
                                 Rare
                               </Badge>
                             )}
                             {isDiscounted && (
-                              <Badge className="bg-green-500 text-white text-xs px-2 py-1">
+                              <Badge className="bg-green-500 text-white text-xs px-2 py-1 group-hover:scale-105 group-hover:shadow-md transition-all duration-200">
                                 Discounted
                               </Badge>
                             )}
                           </div>
                           
-                          {/* Hover Overlay */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                          {/* Enhanced Hover Overlay with Gradient */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                          
+                          {/* Hover Icon */}
+                          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                            <div className="bg-white/90 rounded-full p-2 shadow-lg">
+                              <Eye className="h-4 w-4 text-gray-700" />
+                            </div>
+                          </div>
                         </div>
                         
-                        {/* Content */}
-                        <div className="p-6 pt-0">
-                          <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors duration-200">
+                        {/* Content with Enhanced Animations */}
+                        <div className="p-3 sm:p-6 pt-0 group-hover:bg-gradient-to-br from-muted/20 to-transparent transition-all duration-300">
+                          <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary group-hover:translate-x-1 transition-all duration-200 text-sm sm:text-base">
                             {variant.name}
                           </h3>
                           <div className="flex items-center justify-between">
-                            <p className="text-lg font-bold text-primary">
+                            <p className="text-base sm:text-lg font-bold text-primary group-hover:scale-105 transition-transform duration-200">
                               {variant.marketPrice ? formatUSD(variant.marketPrice) : 'N/A'}
                             </p>
                             {variant.rarity && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs hidden sm:inline-flex group-hover:bg-primary/10 group-hover:border-primary/30 transition-all duration-200">
                                 {variant.rarity}
                               </Badge>
                             )}
