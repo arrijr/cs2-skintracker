@@ -35,63 +35,21 @@ export function SimplePriceChart({
   className,
 }: Props) {
   const chartData = useMemo(() => {
-    console.log('[SimplePriceChart] Processing data:', data.length, 'items');
-    console.log('[SimplePriceChart] First item:', data[0]);
-    
-    if (!data.length) {
-      console.log('[SimplePriceChart] No data available');
-      return [];
-    }
+    if (!data.length) return [];
 
     const prices = data.map((item) => item.price);
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    console.log('[SimplePriceChart] Raw prices range:', minPrice, 'to', maxPrice);
 
-    // Standard deviation-based outlier detection (most robust for all price ranges)
-    // Calculate mean and standard deviation
-    const mean = prices.reduce((sum, p) => sum + p, 0) / prices.length;
-    const squaredDiffs = prices.map(p => Math.pow(p - mean, 2));
-    const variance = squaredDiffs.reduce((sum, d) => sum + d, 0) / prices.length;
-    const stdDev = Math.sqrt(variance);
-    
-    // Use 3 standard deviations as bounds (captures 99.7% of normal variation)
-    // This is a standard statistical approach for outlier detection
-    const lowerBound = Math.max(0, mean - 3 * stdDev);
-    const upperBound = mean + 3 * stdDev;
-    
-    console.log('[SimplePriceChart] Mean:', mean, 'StdDev:', stdDev, 'Outlier bounds:', lowerBound, 'to', upperBound);
-
-    // Only cap extreme outliers, keep normal variations
-    const cleanedData = data.map((item) => {
-      const price = item.price;
-      if (price < lowerBound || price > upperBound) {
-        const cappedPrice = Math.max(lowerBound, Math.min(upperBound, price));
-        console.log('[SimplePriceChart] Capping outlier:', price, '->', cappedPrice);
-        return {
-          ...item,
-          price: cappedPrice
-        };
-      }
-      return item;
-    });
-
-    const cleanedPrices = cleanedData.map(item => item.price);
-    console.log('[SimplePriceChart] Cleaned prices range:', Math.min(...cleanedPrices), 'to', Math.max(...cleanedPrices));
-
-    const result = cleanedData.map((item, index) => ({
+    const result = data.map((item, index) => ({
       date: new Date(item.date).toLocaleDateString(),
       price: item.price,
       ...(movingAverage === "7" && {
-        ma7: calculateMovingAverage(cleanedPrices, 7)[index],
+        ma7: calculateMovingAverage(prices, 7)[index],
       }),
       ...(movingAverage === "30" && {
-        ma30: calculateMovingAverage(cleanedPrices, 30)[index],
+        ma30: calculateMovingAverage(prices, 30)[index],
       }),
     }));
 
-    console.log('[SimplePriceChart] Chart data prepared:', result.length, 'points');
-    console.log('[SimplePriceChart] Sample data:', result.slice(0, 3));
     return result;
   }, [data, movingAverage]);
 
