@@ -47,6 +47,17 @@ type Skin = {
   itemImage?: string;
   image_url?: string;
   imageUrl?: string;
+  weaponType?: string;
+  wear?: string;
+  rarity?: string;
+  isStattrak?: boolean;
+  isStar?: boolean;
+  priceLatest?: number;
+  priceMedian?: number;
+  priceMedian7d?: number;
+  priceAvg?: number;
+  priceMin?: number;
+  priceMax?: number;
   marketStats?: {
     medianPrice?: number;
     volume24h?: number;
@@ -62,11 +73,12 @@ type Skin = {
     name: string;
     marketPrice?: number;
     imageUrl?: string;
+    rarity?: string;
   }>;
   history?: Array<{
   date: string;
   price: number;
-    quantity: number;
+    quantity?: number;
   }>;
 };
 
@@ -788,7 +800,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                           />
                         ) : (
                           <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <Image className="h-6 w-6 text-muted-foreground" />
+                            <div className="h-6 w-6 text-muted-foreground" />
                           </div>
                         )}
                         
@@ -838,8 +850,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             )}
 
           {/* Case Information */}
-          {caseInfo && (
-            <CaseSection caseName={caseInfo.name} />
+          {caseInfo && caseInfo.id && (
+            <CaseSection skinId={caseInfo.id} />
           )}
         </div>
       </div>
