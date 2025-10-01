@@ -34,8 +34,7 @@ import {
 import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
 import { useAnalytics } from "@/lib/analytics";
 import { CaseSection } from "@/components/CaseSection";
-import QuantityBarChart from "@/components/QuantityBarChart";
-import OverlayPriceQuantityChart from "@/components/OverlayPriceQuantityChart";
+import SimpleQuantityChart from "@/components/SimpleQuantityChart";
 
 // Chart components are now handled by Shadcn UI Charts
 
@@ -626,12 +625,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </CardHeader>
               <CardContent className="p-5 pt-0">
                 {history && history.length > 0 ? (
-                  <div className="h-[280px] md:h-[200px] sm:h-[160px] overflow-hidden">
+                  <div className="h-[260px] md:h-[200px] sm:h-[160px]">
                     <SimplePriceChart 
                       data={history} 
                       range={timeRange}
                       scale="linear"
-                      movingAverage="7"
+                      movingAverage="none"
                     />
                   </div>
                 ) : (
@@ -727,16 +726,28 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             </Card>
           </div>
 
-          {/* Aside Column - Quick Stats (30%) */}
+          {/* Aside Column - Quantity History (30%) */}
           <div className="space-y-6">
-            {/* Quantity History Chart - Full Component */}
-            {skin && (
-              <QuantityBarChart 
-                skinId={skin.id} 
-                skinName={skin.name}
-                className="rounded-2xl shadow-sm"
-              />
-            )}
+            {/* Quantity History Chart - Simple & Clean */}
+            <Card className="rounded-2xl shadow-sm">
+              <CardHeader className="p-5">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                    <BarChart3 className="h-5 w-5" />
+                    Quantity History
+                  </CardTitle>
+                  <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
+                    <ToggleGroupItem value="7d" size="sm">7D</ToggleGroupItem>
+                    <ToggleGroupItem value="30d" size="sm">30D</ToggleGroupItem>
+                    <ToggleGroupItem value="90d" size="sm">90D</ToggleGroupItem>
+                    <ToggleGroupItem value="1y" size="sm">1Y</ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
+              </CardHeader>
+              <CardContent className="p-5 pt-0">
+                <SimpleQuantityChart data={quantityData} />
+              </CardContent>
+            </Card>
           </div>
         </div>
 

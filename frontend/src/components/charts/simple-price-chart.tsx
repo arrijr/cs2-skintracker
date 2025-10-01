@@ -104,8 +104,8 @@ export function SimplePriceChart({
   }
 
   return (
-    <div className={`w-full h-96 ${className}`}>
-      <ResponsiveContainer width="100%" height={400}>
+    <div className={`w-full ${className}`}>
+      <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={chartData}
           margin={{
@@ -121,14 +121,17 @@ export function SimplePriceChart({
             className="text-xs fill-muted-foreground"
             tickLine={false}
             axisLine={false}
+            tickCount={5}
+            minTickGap={30}
           />
           <YAxis 
             className="text-xs fill-muted-foreground"
             tickLine={false}
             axisLine={false}
             scale={scale === "log" ? "log" : "linear"}
-            domain={scale === "log" ? ["dataMin", "dataMax"] : ["auto", "auto"]}
+            domain={scale === "log" ? ["dataMin", "dataMax"] : [(dataMin: number) => dataMin * 0.95, (dataMax: number) => dataMax * 1.10]}
             tickFormatter={(value) => formatUSD(value)}
+            tickCount={5}
           />
           <Tooltip
             formatter={(value, name) => [
