@@ -218,31 +218,20 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     const avgPrice = history.reduce((sum: number, item: any) => sum + (item.price || 0), 0) / history.length;
     
     // Create more data points for better chart distribution
-    // Create data points that span the full width
-    const data = [];
-    const totalDays = history.length;
-    const pointsPerDay = 8; // 8 points per day for better distribution
-    
-    for (let i = 0; i < totalDays; i++) {
-      const item = history[i];
+    // Create one data point per day for clean, even distribution
+    const data = history.map((item: any, index: number) => {
       const priceRatio = avgPrice > 0 ? (avgPrice / (item.price || avgPrice)) : 1;
       const baseQuantity = 30;
       
-      // Create multiple data points per day
-      for (let point = 0; point < pointsPerDay; point++) {
-        const variation = (Math.sin(i * 0.5 + point * 0.2) + 1) * 0.4; // Range: 0 to 0.8
-        const quantity = Math.max(5, Math.floor(baseQuantity * priceRatio * (0.6 + variation)));
-        
-        // Create timestamp with fractional day offset
-        const date = new Date(item.date);
-        date.setHours(point * 3); // Every 3 hours
-        
-        data.push({
-          date: date.toISOString(),
-          quantity: quantity
-        });
-      }
-    }
+      // Generate quantity inversely proportional to price
+      const variation = (Math.sin(index * 0.5) + 1) * 0.3; // Range: 0 to 0.6
+      const quantity = Math.max(5, Math.floor(baseQuantity * priceRatio * (0.7 + variation)));
+      
+      return {
+        date: item.date,
+        quantity: quantity
+      };
+    });
     
     // Debug logging
     console.log('[QuantityData] Generated data:', data.length, 'items');
@@ -693,28 +682,26 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     color: "hsl(220 70% 50%)",
                   },
                 }}
-                className="h-[220px] md:h-[160px]"
+                className="h-[240px] md:h-[200px] sm:h-[180px]"
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={quantityData}
                     barCategoryGap="0%"
-                    barGap="0%"
-                    margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                    barGap={0}
+                    margin={{ top: 8, right: 12, left: 12, bottom: 8 }}
                   >
                     <XAxis 
                       dataKey="date" 
                       tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      tickCount={6}
-                      minTickGap={30}
-                      interval={Math.ceil(quantityData.length / 6)}
+                      tickCount={7}
                       type="category"
                       padding={{ left: 0, right: 0 }}
-                      scale="band"
                     />
                     <YAxis 
                       tickFormatter={(value) => value.toLocaleString()}
                       tickCount={5}
+                      domain={[0, 'dataMax']}
                     />
                     <ChartTooltip 
                       content={({ active, payload, label }) => {
@@ -740,12 +727,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     <Bar 
                       dataKey="quantity" 
                       fill="hsl(220 70% 50%)" 
-                      radius={[2, 2, 0, 0]} 
-                      maxBarSize={500}
-                      minPointSize={20}
-                      barCategoryGap="0%"
-                      barGap="0%"
-                      width={Math.max(2, Math.floor(800 / quantityData.length))}
+                      radius={[2, 2, 0, 0]}
                     />
                   </BarChart>
                 </ResponsiveContainer>
