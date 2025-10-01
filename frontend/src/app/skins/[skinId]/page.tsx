@@ -695,6 +695,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   <BarChart 
                     data={quantityData}
                     barCategoryGap="0%"
+                    barGap="0%"
                     margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
                   >
                     <XAxis 
@@ -705,6 +706,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       interval={Math.ceil(quantityData.length / 6)}
                       type="category"
                       padding={{ left: 0, right: 0 }}
+                      scale="band"
                     />
                     <YAxis 
                       tickFormatter={(value) => value.toLocaleString()}
@@ -735,9 +737,10 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       dataKey="quantity" 
                       fill="hsl(220 70% 50%)" 
                       radius={[2, 2, 0, 0]} 
-                      maxBarSize={200}
-                      minPointSize={8}
+                      maxBarSize={300}
+                      minPointSize={12}
                       barCategoryGap="0%"
+                      barGap="0%"
                     />
                   </BarChart>
                 </ResponsiveContainer>
