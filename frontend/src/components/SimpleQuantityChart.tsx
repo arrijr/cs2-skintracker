@@ -43,21 +43,32 @@ const SimpleQuantityChart: React.FC<SimpleQuantityChartProps> = ({ data, classNa
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Chart Container */}
-      <div className="relative h-[220px] md:h-[160px] px-2">
-        <div className="flex items-end h-full gap-0.5">
+      <div className="relative h-[220px] md:h-[160px] px-2 border border-red-500">
+        <div className="flex items-end h-full gap-0.5 border border-green-500">
           {data.map((item, index) => {
             const heightPercent = maxQuantity > 0 ? (item.quantity / maxQuantity) * 100 : 0;
+            const finalHeight = Math.max(heightPercent, 2);
+            
+            // Debug logging for first few items
+            if (index < 3) {
+              console.log(`[SimpleQuantityChart] Item ${index}:`, {
+                quantity: item.quantity,
+                heightPercent: heightPercent,
+                finalHeight: finalHeight,
+                maxQuantity: maxQuantity
+              });
+            }
             
             return (
               <div 
                 key={item.date} 
                 className="flex-1 flex flex-col items-center justify-end group min-w-[2px]"
-                title={`${formatDate(item.date)}: ${item.quantity}`}
+                title={`${formatDate(item.date)}: ${item.quantity} (${finalHeight.toFixed(1)}%)`}
               >
               {/* Bar */}
               <div
-                className="w-full bg-blue-500/60 hover:bg-blue-500/80 rounded-t-sm transition-colors cursor-pointer"
-                style={{ height: `${Math.max(heightPercent, 2)}%` }}
+                className="w-full bg-blue-500/60 hover:bg-blue-500/80 rounded-t-sm transition-colors cursor-pointer border border-yellow-500"
+                style={{ height: `${finalHeight}%` }}
               />
               </div>
             );
