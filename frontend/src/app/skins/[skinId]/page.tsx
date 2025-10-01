@@ -34,7 +34,7 @@ import {
 import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
 import { useAnalytics } from "@/lib/analytics";
 import { CaseSection } from "@/components/CaseSection";
-import SimpleQuantityChart from "@/components/SimpleQuantityChart";
+import { ChartContainer, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as ChartTooltip } from "@/components/ui/chart";
 
 // Chart components are now handled by Shadcn UI Charts
 
@@ -668,7 +668,47 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </div>
             </CardHeader>
             <CardContent className="p-5 pt-0">
-              <SimpleQuantityChart data={quantityData} />
+              <ChartContainer
+                config={{
+                  quantity: {
+                    label: "Quantity",
+                    color: "hsl(var(--chart-1))",
+                  },
+                }}
+                className="h-[220px] md:h-[160px]"
+              >
+                <BarChart data={quantityData}>
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    tickCount={5}
+                    minTickGap={30}
+                  />
+                  <YAxis />
+                  <ChartTooltip 
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="rounded-lg border bg-background p-2 shadow-sm">
+                            <div className="grid gap-2">
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  {new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </span>
+                                <span className="font-bold text-muted-foreground">
+                                  {payload[0].value} units
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="quantity" fill="var(--color-quantity)" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ChartContainer>
             </CardContent>
           </Card>
 
