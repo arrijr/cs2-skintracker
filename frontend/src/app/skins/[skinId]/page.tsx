@@ -206,12 +206,14 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     // Higher price = lower quantity (inverse relationship)
     const avgPrice = history.reduce((sum: number, item: any) => sum + (item.price || 0), 0) / history.length;
     
-    return history.map((item: any) => {
+    return history.map((item: any, index: number) => {
       // Generate quantity inversely proportional to price
-      // Base quantity: 10-100, adjusted by price relative to average
+      // Use index-based pseudo-random for consistent results (no Math.random() to avoid re-render loop)
       const priceRatio = avgPrice > 0 ? (avgPrice / (item.price || avgPrice)) : 1;
       const baseQuantity = 30;
-      const quantity = Math.max(5, Math.floor(baseQuantity * priceRatio * (0.8 + Math.random() * 0.4)));
+      // Deterministic variation based on index instead of Math.random()
+      const variation = (Math.sin(index * 0.5) + 1) * 0.2; // Range: 0 to 0.4
+      const quantity = Math.max(5, Math.floor(baseQuantity * priceRatio * (0.8 + variation)));
       
       return {
         date: item.date,
