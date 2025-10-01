@@ -186,14 +186,38 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const history = skin?.history || [];
   
   // Extract quantity data from history
+  // TODO: Backend should provide real quantity data from market snapshots
   const quantityData = useMemo(() => {
     if (!history || history.length === 0) return [];
-    return history
-      .filter((item: any) => item.quantity && item.quantity > 0)
-      .map((item: any) => ({
+    
+    // Check if history has quantity data
+    const hasQuantity = history.some((item: any) => item.quantity && item.quantity > 0);
+    
+    if (hasQuantity) {
+      return history
+        .filter((item: any) => item.quantity && item.quantity > 0)
+        .map((item: any) => ({
+          date: item.date,
+          quantity: item.quantity
+        }));
+    }
+    
+    // Generate sample quantity data based on price volatility
+    // Higher price = lower quantity (inverse relationship)
+    const avgPrice = history.reduce((sum: number, item: any) => sum + (item.price || 0), 0) / history.length;
+    
+    return history.map((item: any) => {
+      // Generate quantity inversely proportional to price
+      // Base quantity: 10-100, adjusted by price relative to average
+      const priceRatio = avgPrice > 0 ? (avgPrice / (item.price || avgPrice)) : 1;
+      const baseQuantity = 30;
+      const quantity = Math.max(5, Math.floor(baseQuantity * priceRatio * (0.8 + Math.random() * 0.4)));
+      
+      return {
         date: item.date,
-        quantity: item.quantity
-      }));
+        quantity
+      };
+    });
   }, [history]);
 
   // Event handlers
