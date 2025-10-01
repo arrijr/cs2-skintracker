@@ -679,7 +679,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 config={{
                   quantity: {
                     label: "Quantity",
-                    color: "hsl(0 0% 100%)",
+                    color: "hsl(45 20% 95%)", // Cream white for modern look
                   },
                 }}
                 className="w-full h-[240px] md:h-[200px] sm:h-[180px]"
@@ -706,30 +706,31 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     />
                     <ChartTooltip 
                       content={({ active, payload, label }) => {
-                        if (active && payload && payload.length && label) {
-                          return (
-                            <div className="rounded-lg border bg-background p-2 shadow-sm">
-                              <div className="grid gap-2">
-                                <div className="flex flex-col">
-                                  <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                    {new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                  </span>
-                                  <span className="font-bold text-foreground">
-                                    {payload[0].value?.toLocaleString()} units
-                                  </span>
-                                </div>
+                        if (!active || !payload || !payload.length || !label) {
+                          return null;
+                        }
+                        return (
+                          <div className="rounded-lg border bg-background p-2 shadow-sm">
+                            <div className="grid gap-2">
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  {new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </span>
+                                <span className="font-bold text-foreground">
+                                  {payload[0].value?.toLocaleString()} units
+                                </span>
                               </div>
                             </div>
-                          );
-                        }
-                        return null;
+                          </div>
+                        );
                       }}
                       cursor={false}
-                      allowEscapeViewBox={{ x: false, y: false }}
+                      isAnimationActive={false}
+                      animationDuration={0}
                     />
                     <Bar 
                       dataKey="quantity" 
-                      fill="hsl(0 0% 100%)" 
+                      fill="hsl(45 20% 95%)" 
                       radius={[6, 6, 0, 0]}
                       className="hover:opacity-80 transition-opacity duration-200"
                     />
