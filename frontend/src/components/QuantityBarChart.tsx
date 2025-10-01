@@ -125,12 +125,11 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
         setLoading(true);
         setError(null);
         
-        // Debug: Hardcoded API URL for testing
-        const apiBaseUrl = 'https://cs2-skintracker.onrender.com';
-        const apiUrl = `${apiBaseUrl}/api/v1/skins/${skinId}/history/quantity?range=${range}`;
-        console.log('[QuantityChart] Fetching from:', apiUrl);
+        // Use dynamic API URL from environment
+        const apiEndpoint = apiUrl(`/skins/${skinId}/history/quantity?range=${range}`);
+        console.log('[QuantityChart] Fetching from:', apiEndpoint);
         
-        const response = await fetch(apiUrl);
+        const response = await fetch(apiEndpoint);
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -150,9 +149,8 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
           // Try fallback to 90d if current range is empty
           if (range !== '90d' && range !== 'all') {
             console.log(`[QuantityChart] No data for ${range}, trying 90d fallback`);
-            const fallbackResponse = await fetch(
-              `${apiBaseUrl}/api/v1/skins/${skinId}/history/quantity?range=90d`
-            );
+            const fallbackEndpoint = apiUrl(`/skins/${skinId}/history/quantity?range=90d`);
+            const fallbackResponse = await fetch(fallbackEndpoint);
             if (fallbackResponse.ok) {
               const fallbackResult = await fallbackResponse.json();
               setData(fallbackResult.data || []);
