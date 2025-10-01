@@ -687,7 +687,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={quantityData}
-                    barCategoryGap="0%"
+                    barCategoryGap="5%"
                     barGap={0}
                     margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
                   >
@@ -729,7 +729,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     <Bar 
                       dataKey="quantity" 
                       fill="hsl(0 0% 100%)" 
-                      radius={[2, 2, 0, 0]}
+                      radius={[6, 6, 0, 0]}
                     />
                   </BarChart>
                 </ResponsiveContainer>
