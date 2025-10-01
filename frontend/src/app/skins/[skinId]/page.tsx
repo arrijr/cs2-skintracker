@@ -102,29 +102,6 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const [showOverlayChart, setShowOverlayChart] = useState(false);
   const [activeQuantityIndex, setActiveQuantityIndex] = useState<number | null>(null);
 
-  // Edge-sensitive hover handler for quantity chart
-  const handleQuantityMouseMove = useCallback((event: any) => {
-    if (!quantityData.length) return;
-    
-    const chartX = event.chartX;
-    const chartWidth = event.chartWidth;
-    const dataLength = quantityData.length;
-    
-    // Calculate bandwidth and range
-    const bandwidth = chartWidth / dataLength;
-    const rangeStart = 0;
-    
-    // Calculate index based on left edge of bars
-    const index = Math.floor((chartX - rangeStart) / bandwidth);
-    const clampedIndex = Math.max(0, Math.min(index, dataLength - 1));
-    
-    setActiveQuantityIndex(clampedIndex);
-  }, [quantityData]);
-
-  const handleQuantityMouseLeave = useCallback(() => {
-    setActiveQuantityIndex(null);
-  }, []);
-
   // Load skin data
   useEffect(() => {
     const loadSkin = async () => {
@@ -263,6 +240,29 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     
     return data;
   }, [history]);
+
+  // Edge-sensitive hover handler for quantity chart
+  const handleQuantityMouseMove = useCallback((event: any) => {
+    if (!quantityData || !quantityData.length) return;
+    
+    const chartX = event.chartX;
+    const chartWidth = event.chartWidth;
+    const dataLength = quantityData.length;
+    
+    // Calculate bandwidth and range
+    const bandwidth = chartWidth / dataLength;
+    const rangeStart = 0;
+    
+    // Calculate index based on left edge of bars
+    const index = Math.floor((chartX - rangeStart) / bandwidth);
+    const clampedIndex = Math.max(0, Math.min(index, dataLength - 1));
+    
+    setActiveQuantityIndex(clampedIndex);
+  }, [quantityData]);
+
+  const handleQuantityMouseLeave = useCallback(() => {
+    setActiveQuantityIndex(null);
+  }, []);
 
   // Event handlers
   const handleAddToWatchlist = useCallback(async () => {
