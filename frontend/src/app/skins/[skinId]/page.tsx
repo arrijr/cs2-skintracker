@@ -706,7 +706,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     />
                     <ChartTooltip 
                       content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
+                        if (active && payload && payload.length && label) {
                           return (
                             <div className="rounded-lg border bg-background p-2 shadow-sm">
                               <div className="grid gap-2">
@@ -715,7 +715,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                                     {new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                   </span>
                                   <span className="font-bold text-foreground">
-                                    {payload[0].value} units
+                                    {payload[0].value?.toLocaleString()} units
                                   </span>
                                 </div>
                               </div>
@@ -725,11 +725,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                         return null;
                       }}
                       cursor={false}
+                      allowEscapeViewBox={{ x: false, y: false }}
                     />
                     <Bar 
                       dataKey="quantity" 
                       fill="hsl(0 0% 100%)" 
                       radius={[6, 6, 0, 0]}
+                      className="hover:opacity-80 transition-opacity duration-200"
                     />
                   </BarChart>
                 </ResponsiveContainer>
