@@ -3,6 +3,20 @@
 ## [Unreleased]
 
 ### Fixed
+* fix(charts): Quantity History chart now uses 100% width without gaps
+  * **Problem**: Quantity History bars were too narrow and didn't span the full width of the card
+  * **Root Cause**: Missing `w-full` on ChartContainer and suboptimal XAxis configuration
+  * **Solution**: Implemented shadcn/recharts best practices for full width utilization
+  * **Technical Changes**:
+    * Added `w-full` to ChartContainer for proper width inheritance
+    * Optimized XAxis: `type="category"` + `scale="band"` for optimal bar distribution
+    * Reduced margins to 8px for edge-to-edge bars
+    * Set `tickCount={6}` for clean, readable labels
+    * Removed all width-manipulating props from Bar component
+  * **Container Chain**: Card → CardContent → ChartContainer(w-full) → ResponsiveContainer(100%) → BarChart
+  * **Result**: Bars now span the complete width without visible gaps
+  * **Files Modified**: `frontend/src/app/skins/[skinId]/page.tsx`
+  * **Status**: ✅ User confirmed: "jetzt funktioniert es!"
 * fix(skins): complete skin data restoration and price generation
   * **Problem**: Database was empty (0 skins), causing portfolio and browser to show no data
   * **Root Cause**: Skins were accidentally deleted during previous operations

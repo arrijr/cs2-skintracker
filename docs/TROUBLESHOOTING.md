@@ -25,6 +25,28 @@ Skin Import Process:
 
 ---
 
+## Quantity History Chart Width Issues
+------------------------------------
+
+**Symptom**: Quantity History bars are too narrow and don't span the full width of the card, leaving visible gaps.
+
+**Root Cause**: Missing `w-full` on ChartContainer and suboptimal XAxis configuration for Recharts.
+
+**Solution**: Implement shadcn/recharts best practices:
+1. Add `w-full` to ChartContainer for proper width inheritance
+2. Configure XAxis with `type="category"` + `scale="band"`
+3. Set `barCategoryGap="0%"` and `barGap={0}` on BarChart
+4. Reduce margins to 8px for edge-to-edge bars
+5. Remove all width-manipulating props from Bar component
+
+**Container Chain**: Card → CardContent → ChartContainer(w-full) → ResponsiveContainer(100%) → BarChart
+
+**Files**: `frontend/src/app/skins/[skinId]/page.tsx`
+
+**Status**: ✅ Fixed and confirmed working
+
+---
+
 ## Wrong Host for API Requests (404)
 ---------------------------------
 

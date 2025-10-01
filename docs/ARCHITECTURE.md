@@ -11,6 +11,7 @@ System Components
 * **Typography:** Inter font family with consistent scale (h1-h3, body, caption)
 * **Color System:** 3-color palette (positive/green, neutral/blue, negative/red)
 * **Component System:** Standardized cards (standard, kpi, metric) with unified spacing
+* **Charts:** Shadcn UI + Recharts with optimized width utilization (100% without gaps)
 * **Authentication:** Clerk
 * **State Management:** React hooks (useState, useEffect, useMemo)
 * **Layout System:** Mobile-first responsive design with CSS variables for consistency
