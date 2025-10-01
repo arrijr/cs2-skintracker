@@ -44,16 +44,41 @@ export function SimplePriceChart({
     }
 
     const prices = data.map((item) => item.price);
-    console.log('[SimplePriceChart] Prices range:', Math.min(...prices), 'to', Math.max(...prices));
+    console.log('[SimplePriceChart] Raw prices range:', Math.min(...prices), 'to', Math.max(...prices));
 
-    const result = data.map((item, index) => ({
+    // Outlier detection and filtering
+    // Calculate median and interquartile range (IQR)
+    const sortedPrices = [...prices].sort((a, b) => a - b);
+    const q1 = sortedPrices[Math.floor(sortedPrices.length * 0.25)];
+    const q3 = sortedPrices[Math.floor(sortedPrices.length * 0.75)];
+    const iqr = q3 - q1;
+    const lowerBound = q1 - 3 * iqr; // Use 3x IQR for extreme outliers
+    const upperBound = q3 + 3 * iqr;
+    
+    console.log('[SimplePriceChart] Outlier bounds:', lowerBound, 'to', upperBound);
+
+    // Filter out extreme outliers in the data
+    const cleanedData = data.map((item) => {
+      const price = item.price;
+      // Cap outliers at bounds instead of removing them
+      const cappedPrice = Math.max(lowerBound, Math.min(upperBound, price));
+      return {
+        ...item,
+        price: cappedPrice
+      };
+    });
+
+    const cleanedPrices = cleanedData.map(item => item.price);
+    console.log('[SimplePriceChart] Cleaned prices range:', Math.min(...cleanedPrices), 'to', Math.max(...cleanedPrices));
+
+    const result = cleanedData.map((item, index) => ({
       date: new Date(item.date).toLocaleDateString(),
       price: item.price,
       ...(movingAverage === "7" && {
-        ma7: calculateMovingAverage(prices, 7)[index],
+        ma7: calculateMovingAverage(cleanedPrices, 7)[index],
       }),
       ...(movingAverage === "30" && {
-        ma30: calculateMovingAverage(prices, 30)[index],
+        ma30: calculateMovingAverage(cleanedPrices, 30)[index],
       }),
     }));
 
