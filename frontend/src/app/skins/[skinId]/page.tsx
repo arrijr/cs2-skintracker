@@ -727,26 +727,14 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
           {/* Aside Column - Quick Stats (30%) */}
           <div className="space-y-6">
-            {/* Quantity History Chart */}
-            <Card className="rounded-2xl shadow-sm">
-              <CardHeader className="p-5">
-                <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                  <BarChart3 className="h-5 w-5" />
-                  Quantity History
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-5 pt-0">
-                {quantityData && quantityData.length > 0 ? (
-                  <div className="h-[280px] md:h-[200px] sm:h-[160px] overflow-hidden">
-                    <QuantityBarChart data={quantityData} />
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No quantity data available
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {/* Quantity History Chart - Full Component */}
+            {skin && (
+              <QuantityBarChart 
+                skinId={skin.id} 
+                skinName={skin.name}
+                className="rounded-2xl shadow-sm"
+              />
+            )}
           </div>
         </div>
 

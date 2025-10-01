@@ -40,8 +40,8 @@ export const getPriceHistory = async (req, res) => {
             date.setDate(date.getDate() - i);
             
             // Add some random variation (±5%)
-            const variation = (Math.random() - 0.5) * 0.1; // ±5%
-            const price = currentPrice * (1 + variation);
+            const variation = (Math.random() - 0.5) * 0.1; // ±5% = range of 0.1 = 10% total spread
+            const price = currentPrice * (1 + variation * 0.5); // Apply only half to keep it realistic
             
             sampleHistory.push({
               date: date.toISOString().split('T')[0],
