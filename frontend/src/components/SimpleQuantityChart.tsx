@@ -44,7 +44,7 @@ const SimpleQuantityChart: React.FC<SimpleQuantityChartProps> = ({ data, classNa
     <div className={`space-y-4 ${className}`}>
       {/* Chart Container */}
       <div className="relative h-[220px] md:h-[160px] px-2 border border-red-500">
-        <div className="flex items-end h-full gap-0.5 border border-green-500">
+        <div className="flex items-end h-full gap-1 border border-green-500">
           {data.map((item, index) => {
             const heightPercent = maxQuantity > 0 ? (item.quantity / maxQuantity) * 100 : 0;
             const finalHeight = Math.max(heightPercent, 2);
@@ -62,7 +62,8 @@ const SimpleQuantityChart: React.FC<SimpleQuantityChartProps> = ({ data, classNa
             return (
               <div 
                 key={item.date} 
-                className="flex-1 flex flex-col items-center justify-end group min-w-[2px]"
+                className="flex flex-col items-center justify-end group"
+                style={{ width: `${100 / data.length}%` }}
                 title={`${formatDate(item.date)}: ${item.quantity} (${finalHeight.toFixed(1)}%)`}
               >
               {/* Bar */}
