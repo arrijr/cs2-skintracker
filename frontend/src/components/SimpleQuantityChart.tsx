@@ -16,7 +16,11 @@ interface SimpleQuantityChartProps {
 }
 
 const SimpleQuantityChart: React.FC<SimpleQuantityChartProps> = ({ data, className = "" }) => {
+  console.log('[SimpleQuantityChart] Received data:', data?.length, 'items');
+  console.log('[SimpleQuantityChart] First 3 items:', data?.slice(0, 3));
+  
   if (!data || data.length === 0) {
+    console.log('[SimpleQuantityChart] No data - showing empty state');
     return (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
         <BarChart3 className="h-8 w-8 mb-2 opacity-50" />
@@ -27,6 +31,8 @@ const SimpleQuantityChart: React.FC<SimpleQuantityChartProps> = ({ data, classNa
 
   const maxQuantity = Math.max(...data.map(d => d.quantity));
   const minQuantity = Math.min(...data.map(d => d.quantity));
+  
+  console.log('[SimpleQuantityChart] Max quantity:', maxQuantity, 'Min:', minQuantity);
 
   // Format date for display
   const formatDate = (dateStr: string) => {
