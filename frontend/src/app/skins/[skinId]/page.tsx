@@ -682,20 +682,21 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     color: "hsl(220 70% 50%)",
                   },
                 }}
-                className="h-[240px] md:h-[200px] sm:h-[180px]"
+                className="w-full h-[240px] md:h-[200px] sm:h-[180px]"
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={quantityData}
                     barCategoryGap="0%"
                     barGap={0}
-                    margin={{ top: 8, right: 12, left: 12, bottom: 8 }}
+                    margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
                   >
                     <XAxis 
                       dataKey="date" 
                       tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      tickCount={7}
+                      tickCount={6}
                       type="category"
+                      scale="band"
                       padding={{ left: 0, right: 0 }}
                     />
                     <YAxis 
