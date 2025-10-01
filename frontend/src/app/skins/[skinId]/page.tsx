@@ -679,7 +679,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 config={{
                   quantity: {
                     label: "Quantity",
-                    color: "hsl(220 70% 50%)",
+                    color: "hsl(0 0% 100%)",
                   },
                 }}
                 className="w-full h-[240px] md:h-[200px] sm:h-[180px]"
@@ -714,7 +714,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                                   <span className="text-[0.70rem] uppercase text-muted-foreground">
                                     {new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                   </span>
-                                  <span className="font-bold text-muted-foreground">
+                                  <span className="font-bold text-foreground">
                                     {payload[0].value} units
                                   </span>
                                 </div>
@@ -724,10 +724,11 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                         }
                         return null;
                       }}
+                      cursor={false}
                     />
                     <Bar 
                       dataKey="quantity" 
-                      fill="hsl(220 70% 50%)" 
+                      fill="hsl(0 0% 100%)" 
                       radius={[2, 2, 0, 0]}
                     />
                   </BarChart>
