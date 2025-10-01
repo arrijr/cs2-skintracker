@@ -54,11 +54,11 @@ const SimpleQuantityChart: React.FC<SimpleQuantityChartProps> = ({ data, classNa
                 className="flex-1 flex flex-col items-center justify-end group min-w-[2px]"
                 title={`${formatDate(item.date)}: ${item.quantity}`}
               >
-                {/* Bar */}
-                <div
-                  className="w-full bg-primary/30 hover:bg-primary/50 rounded-t-sm transition-colors cursor-pointer"
-                  style={{ height: `${Math.max(heightPercent, 2)}%` }}
-                />
+              {/* Bar */}
+              <div
+                className="w-full bg-blue-500/60 hover:bg-blue-500/80 rounded-t-sm transition-colors cursor-pointer"
+                style={{ height: `${Math.max(heightPercent, 2)}%` }}
+              />
               </div>
             );
           })}
