@@ -62,7 +62,7 @@ export function SimplePriceChart({
   }
 
   return (
-    <div className={`w-full ${className}`}>
+    <div className={`w-full h-full ${className}`}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={chartData}
