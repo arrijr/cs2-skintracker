@@ -24,11 +24,13 @@ dotenv.config();
 
 const app = express();
 
-// Force restart trigger for CORS fix
-console.log("[APP] Starting with updated CORS configuration - v1.6");
-console.log("[CORS] FINAL FIX: Credentials + Origin function to resolve wildcard conflict");
-console.log("[CORS] Removed conflicting wildcard headers that blocked credentials");
-console.log("[DEPLOY] Render must restart NOW - CORS v1.6 critical fix");
+// PERMANENT CORS FIX - v2.0
+console.log("[APP] Starting with PERMANENT CORS configuration - v2.0");
+console.log("[CORS] PERMANENT FIX: Dual-layer CORS protection");
+console.log("[CORS] 1. CORS middleware with permissive origin function");
+console.log("[CORS] 2. Manual header setting as backup for all requests");
+console.log("[CORS] 3. Preflight handling for all OPTIONS requests");
+console.log("[CORS] This should resolve ALL CORS issues permanently");
 
 // Security headers
 app.use(helmet({
@@ -76,21 +78,48 @@ const whitelist = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow all origins for now, but handle credentials properly
+    // Always allow requests (including no origin for mobile apps, Postman, etc.)
+    // This is the most permissive approach that works with all Vercel URLs
+    console.log(`[CORS] Request from origin: ${origin || 'no-origin'}`);
     callback(null, true);
   },
-  credentials: true, // Allow credentials
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With', 
+    'Accept', 
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ],
   exposedHeaders: ['Content-Length', 'X-Foo'],
-  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
-  preflightContinue: false
+  optionsSuccessStatus: 200,
+  preflightContinue: false,
+  // Force CORS headers to be sent with every response
+  maxAge: 86400 // Cache preflight for 24 hours
 };
 
 // {/* Global CORS for all requests */}
 app.use(cors(corsOptions));
 
-// {/* CORS handled by cors middleware above */}
+// {/* Additional CORS middleware to ensure headers are always set */}
+app.use((req, res, next) => {
+  // Always set CORS headers manually as backup
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  
+  next();
+});
 
 // {/* Preflight for ALL paths (Regex, kein "*" mehr) */}
 app.options(/.*/, cors(corsOptions));
