@@ -100,6 +100,30 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const [showPriceHistory, setShowPriceHistory] = useState(true);
   const [showQuantityHistory, setShowQuantityHistory] = useState(true);
   const [showOverlayChart, setShowOverlayChart] = useState(false);
+  const [activeQuantityIndex, setActiveQuantityIndex] = useState<number | null>(null);
+
+  // Edge-sensitive hover handler for quantity chart
+  const handleQuantityMouseMove = useCallback((event: any) => {
+    if (!quantityData.length) return;
+    
+    const chartX = event.chartX;
+    const chartWidth = event.chartWidth;
+    const dataLength = quantityData.length;
+    
+    // Calculate bandwidth and range
+    const bandwidth = chartWidth / dataLength;
+    const rangeStart = 0;
+    
+    // Calculate index based on left edge of bars
+    const index = Math.floor((chartX - rangeStart) / bandwidth);
+    const clampedIndex = Math.max(0, Math.min(index, dataLength - 1));
+    
+    setActiveQuantityIndex(clampedIndex);
+  }, [quantityData]);
+
+  const handleQuantityMouseLeave = useCallback(() => {
+    setActiveQuantityIndex(null);
+  }, []);
 
   // Load skin data
   useEffect(() => {
@@ -665,7 +689,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 <CardTitle className="flex items-center gap-2 text-base font-semibold">
               <BarChart3 className="h-5 w-5" />
               Quantity History
-                </CardTitle>
+            </CardTitle>
                 <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
                   <ToggleGroupItem value="7d" size="sm">7D</ToggleGroupItem>
                   <ToggleGroupItem value="30d" size="sm">30D</ToggleGroupItem>
@@ -673,7 +697,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   <ToggleGroupItem value="1y" size="sm">1Y</ToggleGroupItem>
                 </ToggleGroup>
               </div>
-            </CardHeader>
+          </CardHeader>
             <CardContent className="p-5 pt-0">
               <ChartContainer
                 config={{
@@ -687,9 +711,11 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={quantityData}
-                    barCategoryGap="5%"
+                    barCategoryGap="0%"
                     barGap={0}
                     margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
+                    onMouseMove={handleQuantityMouseMove}
+                    onMouseLeave={handleQuantityMouseLeave}
                   >
                     <XAxis 
                       dataKey="date" 
@@ -705,28 +731,31 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       domain={[0, 'dataMax']}
                     />
                     <ChartTooltip 
-                      content={({ active, payload, label }) => {
-                        if (!active || !payload || !payload.length || !label) {
+                      content={() => {
+                        if (activeQuantityIndex === null || !quantityData[activeQuantityIndex]) {
                           return null;
                         }
+                        
+                        const data = quantityData[activeQuantityIndex];
                         return (
                           <div className="rounded-lg border bg-background p-2 shadow-sm">
                             <div className="grid gap-2">
                               <div className="flex flex-col">
                                 <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                  {new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  {new Date(data.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                 </span>
                                 <span className="font-bold text-foreground">
-                                  {payload[0].value?.toLocaleString()} units
+                                  {data.quantity?.toLocaleString()} units
                                 </span>
                               </div>
                             </div>
-                          </div>
+                </div>
                         );
                       }}
                       cursor={false}
                       isAnimationActive={false}
                       animationDuration={0}
+                      active={activeQuantityIndex !== null}
                     />
                     <Bar 
                       dataKey="quantity" 
