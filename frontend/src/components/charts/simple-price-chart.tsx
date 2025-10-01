@@ -48,17 +48,19 @@ export function SimplePriceChart({
     const maxPrice = Math.max(...prices);
     console.log('[SimplePriceChart] Raw prices range:', minPrice, 'to', maxPrice);
 
-    // Percentage-based outlier detection (more suitable for varying price ranges)
-    // Calculate median
-    const sortedPrices = [...prices].sort((a, b) => a - b);
-    const median = sortedPrices[Math.floor(sortedPrices.length / 2)];
+    // Standard deviation-based outlier detection (most robust for all price ranges)
+    // Calculate mean and standard deviation
+    const mean = prices.reduce((sum, p) => sum + p, 0) / prices.length;
+    const squaredDiffs = prices.map(p => Math.pow(p - mean, 2));
+    const variance = squaredDiffs.reduce((sum, d) => sum + d, 0) / prices.length;
+    const stdDev = Math.sqrt(variance);
     
-    // Only filter if there are EXTREME outliers (>500% of median)
-    // This prevents filtering normal variations in low-price items
-    const lowerBound = median * 0.20; // 80% below median
-    const upperBound = median * 6.0;  // 500% above median (catches $120 when median is ~$0.05)
+    // Use 3 standard deviations as bounds (captures 99.7% of normal variation)
+    // This is a standard statistical approach for outlier detection
+    const lowerBound = Math.max(0, mean - 3 * stdDev);
+    const upperBound = mean + 3 * stdDev;
     
-    console.log('[SimplePriceChart] Median:', median, 'Outlier bounds:', lowerBound, 'to', upperBound);
+    console.log('[SimplePriceChart] Mean:', mean, 'StdDev:', stdDev, 'Outlier bounds:', lowerBound, 'to', upperBound);
 
     // Only cap extreme outliers, keep normal variations
     const cleanedData = data.map((item) => {
