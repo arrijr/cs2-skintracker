@@ -44,28 +44,34 @@ export function SimplePriceChart({
     }
 
     const prices = data.map((item) => item.price);
-    console.log('[SimplePriceChart] Raw prices range:', Math.min(...prices), 'to', Math.max(...prices));
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    console.log('[SimplePriceChart] Raw prices range:', minPrice, 'to', maxPrice);
 
-    // Outlier detection and filtering
-    // Calculate median and interquartile range (IQR)
+    // Percentage-based outlier detection (more suitable for varying price ranges)
+    // Calculate median
     const sortedPrices = [...prices].sort((a, b) => a - b);
-    const q1 = sortedPrices[Math.floor(sortedPrices.length * 0.25)];
-    const q3 = sortedPrices[Math.floor(sortedPrices.length * 0.75)];
-    const iqr = q3 - q1;
-    const lowerBound = q1 - 3 * iqr; // Use 3x IQR for extreme outliers
-    const upperBound = q3 + 3 * iqr;
+    const median = sortedPrices[Math.floor(sortedPrices.length / 2)];
     
-    console.log('[SimplePriceChart] Outlier bounds:', lowerBound, 'to', upperBound);
+    // Only filter if there are EXTREME outliers (>500% of median)
+    // This prevents filtering normal variations in low-price items
+    const lowerBound = median * 0.20; // 80% below median
+    const upperBound = median * 6.0;  // 500% above median (catches $120 when median is ~$0.05)
+    
+    console.log('[SimplePriceChart] Median:', median, 'Outlier bounds:', lowerBound, 'to', upperBound);
 
-    // Filter out extreme outliers in the data
+    // Only cap extreme outliers, keep normal variations
     const cleanedData = data.map((item) => {
       const price = item.price;
-      // Cap outliers at bounds instead of removing them
-      const cappedPrice = Math.max(lowerBound, Math.min(upperBound, price));
-      return {
-        ...item,
-        price: cappedPrice
-      };
+      if (price < lowerBound || price > upperBound) {
+        const cappedPrice = Math.max(lowerBound, Math.min(upperBound, price));
+        console.log('[SimplePriceChart] Capping outlier:', price, '->', cappedPrice);
+        return {
+          ...item,
+          price: cappedPrice
+        };
+      }
+      return item;
     });
 
     const cleanedPrices = cleanedData.map(item => item.price);
