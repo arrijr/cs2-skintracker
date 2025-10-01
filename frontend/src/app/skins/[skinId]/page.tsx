@@ -218,20 +218,24 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     const avgPrice = history.reduce((sum: number, item: any) => sum + (item.price || 0), 0) / history.length;
     
     // Create more data points for better chart distribution
+    // Create data points that span the full width
     const data = [];
-    for (let i = 0; i < history.length; i++) {
+    const totalDays = history.length;
+    const pointsPerDay = 8; // 8 points per day for better distribution
+    
+    for (let i = 0; i < totalDays; i++) {
       const item = history[i];
       const priceRatio = avgPrice > 0 ? (avgPrice / (item.price || avgPrice)) : 1;
       const baseQuantity = 30;
       
-      // Add multiple data points per day for better distribution
-      for (let hour = 0; hour < 24; hour += 2) { // 12 data points per day
-        const variation = (Math.sin(i * 0.5 + hour * 0.1) + 1) * 0.3; // Range: 0 to 0.6
-        const quantity = Math.max(5, Math.floor(baseQuantity * priceRatio * (0.7 + variation)));
+      // Create multiple data points per day
+      for (let point = 0; point < pointsPerDay; point++) {
+        const variation = (Math.sin(i * 0.5 + point * 0.2) + 1) * 0.4; // Range: 0 to 0.8
+        const quantity = Math.max(5, Math.floor(baseQuantity * priceRatio * (0.6 + variation)));
         
-        // Create timestamp with hour offset
+        // Create timestamp with fractional day offset
         const date = new Date(item.date);
-        date.setHours(hour);
+        date.setHours(point * 3); // Every 3 hours
         
         data.push({
           date: date.toISOString(),
@@ -737,10 +741,11 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       dataKey="quantity" 
                       fill="hsl(220 70% 50%)" 
                       radius={[2, 2, 0, 0]} 
-                      maxBarSize={300}
-                      minPointSize={12}
+                      maxBarSize={500}
+                      minPointSize={20}
                       barCategoryGap="0%"
                       barGap="0%"
+                      width={Math.max(2, Math.floor(800 / quantityData.length))}
                     />
                   </BarChart>
                 </ResponsiveContainer>
