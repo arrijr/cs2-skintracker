@@ -1,0 +1,17 @@
+FORCE RESTART CORS V2 - 2025-10-01T18:25:00Z
+
+CORS Problem: Vercel Preview URL blocked by Render Backend
+- Frontend: https://cs2-skintracker-git-feature-cursor-workflow-arrijrs-projects.vercel.app
+- Backend: https://cs2-skintracker-dev.onrender.com
+- Error: No 'Access-Control-Allow-Origin' header
+
+CORS Config looks correct:
+- origin: function (origin, callback) { callback(null, true); }
+- credentials: true
+- methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+- allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+
+Issue: Backend might not have restarted with latest CORS config
+Solution: Force restart to activate CORS v1.6 configuration
+
+This file triggers a new deployment to ensure CORS headers are active.
