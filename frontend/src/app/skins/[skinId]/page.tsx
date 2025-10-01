@@ -217,7 +217,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     // Higher price = lower quantity (inverse relationship)
     const avgPrice = history.reduce((sum: number, item: any) => sum + (item.price || 0), 0) / history.length;
     
-    return history.map((item: any, index: number) => {
+    const data = history.map((item: any, index: number) => {
       // Generate quantity inversely proportional to price
       // Use index-based pseudo-random for consistent results (no Math.random() to avoid re-render loop)
       const priceRatio = avgPrice > 0 ? (avgPrice / (item.price || avgPrice)) : 1;
@@ -231,6 +231,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
         quantity
       };
     });
+    
+    // Debug logging
+    console.log('[QuantityData] Generated data:', data.length, 'items');
+    console.log('[QuantityData] First 3 items:', data.slice(0, 3));
+    
+    return data;
   }, [history]);
 
   // Event handlers
@@ -677,37 +683,39 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 }}
                 className="h-[220px] md:h-[160px]"
               >
-                <BarChart data={quantityData}>
-                  <XAxis 
-                    dataKey="date" 
-                    tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    tickCount={5}
-                    minTickGap={30}
-                  />
-                  <YAxis />
-                  <ChartTooltip 
-                    content={({ active, payload, label }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="rounded-lg border bg-background p-2 shadow-sm">
-                            <div className="grid gap-2">
-                              <div className="flex flex-col">
-                                <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                  {new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                </span>
-                                <span className="font-bold text-muted-foreground">
-                                  {payload[0].value} units
-                                </span>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={quantityData}>
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      tickCount={5}
+                      minTickGap={30}
+                    />
+                    <YAxis />
+                    <ChartTooltip 
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="rounded-lg border bg-background p-2 shadow-sm">
+                              <div className="grid gap-2">
+                                <div className="flex flex-col">
+                                  <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                    {new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </span>
+                                  <span className="font-bold text-muted-foreground">
+                                    {payload[0].value} units
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar dataKey="quantity" fill="var(--color-quantity)" radius={[2, 2, 0, 0]} />
-                </BarChart>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="quantity" fill="hsl(var(--chart-1))" radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </ChartContainer>
             </CardContent>
           </Card>
