@@ -678,7 +678,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 config={{
                   quantity: {
                     label: "Quantity",
-                    color: "hsl(var(--chart-1))",
+                    color: "hsl(220 70% 50%)",
                   },
                 }}
                 className="h-[220px] md:h-[160px]"
@@ -688,10 +688,14 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                     <XAxis 
                       dataKey="date" 
                       tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      tickCount={5}
-                      minTickGap={30}
+                      tickCount={4}
+                      minTickGap={50}
+                      interval="preserveStartEnd"
                     />
-                    <YAxis />
+                    <YAxis 
+                      tickFormatter={(value) => value.toLocaleString()}
+                      tickCount={5}
+                    />
                     <ChartTooltip 
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
@@ -713,7 +717,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                         return null;
                       }}
                     />
-                    <Bar dataKey="quantity" fill="hsl(var(--chart-1))" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="quantity" fill="hsl(220 70% 50%)" radius={[2, 2, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
