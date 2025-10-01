@@ -43,34 +43,36 @@ const SimpleQuantityChart: React.FC<SimpleQuantityChartProps> = ({ data, classNa
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Chart Container */}
-      <div className="relative h-[220px] md:h-[160px] flex items-end justify-between gap-1 px-2">
-        {data.map((item, index) => {
-          const heightPercent = maxQuantity > 0 ? (item.quantity / maxQuantity) * 100 : 0;
-          
-          return (
-            <div 
-              key={item.date} 
-              className="relative flex-1 flex flex-col items-center group"
-              title={`${formatDate(item.date)}: ${item.quantity}`}
-            >
-              {/* Bar */}
-              <div
-                className="w-full bg-primary/30 hover:bg-primary/50 rounded-t-sm transition-colors cursor-pointer"
-                style={{ height: `${Math.max(heightPercent, 2)}%` }}
-              />
-              
-              {/* Date Label - Show only every nth item to avoid overlap */}
-              {index % Math.ceil(data.length / 5) === 0 && (
-                <div className="absolute -bottom-6 text-xs text-muted-foreground whitespace-nowrap">
-                  {formatDate(item.date)}
-                </div>
-              )}
-            </div>
-          );
-        })}
+      <div className="relative h-[220px] md:h-[160px] px-2">
+        <div className="flex items-end h-full gap-0.5">
+          {data.map((item, index) => {
+            const heightPercent = maxQuantity > 0 ? (item.quantity / maxQuantity) * 100 : 0;
+            
+            return (
+              <div 
+                key={item.date} 
+                className="flex-1 flex flex-col items-center justify-end group min-w-[2px]"
+                title={`${formatDate(item.date)}: ${item.quantity}`}
+              >
+                {/* Bar */}
+                <div
+                  className="w-full bg-primary/30 hover:bg-primary/50 rounded-t-sm transition-colors cursor-pointer"
+                  style={{ height: `${Math.max(heightPercent, 2)}%` }}
+                />
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* X-axis date labels below chart */}
+        <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+          {data.filter((_, index) => index % Math.ceil(data.length / 5) === 0).map((item) => (
+            <span key={item.date}>{formatDate(item.date)}</span>
+          ))}
+        </div>
         
         {/* Y-axis labels */}
-        <div className="absolute -left-10 top-0 h-full flex flex-col justify-between text-xs text-muted-foreground">
+        <div className="absolute -left-10 top-0 h-[220px] md:h-[160px] flex flex-col justify-between text-xs text-muted-foreground">
           <span>{maxQuantity}</span>
           <span>{Math.floor(maxQuantity / 2)}</span>
           <span>0</span>
