@@ -184,7 +184,17 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const caseInfo = skin?.caseInfo;
   const variants = skin?.variants || [];
   const history = skin?.history || [];
-  const quantityData = skin?.quantityData || [];
+  
+  // Extract quantity data from history
+  const quantityData = useMemo(() => {
+    if (!history || history.length === 0) return [];
+    return history
+      .filter((item: any) => item.quantity && item.quantity > 0)
+      .map((item: any) => ({
+        date: item.date,
+        quantity: item.quantity
+      }));
+  }, [history]);
 
   // Event handlers
   const handleAddToWatchlist = useCallback(async () => {
@@ -590,7 +600,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </CardHeader>
               <CardContent className="p-5 pt-0">
                 {history && history.length > 0 ? (
-                  <div className="h-[280px] md:h-[200px] sm:h-[160px]">
+                  <div className="h-[280px] md:h-[200px] sm:h-[160px] overflow-hidden">
                     <SimplePriceChart 
                       data={history} 
                       range={timeRange}
@@ -703,7 +713,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </CardHeader>
               <CardContent className="p-5 pt-0">
                 {quantityData && quantityData.length > 0 ? (
-                  <div className="h-[280px] md:h-[200px] sm:h-[160px]">
+                  <div className="h-[280px] md:h-[200px] sm:h-[160px] overflow-hidden">
                     <QuantityBarChart data={quantityData} />
                   </div>
                 ) : (
