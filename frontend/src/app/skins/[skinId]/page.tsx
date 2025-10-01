@@ -691,6 +691,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       tickCount={4}
                       minTickGap={50}
                       interval="preserveStartEnd"
+                      scale="point"
                     />
                     <YAxis 
                       tickFormatter={(value) => value.toLocaleString()}
@@ -717,7 +718,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                         return null;
                       }}
                     />
-                    <Bar dataKey="quantity" fill="hsl(220 70% 50%)" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="quantity" fill="hsl(220 70% 50%)" radius={[2, 2, 0, 0]} maxBarSize={50} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
