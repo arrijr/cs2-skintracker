@@ -28,8 +28,8 @@ router.get('/by-name/:name/skins', async (req, res) => {
     console.log(`[DEBUG] Fetching skins for case name: ${name}`);
     
     // Find skins by weapon type that matches the case name
-    // Remove "Collection" suffix if present
-    const weaponType = name.replace(/\s+Collection$/, '');
+    // Remove "Collection" suffix if present and convert to lowercase
+    const weaponType = name.replace(/\s+Collection$/, '').toLowerCase();
     
     const skins = await prisma.skin.findMany({
       where: {
