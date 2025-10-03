@@ -12,11 +12,15 @@ const ORIGIN_DEV =
 const ORIGIN_PROD =
   process.env.NEXT_PUBLIC_API_ORIGIN_PROD || process.env.NEXT_PUBLIC_API_ORIGIN || "https://cs2-skintracker.onrender.com";
 
-// Auswahl je nach Umgebung: Immer PROD-Backend verwenden (CORS funktioniert besser)
+// Auswahl je nach Umgebung: DEV-Backend für Development verwenden
 export function apiOrigin() {
   console.log('[API] VERCEL_ENV:', VERCEL_ENV);
+  if (VERCEL_ENV === 'development' || VERCEL_ENV === 'preview') {
+    console.log('[API] Using DEV backend:', ORIGIN_DEV);
+    return ORIGIN_DEV!; // DEV-Backend für Development/Preview
+  }
   console.log('[API] Using PROD backend:', ORIGIN_PROD);
-  return ORIGIN_PROD!; // Immer Production-Backend verwenden
+  return ORIGIN_PROD!; // PROD-Backend für Production
 }
 
 // Baut immer eine absolute URL zum Render-Backend
