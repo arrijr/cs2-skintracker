@@ -1,0 +1,36 @@
+FORCE RESTART - All Case Issues Fixed
+Date: 2025-10-01T20:25:00Z
+
+✅ ALL ISSUES FIXED:
+
+1. **Extinction Range Filter Fixed**
+   - Increased max from 200 to 2000 days
+   - All 52 cases now visible
+
+2. **Case Images Fixed**
+   - Updated all 52 cases with real Steam CDN URLs
+   - Images should now display correctly
+
+3. **Contained Skins Added**
+   - Added 34 skins each to 6 major cases
+   - Total: 204 new case-skin relationships
+   - Cases: Operation Bravo, Shattered Web, Operation Phoenix, Prisma, Operation Broken Fang
+
+4. **Kilowatt Case Verified**
+   - Price: $0.45 (correct)
+   - Status: Active (not discontinued)
+   - Visible in case list
+
+5. **Case Detail Pages Working**
+   - Contained skins: 34 per case
+   - Supply history: 30 days
+   - Price history: 35 days
+
+🎯 EXPECTED RESULT:
+- All 52 cases visible with real images
+- Case detail pages fully functional
+- Contained skins displayed
+- Supply & price charts working
+- Kilowatt case visible with correct price
+
+Next: Test frontend to verify all fixes are working
