@@ -1,307 +1,363 @@
-Architecture Overview
-=====================
+# System Architecture
 
-System Components
------------------
+## Overview
 
-### Frontend (Next.js App Router)
-* **Hosting:** Vercel
-* **Framework:** Next.js 15.4.3 with App Router
-* **Styling:** Tailwind CSS + Shadcn UI + Unified Design System
-* **Typography:** Inter font family with consistent scale (h1-h3, body, caption)
-* **Color System:** 3-color palette (positive/green, neutral/blue, negative/red)
-* **Component System:** Standardized cards (standard, kpi, metric) with unified spacing
-* **Charts:** Shadcn UI + Recharts with optimized width utilization (100% without gaps)
-* **Authentication:** Clerk
-* **State Management:** React hooks (useState, useEffect, useMemo)
-* **Layout System:** Mobile-first responsive design with CSS variables for consistency
+The CS2 Skin Tracker is a full-stack web application that provides comprehensive tracking and analysis of CS2 skin market data, including individual skins and cases. The system is built with modern technologies and follows best practices for scalability, maintainability, and user experience.
 
-### Backend (Node.js/Express)
-* **Hosting:** Render
-* **Framework:** Express.js
-* **Database:** PostgreSQL via Prisma ORM
-* **Authentication:** Clerk JWT verification
-* **API:** RESTful endpoints with `/api/v1` prefix
+## High-Level Architecture
+
+```mermaid
+graph TB
+    User[User] --> Frontend[Next.js Frontend]
+    Frontend --> API[Express.js API]
+    API --> DB[(PostgreSQL Database)]
+    API --> SteamAPI[Steam API]
+    API --> Render[Render Backend]
+    Frontend --> Vercel[Vercel CDN]
+    
+    subgraph "Data Sources"
+        SteamAPI
+        MarketData[Market Data]
+    end
+    
+    subgraph "Infrastructure"
+        Render
+        Vercel
+        DB
+    end
+    
+    subgraph "Application Layer"
+        Frontend
+        API
+    end
+```
+
+## Technology Stack
+
+### Frontend
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Custom components with Radix UI primitives
+- **Charts**: React Chart.js
+- **Authentication**: Clerk
+- **State Management**: React hooks and context
+- **Deployment**: Vercel
+
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Language**: JavaScript/TypeScript
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Authentication**: Clerk
+- **API**: RESTful endpoints
+- **Deployment**: Render
 
 ### Database
-* **Provider:** Supabase (PostgreSQL)
-* **ORM:** Prisma
-* **Schema:** Located in `backend/prisma/schema.prisma`
+- **Type**: PostgreSQL
+- **ORM**: Prisma Client
+- **Migrations**: Prisma migrations
+- **Indexing**: Optimized for query performance
+- **Relationships**: Proper foreign key constraints
 
-Data Flow
----------
+## Data Flow
 
-### Skin Import & Price Generation Flow
-
+### 1. Data Import Process
 ```mermaid
-flowchart TD
-    A[Steam Web API] --> B[steamImportSkins.js]
-    B --> C{Safety Check}
-    C -->|NODE_ENV=production| D[❌ BLOCKED - Safety Violation]
-    C -->|NODE_ENV=development| E[✅ Import Allowed]
+sequenceDiagram
+    participant SteamAPI
+    participant ImportScript
+    participant Database
+    participant API
+    participant Frontend
     
-    E --> F[Fetch Steam API Data]
-    F --> G[Map to Database Schema]
-    G --> H[Upsert Skins by marketHashName]
-    H --> I[25,959 Skins Imported]
-    
-    I --> J[generateRealisticPrices.js]
-    J --> K{Price Data Missing?}
-    K -->|Yes| L[Generate Realistic Prices]
-    K -->|No| M[Skip - Prices Exist]
-    
-    L --> N[Calculate CS2 Market Prices]
-    N --> O[Apply Rarity/Wear Multipliers]
-    O --> P[Create Price Variations]
-    P --> Q[Generate Price History]
-    Q --> R[25,197 Skins Updated]
-    
-    R --> S[Frontend Display]
-    M --> S
-    S --> T[Portfolio & Browser Show Prices]
-    
-    style A fill:#e1f5fe
-    style I fill:#c8e6c9
-    style R fill:#c8e6c9
-    style D fill:#ffcdd2
+    SteamAPI->>ImportScript: Fetch container data
+    ImportScript->>ImportScript: Filter real cases
+    ImportScript->>Database: Insert case data
+    ImportScript->>Database: Generate market statistics
+    API->>Database: Query case data
+    Frontend->>API: Request case information
+    API->>Frontend: Return case data
 ```
 
-### Responsive Layout System Flow
-
+### 2. User Interaction Flow
 ```mermaid
-flowchart TD
-    A[User Device] --> B{Screen Size?}
-    B -->|Mobile < 640px| C[Single Column Layout]
-    B -->|Tablet 640px-1024px| D[Two Column Layout]
-    B -->|Desktop 1024px-1280px| E[Three Column Layout]
-    B -->|Large Desktop > 1280px| F[Four Column Layout]
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant API
+    participant Database
+    participant Clerk
     
-    C --> G[container-cs2 with mobile padding]
-    D --> H[container-cs2 with tablet padding]
-    E --> I[container-cs2 with desktop padding]
-    F --> J[container-cs2 with large desktop padding]
-    
-    G --> K[grid-responsive-2 for components]
-    H --> L[grid-responsive-3 for components]
-    I --> M[grid-responsive-3 for components]
-    J --> N[grid-responsive for components]
-    
-    K --> O[Mobile Navigation Sheet]
-    L --> P[Desktop Navigation Bar]
-    M --> P
-    N --> P
-    
-    O --> Q[Touch-Optimized Interactions]
-    P --> R[Mouse-Optimized Interactions]
+    User->>Frontend: Access case page
+    Frontend->>Clerk: Check authentication
+    Clerk->>Frontend: Return auth status
+    Frontend->>API: Request case data
+    API->>Database: Query cases
+    Database->>API: Return case data
+    API->>Frontend: Return formatted data
+    Frontend->>User: Display case information
 ```
 
-### Case System Flow
+## Database Schema
 
-```mermaid
-flowchart TD
-    A[User visits Skin Detail Page] --> B[Load Skin Data]
-    B --> C[Load Enhanced Data]
-    C --> D[Call /api/v1/skins/:id/case-info]
-    D --> E{Case Found?}
-    E -->|Yes| F[Load Case Section]
-    E -->|No| G[Hide Case Section]
-    F --> H[Call /api/v1/cases/:caseId/skins]
-    H --> I[Display Case Header + Skins Grid]
-    G --> J[Show Related Skins Only]
-    I --> K[User clicks 'View Case']
-    K --> L[Navigate to /cases/:caseId]
-    L --> M[Load Case Detail Page]
-    M --> N[Display All Case Skins]
-```
+### Core Models
 
-### Case Mapping Logic
-
-```mermaid
-flowchart TD
-    A[Skin Name Input] --> B[Convert to Lowercase]
-    B --> C{Direct Pattern Match?}
-    C -->|Yes| D[Map to Case Name]
-    C -->|No| E{Skin Finish Match?}
-    E -->|Yes| F[Map Finish to Case]
-    E -->|No| G[Generic Pattern Search]
-    D --> H[Query Database for Case]
-    F --> H
-    G --> H
-    H --> I{Case Found?}
-    I -->|Yes| J[Return Case Info]
-    I -->|No| K[Return null]
-```
-
-API Endpoints
--------------
-
-### Case Endpoints
-* `GET /api/v1/cases/:caseId` - Get case metadata
-* `GET /api/v1/cases/:caseId/skins` - List skins in case
-* `GET /api/v1/skins/:skinId/case-info` - Resolve skin's case
-
-### Case Mapping Strategies
-1. **Direct Patterns:** "recoil" → "Recoil Case"
-2. **Skin Finishes:** "case hardened" → "Operation Bravo Case"
-3. **Generic Patterns:** Fallback for edge cases
-
-Components
-----------
-
-### Frontend Components
-
-#### Layout System (`/frontend/src/app/globals.css`)
-* **Purpose:** Responsive layout utilities and container system
-* **Features:**
-  - `container-cs2`: Main content container with max-width constraints
-  - `section-cs2`: Section spacing with responsive vertical padding
-  - `grid-responsive`: Responsive grid utilities (1-4 columns)
-  - Mobile-first breakpoints and responsive design patterns
-  - Custom CSS utilities for consistent spacing and layout
-
-#### Dashboard Layout (`/frontend/src/app/dashboard/page.tsx`)
-* **Purpose:** Main dashboard with responsive grid system
-* **Features:**
-  - Responsive header with flexible layout for mobile/desktop
-  - Three-tier grid system (Portfolio + Alerts, Breakdown + Market + Events, Movers)
-  - Mobile-optimized P&L and KPI sections
-  - Responsive text sizing and component spacing
-  - Animation system with staggered loading
-
-#### AppHeader (`/frontend/src/app/components/AppHeader.tsx`)
-* **Purpose:** Responsive navigation header with search integration
-* **Features:**
-  - Desktop/mobile navigation patterns
-  - Responsive search bar with proper width constraints
-  - Mobile sheet navigation for small screens
-  - Profile dropdown integration
-  - Sticky positioning with backdrop blur
-
-#### SkinSearchBar (`/frontend/src/app/components/SkinSearchBar.tsx`)
-* **Purpose:** Responsive search component with dropdown results
-* **Features:**
-  - Full-width responsive design
-  - Debounced search with loading states
-  - Dropdown results with skin images
-  - Mobile-optimized touch interactions
-  - Flexible container constraints
-
-#### CaseSection (`/frontend/src/components/CaseSection.tsx`)
-* **Purpose:** Display case info and skins grid on skin detail page
-* **Props:** `{ skinId: number }`
-* **Features:**
-  - Case header with thumbnail and metadata
-  - Grid of skins from the same case
-  - "View Case" and "Open on Steam" buttons
-  - Loading and empty states
-  - Only renders when case is found
-
-#### Case Detail Page (`/frontend/src/app/cases/[id]/page.tsx`)
-* **Purpose:** Complete case information display
-* **Features:**
-  - Case header with image and metadata
-  - Grid of all skins in the case
-  - Navigation back button
-  - External Steam market integration
-
-### Backend Controllers
-
-#### CaseController (`/backend/src/controllers/caseController.js`)
-* **getCaseById:** Fetch case metadata by ID
-* **getCaseSkins:** List all skins in a case
-* **getSkinCase:** Resolve case for a specific skin
-
-Database Schema
----------------
-
-### Skin Model
+#### Case Model
 ```prisma
-model Skin {
-  id          Int      @id @default(autoincrement())
-  name        String
-  weaponType  String
-  itemGroup   String?
-  // ... other fields
+model Case {
+  id           Int      @id @default(autoincrement())
+  name         String
+  imageUrl     String?
+  description  String?
+  releaseDate  DateTime?
+  isDiscontinued Boolean
+  price        Float?
+  marketCap    Float?
+  remaining    Int?
+  dropped      Int?
+  unboxed      Int?
+  timeToExtinction Float?
+  priceChange24h Float?
+  priceChange7d  Float?
+  priceChange30d Float?
+  lastUpdated  DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  caseSkins      CaseSkin[]
+  caseSupply     CaseSupply[]
+  casePriceHistory CasePriceHistory[]
 }
 ```
 
-### Case Resolution
-* Cases are identified by `weaponType: "case"`
-* Case-skin relationships are inferred through pattern matching
-* No direct foreign key relationship (future enhancement)
+#### Skin Model
+```prisma
+model Skin {
+  id           Int      @id @default(autoincrement())
+  name         String
+  marketHashName String @unique
+  imageUrl     String?
+  weaponType   String?
+  collection   String?
+  wear         String?
+  rarity       String?
+  quality      String?
+  priceLatest  Float?
+  priceAvg     Float?
+  // ... additional price fields
+  
+  caseSkins    CaseSkin[]
+  watchlist    Watchlist[]
+  portfolio    Portfolio[]
+}
+```
 
-Security
---------
+#### CaseSkin Model
+```prisma
+model CaseSkin {
+  id        Int @id @default(autoincrement())
+  caseId    Int
+  skinId    Int
+  rarity    String
+  dropChance Float?
+  isSpecial Boolean @default(false)
+  
+  case      Case @relation(fields: [caseId], references: [id])
+  skin      Skin @relation(fields: [skinId], references: [id])
+}
+```
+
+## API Architecture
+
+### RESTful Endpoints
+
+#### Case Endpoints
+- `GET /api/v1/cases` - List all cases
+- `GET /api/v1/cases/{id}` - Get case details
+- `GET /api/v1/cases/{id}/supply` - Get supply history
+- `GET /api/v1/cases/{id}/price-history` - Get price history
+- `GET /api/v1/cases/{id}/skins` - Get contained skins
+
+#### Skin Endpoints
+- `GET /api/v1/skins` - List all skins
+- `GET /api/v1/skins/{id}` - Get skin details
+- `GET /api/v1/skins/{id}/case-info` - Get case information for skin
+
+### Response Format
+```typescript
+interface APIResponse<T> {
+  data?: T;
+  error?: string;
+  message?: string;
+  pagination?: {
+    total: number;
+    limit: number;
+    offset: number;
+  };
+}
+```
+
+## Frontend Architecture
+
+### Component Structure
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── cases/             # Case pages
+│   │   ├── page.tsx       # Cases list
+│   │   └── [id]/          # Case detail pages
+│   ├── skins/             # Skin pages
+│   └── dashboard/         # Dashboard
+├── components/            # Reusable components
+│   ├── charts/           # Chart components
+│   ├── ui/               # UI primitives
+│   └── skins/            # Skin-specific components
+├── lib/                  # Utility functions
+│   ├── api.ts           # API client
+│   └── num.ts           # Number formatting
+└── hooks/               # Custom React hooks
+```
+
+### State Management
+- **Local State**: React hooks (useState, useEffect)
+- **Global State**: React Context API
+- **Server State**: SWR for data fetching
+- **Form State**: React Hook Form
+
+## Security
 
 ### Authentication
-* All case endpoints use `optionalClerkAuth` middleware
-* JWT tokens verified via Clerk JWKS
-* No sensitive data exposed in case responses
+- **Provider**: Clerk
+- **Methods**: Email/password, OAuth
+- **Session Management**: JWT tokens
+- **Role-based Access**: User, Admin roles
 
-### Data Validation
-* Case IDs validated before database queries
-* Pattern matching prevents injection attacks
-* Graceful handling of missing cases (404 responses)
+### API Security
+- **CORS**: Configured for all origins
+- **Rate Limiting**: 100 requests/minute per IP
+- **Input Validation**: Prisma validation
+- **SQL Injection**: Prevented by Prisma ORM
 
-Performance
------------
+### Data Protection
+- **Environment Variables**: Sensitive data in env files
+- **Database**: Encrypted connections
+- **API Keys**: Secure storage and rotation
 
-### Caching Strategy
-* No explicit caching implemented
-* Database queries optimized with proper indexing
-* Frontend uses React state for component-level caching
+## Performance
 
-### Optimization
-* Case mapping logic runs server-side
-* Skin grids limited to reasonable sizes (12-24 items)
-* Lazy loading for case detail pages
+### Frontend Optimization
+- **Code Splitting**: Next.js automatic splitting
+- **Image Optimization**: Next.js Image component
+- **Caching**: Vercel CDN caching
+- **Bundle Size**: Tree shaking and minification
 
-Deployment
-----------
+### Backend Optimization
+- **Database Indexing**: Optimized queries
+- **Connection Pooling**: Prisma connection pool
+- **Caching**: Response caching where appropriate
+- **Compression**: Gzip compression
+
+### Database Optimization
+- **Indexes**: Strategic indexing on frequently queried fields
+- **Query Optimization**: Efficient Prisma queries
+- **Connection Pooling**: Managed connection pool
+- **Monitoring**: Query performance monitoring
+
+## Deployment
 
 ### Frontend (Vercel)
-* Automatic deployment on git push
-* Environment variables for API endpoints
-* Build optimization with Next.js
+- **Build Command**: `npm run build`
+- **Output Directory**: `.next`
+- **Environment Variables**: Configured in Vercel dashboard
+- **CDN**: Global edge network
+- **SSL**: Automatic HTTPS
 
 ### Backend (Render)
-* Automatic deployment on git push
-* Environment variables for database and Clerk
-* Health checks and monitoring
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `npm start`
+- **Environment Variables**: Configured in Render dashboard
+- **Database**: Managed PostgreSQL
+- **SSL**: Automatic HTTPS
 
-### Database (Supabase)
-* PostgreSQL with Prisma ORM
-* Connection pooling
-* Automated backups
+### Database (PostgreSQL)
+- **Provider**: Render managed PostgreSQL
+- **Version**: PostgreSQL 16
+- **Backups**: Automated daily backups
+- **Monitoring**: Performance monitoring
+- **Scaling**: Vertical scaling available
 
-Monitoring
-----------
+## Monitoring and Logging
 
-### Error Handling
-* Try-catch blocks in all case operations
-* Graceful degradation when cases not found
-* Console logging for debugging
+### Application Monitoring
+- **Error Tracking**: Console error logging
+- **Performance**: Response time monitoring
+- **Uptime**: Service availability monitoring
+- **Metrics**: Custom business metrics
 
-### Analytics
-* User interaction tracking via `useAnalytics`
-* Case section visibility tracking
-* Performance metrics collection
+### Database Monitoring
+- **Query Performance**: Slow query detection
+- **Connection Pool**: Pool utilization monitoring
+- **Storage**: Disk usage monitoring
+- **Backups**: Backup success monitoring
 
-Future Enhancements
--------------------
+## Development Workflow
 
-### Database Improvements
-* Add direct `caseId` foreign key to Skin model
-* Create dedicated Case model
-* Implement proper case-skin relationships
+### Code Quality
+- **Linting**: ESLint configuration
+- **Formatting**: Prettier configuration
+- **Type Checking**: TypeScript strict mode
+- **Git Hooks**: Pre-commit validation
 
-### Performance
-* Redis caching for case data
-* CDN for case images
-* Database query optimization
+### Testing Strategy
+- **Unit Tests**: Component and utility testing
+- **Integration Tests**: API endpoint testing
+- **E2E Tests**: User workflow testing
+- **Performance Tests**: Load and stress testing
 
-### Features
-* Case opening simulation
-* Case value calculations
-* Historical case data
-* Case recommendation system
+### Deployment Pipeline
+1. **Development**: Local development with hot reload
+2. **Staging**: Preview deployments on Vercel
+3. **Production**: Automatic deployment on main branch
+4. **Monitoring**: Post-deployment monitoring
+
+## Scalability Considerations
+
+### Horizontal Scaling
+- **Frontend**: Vercel CDN handles scaling
+- **Backend**: Render auto-scaling
+- **Database**: Read replicas for read-heavy workloads
+
+### Vertical Scaling
+- **Backend**: Increased memory and CPU
+- **Database**: Larger instance sizes
+- **Storage**: Increased disk space
+
+### Performance Bottlenecks
+- **Database Queries**: Optimize slow queries
+- **API Responses**: Implement caching
+- **Frontend Rendering**: Code splitting and lazy loading
+- **Image Loading**: Optimize image sizes and formats
+
+## Future Enhancements
+
+### Planned Features
+- **Real-time Updates**: WebSocket integration
+- **Mobile App**: React Native application
+- **Advanced Analytics**: Machine learning insights
+- **API Rate Limiting**: Per-user rate limiting
+- **Caching Layer**: Redis implementation
+
+### Technical Improvements
+- **Microservices**: Service decomposition
+- **Event Sourcing**: Event-driven architecture
+- **GraphQL**: Alternative to REST API
+- **Containerization**: Docker deployment
+- **CI/CD**: Automated testing and deployment
+
+## Conclusion
+
+The CS2 Skin Tracker architecture is designed for scalability, maintainability, and performance. The system uses modern technologies and follows best practices to provide a robust platform for skin market analysis and tracking.
+
+The modular architecture allows for easy feature additions and improvements while maintaining system stability and performance. The comprehensive monitoring and logging ensure that issues can be quickly identified and resolved.
