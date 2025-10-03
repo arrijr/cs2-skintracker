@@ -94,7 +94,7 @@ export default function CasesPage() {
   const filteredAndSortedCases = useMemo(() => {
     let filtered = cases.filter(caseItem => {
       const matchesSearch = caseItem.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDiscontinued = filterDiscontinued ? !caseItem.isDiscontinued : caseItem.isDiscontinued;
+      const matchesDiscontinued = filterDiscontinued ? caseItem.isDiscontinued : !caseItem.isDiscontinued;
       const matchesPriceRange = caseItem.price ? 
         caseItem.price >= priceRange.min && caseItem.price <= priceRange.max : true;
       const matchesExtinctionRange = caseItem.timeToExtinction ? 
@@ -251,7 +251,7 @@ export default function CasesPage() {
                   className="flex items-center gap-2"
                 >
                   <Filter className="w-4 h-4" />
-                  {filterDiscontinued ? 'Active' : 'Discontinued'}
+                  {filterDiscontinued ? 'Discontinued' : 'Active'}
                 </Button>
                 <Button
                   variant={showAdvancedFilters ? "default" : "outline"}

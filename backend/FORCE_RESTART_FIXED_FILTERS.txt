@@ -1,0 +1,22 @@
+FORCE RESTART - Fixed Frontend Filters and Images
+Date: 2025-10-01T20:10:00Z
+
+✅ FIXED ISSUES:
+1. Frontend filter logic corrected - now shows active cases by default
+2. Button text corrected - "Active" vs "Discontinued" now correct
+3. Case images updated with correct Steam CDN URLs
+4. All 52 cases should now be visible (43 active + 9 discontinued)
+
+🔧 CHANGES MADE:
+- Fixed filter logic: filterDiscontinued ? caseItem.isDiscontinued : !caseItem.isDiscontinued
+- Fixed button text: filterDiscontinued ? 'Discontinued' : 'Active'
+- Updated all case images to correct Steam CDN format
+- Default filter now shows active cases (43 cases)
+
+🎯 EXPECTED RESULT:
+- All 52 cases visible (43 active by default)
+- Correct case images loading
+- kilowatt case should be visible
+- Real prices displayed correctly
+
+Next: Test frontend to verify all issues resolved
