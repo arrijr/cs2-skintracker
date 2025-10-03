@@ -15,3 +15,4 @@ Issue: Backend might not have restarted with latest CORS config
 Solution: Force restart to activate CORS v1.6 configuration
 
 This file triggers a new deployment to ensure CORS headers are active.
+
