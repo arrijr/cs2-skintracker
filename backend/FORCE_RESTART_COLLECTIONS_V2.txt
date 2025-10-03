@@ -1,0 +1,8 @@
+FORCE RESTART COLLECTIONS V2 - 2025-10-03T09:40:00Z
+
+Updated collections endpoint:
+- Simplified weapon type query (removed complex exclusions)
+- Added debug logging
+- Fixed potential Prisma query issues
+
+This file triggers a new deployment to activate the updated collections endpoint.

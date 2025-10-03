@@ -1,0 +1,9 @@
+FORCE RESTART COLLECTIONS - 2025-10-03T09:15:00Z
+
+Added new collections endpoint:
+- GET /api/v1/cases/collections
+- Returns all available collections based on weapon types
+- Generates collection data dynamically from database
+- Excludes certain types (stickers, music kits, etc.)
+
+This file triggers a new deployment to activate the collections endpoint.

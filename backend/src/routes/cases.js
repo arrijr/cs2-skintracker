@@ -12,6 +12,80 @@ router.get('/', caseController.getAllCases);
 // GET /api/cases/stats - Get case statistics and market overview
 router.get('/stats', caseController.getCaseStats);
 
+// GET /api/cases/collections - Get all available collections based on weapon types
+router.get('/collections', async (req, res) => {
+  try {
+    console.log('[DEBUG] Fetching all collections');
+    
+    // Define the main weapon types that should be collections
+    const mainWeaponTypes = [
+      'pistol',
+      'rifle', 
+      'smg',
+      'sniper rifle',
+      'knife',
+      'gloves',
+      'shotgun',
+      'machinegun'
+    ];
+
+    // Generate collection data for each weapon type
+    const collections = await Promise.all(
+      mainWeaponTypes.map(async (weaponType) => {
+        // Count skins in this collection
+        const skinCount = await prisma.skin.count({
+          where: { weaponType }
+        });
+        
+        // Get average price for this collection
+        const avgPriceResult = await prisma.skin.aggregate({
+          where: { 
+            weaponType,
+            priceAvg: { not: null }
+          },
+          _avg: { priceAvg: true }
+        });
+        
+        // Generate collection name
+        let collectionName = weaponType;
+        if (weaponType.includes('knife') || weaponType.includes('gloves')) {
+          collectionName = 'Knife & Glove Collection';
+        } else {
+          collectionName = `${weaponType.charAt(0).toUpperCase() + weaponType.slice(1)} Collection`;
+        }
+        
+        return {
+          id: weaponType, // Use weaponType as ID
+          name: collectionName,
+          weaponType: weaponType,
+          imageUrl: '/images/placeholder-case.png',
+          skinCount: skinCount,
+          averagePrice: avgPriceResult._avg.priceAvg || 0,
+          description: `A collection featuring ${weaponType} skins`,
+          releaseDate: new Date().toISOString(),
+          isDiscontinued: false,
+          price: avgPriceResult._avg.priceAvg || 0,
+          marketCap: (avgPriceResult._avg.priceAvg || 0) * skinCount,
+          remaining: skinCount,
+          dropped: skinCount,
+          unboxed: 0,
+          timeToExtinction: 999, // Collections don't have extinction
+          priceChange24h: 0,
+          priceChange7d: 0,
+          lastUpdated: new Date().toISOString()
+        };
+      })
+    );
+    
+    console.log(`[DEBUG] Found ${collections.length} collections`);
+    
+    res.json({ cases: collections });
+  } catch (err) {
+    console.error('[ERROR] Failed to fetch collections:', err);
+    res.status(500).json({ error: "Could not fetch collections" });
+  }
+});
+
 // GET /api/cases/:id - Get specific case by ID
 router.get('/:id', caseController.getCaseById);
 

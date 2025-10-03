@@ -1,0 +1,8 @@
+FORCE RESTART COLLECTIONS V3 - 2025-10-03T09:45:00Z
+
+Simplified collections endpoint:
+- Hardcoded main weapon types array
+- Removed complex Prisma queries
+- Should work reliably now
+
+This file triggers a new deployment to activate the simplified collections endpoint.

@@ -1,53 +1,59 @@
-// /backend/scripts/testSteamAPI.js (Backend)
-// {/* Test Steam API connection and response */}
-
+// /backend/scripts/testSteamAPI.js — [Backend]
+// {/* Test Steam API connection */}
 import "dotenv/config";
 
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 
 async function testSteamAPI() {
-  console.log("🔍 [TEST] Testing Steam API connection...");
-  console.log(`🔑 [TEST] API Key: ${STEAM_API_KEY ? 'SET' : 'NOT SET'}`);
-  
-  if (!STEAM_API_KEY) {
-    console.error("❌ [TEST] STEAM_API_KEY not found");
-    return;
-  }
-
   try {
-    // Use the same endpoint as our existing steamService
-    const url = `https://www.steamwebapi.com/steam/api/items?key=${STEAM_API_KEY}&game=cs2&start=0&count=5`;
-    console.log(`📡 [TEST] Fetching from: ${url}`);
+    console.log("🔍 Testing Steam API connection...");
+    console.log("🔑 API Key present:", !!STEAM_API_KEY);
     
-    const response = await fetch(url);
-    console.log(`📊 [TEST] Response status: ${response.status}`);
-    
-    if (!response.ok) {
-      console.error(`❌ [TEST] HTTP Error: ${response.status} ${response.statusText}`);
-      const text = await response.text();
-      console.error(`📄 [TEST] Response body: ${text}`);
+    if (!STEAM_API_KEY) {
+      console.error("❌ STEAM_API_KEY environment variable is required");
       return;
     }
-    
+
+    const url = `https://api.steampowered.com/IEconItems_730/GetSchema/v2/?key=${STEAM_API_KEY}&format=json`;
+    console.log("🌐 URL:", url);
+
+    const response = await fetch(url);
+    console.log("📡 Response status:", response.status);
+    console.log("📡 Response headers:", Object.fromEntries(response.headers.entries()));
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Steam API error:", errorText);
+      return;
+    }
+
     const data = await response.json();
-    console.log(`📄 [TEST] Full response:`, JSON.stringify(data, null, 2));
+    console.log("✅ Steam API response received");
+    console.log("📊 Response keys:", Object.keys(data));
     
-    if (Array.isArray(data)) {
-      console.log(`✅ [TEST] Success! Got ${data.length} items`);
-      
-      if (data.length > 0) {
-        console.log(`🎮 [TEST] Sample item:`, {
-          name: data[0].itemname,
-          market_hash_name: data[0].markethashname,
-          type: data[0].itemtype
+    if (data.result) {
+      console.log("📦 Result keys:", Object.keys(data.result));
+      if (data.result.items) {
+        console.log("🎯 Items count:", data.result.items.length);
+        
+        // Find cases
+        const cases = data.result.items.filter(item => 
+          item.type === "Container" && 
+          item.name && 
+          item.name.toLowerCase().includes('case') &&
+          !item.name.toLowerCase().includes('key')
+        );
+        
+        console.log("🎲 Cases found:", cases.length);
+        console.log("🎲 First 5 cases:");
+        cases.slice(0, 5).forEach((caseItem, index) => {
+          console.log(`${index + 1}. ${caseItem.name} (${caseItem.type})`);
         });
       }
-    } else {
-      console.log(`⚠️ [TEST] Unexpected response format`);
     }
-    
+
   } catch (error) {
-    console.error("❌ [TEST] Error:", error.message);
+    console.error("❌ Error testing Steam API:", error);
   }
 }
 
