@@ -21,11 +21,8 @@ router.get('/:id/supply', caseController.getCaseSupply);
 // GET /api/cases/:id/price-history - Get case price history
 router.get('/:id/price-history', caseController.getCasePriceHistory);
 
-// GET /api/cases/:id/skins - Get skins contained in case
-router.get('/:id/skins', caseController.getCaseSkins);
-
-// GET /api/cases/:name/skins - Get skins contained in case by name
-router.get('/:name/skins', async (req, res) => {
+// GET /api/cases/by-name/:name/skins - Get skins contained in case by name
+router.get('/by-name/:name/skins', async (req, res) => {
   const { name } = req.params;
   try {
     console.log(`[DEBUG] Fetching skins for case name: ${name}`);
@@ -72,5 +69,8 @@ router.get('/:name/skins', async (req, res) => {
     res.status(500).json({ error: "Could not fetch case skins" });
   }
 });
+
+// GET /api/cases/:id/skins - Get skins contained in case
+router.get('/:id/skins', caseController.getCaseSkins);
 
 export default router;
