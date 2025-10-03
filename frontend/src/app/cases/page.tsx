@@ -50,7 +50,7 @@ export default function CasesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>('timeToExtinction');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [filterDiscontinued, setFilterDiscontinued] = useState(false);
+  const [filterDiscontinued, setFilterDiscontinued] = useState(true);
   const [priceRange, setPriceRange] = useState<{min: number, max: number}>({min: 0, max: 1000});
   const [extinctionRange, setExtinctionRange] = useState<{min: number, max: number}>({min: 0, max: 200});
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -94,7 +94,7 @@ export default function CasesPage() {
   const filteredAndSortedCases = useMemo(() => {
     let filtered = cases.filter(caseItem => {
       const matchesSearch = caseItem.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDiscontinued = filterDiscontinued ? caseItem.isDiscontinued : !caseItem.isDiscontinued;
+      const matchesDiscontinued = filterDiscontinued ? true : !caseItem.isDiscontinued;
       const matchesPriceRange = caseItem.price ? 
         caseItem.price >= priceRange.min && caseItem.price <= priceRange.max : true;
       const matchesExtinctionRange = caseItem.timeToExtinction ? 
@@ -251,7 +251,7 @@ export default function CasesPage() {
                   className="flex items-center gap-2"
                 >
                   <Filter className="w-4 h-4" />
-                  {filterDiscontinued ? 'Discontinued' : 'Active'}
+                  {filterDiscontinued ? 'All Cases' : 'Active Only'}
                 </Button>
                 <Button
                   variant={showAdvancedFilters ? "default" : "outline"}
