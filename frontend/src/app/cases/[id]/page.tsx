@@ -89,7 +89,7 @@ export default function CaseDetailPage() {
     const fetchCaseData = async () => {
       try {
         setLoading(true);
-        const data = await apiFetch(`/api/cases/${caseId}`);
+        const data = await apiFetch(`/api/v1/cases/${caseId}`);
         setCaseData(data);
       } catch (err) {
         setError('Failed to load case data');
