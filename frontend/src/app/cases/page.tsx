@@ -50,7 +50,7 @@ export default function CasesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>('timeToExtinction');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [filterDiscontinued, setFilterDiscontinued] = useState(true);
+  const [filterDiscontinued, setFilterDiscontinued] = useState(false);
   const [priceRange, setPriceRange] = useState<{min: number, max: number}>({min: 0, max: 1000});
   const [extinctionRange, setExtinctionRange] = useState<{min: number, max: number}>({min: 0, max: 200});
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);

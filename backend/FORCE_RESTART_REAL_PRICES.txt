@@ -1,0 +1,20 @@
+FORCE RESTART - Real Case Prices Updated
+Date: 2025-10-01T20:00:00Z
+
+✅ FIXED ISSUES:
+1. Frontend filter fixed - now shows all 52 cases instead of 9
+2. Real case prices updated - kilowatt case now $0.45 instead of $3.81
+3. All 52 cases updated with realistic market prices ($0.15 - $0.50)
+
+📊 PRICE UPDATES:
+- kilowatt case: $3.81 → $0.45 ✅
+- revolver case: $0.15 ✅
+- chroma case: $0.25 ✅
+- All other cases: Realistic prices $0.15-$0.50
+
+🎯 READY FOR TESTING:
+- All 52 cases should now be visible
+- Real prices should be displayed
+- Case images should load correctly
+
+Next: Test frontend to verify all issues are resolved
