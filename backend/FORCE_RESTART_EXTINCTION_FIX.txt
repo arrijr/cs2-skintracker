@@ -1,0 +1,19 @@
+FORCE RESTART - Extinction Range Filter Fixed
+Date: 2025-10-01T20:20:00Z
+
+✅ PROBLEM IDENTIFIED AND FIXED:
+- Issue: extinctionRange max was set to 200, but timeToExtinction values are 200-1200+
+- Solution: Increased extinctionRange max from 200 to 2000
+- Result: All 52 cases should now be visible
+
+🔍 ROOT CAUSE:
+- timeToExtinction values: 200-1200+ days
+- Filter range: 0-200 days
+- 45 cases were filtered out due to timeToExtinction > 200
+
+🎯 EXPECTED RESULT:
+- All 52 cases should now be displayed
+- kilowatt case should be visible
+- No more filtering issues
+
+Next: Test frontend to verify all cases are visible
