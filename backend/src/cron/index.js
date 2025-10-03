@@ -6,6 +6,7 @@ import { spawn } from "node:child_process";
 import checkPriceAlerts from "./priceAlertJob.js";
 import { calculateAndStorePortfolioValues } from "../services/portfolioHistoryService.js";
 import runPortfolioHistoryCron from "./portfolioHistoryCron.js";
+import { updateSteamWebAPIData } from "./steamWebAPIDataUpdate.js";
 
 // {/* 02:00 UTC → z.B. 04:00 Berlin im Sommer */}
 // Preise updaten über dein robustes Script (separater Prozess = stabiler)
@@ -46,6 +47,13 @@ cron.schedule("0 0,12 * * *", async () => {
   console.log("[CRON] Starting 12-hourly portfolio history...");
   await runPortfolioHistoryCron();
   console.log("[CRON] 12-hourly portfolio history done.");
+});
+
+// {/* 03:00 UTC */} SteamWebAPI.com Daten aktualisieren (täglich)
+cron.schedule("0 3 * * *", async () => {
+  console.log("[CRON] Starting SteamWebAPI.com data update...");
+  await updateSteamWebAPIData();
+  console.log("[CRON] SteamWebAPI.com data update done.");
 });
 
 // {/* alle 30 Minuten */} Price Alerts prüfen

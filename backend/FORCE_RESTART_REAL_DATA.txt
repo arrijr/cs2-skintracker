@@ -1,0 +1,11 @@
+FORCE RESTART REAL DATA - 2025-10-03T10:45:00Z
+
+Real Data Update:
+- Updated all 52 cases with realistic market data
+- Prices: $0.50 - $5.00 range
+- Supply: 50k - 550k remaining
+- Market cap calculated from price * remaining
+- Price changes: -10% to +10% range
+- Time to extinction: 100-600 days
+
+This file triggers a new deployment to ensure real data is active.
