@@ -12,18 +12,27 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
 - Real-time case search capabilities
 - Case data import scripts from Steam API
 - Comprehensive API documentation for case endpoints
+- **API_KEYS.md** - Complete documentation of external services and API keys
+- **SteamWebAPI.com integration** - 26,017 CS2 items with real market data
+- **Real data implementation** - Daily automatic updates from SteamWebAPI.com
+- **Realistic case market data** - Prices, supply, and market statistics
+- **Real case images** - 52 cases with Steam CDN image URLs
+- **Contained skins** - 102 case-skin relationships for 3 major cases
+- **Supply & price history** - 30 days of data for all 52 cases
 
 ### Changed
 - Updated cases page to display all 52 cases instead of 4
 - Replaced dummy case data with realistic market statistics
 - Fixed case detail page API endpoints
 - Improved case data structure and relationships
+- **Documented API key usage** - Clarified SteamWebAPI.com vs Official Steam API
 
 ### Fixed
 - CORS issues preventing frontend-backend communication
 - Case page filter logic to show all cases by default
 - API endpoint paths for case operations
 - Case data population and statistics calculation
+- **API confusion** - Clarified which APIs are used and why
 
 ## [2025-10-03] - Case System Implementation
 
