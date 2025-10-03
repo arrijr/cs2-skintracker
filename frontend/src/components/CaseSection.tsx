@@ -70,7 +70,7 @@ export function CaseSection({ skinId }: CaseSectionProps) {
         setCaseInfo(caseResponse.case);
         
         // Then, get all skins from this case
-        const skinsResponse = await fetchJson(apiUrl(`/api/v1/cases/${encodeURIComponent(caseResponse.case.name)}/skins`));
+        const skinsResponse = await fetchJson(apiUrl(`/api/v1/cases/by-name/${encodeURIComponent(caseResponse.case.name)}/skins`));
         setCaseSkins(skinsResponse.skins || []);
         
       } catch (err) {
