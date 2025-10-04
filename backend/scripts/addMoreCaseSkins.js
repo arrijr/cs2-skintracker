@@ -1,263 +1,147 @@
 // /backend/scripts/addMoreCaseSkins.js — [Backend]
-// {/* Add contained skins for more cases */}
+// {/* Add more diverse skins to cases */}
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Extended case to skins mapping
-const caseSkinsMapping = {
-  "operation bravo case": [
-    { name: "AK-47 | Redline", rarity: "classified" },
-    { name: "AWP | Redline", rarity: "covert" },
-    { name: "M4A1-S | Guardian", rarity: "restricted" },
-    { name: "Glock-18 | Water Elemental", rarity: "milspec" },
-    { name: "USP-S | Guardian", rarity: "restricted" },
-    { name: "P250 | Mehndi", rarity: "industrial" },
-    { name: "Tec-9 | Isaac", rarity: "consumer" },
-    { name: "Five-SeveN | Kami", rarity: "consumer" },
-    { name: "CZ75-Auto | Tigris", rarity: "industrial" },
-    { name: "P2000 | Corticera", rarity: "milspec" },
-    { name: "Desert Eagle | Crimson Web", rarity: "restricted" },
-    { name: "Dual Berettas | Hemoglobin", rarity: "industrial" },
-    { name: "P90 | Trigon", rarity: "restricted" },
-    { name: "UMP-45 | Delusion", rarity: "milspec" },
-    { name: "MP7 | Skulls", rarity: "industrial" },
-    { name: "MAC-10 | Malachite", rarity: "consumer" },
-    { name: "MP9 | Rose Iron", rarity: "consumer" },
-    { name: "PP-Bizon | Water Sigil", rarity: "industrial" },
-    { name: "Galil AR | Shattered", rarity: "milspec" },
-    { name: "FAMAS | Pulse", rarity: "restricted" },
-    { name: "M4A4 | X-Ray", rarity: "classified" },
-    { name: "AK-47 | Jaguar", rarity: "covert" },
-    { name: "AUG | Chameleon", rarity: "restricted" },
-    { name: "SG 553 | Ultraviolet", rarity: "milspec" },
-    { name: "AWP | Graphite", rarity: "covert" },
-    { name: "SSG 08 | Blood in the Water", rarity: "restricted" },
-    { name: "SCAR-20 | Cardiac", rarity: "milspec" },
-    { name: "G3SG1 | The Executioner", rarity: "industrial" },
-    { name: "MAG-7 | Memento", rarity: "consumer" },
-    { name: "Nova | Antique", rarity: "consumer" },
-    { name: "Sawed-Off | The Kraken", rarity: "industrial" },
-    { name: "XM1014 | Quicksilver", rarity: "milspec" },
-    { name: "M249 | System Lock", rarity: "restricted" },
-    { name: "Negev | Terrain", rarity: "milspec" }
-  ],
-  "shattered web case": [
-    { name: "AK-47 | Redline", rarity: "classified" },
-    { name: "AWP | Redline", rarity: "covert" },
-    { name: "M4A1-S | Guardian", rarity: "restricted" },
-    { name: "Glock-18 | Water Elemental", rarity: "milspec" },
-    { name: "USP-S | Guardian", rarity: "restricted" },
-    { name: "P250 | Mehndi", rarity: "industrial" },
-    { name: "Tec-9 | Isaac", rarity: "consumer" },
-    { name: "Five-SeveN | Kami", rarity: "consumer" },
-    { name: "CZ75-Auto | Tigris", rarity: "industrial" },
-    { name: "P2000 | Corticera", rarity: "milspec" },
-    { name: "Desert Eagle | Crimson Web", rarity: "restricted" },
-    { name: "Dual Berettas | Hemoglobin", rarity: "industrial" },
-    { name: "P90 | Trigon", rarity: "restricted" },
-    { name: "UMP-45 | Delusion", rarity: "milspec" },
-    { name: "MP7 | Skulls", rarity: "industrial" },
-    { name: "MAC-10 | Malachite", rarity: "consumer" },
-    { name: "MP9 | Rose Iron", rarity: "consumer" },
-    { name: "PP-Bizon | Water Sigil", rarity: "industrial" },
-    { name: "Galil AR | Shattered", rarity: "milspec" },
-    { name: "FAMAS | Pulse", rarity: "restricted" },
-    { name: "M4A4 | X-Ray", rarity: "classified" },
-    { name: "AK-47 | Jaguar", rarity: "covert" },
-    { name: "AUG | Chameleon", rarity: "restricted" },
-    { name: "SG 553 | Ultraviolet", rarity: "milspec" },
-    { name: "AWP | Graphite", rarity: "covert" },
-    { name: "SSG 08 | Blood in the Water", rarity: "restricted" },
-    { name: "SCAR-20 | Cardiac", rarity: "milspec" },
-    { name: "G3SG1 | The Executioner", rarity: "industrial" },
-    { name: "MAG-7 | Memento", rarity: "consumer" },
-    { name: "Nova | Antique", rarity: "consumer" },
-    { name: "Sawed-Off | The Kraken", rarity: "industrial" },
-    { name: "XM1014 | Quicksilver", rarity: "milspec" },
-    { name: "M249 | System Lock", rarity: "restricted" },
-    { name: "Negev | Terrain", rarity: "milspec" }
-  ],
-  "operation phoenix weapon case": [
-    { name: "AK-47 | Redline", rarity: "classified" },
-    { name: "AWP | Redline", rarity: "covert" },
-    { name: "M4A1-S | Guardian", rarity: "restricted" },
-    { name: "Glock-18 | Water Elemental", rarity: "milspec" },
-    { name: "USP-S | Guardian", rarity: "restricted" },
-    { name: "P250 | Mehndi", rarity: "industrial" },
-    { name: "Tec-9 | Isaac", rarity: "consumer" },
-    { name: "Five-SeveN | Kami", rarity: "consumer" },
-    { name: "CZ75-Auto | Tigris", rarity: "industrial" },
-    { name: "P2000 | Corticera", rarity: "milspec" },
-    { name: "Desert Eagle | Crimson Web", rarity: "restricted" },
-    { name: "Dual Berettas | Hemoglobin", rarity: "industrial" },
-    { name: "P90 | Trigon", rarity: "restricted" },
-    { name: "UMP-45 | Delusion", rarity: "milspec" },
-    { name: "MP7 | Skulls", rarity: "industrial" },
-    { name: "MAC-10 | Malachite", rarity: "consumer" },
-    { name: "MP9 | Rose Iron", rarity: "consumer" },
-    { name: "PP-Bizon | Water Sigil", rarity: "industrial" },
-    { name: "Galil AR | Shattered", rarity: "milspec" },
-    { name: "FAMAS | Pulse", rarity: "restricted" },
-    { name: "M4A4 | X-Ray", rarity: "classified" },
-    { name: "AK-47 | Jaguar", rarity: "covert" },
-    { name: "AUG | Chameleon", rarity: "restricted" },
-    { name: "SG 553 | Ultraviolet", rarity: "milspec" },
-    { name: "AWP | Graphite", rarity: "covert" },
-    { name: "SSG 08 | Blood in the Water", rarity: "restricted" },
-    { name: "SCAR-20 | Cardiac", rarity: "milspec" },
-    { name: "G3SG1 | The Executioner", rarity: "industrial" },
-    { name: "MAG-7 | Memento", rarity: "consumer" },
-    { name: "Nova | Antique", rarity: "consumer" },
-    { name: "Sawed-Off | The Kraken", rarity: "industrial" },
-    { name: "XM1014 | Quicksilver", rarity: "milspec" },
-    { name: "M249 | System Lock", rarity: "restricted" },
-    { name: "Negev | Terrain", rarity: "milspec" }
-  ],
-  "prisma case": [
-    { name: "AK-47 | Redline", rarity: "classified" },
-    { name: "AWP | Redline", rarity: "covert" },
-    { name: "M4A1-S | Guardian", rarity: "restricted" },
-    { name: "Glock-18 | Water Elemental", rarity: "milspec" },
-    { name: "USP-S | Guardian", rarity: "restricted" },
-    { name: "P250 | Mehndi", rarity: "industrial" },
-    { name: "Tec-9 | Isaac", rarity: "consumer" },
-    { name: "Five-SeveN | Kami", rarity: "consumer" },
-    { name: "CZ75-Auto | Tigris", rarity: "industrial" },
-    { name: "P2000 | Corticera", rarity: "milspec" },
-    { name: "Desert Eagle | Crimson Web", rarity: "restricted" },
-    { name: "Dual Berettas | Hemoglobin", rarity: "industrial" },
-    { name: "P90 | Trigon", rarity: "restricted" },
-    { name: "UMP-45 | Delusion", rarity: "milspec" },
-    { name: "MP7 | Skulls", rarity: "industrial" },
-    { name: "MAC-10 | Malachite", rarity: "consumer" },
-    { name: "MP9 | Rose Iron", rarity: "consumer" },
-    { name: "PP-Bizon | Water Sigil", rarity: "industrial" },
-    { name: "Galil AR | Shattered", rarity: "milspec" },
-    { name: "FAMAS | Pulse", rarity: "restricted" },
-    { name: "M4A4 | X-Ray", rarity: "classified" },
-    { name: "AK-47 | Jaguar", rarity: "covert" },
-    { name: "AUG | Chameleon", rarity: "restricted" },
-    { name: "SG 553 | Ultraviolet", rarity: "milspec" },
-    { name: "AWP | Graphite", rarity: "covert" },
-    { name: "SSG 08 | Blood in the Water", rarity: "restricted" },
-    { name: "SCAR-20 | Cardiac", rarity: "milspec" },
-    { name: "G3SG1 | The Executioner", rarity: "industrial" },
-    { name: "MAG-7 | Memento", rarity: "consumer" },
-    { name: "Nova | Antique", rarity: "consumer" },
-    { name: "Sawed-Off | The Kraken", rarity: "industrial" },
-    { name: "XM1014 | Quicksilver", rarity: "milspec" },
-    { name: "M249 | System Lock", rarity: "restricted" },
-    { name: "Negev | Terrain", rarity: "milspec" }
-  ],
-  "operation broken fang case": [
-    { name: "AK-47 | Redline", rarity: "classified" },
-    { name: "AWP | Redline", rarity: "covert" },
-    { name: "M4A1-S | Guardian", rarity: "restricted" },
-    { name: "Glock-18 | Water Elemental", rarity: "milspec" },
-    { name: "USP-S | Guardian", rarity: "restricted" },
-    { name: "P250 | Mehndi", rarity: "industrial" },
-    { name: "Tec-9 | Isaac", rarity: "consumer" },
-    { name: "Five-SeveN | Kami", rarity: "consumer" },
-    { name: "CZ75-Auto | Tigris", rarity: "industrial" },
-    { name: "P2000 | Corticera", rarity: "milspec" },
-    { name: "Desert Eagle | Crimson Web", rarity: "restricted" },
-    { name: "Dual Berettas | Hemoglobin", rarity: "industrial" },
-    { name: "P90 | Trigon", rarity: "restricted" },
-    { name: "UMP-45 | Delusion", rarity: "milspec" },
-    { name: "MP7 | Skulls", rarity: "industrial" },
-    { name: "MAC-10 | Malachite", rarity: "consumer" },
-    { name: "MP9 | Rose Iron", rarity: "consumer" },
-    { name: "PP-Bizon | Water Sigil", rarity: "industrial" },
-    { name: "Galil AR | Shattered", rarity: "milspec" },
-    { name: "FAMAS | Pulse", rarity: "restricted" },
-    { name: "M4A4 | X-Ray", rarity: "classified" },
-    { name: "AK-47 | Jaguar", rarity: "covert" },
-    { name: "AUG | Chameleon", rarity: "restricted" },
-    { name: "SG 553 | Ultraviolet", rarity: "milspec" },
-    { name: "AWP | Graphite", rarity: "covert" },
-    { name: "SSG 08 | Blood in the Water", rarity: "restricted" },
-    { name: "SCAR-20 | Cardiac", rarity: "milspec" },
-    { name: "G3SG1 | The Executioner", rarity: "industrial" },
-    { name: "MAG-7 | Memento", rarity: "consumer" },
-    { name: "Nova | Antique", rarity: "consumer" },
-    { name: "Sawed-Off | The Kraken", rarity: "industrial" },
-    { name: "XM1014 | Quicksilver", rarity: "milspec" },
-    { name: "M249 | System Lock", rarity: "restricted" },
-    { name: "Negev | Terrain", rarity: "milspec" }
-  ]
-};
-
 async function addMoreCaseSkins() {
-  console.log("🎨 Adding contained skins for more cases...");
+  console.log("🔧 Adding more diverse skins to cases...");
   
   try {
-    const cases = await prisma.case.findMany();
-    console.log(`📦 Found ${cases.length} cases`);
+    // Get all cases with skins
+    const allCasesWithSkins = await prisma.case.findMany({
+      where: {
+        caseSkins: {
+          some: {}
+        }
+      },
+      include: {
+        _count: {
+          select: { caseSkins: true }
+        }
+      }
+    });
     
-    for (const caseItem of cases) {
-      const skinData = caseSkinsMapping[caseItem.name.toLowerCase()] || caseSkinsMapping[caseItem.name];
+    // Filter cases with only 1 skin
+    const casesWithOneSkin = allCasesWithSkins.filter(caseItem => caseItem._count.caseSkins === 1);
+    
+    console.log(`📦 Found ${casesWithOneSkin.length} cases with only 1 skin`);
+    
+    // Get diverse skins by rarity
+    const skinsByRarity = {
+      covert: await prisma.skin.findMany({
+        where: { rarity: 'covert' },
+        take: 20,
+        orderBy: { priceLatest: 'desc' }
+      }),
+      classified: await prisma.skin.findMany({
+        where: { rarity: 'classified' },
+        take: 30,
+        orderBy: { priceLatest: 'desc' }
+      }),
+      restricted: await prisma.skin.findMany({
+        where: { rarity: 'restricted' },
+        take: 40,
+        orderBy: { priceLatest: 'desc' }
+      }),
+      milspec: await prisma.skin.findMany({
+        where: { rarity: 'milspec' },
+        take: 50,
+        orderBy: { priceLatest: 'desc' }
+      })
+    };
+    
+    console.log(`🎯 Available skins: Covert ${skinsByRarity.covert.length}, Classified ${skinsByRarity.classified.length}, Restricted ${skinsByRarity.restricted.length}, Milspec ${skinsByRarity.milspec.length}`);
+    
+    let addedCount = 0;
+    
+    for (const caseItem of casesWithOneSkin) {
+      console.log(`\n📦 Adding more skins to: ${caseItem.name}`);
       
-      if (skinData) {
-        console.log(`🎯 Adding ${skinData.length} skins to ${caseItem.name}...`);
+      // Add 4-8 more skins per case
+      const numSkins = Math.floor(Math.random() * 5) + 4; // 4-8 skins
+      
+      // Create a realistic skin distribution
+      const skinDistribution = [
+        ...Array(1).fill('covert'),      // 1 covert
+        ...Array(2).fill('classified'),  // 2 classified
+        ...Array(3).fill('restricted'),  // 3 restricted
+        ...Array(4).fill('milspec')      // 4 milspec
+      ].slice(0, numSkins);
+      
+      console.log(`   Adding ${numSkins} skins with distribution: ${skinDistribution.join(', ')}`);
+      
+      for (const rarity of skinDistribution) {
+        const availableSkins = skinsByRarity[rarity];
+        if (availableSkins.length === 0) continue;
         
-        for (const skinInfo of skinData) {
-          try {
-            // Find or create skin
-            let skin = await prisma.skin.findFirst({
-              where: {
-                OR: [
-                  { name: { contains: skinInfo.name, mode: 'insensitive' } },
-                  { marketHashName: { contains: skinInfo.name, mode: 'insensitive' } }
-                ]
-              }
-            });
-            
-            if (!skin) {
-              // Create skin if not found
-              skin = await prisma.skin.create({
-                data: {
-                  name: skinInfo.name,
-                  marketHashName: skinInfo.name,
-                  imageUrl: "/images/placeholder-skin.png",
-                  weaponType: "rifle", // Default
-                  rarity: skinInfo.rarity,
-                  quality: "normal",
-                  priceLatest: 0,
-                  priceMedian: 0,
-                  priceAvg: 0
-                }
-              });
-              console.log(`✅ Created skin: ${skinInfo.name}`);
+        const randomSkin = availableSkins[Math.floor(Math.random() * availableSkins.length)];
+        
+        try {
+          await prisma.caseSkin.create({
+            data: {
+              caseId: caseItem.id,
+              skinId: randomSkin.id,
+              rarity: rarity,
+              isSpecial: Math.random() < 0.05, // 5% chance of being special
+              dropChance: Math.random() * 0.1 + 0.01 // Random drop rate 1-11%
             }
-            
-            // Create case-skin relationship
-            await prisma.caseSkin.create({
-              data: {
-                caseId: caseItem.id,
-                skinId: skin.id,
-                rarity: skinInfo.rarity,
-                dropChance: Math.random() * 0.1 + 0.01, // 1-11% drop rate
-                isSpecial: skinInfo.name.includes('AWP') || skinInfo.name.includes('AK-47') || skinInfo.name.includes('M4A1-S')
-              }
-            });
-            
-          } catch (error) {
-            console.error(`❌ Error adding skin ${skinInfo.name} to case ${caseItem.name}:`, error.message);
+          });
+          
+          console.log(`     ✅ ${randomSkin.name} (${rarity}) - $${randomSkin.priceLatest || 'N/A'}`);
+          addedCount++;
+        } catch (error) {
+          if (error.code === 'P2002') {
+            console.log(`     ⚠️  ${randomSkin.name} already in case`);
+          } else {
+            console.log(`     ❌ Failed to add ${randomSkin.name}: ${error.message}`);
           }
         }
-        
-        console.log(`✅ Added skins to ${caseItem.name}`);
-      } else {
-        console.log(`⚠️ No skin mapping found for: ${caseItem.name}`);
       }
     }
     
-    console.log("🎉 More case skins added!");
+    console.log(`\n🎉 Added ${addedCount} more case-skin relationships`);
+    
+    // Verify results
+    const updatedCases = await prisma.case.findMany({
+      where: {
+        caseSkins: {
+          some: {}
+        }
+      },
+      include: {
+        _count: {
+          select: { caseSkins: true }
+        }
+      },
+      orderBy: { _count: { caseSkins: 'desc' } }
+    });
+    
+    console.log(`\n📊 Updated summary:`);
+    console.log(`✅ Cases with skins: ${updatedCases.length}`);
+    console.log(`✅ Total case-skin relationships: ${await prisma.caseSkin.count()}`);
+    
+    // Show distribution
+    const distribution = {};
+    updatedCases.forEach(caseItem => {
+      const count = caseItem._count.caseSkins;
+      distribution[count] = (distribution[count] || 0) + 1;
+    });
+    
+    console.log(`\n📈 Skin distribution:`);
+    Object.entries(distribution).sort((a, b) => parseInt(a[0]) - parseInt(b[0])).forEach(([count, cases]) => {
+      console.log(`  ${count} skins: ${cases} cases`);
+    });
+    
+    // Show top cases
+    console.log(`\n🏆 Top cases with most skins:`);
+    updatedCases.slice(0, 5).forEach(caseItem => {
+      console.log(`  - ${caseItem.name}: ${caseItem._count.caseSkins} skins`);
+    });
     
   } catch (error) {
-    console.error("❌ Error adding case skins:", error);
+    console.error("❌ Error adding more case-skin relationships:", error);
   } finally {
     await prisma.$disconnect();
   }
