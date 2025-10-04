@@ -1,13 +1,14 @@
 // /frontend/src/components/charts/CaseSupplyChart.tsx — [Frontend]
 // {/* Case Supply Chart - Interactive supply over time visualization */}
 "use client";
-import { Line } from 'react-chartjs-2';
+import { Chart } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip as ChartTooltip,
   Legend,
@@ -19,6 +20,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   ChartTooltip,
   Legend,
@@ -65,16 +67,16 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
     }),
     datasets: [
       {
+        type: 'bar' as const,
         label: 'Monthly Drops',
         data: sortedData.map(item => item.dropped),
-        borderColor: 'rgb(59, 130, 246)', // blue-500
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: false,
-        tension: 0.1,
-        pointRadius: 3,
-        pointHoverRadius: 5,
+        backgroundColor: 'rgba(59, 130, 246, 0.8)', // blue-500
+        borderColor: 'rgb(59, 130, 246)',
+        borderWidth: 1,
+        yAxisID: 'y',
       },
       {
+        type: 'line' as const,
         label: 'Monthly Unboxings',
         data: sortedData.map(item => item.unboxed),
         borderColor: 'rgb(249, 115, 22)', // orange-500
@@ -83,18 +85,10 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
         tension: 0.1,
         pointRadius: 3,
         pointHoverRadius: 5,
+        yAxisID: 'y',
       },
       {
-        label: 'Net Change',
-        data: netChangeData,
-        borderColor: 'rgb(34, 197, 94)', // green-500
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-        fill: false,
-        tension: 0.1,
-        pointRadius: 3,
-        pointHoverRadius: 5,
-      },
-      {
+        type: 'line' as const,
         label: 'Remaining Supply',
         data: sortedData.map(item => item.remaining),
         borderColor: 'rgb(156, 163, 175)', // gray-400
@@ -221,7 +215,7 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
 
   return (
     <div className={`w-full h-96 ${className}`}>
-      <Line data={chartData} options={options} />
+      <Chart type="bar" data={chartData} options={options} />
     </div>
   );
 }
