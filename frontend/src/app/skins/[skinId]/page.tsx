@@ -92,6 +92,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const [skin, setSkin] = useState<Skin | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [caseInfo, setCaseInfo] = useState<{cases: Array<{id: number, name: string, imageUrl?: string}>} | null>(null);
   const [watchlist, setWatchlist] = useState<number[]>([]);
   const [portfolioSkins, setPortfolioSkins] = useState<number[]>([]);
   const [priceAlert, setPriceAlert] = useState({ enabled: false, targetPrice: 0 });
@@ -118,6 +119,16 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
           setSkin(response);
         } else {
           setError(response.error || 'Skin not found');
+        }
+        
+        // Fetch case information for breadcrumbs
+        try {
+          const caseResponse = await fetchJson(apiUrl(`/skins/${params.skinId}/case-breadcrumb`));
+          if (caseResponse.success) {
+            setCaseInfo(caseResponse.data);
+          }
+        } catch (caseErr) {
+          console.log('No case information available for this skin');
         }
       } catch (err: any) {
         console.error('Error loading skin:', err);
@@ -509,6 +520,20 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                       <BreadcrumbItem>
                       <BreadcrumbLink href="/">Home</BreadcrumbLink>
                       </BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbLink href="/cases">Cases</BreadcrumbLink>
+                      </BreadcrumbItem>
+                      {caseInfo && caseInfo.cases.length > 0 && (
+                        <>
+                          <BreadcrumbSeparator />
+                          <BreadcrumbItem>
+                            <BreadcrumbLink href={`/cases/${caseInfo.cases[0].id}`}>
+                              {caseInfo.cases[0].name}
+                            </BreadcrumbLink>
+                          </BreadcrumbItem>
+                        </>
+                      )}
                       <BreadcrumbSeparator />
                       <BreadcrumbItem>
                         <BreadcrumbLink href="/skins">Skins</BreadcrumbLink>

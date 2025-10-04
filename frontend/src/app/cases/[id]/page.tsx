@@ -84,6 +84,7 @@ export default function CaseDetailPage() {
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [priceTimeRange, setPriceTimeRange] = useState<'30d' | '1y' | 'all'>('all');
 
   useEffect(() => {
     const fetchCaseData = async () => {
@@ -390,7 +391,41 @@ export default function CaseDetailPage() {
                 <CardTitle>Price History</CardTitle>
               </CardHeader>
               <CardContent>
-                <CasePriceChart data={caseData.casePriceHistory} />
+                <div className="mb-4">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setPriceTimeRange('30d')}
+                      className={`px-3 py-1 rounded text-sm ${
+                        priceTimeRange === '30d' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      30d
+                    </button>
+                    <button
+                      onClick={() => setPriceTimeRange('1y')}
+                      className={`px-3 py-1 rounded text-sm ${
+                        priceTimeRange === '1y' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      1y
+                    </button>
+                    <button
+                      onClick={() => setPriceTimeRange('all')}
+                      className={`px-3 py-1 rounded text-sm ${
+                        priceTimeRange === 'all' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      All
+                    </button>
+                  </div>
+                </div>
+                <CasePriceChart data={caseData.casePriceHistory} timeRange={priceTimeRange} />
               </CardContent>
             </Card>
           </TabsContent>

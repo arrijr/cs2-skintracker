@@ -36,9 +36,10 @@ interface PriceData {
 interface CasePriceChartProps {
   data: PriceData[];
   className?: string;
+  timeRange?: '30d' | '1y' | 'all';
 }
 
-export default function CasePriceChart({ data, className = "" }: CasePriceChartProps) {
+export default function CasePriceChart({ data, className = "", timeRange = 'all' }: CasePriceChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className={`flex items-center justify-center h-64 ${className}`}>
@@ -51,7 +52,21 @@ export default function CasePriceChart({ data, className = "" }: CasePriceChartP
   }
 
   // Sort data by date
-  const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  let sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  
+  // Filter by time range
+  if (timeRange !== 'all') {
+    const now = new Date();
+    const cutoffDate = new Date();
+    
+    if (timeRange === '30d') {
+      cutoffDate.setDate(now.getDate() - 30);
+    } else if (timeRange === '1y') {
+      cutoffDate.setFullYear(now.getFullYear() - 1);
+    }
+    
+    sortedData = sortedData.filter(item => new Date(item.date) >= cutoffDate);
+  }
   
   // Calculate price changes
   const priceChanges = sortedData.map((item, index) => {

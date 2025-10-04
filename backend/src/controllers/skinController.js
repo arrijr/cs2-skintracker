@@ -164,6 +164,54 @@ export const getSkinVariants = async (req, res) => {
   }
 };
 
+// {/* Get case information for a skin (for breadcrumbs) */}
+export const getSkinCaseInfo = async (req, res) => {
+  const { skinId } = req.params;
+  try {
+    console.log(`[DEBUG] Fetching case info for skin ID: ${skinId}`);
+    
+    // Get the skin and its case relationship
+    const skinWithCase = await prisma.skin.findUnique({
+      where: { id: parseInt(skinId) },
+      include: {
+        caseSkins: {
+          include: {
+            case: {
+              select: {
+                id: true,
+                name: true,
+                imageUrl: true
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    if (!skinWithCase) {
+      console.log(`[DEBUG] Skin ${skinId} not found in database`);
+      return res.status(404).json({ error: 'Skin not found' });
+    }
+    
+    // Extract case information
+    const cases = skinWithCase.caseSkins.map(cs => cs.case);
+    
+    console.log(`[DEBUG] Found ${cases.length} cases for skin ${skinId}`);
+    
+    res.json({
+      skin: {
+        id: skinWithCase.id,
+        name: skinWithCase.name
+      },
+      cases: cases
+    });
+    
+  } catch (error) {
+    console.error(`[ERROR] Error fetching case info for skin ${skinId}:`, error);
+    res.status(500).json({ error: "Could not fetch case information" });
+  }
+};
+
 // {/* Get case information for a skin */}
 export const getSkinCase = async (req, res) => {
   const { skinId } = req.params;

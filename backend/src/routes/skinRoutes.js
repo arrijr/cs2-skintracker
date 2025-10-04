@@ -5,6 +5,7 @@ import {
   getSkinById, 
   getSkinVariants, 
   getSkinCase, 
+  getSkinCaseInfo,
   getSkinMarketStats,
   getRelatedSkins
 } from "../controllers/skinController.js";
@@ -393,6 +394,9 @@ router.get("/:skinId/variants", getSkinVariants);
 
 // Get case information for a skin (old collection-based)
 router.get("/:skinId/case", getSkinCase);
+
+// Get case information for a skin (for breadcrumbs)
+router.get("/:skinId/case-breadcrumb", getSkinCaseInfo);
 
 // Get case info for a skin (new format for CaseSection component)
 router.get("/:skinId/case-info", async (req, res) => {
