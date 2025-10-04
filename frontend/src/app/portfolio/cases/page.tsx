@@ -85,17 +85,6 @@ export default function CasePortfolioPage() {
     return num.toLocaleString();
   };
 
-  const formatTimeToExtinction = (months: number) => {
-    if (months < 1) {
-      return '< 1 mo';
-    } else if (months < 12) {
-      return `~${months.toFixed(1)} mo`;
-    } else {
-      const years = Math.floor(months / 12);
-      const remainingMonths = months % 12;
-      return `~${years}y ${remainingMonths.toFixed(0)}mo`;
-    }
-  };
 
   const getPLColor = (pl: number) => {
     if (pl > 0) return 'text-green-400';

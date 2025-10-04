@@ -12,7 +12,6 @@ import {
   TrendingUp, 
   TrendingDown, 
   Package, 
-  Clock, 
   DollarSign,
   BarChart3,
   ArrowUpDown,
@@ -32,7 +31,6 @@ interface Case {
   remaining: number;
   dropped: number;
   unboxed: number;
-  timeToExtinction: number; // in months
   priceChange24h: number;
   priceChange7d: number;
   isDiscontinued: boolean;
@@ -40,7 +38,7 @@ interface Case {
   lastUpdated: string;
 }
 
-type SortField = 'name' | 'price' | 'marketCap' | 'timeToExtinction' | 'remaining' | 'priceChange24h';
+type SortField = 'name' | 'price' | 'marketCap' | 'remaining' | 'priceChange24h';
 type SortDirection = 'asc' | 'desc';
 
 export default function CasesPage() {
@@ -150,17 +148,6 @@ export default function CasesPage() {
     }).format(amount);
   };
 
-  const formatTimeToExtinction = (months: number) => {
-    if (months < 1) {
-      return '< 1 mo';
-    } else if (months < 12) {
-      return `~${months.toFixed(1)} mo`;
-    } else {
-      const years = Math.floor(months / 12);
-      const remainingMonths = months % 12;
-      return `~${years}y ${remainingMonths.toFixed(0)}mo`;
-    }
-  };
 
   const getPriceChangeColor = (change: number) => {
     if (change > 0) return 'text-green-400';
@@ -345,15 +332,6 @@ export default function CasesPage() {
                     </th>
                     <th 
                       className="text-right py-3 px-4 cursor-pointer hover:bg-gray-800/50 transition-colors"
-                      onClick={() => handleSort('timeToExtinction')}
-                    >
-                      <div className="flex items-center justify-end gap-2">
-                        Time to Extinction
-                        <ArrowUpDown className="w-3 h-3" />
-                      </div>
-                    </th>
-                    <th 
-                      className="text-right py-3 px-4 cursor-pointer hover:bg-gray-800/50 transition-colors"
                       onClick={() => handleSort('remaining')}
                     >
                       <div className="flex items-center justify-end gap-2">
@@ -427,14 +405,6 @@ export default function CasesPage() {
                             </div>
                           </div>
                         </Link>
-                      </td>
-                      <td className="text-right py-4 px-4">
-                        <div className="flex items-center justify-end gap-1">
-                          <Clock className="w-3 h-3 text-gray-400" />
-                          <span className="text-sm">
-                            {formatTimeToExtinction(caseItem.timeToExtinction)}
-                          </span>
-                        </div>
                       </td>
                       <td className="text-right py-4 px-4">
                         <span className="text-sm font-mono">

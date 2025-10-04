@@ -113,17 +113,6 @@ export default function CaseDetailPage() {
     return num.toLocaleString();
   };
 
-  const formatTimeToExtinction = (months: number) => {
-    if (months < 1) {
-      return '< 1 mo';
-    } else if (months < 12) {
-      return `~${months.toFixed(1)} mo`;
-    } else {
-      const years = Math.floor(months / 12);
-      const remainingMonths = months % 12;
-      return `~${years}y ${remainingMonths.toFixed(0)}mo`;
-    }
-  };
 
   const getPriceChangeColor = (change: number) => {
     if (change > 0) return 'text-green-400';
@@ -304,19 +293,6 @@ export default function CaseDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-400">Time to Extinction</p>
-                  <p className="text-2xl font-bold text-white">
-                    {caseData.timeToExtinction ? formatTimeToExtinction(caseData.timeToExtinction) : 'N/A'}
-                  </p>
-                </div>
-                <Clock className="w-8 h-8 text-orange-400" />
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Detailed Tabs */}
