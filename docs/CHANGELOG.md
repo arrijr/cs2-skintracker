@@ -33,6 +33,9 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
 - API endpoint paths for case operations
 - Case data population and statistics calculation
 - **API confusion** - Clarified which APIs are used and why
+- **Case prices showing incorrect values** - Now using real-time data from SteamWebAPI ($0.35 → $53.97 for Operation Bravo Case)
+- **Case images showing wrong URLs** - Updated with correct Steam CDN URLs from SteamWebAPI
+- **Automated case data updates** - Cron job now properly updates prices, images, and market data every hour
 
 ## [2025-10-03] - Case System Implementation
 

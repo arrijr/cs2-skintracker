@@ -72,19 +72,32 @@ async function updateCasesData() {
         });
         
         if (existingCase && realPrice > 0) {
+          // Calculate price changes
+          const priceChange24h = caseItem.pricelatestsell24h ? 
+            ((realPriceSell - caseItem.pricelatestsell24h) / caseItem.pricelatestsell24h) * 100 : 0;
+          const priceChange7d = caseItem.pricelatestsell7d ? 
+            ((realPriceSell - caseItem.pricelatestsell7d) / caseItem.pricelatestsell7d) * 100 : 0;
+          const priceChange30d = caseItem.pricelatestsell30d ? 
+            ((realPriceSell - caseItem.pricelatestsell30d) / caseItem.pricelatestsell30d) * 100 : 0;
+          
+          // Update remaining supply based on sales
+          const currentRemaining = existingCase.remaining || 100000;
+          const newRemaining = Math.max(0, currentRemaining - sold24h);
+          
           await prisma.case.update({
             where: { id: existingCase.id },
             data: {
               price: realPrice,
-              marketCap: realPrice * (existingCase.remaining || 0),
-              priceChange24h: calculatePriceChange(caseItem.pricelatestsell24h, realPriceSell),
-              priceChange7d: calculatePriceChange(caseItem.pricelatestsell7d, realPriceSell),
-              priceChange30d: calculatePriceChange(caseItem.pricelatestsell30d, realPriceSell),
+              imageUrl: caseItem.itemimage || existingCase.imageUrl,
+              marketCap: realPrice * newRemaining,
+              priceChange24h: Math.round(priceChange24h * 100) / 100,
+              priceChange7d: Math.round(priceChange7d * 100) / 100,
+              priceChange30d: Math.round(priceChange30d * 100) / 100,
               lastUpdated: new Date(),
               // Update supply based on sales
               dropped: (existingCase.dropped || 0) + sold24h,
               unboxed: (existingCase.unboxed || 0) + sold24h,
-              remaining: Math.max(0, (existingCase.remaining || 0) - sold24h)
+              remaining: newRemaining
             }
           });
           
