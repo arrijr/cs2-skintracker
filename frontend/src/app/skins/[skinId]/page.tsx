@@ -204,7 +204,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   }, [skin, portfolioSkins]);
 
   const marketStats = skin?.marketStats || {};
-  const caseInfo = skin?.caseInfo;
+  const skinCaseInfo = skin?.caseInfo;
   const variants = skin?.variants || [];
   const history = skin?.history || [];
   
@@ -966,9 +966,9 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             )}
 
         {/* Case Information */}
-          {caseInfo && caseInfo.id && (
-            <CaseSection skinId={caseInfo.id} />
-        )}
+          {caseInfo && caseInfo.cases.length > 0 && (
+            <CaseSection skinId={caseInfo.cases[0].id} />
+          )}
         </div>
         </div>
       </TooltipProvider>
