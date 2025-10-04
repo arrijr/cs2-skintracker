@@ -36,6 +36,11 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
 - **Case prices showing incorrect values** - Now using real-time data from SteamWebAPI ($0.35 → $53.97 for Operation Bravo Case)
 - **Case images showing wrong URLs** - Updated with correct Steam CDN URLs from SteamWebAPI
 - **Automated case data updates** - Cron job now properly updates prices, images, and market data every hour
+- **Supply history calculation logic** - Fixed unrealistic data generation with proper monthly progression
+- **Supply history chart format** - Both drops and unboxings now displayed as bar charts for better visibility
+- **Case-skin relationships** - Corrected with real CS:GO data for major cases (CS:GO Weapon Case, Chroma Cases, Horizon Case)
+- **Price history filter** - Fixed 30d/1y/all time range filters with realistic historical data
+- **Case release dates** - Updated with correct dates from Steam API (e.g., Operation Broken Fang Case: Dec 3, 2020)
 
 ## [2025-10-03] - Case System Implementation
 

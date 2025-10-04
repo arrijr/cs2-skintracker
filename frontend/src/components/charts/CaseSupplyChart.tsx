@@ -76,15 +76,12 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
         yAxisID: 'y',
       },
       {
-        type: 'line' as const,
+        type: 'bar' as const, // Monthly Unboxings as bar chart
         label: 'Monthly Unboxings',
         data: sortedData.map(item => item.unboxed),
-        borderColor: 'rgb(249, 115, 22)', // orange-500
-        backgroundColor: 'rgba(249, 115, 22, 0.1)',
-        fill: false,
-        tension: 0.1,
-        pointRadius: 3,
-        pointHoverRadius: 5,
+        backgroundColor: 'rgba(249, 115, 22, 0.6)', // orange-500 with transparency
+        borderColor: 'rgb(249, 115, 22)',
+        borderWidth: 1,
         yAxisID: 'y',
       },
       {
