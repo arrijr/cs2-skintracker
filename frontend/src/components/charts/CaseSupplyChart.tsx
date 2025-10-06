@@ -54,13 +54,13 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
     );
   }
 
-  // Add disclaimer for estimated data
-  const disclaimer = (
-    <div className="mb-4 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
+  // Add info about real data
+  const dataInfo = (
+    <div className="mb-4 p-3 bg-green-900/20 border border-green-600/30 rounded-lg">
       <div className="flex items-start gap-2">
-        <div className="text-yellow-400 text-sm">⚠️</div>
-        <div className="text-sm text-yellow-200">
-          <strong>Estimated Data:</strong> The supply data (drops, unboxings, remaining supply) shown in this chart are estimated calculations based on case age and market patterns. These are not real historical data as Steam does not provide public access to actual case drop/unboxing statistics.
+        <div className="text-green-400 text-sm">✅</div>
+        <div className="text-sm text-green-200">
+          <strong>Real Data:</strong> Supply history is calculated from actual Steam market sales data (sold7d, sold30d, sold90d) via SteamWebAPI.com. Drops and unboxings are estimated based on real sales patterns.
         </div>
       </div>
     </div>
@@ -224,7 +224,7 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
 
   return (
     <div className={`w-full h-96 ${className}`}>
-      {disclaimer}
+      {dataInfo}
       <Chart type="bar" data={chartData} options={options} />
     </div>
   );
