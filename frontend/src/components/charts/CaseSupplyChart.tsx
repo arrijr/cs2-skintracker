@@ -54,6 +54,18 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
     );
   }
 
+  // Add disclaimer for estimated data
+  const disclaimer = (
+    <div className="mb-4 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
+      <div className="flex items-start gap-2">
+        <div className="text-yellow-400 text-sm">⚠️</div>
+        <div className="text-sm text-yellow-200">
+          <strong>Estimated Data:</strong> The supply data (drops, unboxings, remaining supply) shown in this chart are estimated calculations based on case age and market patterns. These are not real historical data as Steam does not provide public access to actual case drop/unboxing statistics.
+        </div>
+      </div>
+    </div>
+  );
+
   // Sort data by date
   const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   
@@ -212,6 +224,7 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
 
   return (
     <div className={`w-full h-96 ${className}`}>
+      {disclaimer}
       <Chart type="bar" data={chartData} options={options} />
     </div>
   );
