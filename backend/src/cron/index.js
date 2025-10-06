@@ -7,6 +7,7 @@ import checkPriceAlerts from "./priceAlertJob.js";
 import { calculateAndStorePortfolioValues } from "../services/portfolioHistoryService.js";
 import runPortfolioHistoryCron from "./portfolioHistoryCron.js";
 import { updateSteamWebAPIData } from "./steamWebAPIDataUpdate.js";
+import { dailySteamWebAPIDataUpdate } from "./dailySteamWebAPIDataUpdate.js";
 
 // {/* 02:00 UTC → z.B. 04:00 Berlin im Sommer */}
 // Preise updaten über dein robustes Script (separater Prozess = stabiler)
@@ -61,4 +62,19 @@ cron.schedule("*/30 * * * *", async () => {
   console.log("[CRON] Checking price alerts...");
   await checkPriceAlerts();
   console.log("[CRON] Alerts check done.");
+});
+
+// {/* täglich um 06:00 UTC */} Daily SteamWebAPI.com data update
+cron.schedule("0 6 * * *", async () => {
+  console.log("[CRON] Starting daily SteamWebAPI.com data update...");
+  try {
+    const result = await dailySteamWebAPIDataUpdate();
+    if (result.success) {
+      console.log("[CRON] Daily SteamWebAPI data update completed successfully");
+    } else {
+      console.log("[CRON] Daily SteamWebAPI data update completed with errors:", result.error);
+    }
+  } catch (error) {
+    console.error("[CRON] Error in daily SteamWebAPI data update:", error);
+  }
 });

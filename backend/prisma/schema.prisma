@@ -297,6 +297,7 @@ model CaseSupply {
   remaining   Int      // Remaining supply
   dropped     Int      // Total dropped
   unboxed     Int      // Total unboxed
+  offerVolume Int?     // Current offer volume from SteamWebAPI
   price       Float?   // Price on this date
   marketCap   Float?   // Market cap on this date
   
