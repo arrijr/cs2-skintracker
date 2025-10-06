@@ -48,6 +48,8 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
 - **Discontinued cases logic** - Fixed supply data generation for discontinued cases (no more drops after discontinued date)
 - **Offer volume tracking** - Added real SteamWebAPI offer volume data to supply history
 - **Daily sales data** - Replaced synthetic drops with real daily sales volume from SteamWebAPI
+- **Price history accuracy** - Fixed incorrect price ranges ($2.40-$3.60 → $12.65-$13.24 for Operation Breakout Case)
+- **Real historical prices** - Implemented pricelatestsell24h/7d/30d/90d from SteamWebAPI.com
 
 ## [2025-10-03] - Case System Implementation
 
