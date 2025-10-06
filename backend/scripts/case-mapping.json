@@ -1,0 +1,302 @@
+{
+  "timestamp": "2025-10-06T15:00:06.871Z",
+  "totalMappings": 42,
+  "totalUnmatched": 0,
+  "mappings": [
+    {
+      "ourCaseId": 16,
+      "ourCaseName": "CS:GO Weapon Case 2",
+      "marketItemId": 9319,
+      "marketItemName": "CS:GO Weapon Case 2",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 13,
+      "ourCaseName": "Chroma Case",
+      "marketItemId": 44694,
+      "marketItemName": "Chroma Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 11,
+      "ourCaseName": "Chroma 2 Case",
+      "marketItemId": 9534,
+      "marketItemName": "Chroma 2 Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 28,
+      "ourCaseName": "Gamma 2 Case",
+      "marketItemId": 479,
+      "marketItemName": "Gamma 2 Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 9,
+      "ourCaseName": "Prisma Case",
+      "marketItemId": 39,
+      "marketItemName": "Prisma Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 18,
+      "ourCaseName": "Cs20 Case",
+      "marketItemId": 9919,
+      "marketItemName": "CS20 Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 10,
+      "ourCaseName": "Shattered Web Case",
+      "marketItemId": 14429,
+      "marketItemName": "Shattered Web Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 7,
+      "ourCaseName": "Snakebite Case",
+      "marketItemId": 224,
+      "marketItemName": "Snakebite Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 20,
+      "ourCaseName": "Dreams & Nightmares Case",
+      "marketItemId": 294,
+      "marketItemName": "Dreams & Nightmares Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 3,
+      "ourCaseName": "eSports 2013 Case",
+      "marketItemId": 122789,
+      "marketItemName": "eSports 2013 Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 6,
+      "ourCaseName": "Shadow Case",
+      "marketItemId": 434,
+      "marketItemName": "Shadow Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 22,
+      "ourCaseName": "eSports 2013 Winter Case",
+      "marketItemId": 9599,
+      "marketItemName": "eSports 2013 Winter Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 35,
+      "ourCaseName": "Operation Breakout Weapon Case",
+      "marketItemId": 9804,
+      "marketItemName": "Operation Phoenix Weapon Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 41,
+      "ourCaseName": "Operation Wildfire Case",
+      "marketItemId": 9589,
+      "marketItemName": "Operation Wildfire Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 12,
+      "ourCaseName": "Chroma 3 Case",
+      "marketItemId": 9484,
+      "marketItemName": "Chroma 3 Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 30,
+      "ourCaseName": "Glove Case",
+      "marketItemId": 524,
+      "marketItemName": "Glove Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 51,
+      "ourCaseName": "Spectrum Case",
+      "marketItemId": 414,
+      "marketItemName": "Spectrum Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 37,
+      "ourCaseName": "Operation Hydra Case",
+      "marketItemId": 68664,
+      "marketItemName": "Operation Hydra Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 8,
+      "ourCaseName": "Fracture Case",
+      "marketItemId": 664,
+      "marketItemName": "Fracture Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 39,
+      "ourCaseName": "Operation Riptide Case",
+      "marketItemId": 9824,
+      "marketItemName": "Operation Riptide Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 2,
+      "ourCaseName": "CS:GO Weapon Case",
+      "marketItemId": 87104,
+      "marketItemName": "CS:GO Weapon Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 5,
+      "ourCaseName": "Falchion Case",
+      "marketItemId": 18419,
+      "marketItemName": "Falchion Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 45,
+      "ourCaseName": "Revolution Case",
+      "marketItemId": 462085,
+      "marketItemName": "Revolution Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 33,
+      "ourCaseName": "Kilowatt Case",
+      "marketItemId": 575180,
+      "marketItemName": "Kilowatt Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 17,
+      "ourCaseName": "CS:GO Weapon Case 3",
+      "marketItemId": 9319,
+      "marketItemName": "CS:GO Weapon Case 2",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 38,
+      "ourCaseName": "Operation Phoenix Weapon Case",
+      "marketItemId": 9804,
+      "marketItemName": "Operation Phoenix Weapon Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 32,
+      "ourCaseName": "Huntsman Weapon Case",
+      "marketItemId": 404,
+      "marketItemName": "Huntsman Weapon Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 40,
+      "ourCaseName": "Operation Vanguard Weapon Case",
+      "marketItemId": 9804,
+      "marketItemName": "Operation Phoenix Weapon Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 29,
+      "ourCaseName": "Gamma Case",
+      "marketItemId": 9519,
+      "marketItemName": "Gamma Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 31,
+      "ourCaseName": "Horizon Case",
+      "marketItemId": 684,
+      "marketItemName": "Horizon Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 19,
+      "ourCaseName": "Danger Zone Case",
+      "marketItemId": 369,
+      "marketItemName": "Danger Zone Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 36,
+      "ourCaseName": "Operation Broken Fang Case",
+      "marketItemId": 20724,
+      "marketItemName": "Operation Broken Fang Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 1,
+      "ourCaseName": "Operation Bravo Case",
+      "marketItemId": 88344,
+      "marketItemName": "Operation Bravo Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 27,
+      "ourCaseName": "Gallery Case",
+      "marketItemId": 630907,
+      "marketItemName": "Gallery Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 23,
+      "ourCaseName": "eSports 2014 Summer Case",
+      "marketItemId": 67579,
+      "marketItemName": "eSports 2014 Summer Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 25,
+      "ourCaseName": "Fever Case",
+      "marketItemId": 684513,
+      "marketItemName": "Fever Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 46,
+      "ourCaseName": "Revolver Case",
+      "marketItemId": 449,
+      "marketItemName": "Revolver Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 50,
+      "ourCaseName": "Spectrum 2 Case",
+      "marketItemId": 494,
+      "marketItemName": "Spectrum 2 Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 14,
+      "ourCaseName": "Clutch Case",
+      "marketItemId": 329,
+      "marketItemName": "Clutch Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 42,
+      "ourCaseName": "Prisma 2 Case",
+      "marketItemId": 269,
+      "marketItemName": "Prisma 2 Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 44,
+      "ourCaseName": "Recoil Case",
+      "marketItemId": 371019,
+      "marketItemName": "Recoil Case",
+      "matchScore": 1
+    },
+    {
+      "ourCaseId": 4,
+      "ourCaseName": "Winter Offensive Weapon Case",
+      "marketItemId": 42679,
+      "marketItemName": "Winter Offensive Weapon Case",
+      "matchScore": 1
+    }
+  ],
+  "unmatched": []
+}
