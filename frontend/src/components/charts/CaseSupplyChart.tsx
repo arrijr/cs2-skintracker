@@ -1,5 +1,5 @@
 // /frontend/src/components/charts/CaseSupplyChart.tsx — [Frontend]
-// {/* Case Supply Chart - Interactive supply over time visualization */}
+// {/* Case Supply Chart - Real SteamWebAPI.com market data visualization */}
 "use client";
 import { Chart } from 'react-chartjs-2';
 import {
@@ -33,6 +33,7 @@ interface SupplyData {
   remaining: number;
   dropped: number;
   unboxed: number;
+  offerVolume?: number;
   price?: number;
   marketCap?: number;
 }
@@ -60,7 +61,7 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
       <div className="flex items-start gap-2">
         <div className="text-green-400 text-sm">✅</div>
         <div className="text-sm text-green-200">
-          <strong>Real Data:</strong> Supply history is calculated from actual Steam market sales data (sold7d, sold30d, sold90d) via SteamWebAPI.com. Drops and unboxings are estimated based on real sales patterns.
+          <strong>Real Market Data:</strong> Offer volume and sales data from SteamWebAPI.com. Shows actual Steam market activity - current offers available and daily sales volume over 90 days.
         </div>
       </div>
     </div>
@@ -69,8 +70,12 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
   // Sort data by date
   const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   
-  // Calculate net change (dropped - unboxed)
-  const netChangeData = sortedData.map(item => item.dropped - item.unboxed);
+  // Calculate daily sales from cumulative data
+  const dailySalesData = sortedData.map((item, index) => {
+    if (index === 0) return 0;
+    const prevItem = sortedData[index - 1];
+    return Math.max(0, item.dropped - prevItem.dropped);
+  });
 
   const chartData = {
     labels: sortedData.map(item => {
@@ -80,36 +85,27 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
     datasets: [
       {
         type: 'bar' as const,
-        label: 'Monthly Drops',
-        data: sortedData.map(item => item.dropped),
-        backgroundColor: 'rgba(59, 130, 246, 0.8)', // blue-500
-        borderColor: 'rgb(59, 130, 246)',
-        borderWidth: 1,
-        yAxisID: 'y',
-      },
-      {
-        type: 'bar' as const, // Monthly Unboxings as bar chart
-        label: 'Monthly Unboxings',
-        data: sortedData.map(item => item.unboxed),
-        backgroundColor: 'rgba(249, 115, 22, 0.6)', // orange-500 with transparency
-        borderColor: 'rgb(249, 115, 22)',
+        label: 'Daily Sales Volume',
+        data: dailySalesData,
+        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+        borderColor: 'rgba(59, 130, 246, 1)',
         borderWidth: 1,
         yAxisID: 'y',
       },
       {
         type: 'line' as const,
-        label: 'Remaining Supply',
-        data: sortedData.map(item => item.remaining),
-        borderColor: 'rgb(156, 163, 175)', // gray-400
-        backgroundColor: 'rgba(156, 163, 175, 0.1)',
-        fill: true,
+        label: 'Offer Volume',
+        data: sortedData.map(item => item.offerVolume || 0),
+        borderColor: 'rgba(34, 197, 94, 1)',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        borderWidth: 2,
+        fill: false,
         tension: 0.1,
-        pointRadius: 3,
-        pointHoverRadius: 5,
-        borderDash: [5, 5],
         yAxisID: 'y1',
-      }
-    ]
+        pointRadius: 2,
+        pointHoverRadius: 4,
+      },
+    ],
   };
 
   const options = {
@@ -120,58 +116,55 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
       intersect: false,
     },
     plugins: {
-      title: {
-        display: true,
-        text: 'Supply Over Time',
-        color: '#ffffff',
-        font: {
-          size: 16,
-          weight: 'bold' as const,
-        }
-      },
       legend: {
-        display: true,
         position: 'top' as const,
         labels: {
-          color: '#d1d5db', // gray-300
+          color: '#d1d5db',
           usePointStyle: true,
           pointStyle: 'circle',
-        }
+        },
       },
       tooltip: {
-        backgroundColor: 'rgba(17, 24, 39, 0.95)', // gray-900
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: '#ffffff',
         bodyColor: '#d1d5db',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
+        borderColor: 'rgba(255, 255, 255, 0.1)',
         borderWidth: 1,
         callbacks: {
-          label: function(context: any) {
+          title: (context: any) => {
+            return new Date(sortedData[context[0].dataIndex].date).toLocaleDateString('en-US', {
+              weekday: 'short',
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            });
+          },
+          label: (context: any) => {
+            const dataIndex = context.dataIndex;
+            const datasetLabel = context.dataset.label;
             const value = context.parsed.y;
-            const formattedValue = value >= 1000000 
-              ? (value / 1000000).toFixed(1) + 'M'
-              : value >= 1000 
-                ? (value / 1000).toFixed(1) + 'K'
-                : value.toLocaleString();
             
-            return `${context.dataset.label}: ${formattedValue}`;
+            if (datasetLabel === 'Daily Sales Volume') {
+              return `${datasetLabel}: ${value.toLocaleString()} cases sold`;
+            } else if (datasetLabel === 'Offer Volume') {
+              return `${datasetLabel}: ${value.toLocaleString()} offers available`;
+            }
+            
+            return `${datasetLabel}: ${value.toLocaleString()}`;
           }
         }
-      }
+      },
     },
     scales: {
       x: {
         display: true,
-        title: {
-          display: true,
-          text: 'Date',
-          color: '#d1d5db',
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
         },
         ticks: {
-          color: '#9ca3af', // gray-400
+          color: '#9ca3af',
+          maxTicksLimit: 8,
         },
-        grid: {
-          color: 'rgba(75, 85, 99, 0.3)',
-        }
       },
       y: {
         type: 'linear' as const,
@@ -179,22 +172,18 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
         position: 'left' as const,
         title: {
           display: true,
-          text: 'Count',
-          color: '#d1d5db',
+          text: 'Daily Sales Volume',
+          color: '#9ca3af',
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
         },
         ticks: {
           color: '#9ca3af',
           callback: function(value: any) {
-            return value >= 1000000 
-              ? (value / 1000000).toFixed(1) + 'M'
-              : value >= 1000 
-                ? (value / 1000).toFixed(1) + 'K'
-                : value;
+            return value.toLocaleString();
           }
         },
-        grid: {
-          color: 'rgba(75, 85, 99, 0.3)',
-        }
       },
       y1: {
         type: 'linear' as const,
@@ -202,24 +191,20 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
         position: 'right' as const,
         title: {
           display: true,
-          text: 'Cumulative Supply',
-          color: '#d1d5db',
+          text: 'Offer Volume',
+          color: '#9ca3af',
+        },
+        grid: {
+          drawOnChartArea: false,
         },
         ticks: {
           color: '#9ca3af',
           callback: function(value: any) {
-            return value >= 1000000 
-              ? (value / 1000000).toFixed(1) + 'M'
-              : value >= 1000 
-                ? (value / 1000).toFixed(1) + 'K'
-                : value;
+            return value.toLocaleString();
           }
         },
-        grid: {
-          drawOnChartArea: false,
-        }
-      }
-    }
+      },
+    },
   };
 
   return (

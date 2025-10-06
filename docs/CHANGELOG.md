@@ -5,7 +5,7 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
 ## [Unreleased]
 
 ### Added
-- Complete case system implementation with 52 real CS2 cases
+- Complete case system implementation with 42 real CS2 cases
 - Case detail pages with comprehensive market data
 - Interactive charts for supply and price history
 - Case filtering and sorting functionality
@@ -16,9 +16,13 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
 - **SteamWebAPI.com integration** - 26,017 CS2 items with real market data
 - **Real data implementation** - Daily automatic updates from SteamWebAPI.com
 - **Realistic case market data** - Prices, supply, and market statistics
-- **Real case images** - 52 cases with Steam CDN image URLs
+- **Real case images** - 42 cases with Steam CDN image URLs
 - **Contained skins** - 102 case-skin relationships for 3 major cases
-- **Supply & price history** - 30 days of data for all 52 cases
+- **Supply & price history** - 90 days of data for all 42 cases
+- **Real SteamWebAPI.com market data** - offerVolume, sold24h/7d/30d/90d, pricelatest
+- **Daily Cronjob** - Automated daily data updates with admin panel monitoring
+- **JobRun tracking** - Complete monitoring of cronjob success/failure status
+- **Enhanced supply charts** - Real offer volume and daily sales as bar/line charts
 
 ### Changed
 - Updated cases page to display all 52 cases instead of 4
@@ -33,14 +37,17 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
 - API endpoint paths for case operations
 - Case data population and statistics calculation
 - **API confusion** - Clarified which APIs are used and why
-- **Case prices showing incorrect values** - Now using real-time data from SteamWebAPI ($0.35 → $53.97 for Operation Bravo Case)
+- **Case prices showing incorrect values** - Now using real-time data from SteamWebAPI ($417 → $10.74 for Operation Breakout Case)
 - **Case images showing wrong URLs** - Updated with correct Steam CDN URLs from SteamWebAPI
 - **Automated case data updates** - Cron job now properly updates prices, images, and market data every hour
-- **Supply history calculation logic** - Fixed unrealistic data generation with proper monthly progression
-- **Supply history chart format** - Both drops and unboxings now displayed as bar charts for better visibility
+- **Supply history calculation logic** - Fixed unrealistic data generation with real SteamWebAPI sales data
+- **Supply history chart format** - Now shows real offer volume and daily sales data instead of synthetic drops/unboxings
 - **Case-skin relationships** - Corrected with real CS:GO data for major cases (CS:GO Weapon Case, Chroma Cases, Horizon Case)
 - **Price history filter** - Fixed 30d/1y/all time range filters with realistic historical data
 - **Case release dates** - Updated with correct dates from Steam API (e.g., Operation Broken Fang Case: Dec 3, 2020)
+- **Discontinued cases logic** - Fixed supply data generation for discontinued cases (no more drops after discontinued date)
+- **Offer volume tracking** - Added real SteamWebAPI offer volume data to supply history
+- **Daily sales data** - Replaced synthetic drops with real daily sales volume from SteamWebAPI
 
 ## [2025-10-03] - Case System Implementation
 

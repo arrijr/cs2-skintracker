@@ -377,7 +377,7 @@ export default function CaseDetailPage() {
           <TabsContent value="supply" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Supply Over Time <span className="text-green-400 text-sm font-normal">(Real Sales Data)</span></CardTitle>
+                <CardTitle>Market Activity <span className="text-green-400 text-sm font-normal">(Real Steam Data)</span></CardTitle>
               </CardHeader>
               <CardContent>
                 <CaseSupplyChart data={caseData.caseSupply} />

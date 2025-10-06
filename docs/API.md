@@ -36,6 +36,7 @@ Retrieves a list of all cases with optional filtering and sorting.
       "priceChange7d": -1.2,
       "priceChange30d": 15.7,
       "lastUpdated": "2025-10-03T09:57:23.940Z",
+      "supplyDisclaimer": "Supply data calculated from real SteamWebAPI.com sales data",
       "createdAt": "2025-10-03T09:57:23.940Z",
       "updatedAt": "2025-10-03T09:57:23.940Z"
     }
@@ -291,3 +292,25 @@ curl -X GET "https://cs2-skintracker-dev.onrender.com/api/v1/cases?search=operat
 ```bash
 curl -X GET "https://cs2-skintracker-dev.onrender.com/api/v1/cases/1/supply?startDate=2025-01-01&endDate=2025-12-31"
 ```
+
+## Data Sources
+
+### SteamWebAPI.com Integration
+- **Service**: [SteamWebAPI.com](https://www.steamwebapi.com/api/doc/steam-market-api)
+- **Environment Variable**: `STEAM_API_KEY` (in Render)
+- **Status**: ✅ **Working** - 26,017 CS2 items available
+- **Update Frequency**: Every hour + Daily cronjob at 06:00 UTC
+- **Data Coverage**: CS2, CSGO, Rust, Dota items
+
+### What We Get
+- **Real-time market prices** (pricelatest, pricelatestsell, etc.)
+- **Historical price data** (pricelatestsell24h, pricelatestsell7d, pricelatestsell30d, pricelatestsell90d)
+- **Market statistics** (sold24h, sold7d, sold30d, sold90d, offervolume, etc.)
+- **Item metadata** (rarity, quality, wear, itemgroup, etc.)
+- **Third-party marketplace integration** (DMarket, Skinport, etc.)
+
+### Cronjob Monitoring
+- **Daily SteamWebAPI Update**: Runs at 06:00 UTC daily
+- **Job Tracking**: All cronjob runs are logged in `JobRun` table
+- **Admin Panel**: Monitor success/failure status in admin dashboard
+- **Real-time Data**: Cases updated with latest offer volume and sales data

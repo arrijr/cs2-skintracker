@@ -11,13 +11,15 @@ graph TB
     User[User] --> Frontend[Next.js Frontend]
     Frontend --> API[Express.js API]
     API --> DB[(PostgreSQL Database)]
-    API --> SteamAPI[Steam API]
+    API --> SteamWebAPI[SteamWebAPI.com]
+    API --> CronJobs[Cron Jobs]
     API --> Render[Render Backend]
     Frontend --> Vercel[Vercel CDN]
     
     subgraph "Data Sources"
-        SteamAPI
-        MarketData[Market Data]
+        SteamWebAPI
+        CronJobs --> DailyUpdate[Daily SteamWebAPI Update]
+        CronJobs --> HourlyUpdate[Hourly Price Updates]
     end
     
     subgraph "Infrastructure"
@@ -29,6 +31,8 @@ graph TB
     subgraph "Application Layer"
         Frontend
         API
+        AdminPanel[Admin Panel]
+        AdminPanel --> JobMonitoring[Job Run Monitoring]
     end
 ```
 
@@ -100,6 +104,26 @@ sequenceDiagram
     Frontend->>User: Display case information
 ```
 
+## Cronjob Architecture
+
+### Daily SteamWebAPI Data Update
+```mermaid
+sequenceDiagram
+    participant Cron as Cron Scheduler
+    participant Job as dailySteamWebAPIDataUpdate
+    participant API as SteamWebAPI.com
+    participant DB as PostgreSQL
+    participant Admin as Admin Panel
+    
+    Cron->>Job: Trigger at 06:00 UTC
+    Job->>API: Fetch all case data
+    API->>Job: Return offerVolume, sold24h/7d/30d/90d
+    Job->>DB: Update case prices and supply data
+    Job->>DB: Log job run status
+    Job->>Admin: Report success/failure
+    Admin->>DB: Query job run history
+```
+
 ## Database Schema
 
 ### Core Models
@@ -118,6 +142,7 @@ model Case {
   remaining    Int?
   dropped      Int?
   unboxed      Int?
+  offerVolume  Int?    // Real SteamWebAPI offer volume
   timeToExtinction Float?
   priceChange24h Float?
   priceChange7d  Float?
