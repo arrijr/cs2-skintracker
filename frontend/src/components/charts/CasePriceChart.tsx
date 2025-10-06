@@ -29,7 +29,6 @@ interface PriceData {
   id: number;
   date: string;
   price: number;
-  marketCap?: number;
   remaining?: number;
 }
 
@@ -91,17 +90,6 @@ export default function CasePriceChart({ data, className = "", timeRange = 'all'
         pointRadius: 3,
         pointHoverRadius: 5,
         yAxisID: 'y',
-      },
-      {
-        label: 'Market Cap (USD)',
-        data: sortedData.map(item => item.marketCap || 0),
-        borderColor: 'rgb(59, 130, 246)', // blue-500
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: false,
-        tension: 0.1,
-        pointRadius: 3,
-        pointHoverRadius: 5,
-        yAxisID: 'y1',
       }
     ]
   };
@@ -141,20 +129,7 @@ export default function CasePriceChart({ data, className = "", timeRange = 'all'
         callbacks: {
           label: function(context: any) {
             const value = context.parsed.y;
-            const datasetLabel = context.dataset.label;
-            
-            if (datasetLabel === 'Price (USD)') {
-              return `Price: $${value.toFixed(2)}`;
-            } else if (datasetLabel === 'Market Cap (USD)') {
-              const formattedValue = value >= 1000000 
-                ? (value / 1000000).toFixed(1) + 'M'
-                : value >= 1000 
-                  ? (value / 1000).toFixed(1) + 'K'
-                  : value.toLocaleString();
-              return `Market Cap: $${formattedValue}`;
-            }
-            
-            return `${datasetLabel}: ${value}`;
+            return `Price: $${value.toFixed(2)}`;
           }
         }
       }
@@ -191,29 +166,6 @@ export default function CasePriceChart({ data, className = "", timeRange = 'all'
         },
         grid: {
           color: 'rgba(75, 85, 99, 0.3)',
-        }
-      },
-      y1: {
-        type: 'linear' as const,
-        display: true,
-        position: 'right' as const,
-        title: {
-          display: true,
-          text: 'Market Cap (USD)',
-          color: '#d1d5db',
-        },
-        ticks: {
-          color: '#9ca3af',
-          callback: function(value: any) {
-            return value >= 1000000 
-              ? (value / 1000000).toFixed(1) + 'M'
-              : value >= 1000 
-                ? (value / 1000).toFixed(1) + 'K'
-                : value;
-          }
-        },
-        grid: {
-          drawOnChartArea: false,
         }
       }
     }

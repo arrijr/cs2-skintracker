@@ -104,17 +104,61 @@ export async function dailySteamWebAPIDataUpdate() {
             data: newSupply
           });
 
-          console.log(`  ✅ [CRON] Added new supply data for today`);
+          // Also update CasePriceHistory with today's price
+          await prisma.casePriceHistory.upsert({
+            where: {
+              caseId_date: {
+                caseId: caseItem.id,
+                date: today
+              }
+            },
+            update: {
+              price: steamCase.pricelatest,
+              marketCap: steamCase.pricelatest * 1000000, // Estimate market cap
+              remaining: newSupply.remaining
+            },
+            create: {
+              caseId: caseItem.id,
+              date: today,
+              price: steamCase.pricelatest,
+              marketCap: steamCase.pricelatest * 1000000,
+              remaining: newSupply.remaining
+            }
+          });
+
+          console.log(`  ✅ [CRON] Added new supply and price data for today`);
         } else {
           // Update existing today's data
           await prisma.caseSupply.update({
             where: { id: existingToday.id },
             data: {
-              offerVolume: steamCase.offervolume || 0
+              offerVolume: steamCase.offervolume || 0,
+              price: steamCase.pricelatest
             }
           });
 
-          console.log(`  ✅ [CRON] Updated existing supply data for today`);
+          // Also update CasePriceHistory with today's price
+          await prisma.casePriceHistory.upsert({
+            where: {
+              caseId_date: {
+                caseId: caseItem.id,
+                date: today
+              }
+            },
+            update: {
+              price: steamCase.pricelatest,
+              marketCap: steamCase.pricelatest * 1000000
+            },
+            create: {
+              caseId: caseItem.id,
+              date: today,
+              price: steamCase.pricelatest,
+              marketCap: steamCase.pricelatest * 1000000,
+              remaining: existingToday.remaining
+            }
+          });
+
+          console.log(`  ✅ [CRON] Updated existing supply and price data for today`);
         }
 
         successCount++;

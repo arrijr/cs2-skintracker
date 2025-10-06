@@ -50,6 +50,9 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
 - **Daily sales data** - Replaced synthetic drops with real daily sales volume from SteamWebAPI
 - **Price history accuracy** - Fixed incorrect price ranges ($2.40-$3.60 → $12.65-$13.24 for Operation Breakout Case)
 - **Real historical prices** - Implemented pricelatestsell24h/7d/30d/90d from SteamWebAPI.com
+- **Price History Frontend Fix** - Removed Market Cap from charts, now shows only real price data
+- **CasePriceHistory synchronization** - Copied real price data from CaseSupply to CasePriceHistory table
+- **Enhanced Cronjob** - Daily SteamWebAPI updates now also update CasePriceHistory with current prices
 
 ## [2025-10-03] - Case System Implementation
 

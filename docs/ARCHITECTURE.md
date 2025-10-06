@@ -118,10 +118,11 @@ sequenceDiagram
     Cron->>Job: Trigger at 06:00 UTC
     Job->>API: Fetch all case data
     API->>Job: Return offerVolume, sold24h/7d/30d/90d
-    Job->>DB: Update case prices and supply data
-    Job->>DB: Log job run status
-    Job->>Admin: Report success/failure
-    Admin->>DB: Query job run history
+           Job->>DB: Update case prices and supply data
+           Job->>DB: Update CasePriceHistory with current prices
+           Job->>DB: Log job run status
+           Job->>Admin: Report success/failure
+           Admin->>DB: Query job run history
 ```
 
 ## Database Schema

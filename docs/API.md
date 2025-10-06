@@ -314,3 +314,5 @@ curl -X GET "https://cs2-skintracker-dev.onrender.com/api/v1/cases/1/supply?star
 - **Job Tracking**: All cronjob runs are logged in `JobRun` table
 - **Admin Panel**: Monitor success/failure status in admin dashboard
 - **Real-time Data**: Cases updated with latest offer volume and sales data
+- **Price History Updates**: Daily cronjob now updates both CaseSupply and CasePriceHistory tables
+- **Synchronized Data**: Price data automatically synchronized between supply and price history tables
