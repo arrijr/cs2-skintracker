@@ -139,26 +139,9 @@ const getCaseById = async (req, res) => {
       return res.status(404).json({ error: 'Case not found' });
     }
 
-    // Get real SteamWebAPI.com data for the case itself
-    const steamCaseData = await prisma.skin.findFirst({
-      where: {
-        name: caseData.name,
-        weaponType: 'case'
-      },
-      select: {
-        offerVolume: true,
-        soldToday: true,
-        sold7d: true,
-        sold30d: true,
-        sold90d: true,
-        soldTotal: true,
-        priceLatest: true,
-        priceMedian: true,
-        priceChange24h: true,
-        priceChange7d: true,
-        priceChange30d: true
-      }
-    });
+    // Note: Cases are not stored as skins, so we can't get SteamWebAPI.com data for the case itself
+    // We'll use aggregated data from contained skins instead
+    const steamCaseData = null;
 
     // Calculate aggregated statistics from contained skins
     const totalOfferVolume = (caseData.caseSkins || []).reduce((sum, caseSkin) => 
