@@ -6,6 +6,19 @@
         "shadcn@latest",
         "mcp"
       ]
+    },
+    "serena": {
+      "command": "C:\\Users\\Arthur\\.local\\bin\\uv.exe",
+      "args": [
+        "--directory",
+        "C:\\Users\\Arthur\\Documents\\Coding\\serena",
+        "run",
+        "serena",
+        "start-mcp-server"
+      ],
+      "env": {
+        "SERENA_PROJECT_ROOT": "C:\\Users\\Arthur\\Documents\\Coding\\CS2 Skin Tracker"
+      }
     }
   }
 }
