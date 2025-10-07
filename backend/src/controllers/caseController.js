@@ -140,9 +140,26 @@ const getCaseById = async (req, res) => {
     }
 
     // Get real SteamWebAPI.com data for the case itself
-    // Note: Cases are not stored as skins, so we'll use null for now
-    // In the future, we could add case-specific SteamWebAPI.com data
-    const steamCaseData = null;
+    const steamCaseData = await prisma.skin.findFirst({
+      where: {
+        name: caseData.name,
+        // Cases are stored as skins with weaponType: 'Case'
+        weaponType: 'Case'
+      },
+      select: {
+        offerVolume: true,
+        soldToday: true,
+        sold7d: true,
+        sold30d: true,
+        sold90d: true,
+        soldTotal: true,
+        priceLatest: true,
+        priceMedian: true,
+        priceChange24h: true,
+        priceChange7d: true,
+        priceChange30d: true
+      }
+    });
 
     // Calculate aggregated statistics from contained skins
     const totalOfferVolume = caseData.caseSkins.reduce((sum, caseSkin) => 
