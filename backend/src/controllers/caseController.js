@@ -143,8 +143,8 @@ const getCaseById = async (req, res) => {
     const steamCaseData = await prisma.skin.findFirst({
       where: {
         name: caseData.name,
-        // Cases are stored as skins with weaponType: 'Case'
-        weaponType: 'Case'
+        // Cases are stored as skins with weaponType: 'case' (lowercase)
+        weaponType: 'case'
       },
       select: {
         offerVolume: true,
