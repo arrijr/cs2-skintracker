@@ -45,6 +45,30 @@ interface Case {
   priceChange7d?: number;
   priceChange30d?: number;
   lastUpdated: string;
+  // Real SteamWebAPI.com data
+  steamData?: {
+    offerVolume?: number;
+    soldToday?: number;
+    sold7d?: number;
+    sold30d?: number;
+    sold90d?: number;
+    soldTotal?: number;
+    priceLatest?: number;
+    priceMedian?: number;
+    priceChange24h?: number;
+    priceChange7d?: number;
+    priceChange30d?: number;
+  };
+  // Aggregated statistics from contained skins
+  aggregatedStats?: {
+    totalOfferVolume: number;
+    totalSold7d: number;
+    totalSold30d: number;
+    totalSold90d: number;
+    averageSold7d: number;
+    averageSold30d: number;
+    averageSold90d: number;
+  };
   caseSkins: Array<{
     id: number;
     rarity: string;
@@ -57,6 +81,13 @@ interface Case {
       rarity?: string;
       priceLatest?: number;
       priceMedian?: number;
+      // Real SteamWebAPI.com data
+      offerVolume?: number;
+      soldToday?: number;
+      sold7d?: number;
+      sold30d?: number;
+      sold90d?: number;
+      soldTotal?: number;
     };
   }>;
   caseSupply: Array<{
@@ -242,7 +273,7 @@ export default function CaseDetailPage() {
           </div>
         </div>
 
-        {/* Key Metrics */}
+        {/* Key Metrics - Real SteamWebAPI.com Data */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
@@ -250,16 +281,17 @@ export default function CaseDetailPage() {
                 <div>
                   <p className="text-sm text-gray-400">Current Price</p>
                   <p className="text-2xl font-bold text-white">
-                    {caseData.price ? formatUSD(caseData.price) : 'N/A'}
+                    {caseData.steamData?.priceLatest ? formatUSD(caseData.steamData.priceLatest) : 
+                     caseData.price ? formatUSD(caseData.price) : 'N/A'}
                   </p>
                 </div>
                 <DollarSign className="w-8 h-8 text-green-400" />
               </div>
-              {caseData.priceChange24h !== undefined && (
-                <div className={`flex items-center gap-1 mt-2 ${getPriceChangeColor(caseData.priceChange24h)}`}>
-                  {getPriceChangeIcon(caseData.priceChange24h)}
+              {(caseData.steamData?.priceChange24h ?? caseData.priceChange24h) !== undefined && (
+                <div className={`flex items-center gap-1 mt-2 ${getPriceChangeColor(caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0)}`}>
+                  {getPriceChangeIcon(caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0)}
                   <span className="text-sm">
-                    {caseData.priceChange24h > 0 ? '+' : ''}{safeToFixed(caseData.priceChange24h, 2)}% (24h)
+                    {(caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0) > 0 ? '+' : ''}{safeToFixed(caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0, 2)}% (24h)
                   </span>
                 </div>
               )}
@@ -270,13 +302,14 @@ export default function CaseDetailPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Market Cap</p>
+                  <p className="text-sm text-gray-400">Available Listings</p>
                   <p className="text-2xl font-bold text-white">
-                    {caseData.marketCap ? formatUSD(caseData.marketCap) : 'N/A'}
+                    {caseData.steamData?.offerVolume ? formatNumber(caseData.steamData.offerVolume) : 'N/A'}
                   </p>
                 </div>
-                <BarChart3 className="w-8 h-8 text-blue-400" />
+                <Package className="w-8 h-8 text-blue-400" />
               </div>
+              <p className="text-xs text-gray-500 mt-1">Steam Market Listings</p>
             </CardContent>
           </Card>
 
@@ -284,16 +317,31 @@ export default function CaseDetailPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Remaining Supply</p>
+                  <p className="text-sm text-gray-400">Sold (7d)</p>
                   <p className="text-2xl font-bold text-white">
-                    {caseData.remaining ? formatNumber(caseData.remaining) : 'N/A'}
+                    {caseData.steamData?.sold7d ? formatNumber(caseData.steamData.sold7d) : 'N/A'}
                   </p>
                 </div>
-                <Package className="w-8 h-8 text-purple-400" />
+                <TrendingUp className="w-8 h-8 text-purple-400" />
               </div>
+              <p className="text-xs text-gray-500 mt-1">Real Steam Sales</p>
             </CardContent>
           </Card>
 
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">Sold (30d)</p>
+                  <p className="text-2xl font-bold text-white">
+                    {caseData.steamData?.sold30d ? formatNumber(caseData.steamData.sold30d) : 'N/A'}
+                  </p>
+                </div>
+                <BarChart3 className="w-8 h-8 text-orange-400" />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Monthly Activity</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Detailed Tabs */}
@@ -307,30 +355,49 @@ export default function CaseDetailPage() {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Supply Statistics */}
+              {/* Real Market Activity */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />
-                    Supply Statistics
+                    Market Activity <span className="text-green-400 text-sm font-normal">(Real Steam Data)</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Total Dropped:</span>
-                    <span className="font-medium">{caseData.dropped ? formatNumber(caseData.dropped) : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Total Unboxed:</span>
-                    <span className="font-medium">{caseData.unboxed ? formatNumber(caseData.unboxed) : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Unbox Rate:</span>
+                    <span className="text-gray-400">Available Listings:</span>
                     <span className="font-medium">
-                      {caseData.dropped && caseData.unboxed 
-                        ? safeToFixed((caseData.unboxed / caseData.dropped) * 100, 1) + '%'
-                        : 'N/A'
-                      }
+                      {caseData.steamData?.offerVolume ? formatNumber(caseData.steamData.offerVolume) : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Sold Today:</span>
+                    <span className="font-medium">
+                      {caseData.steamData?.soldToday ? formatNumber(caseData.steamData.soldToday) : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Sold (7d):</span>
+                    <span className="font-medium">
+                      {caseData.steamData?.sold7d ? formatNumber(caseData.steamData.sold7d) : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Sold (30d):</span>
+                    <span className="font-medium">
+                      {caseData.steamData?.sold30d ? formatNumber(caseData.steamData.sold30d) : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Sold (90d):</span>
+                    <span className="font-medium">
+                      {caseData.steamData?.sold90d ? formatNumber(caseData.steamData.sold90d) : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Total Sold:</span>
+                    <span className="font-medium">
+                      {caseData.steamData?.soldTotal ? formatNumber(caseData.steamData.soldTotal) : 'N/A'}
                     </span>
                   </div>
                 </CardContent>
@@ -341,17 +408,42 @@ export default function CaseDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5" />
-                    Price Performance
+                    Price Performance <span className="text-green-400 text-sm font-normal">(Real Steam Data)</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">7d Change:</span>
-                    <div className={`flex items-center gap-1 ${getPriceChangeColor(caseData.priceChange7d || 0)}`}>
-                      {getPriceChangeIcon(caseData.priceChange7d || 0)}
+                    <span className="text-gray-400">Current Price:</span>
+                    <span className="font-medium text-green-400">
+                      {caseData.steamData?.priceLatest ? formatUSD(caseData.steamData.priceLatest) : 
+                       caseData.price ? formatUSD(caseData.price) : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Median Price:</span>
+                    <span className="font-medium">
+                      {caseData.steamData?.priceMedian ? formatUSD(caseData.steamData.priceMedian) : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">24h Change:</span>
+                    <div className={`flex items-center gap-1 ${getPriceChangeColor(caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0)}`}>
+                      {getPriceChangeIcon(caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0)}
                       <span className="font-medium">
-                        {caseData.priceChange7d !== undefined 
-                          ? (caseData.priceChange7d > 0 ? '+' : '') + safeToFixed(caseData.priceChange7d, 2) + '%'
+                        {(caseData.steamData?.priceChange24h ?? caseData.priceChange24h) !== undefined 
+                          ? (caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0) > 0 ? '+' : '' + safeToFixed(caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0, 2) + '%'
+                          : 'N/A'
+                        }
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">7d Change:</span>
+                    <div className={`flex items-center gap-1 ${getPriceChangeColor(caseData.steamData?.priceChange7d ?? caseData.priceChange7d ?? 0)}`}>
+                      {getPriceChangeIcon(caseData.steamData?.priceChange7d ?? caseData.priceChange7d ?? 0)}
+                      <span className="font-medium">
+                        {(caseData.steamData?.priceChange7d ?? caseData.priceChange7d) !== undefined 
+                          ? (caseData.steamData?.priceChange7d ?? caseData.priceChange7d ?? 0) > 0 ? '+' : '' + safeToFixed(caseData.steamData?.priceChange7d ?? caseData.priceChange7d ?? 0, 2) + '%'
                           : 'N/A'
                         }
                       </span>
@@ -359,11 +451,11 @@ export default function CaseDetailPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">30d Change:</span>
-                    <div className={`flex items-center gap-1 ${getPriceChangeColor(caseData.priceChange30d || 0)}`}>
-                      {getPriceChangeIcon(caseData.priceChange30d || 0)}
+                    <div className={`flex items-center gap-1 ${getPriceChangeColor(caseData.steamData?.priceChange30d ?? caseData.priceChange30d ?? 0)}`}>
+                      {getPriceChangeIcon(caseData.steamData?.priceChange30d ?? caseData.priceChange30d ?? 0)}
                       <span className="font-medium">
-                        {caseData.priceChange30d !== undefined 
-                          ? (caseData.priceChange30d > 0 ? '+' : '') + safeToFixed(caseData.priceChange30d, 2) + '%'
+                        {(caseData.steamData?.priceChange30d ?? caseData.priceChange30d) !== undefined 
+                          ? (caseData.steamData?.priceChange30d ?? caseData.priceChange30d ?? 0) > 0 ? '+' : '' + safeToFixed(caseData.steamData?.priceChange30d ?? caseData.priceChange30d ?? 0, 2) + '%'
                           : 'N/A'
                         }
                       </span>
@@ -372,6 +464,46 @@ export default function CaseDetailPage() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Contained Skins Statistics */}
+            {caseData.aggregatedStats && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="w-5 h-5" />
+                    Contained Skins Activity <span className="text-green-400 text-sm font-normal">(Aggregated from {caseData.caseSkins.length} skins)</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-400">
+                        {formatNumber(caseData.aggregatedStats.totalOfferVolume)}
+                      </div>
+                      <div className="text-sm text-gray-400">Total Listings</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-400">
+                        {formatNumber(caseData.aggregatedStats.averageSold7d)}
+                      </div>
+                      <div className="text-sm text-gray-400">Avg Sold (7d)</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-400">
+                        {formatNumber(caseData.aggregatedStats.averageSold30d)}
+                      </div>
+                      <div className="text-sm text-gray-400">Avg Sold (30d)</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-400">
+                        {formatNumber(caseData.aggregatedStats.averageSold90d)}
+                      </div>
+                      <div className="text-sm text-gray-400">Avg Sold (90d)</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="supply" className="space-y-6">
@@ -433,7 +565,7 @@ export default function CaseDetailPage() {
           <TabsContent value="skins" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Contained Skins ({caseData.caseSkins.length})</CardTitle>
+                <CardTitle>Contained Skins ({caseData.caseSkins.length}) <span className="text-green-400 text-sm font-normal">(Real Steam Data)</span></CardTitle>
               </CardHeader>
               <CardContent>
                 {caseData.caseSkins.length > 0 ? (
@@ -470,11 +602,27 @@ export default function CaseDetailPage() {
                                 </Badge>
                               )}
                             </div>
-                            {caseSkin.skin.priceLatest && (
-                              <p className="text-sm text-gray-400 mt-1">
-                                {formatUSD(caseSkin.skin.priceLatest)}
-                              </p>
-                            )}
+                            <div className="flex items-center justify-between mt-2">
+                              <div>
+                                {caseSkin.skin.priceLatest && (
+                                  <p className="text-sm text-green-400 font-medium">
+                                    {formatUSD(caseSkin.skin.priceLatest)}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                {caseSkin.skin.offerVolume && (
+                                  <p className="text-xs text-blue-400">
+                                    {formatNumber(caseSkin.skin.offerVolume)} listings
+                                  </p>
+                                )}
+                                {caseSkin.skin.sold7d && (
+                                  <p className="text-xs text-purple-400">
+                                    {formatNumber(caseSkin.skin.sold7d)} sold (7d)
+                                  </p>
+                                )}
+                              </div>
+                            </div>
                           </div>
                           <ExternalLink className="w-4 h-4 text-gray-400" />
                         </div>

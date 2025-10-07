@@ -105,7 +105,14 @@ const getCaseById = async (req, res) => {
                 imageUrl: true,
                 rarity: true,
                 priceLatest: true,
-                priceMedian: true
+                priceMedian: true,
+                // Real SteamWebAPI.com data
+                offerVolume: true,
+                soldToday: true,
+                sold7d: true,
+                sold30d: true,
+                sold90d: true,
+                soldTotal: true
               }
             }
           },
@@ -132,7 +139,72 @@ const getCaseById = async (req, res) => {
       return res.status(404).json({ error: 'Case not found' });
     }
 
-    res.json(caseData);
+    // Get real SteamWebAPI.com data for the case itself
+    const steamCaseData = await prisma.skin.findFirst({
+      where: {
+        name: caseData.name,
+        // Ensure it's a case (not a skin)
+        weaponType: 'Case'
+      },
+      select: {
+        offerVolume: true,
+        soldToday: true,
+        sold7d: true,
+        sold30d: true,
+        sold90d: true,
+        soldTotal: true,
+        priceLatest: true,
+        priceMedian: true,
+        priceChange24h: true,
+        priceChange7d: true,
+        priceChange30d: true
+      }
+    });
+
+    // Calculate aggregated statistics from contained skins
+    const totalOfferVolume = caseData.caseSkins.reduce((sum, caseSkin) => 
+      sum + (caseSkin.skin.offerVolume || 0), 0
+    );
+    const totalSold7d = caseData.caseSkins.reduce((sum, caseSkin) => 
+      sum + (caseSkin.skin.sold7d || 0), 0
+    );
+    const totalSold30d = caseData.caseSkins.reduce((sum, caseSkin) => 
+      sum + (caseSkin.skin.sold30d || 0), 0
+    );
+    const totalSold90d = caseData.caseSkins.reduce((sum, caseSkin) => 
+      sum + (caseSkin.skin.sold90d || 0), 0
+    );
+
+    // Enhanced case data with real SteamWebAPI.com statistics
+    const enhancedCaseData = {
+      ...caseData,
+      // Real SteamWebAPI.com data for the case itself
+      steamData: steamCaseData ? {
+        offerVolume: steamCaseData.offerVolume,
+        soldToday: steamCaseData.soldToday,
+        sold7d: steamCaseData.sold7d,
+        sold30d: steamCaseData.sold30d,
+        sold90d: steamCaseData.sold90d,
+        soldTotal: steamCaseData.soldTotal,
+        priceLatest: steamCaseData.priceLatest,
+        priceMedian: steamCaseData.priceMedian,
+        priceChange24h: steamCaseData.priceChange24h,
+        priceChange7d: steamCaseData.priceChange7d,
+        priceChange30d: steamCaseData.priceChange30d
+      } : null,
+      // Aggregated statistics from contained skins
+      aggregatedStats: {
+        totalOfferVolume,
+        totalSold7d,
+        totalSold30d,
+        totalSold90d,
+        averageSold7d: caseData.caseSkins.length > 0 ? Math.round(totalSold7d / caseData.caseSkins.length) : 0,
+        averageSold30d: caseData.caseSkins.length > 0 ? Math.round(totalSold30d / caseData.caseSkins.length) : 0,
+        averageSold90d: caseData.caseSkins.length > 0 ? Math.round(totalSold90d / caseData.caseSkins.length) : 0
+      }
+    };
+
+    res.json(enhancedCaseData);
 
   } catch (error) {
     console.error('Error fetching case:', error);
