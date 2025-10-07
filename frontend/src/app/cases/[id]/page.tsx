@@ -360,7 +360,7 @@ export default function CaseDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />
-                    Market Activity <span className="text-green-400 text-sm font-normal">(Real Steam Data)</span>
+                    Market Activity
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -408,7 +408,7 @@ export default function CaseDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5" />
-                    Price Performance <span className="text-green-400 text-sm font-normal">(Real Steam Data)</span>
+                    Price Performance
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -509,7 +509,7 @@ export default function CaseDetailPage() {
           <TabsContent value="supply" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Market Activity <span className="text-green-400 text-sm font-normal">(Real Steam Data)</span></CardTitle>
+                <CardTitle>Market Activity</CardTitle>
               </CardHeader>
               <CardContent>
                 <CaseSupplyChart data={caseData.caseSupply} />
@@ -565,7 +565,7 @@ export default function CaseDetailPage() {
           <TabsContent value="skins" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Contained Skins ({caseData.caseSkins.length}) <span className="text-green-400 text-sm font-normal">(Real Steam Data)</span></CardTitle>
+                <CardTitle>Contained Skins ({caseData.caseSkins.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {caseData.caseSkins.length > 0 ? (
