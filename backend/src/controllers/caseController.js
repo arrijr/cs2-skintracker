@@ -162,17 +162,17 @@ const getCaseById = async (req, res) => {
     });
 
     // Calculate aggregated statistics from contained skins
-    const totalOfferVolume = caseData.caseSkins.reduce((sum, caseSkin) => 
-      sum + (caseSkin.skin.offerVolume || 0), 0
+    const totalOfferVolume = (caseData.caseSkins || []).reduce((sum, caseSkin) => 
+      sum + (caseSkin.skin?.offerVolume || 0), 0
     );
-    const totalSold7d = caseData.caseSkins.reduce((sum, caseSkin) => 
-      sum + (caseSkin.skin.sold7d || 0), 0
+    const totalSold7d = (caseData.caseSkins || []).reduce((sum, caseSkin) => 
+      sum + (caseSkin.skin?.sold7d || 0), 0
     );
-    const totalSold30d = caseData.caseSkins.reduce((sum, caseSkin) => 
-      sum + (caseSkin.skin.sold30d || 0), 0
+    const totalSold30d = (caseData.caseSkins || []).reduce((sum, caseSkin) => 
+      sum + (caseSkin.skin?.sold30d || 0), 0
     );
-    const totalSold90d = caseData.caseSkins.reduce((sum, caseSkin) => 
-      sum + (caseSkin.skin.sold90d || 0), 0
+    const totalSold90d = (caseData.caseSkins || []).reduce((sum, caseSkin) => 
+      sum + (caseSkin.skin?.sold90d || 0), 0
     );
 
     // Enhanced case data with real SteamWebAPI.com statistics
