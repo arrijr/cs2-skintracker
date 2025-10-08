@@ -300,6 +300,7 @@ model CaseSupply {
   offerVolume Int?     // Current offer volume from SteamWebAPI
   price       Float?   // Price on this date
   marketCap   Float?   // Market cap on this date
+  soldData    String?  // JSON string with sales data (sold24h, sold7d, etc.)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

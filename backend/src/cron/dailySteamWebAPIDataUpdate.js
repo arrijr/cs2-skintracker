@@ -97,7 +97,16 @@ export async function dailySteamWebAPIDataUpdate() {
             dropped: (lastSupply?.dropped || 0) + dailyDrops,
             unboxed: (lastSupply?.unboxed || 0) + dailyUnboxings,
             remaining: Math.max(0, (lastSupply?.remaining || 1000000) - dailyDrops + dailyUnboxings),
-            offerVolume: steamCase.offervolume || 0
+            offerVolume: steamCase.offervolume || 0,
+            price: steamCase.pricelatest || 0,
+            // Store sales data as JSON in a text field (temporary solution)
+            soldData: JSON.stringify({
+              sold24h: steamCase.sold24h || 0,
+              sold7d: steamCase.sold7d || 0,
+              sold30d: steamCase.sold30d || 0,
+              sold90d: steamCase.sold90d || 0,
+              soldTotal: steamCase.soldtotal || 0
+            })
           };
 
           await prisma.caseSupply.create({
@@ -133,7 +142,14 @@ export async function dailySteamWebAPIDataUpdate() {
             where: { id: existingToday.id },
             data: {
               offerVolume: steamCase.offervolume || 0,
-              price: steamCase.pricelatest
+              price: steamCase.pricelatest,
+              soldData: JSON.stringify({
+                sold24h: steamCase.sold24h || 0,
+                sold7d: steamCase.sold7d || 0,
+                sold30d: steamCase.sold30d || 0,
+                sold90d: steamCase.sold90d || 0,
+                soldTotal: steamCase.soldtotal || 0
+              })
             }
           });
 

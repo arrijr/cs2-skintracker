@@ -139,9 +139,31 @@ const getCaseById = async (req, res) => {
       return res.status(404).json({ error: 'Case not found' });
     }
 
-    // Note: Cases are not stored as skins, so we can't get SteamWebAPI.com data for the case itself
-    // We'll use aggregated data from contained skins instead
-    const steamCaseData = null;
+    // Get latest Steam data from caseSupply table
+    const latestSupplyData = caseData.caseSupply?.[0];
+    let soldData = {};
+    
+    if (latestSupplyData?.soldData) {
+      try {
+        soldData = JSON.parse(latestSupplyData.soldData);
+      } catch (error) {
+        console.error('Error parsing soldData:', error);
+      }
+    }
+    
+    const steamCaseData = latestSupplyData ? {
+      offerVolume: latestSupplyData.offerVolume,
+      soldToday: soldData.sold24h || 0,
+      sold7d: soldData.sold7d || 0,
+      sold30d: soldData.sold30d || 0,
+      sold90d: soldData.sold90d || 0,
+      soldTotal: soldData.soldTotal || 0,
+      priceLatest: latestSupplyData.price,
+      priceMedian: latestSupplyData.price,
+      priceChange24h: 0, // TODO: Calculate from price history
+      priceChange7d: 0,  // TODO: Calculate from price history
+      priceChange30d: 0  // TODO: Calculate from price history
+    } : null;
 
     // Calculate aggregated statistics from contained skins
     const totalOfferVolume = (caseData.caseSkins || []).reduce((sum, caseSkin) => 
