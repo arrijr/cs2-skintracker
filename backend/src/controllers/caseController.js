@@ -151,6 +151,39 @@ const getCaseById = async (req, res) => {
       }
     }
     
+    // Calculate price changes from price history
+    let priceChange24h = 0;
+    let priceChange7d = 0;
+    let priceChange30d = 0;
+    
+    if (caseData.casePriceHistory && caseData.casePriceHistory.length > 0) {
+      const currentPrice = latestSupplyData?.price || 0;
+      
+      // Find historical prices
+      const price24h = caseData.casePriceHistory.find(p => {
+        const dayAgo = new Date();
+        dayAgo.setDate(dayAgo.getDate() - 1);
+        return new Date(p.date) <= dayAgo;
+      })?.price || currentPrice;
+      
+      const price7d = caseData.casePriceHistory.find(p => {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return new Date(p.date) <= weekAgo;
+      })?.price || currentPrice;
+      
+      const price30d = caseData.casePriceHistory.find(p => {
+        const monthAgo = new Date();
+        monthAgo.setDate(monthAgo.getDate() - 30);
+        return new Date(p.date) <= monthAgo;
+      })?.price || currentPrice;
+      
+      // Calculate percentage changes
+      if (price24h > 0) priceChange24h = ((currentPrice - price24h) / price24h) * 100;
+      if (price7d > 0) priceChange7d = ((currentPrice - price7d) / price7d) * 100;
+      if (price30d > 0) priceChange30d = ((currentPrice - price30d) / price30d) * 100;
+    }
+    
     const steamCaseData = latestSupplyData ? {
       offerVolume: latestSupplyData.offerVolume,
       soldToday: soldData.sold24h || 0,
@@ -160,9 +193,9 @@ const getCaseById = async (req, res) => {
       soldTotal: soldData.soldTotal || 0,
       priceLatest: latestSupplyData.price,
       priceMedian: latestSupplyData.price,
-      priceChange24h: 0, // TODO: Calculate from price history
-      priceChange7d: 0,  // TODO: Calculate from price history
-      priceChange30d: 0  // TODO: Calculate from price history
+      priceChange24h: priceChange24h,
+      priceChange7d: priceChange7d,
+      priceChange30d: priceChange30d
     } : null;
 
     // Calculate aggregated statistics from contained skins
