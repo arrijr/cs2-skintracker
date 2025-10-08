@@ -367,7 +367,7 @@ export default function CaseDetailPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-400">Available Listings:</span>
                     <span className="font-medium">
-                      {caseData.aggregatedStats?.totalOfferVolume ? formatNumber(caseData.aggregatedStats.totalOfferVolume) : 'N/A'}
+                      {caseData.steamData?.offerVolume ? formatNumber(caseData.steamData.offerVolume) : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -379,25 +379,25 @@ export default function CaseDetailPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-400">Sold (7d):</span>
                     <span className="font-medium">
-                      {caseData.aggregatedStats?.totalSold7d ? formatNumber(caseData.aggregatedStats.totalSold7d) : 'N/A'}
+                      {caseData.steamData?.sold7d ? formatNumber(caseData.steamData.sold7d) : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Sold (30d):</span>
                     <span className="font-medium">
-                      {caseData.aggregatedStats?.totalSold30d ? formatNumber(caseData.aggregatedStats.totalSold30d) : 'N/A'}
+                      {caseData.steamData?.sold30d ? formatNumber(caseData.steamData.sold30d) : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Sold (90d):</span>
                     <span className="font-medium">
-                      {caseData.aggregatedStats?.totalSold90d ? formatNumber(caseData.aggregatedStats.totalSold90d) : 'N/A'}
+                      {caseData.steamData?.sold90d ? formatNumber(caseData.steamData.sold90d) : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Total Sold:</span>
                     <span className="font-medium">
-                      {caseData.aggregatedStats?.totalSold90d ? formatNumber(caseData.aggregatedStats.totalSold90d) : 'N/A'}
+                      {caseData.steamData?.soldTotal ? formatNumber(caseData.steamData.soldTotal) : 'N/A'}
                     </span>
                   </div>
                 </CardContent>
