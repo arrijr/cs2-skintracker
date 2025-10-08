@@ -348,7 +348,7 @@ export default function CaseDetailPage() {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="supply">Supply History</TabsTrigger>
+            <TabsTrigger value="supply">Sales History</TabsTrigger>
             <TabsTrigger value="prices">Price History</TabsTrigger>
             <TabsTrigger value="skins">Contained Skins</TabsTrigger>
           </TabsList>
@@ -367,7 +367,7 @@ export default function CaseDetailPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-400">Available Listings:</span>
                     <span className="font-medium">
-                      {caseData.steamData?.offerVolume ? formatNumber(caseData.steamData.offerVolume) : 'N/A'}
+                      {caseData.aggregatedStats?.totalOfferVolume ? formatNumber(caseData.aggregatedStats.totalOfferVolume) : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -379,25 +379,25 @@ export default function CaseDetailPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-400">Sold (7d):</span>
                     <span className="font-medium">
-                      {caseData.steamData?.sold7d ? formatNumber(caseData.steamData.sold7d) : 'N/A'}
+                      {caseData.aggregatedStats?.totalSold7d ? formatNumber(caseData.aggregatedStats.totalSold7d) : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Sold (30d):</span>
                     <span className="font-medium">
-                      {caseData.steamData?.sold30d ? formatNumber(caseData.steamData.sold30d) : 'N/A'}
+                      {caseData.aggregatedStats?.totalSold30d ? formatNumber(caseData.aggregatedStats.totalSold30d) : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Sold (90d):</span>
                     <span className="font-medium">
-                      {caseData.steamData?.sold90d ? formatNumber(caseData.steamData.sold90d) : 'N/A'}
+                      {caseData.aggregatedStats?.totalSold90d ? formatNumber(caseData.aggregatedStats.totalSold90d) : 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Total Sold:</span>
                     <span className="font-medium">
-                      {caseData.steamData?.soldTotal ? formatNumber(caseData.steamData.soldTotal) : 'N/A'}
+                      {caseData.aggregatedStats?.totalSold90d ? formatNumber(caseData.aggregatedStats.totalSold90d) : 'N/A'}
                     </span>
                   </div>
                 </CardContent>
