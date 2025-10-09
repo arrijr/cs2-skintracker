@@ -55,17 +55,6 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
     );
   }
 
-  // Add info about real data
-  const dataInfo = (
-    <div className="mb-4 p-3 bg-green-900/20 border border-green-600/30 rounded-lg">
-      <div className="flex items-start gap-2">
-        <div className="text-green-400 text-sm">✅</div>
-        <div className="text-sm text-green-200">
-          <strong>Real Market Data:</strong> Offer volume and sales data from SteamWebAPI.com. Shows actual Steam market activity - current offers available and daily sales volume over 90 days.
-        </div>
-      </div>
-    </div>
-  );
 
   // Sort data by date
   const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -209,7 +198,6 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
 
   return (
     <div className={`w-full h-96 ${className}`}>
-      {dataInfo}
       <Chart type="bar" data={chartData} options={options} />
     </div>
   );

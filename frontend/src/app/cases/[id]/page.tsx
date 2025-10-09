@@ -465,45 +465,6 @@ export default function CaseDetailPage() {
               </Card>
             </div>
 
-            {/* Contained Skins Statistics */}
-            {caseData.aggregatedStats && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="w-5 h-5" />
-                    Contained Skins Activity <span className="text-green-400 text-sm font-normal">(Aggregated from {caseData.caseSkins.length} skins)</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-400">
-                        {formatNumber(caseData.aggregatedStats.totalOfferVolume)}
-                      </div>
-                      <div className="text-sm text-gray-400">Total Listings</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-400">
-                        {formatNumber(caseData.aggregatedStats.averageSold7d)}
-                      </div>
-                      <div className="text-sm text-gray-400">Avg Sold (7d)</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-400">
-                        {formatNumber(caseData.aggregatedStats.averageSold30d)}
-                      </div>
-                      <div className="text-sm text-gray-400">Avg Sold (30d)</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-400">
-                        {formatNumber(caseData.aggregatedStats.averageSold90d)}
-                      </div>
-                      <div className="text-sm text-gray-400">Avg Sold (90d)</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </TabsContent>
 
           <TabsContent value="supply" className="space-y-6">
