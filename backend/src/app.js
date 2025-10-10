@@ -69,9 +69,11 @@ const parseCSV = (v) => (v || "").split(",").map(s => s.trim()).filter(Boolean);
 const whitelist = [
   ...parseCSV(process.env.ALLOWED_ORIGINS), // e.g. https://cs2-skintracker-arrijrs-projects.vercel.app, http://localhost:3000
   process.env.FRONTEND_ORIGIN,              // optional single origin
-  // Vercel domains
+  // Vercel domains - UPDATED with current URLs
   "https://cs2-skintracker.vercel.app",
   "https://cs2-skintracker-git-feature-cursor-workflow-arrijrs-projects.vercel.app",
+  "https://cs2-skintracker-dev.vercel.app",
+  "https://cs2-skintracker-staging.vercel.app",
   // Additional Vercel patterns
   "https://cs2-skintracker-git-*.arrijrs-projects.vercel.app"
 ].filter(Boolean);
@@ -81,7 +83,30 @@ const corsOptions = {
     // Always allow requests (including no origin for mobile apps, Postman, etc.)
     // This is the most permissive approach that works with all Vercel URLs
     console.log(`[CORS] Request from origin: ${origin || 'no-origin'}`);
-    callback(null, true);
+    
+    // Special handling for Vercel requests without origin header
+    if (!origin) {
+      console.log('[CORS] No origin header - allowing request (Vercel compatibility)');
+      callback(null, true);
+      return;
+    }
+    
+    // Check if origin is in whitelist or matches Vercel patterns
+    const isAllowed = whitelist.some(allowed => {
+      if (allowed.includes('*')) {
+        const pattern = allowed.replace(/\*/g, '.*');
+        return new RegExp(pattern).test(origin);
+      }
+      return allowed === origin;
+    });
+    
+    if (isAllowed) {
+      console.log(`[CORS] Origin ${origin} is allowed`);
+      callback(null, true);
+    } else {
+      console.log(`[CORS] Origin ${origin} not in whitelist, but allowing anyway for Vercel compatibility`);
+      callback(null, true); // Still allow for Vercel compatibility
+    }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -107,13 +132,19 @@ app.use(cors(corsOptions));
 // {/* Additional CORS middleware to ensure headers are always set */}
 app.use((req, res, next) => {
   // Always set CORS headers manually as backup
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  const origin = req.headers.origin;
+  console.log(`[CORS-MIDDLEWARE] Setting headers for origin: ${origin || 'no-origin'}`);
+  
+  // Set Access-Control-Allow-Origin to the requesting origin or * for no origin
+  res.header('Access-Control-Allow-Origin', origin || '*');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+  res.header('Access-Control-Max-Age', '86400'); // 24 hours
   
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('[CORS-MIDDLEWARE] Handling preflight request');
     res.status(200).end();
     return;
   }
