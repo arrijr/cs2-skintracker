@@ -58,6 +58,14 @@ type Skin = {
   priceAvg?: number;
   priceMin?: number;
   priceMax?: number;
+  // Market activity fields
+  offerVolume?: number;
+  sold24h?: number;
+  sold7d?: number;
+  sold30d?: number;
+  sold90d?: number;
+  buyOrderVolume?: number;
+  buyOrderPrice?: number;
   marketStats?: {
     medianPrice?: number;
     volume24h?: number;
@@ -803,7 +811,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             </CardTitle>
           </CardHeader>
             <CardContent className="p-5 pt-0">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {/* Price Statistics */}
                 <div className="space-y-1">
                   <div className="text-sm text-muted-foreground">Latest Price</div>
                   <div className="text-xl font-semibold text-foreground">
@@ -826,23 +835,67 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 </div>
                 
                 <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Min Price</div>
+                  <div className="text-sm text-muted-foreground">Min Price (90d)</div>
                   <div className="text-xl font-semibold text-green-600">
                     {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
                   </div>
                 </div>
                 
                 <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Max Price</div>
+                  <div className="text-sm text-muted-foreground">Max Price (90d)</div>
                   <div className="text-xl font-semibold text-red-600">
                     {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
+                  </div>
+                </div>
+                
+                {/* Market Activity */}
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Offer Volume</div>
+                  <div className="text-xl font-semibold text-foreground">
+                    {skin.offerVolume ? skin.offerVolume.toLocaleString() : 'N/A'}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Sold (7d)</div>
+                  <div className="text-xl font-semibold text-foreground">
+                    {skin.sold7d ? skin.sold7d.toLocaleString() : 'N/A'}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Sold (30d)</div>
+                  <div className="text-xl font-semibold text-foreground">
+                    {skin.sold30d ? skin.sold30d.toLocaleString() : 'N/A'}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Sold (90d)</div>
+                  <div className="text-xl font-semibold text-foreground">
+                    {skin.sold90d ? skin.sold90d.toLocaleString() : 'N/A'}
+                  </div>
+                </div>
+                
+                {/* Buy Orders */}
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Buy Orders</div>
+                  <div className="text-xl font-semibold text-blue-600">
+                    {skin.buyOrderVolume ? skin.buyOrderVolume.toLocaleString() : 'N/A'}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Buy Order Price</div>
+                  <div className="text-xl font-semibold text-blue-600">
+                    {skin.buyOrderPrice ? formatUSD(skin.buyOrderPrice) : 'N/A'}
                   </div>
                 </div>
                 
                 <div className="space-y-1">
                   <div className="text-sm text-muted-foreground">Volume 24h</div>
                   <div className="text-xl font-semibold text-foreground">
-                    {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : 'N/A'}
+                    {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : (skin.sold24h ? skin.sold24h.toLocaleString() : 'N/A')}
                   </div>
                 </div>
                 </div>
