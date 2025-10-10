@@ -627,20 +627,26 @@ router.get("/:skinId/history/quantity", async (req, res) => {
     const currentPrice = skin.priceLatest || skin.priceMedian || skin.priceAvg || 0;
     const baseQuantity = skin.offerVolume || (currentPrice > 100 ? 1 : currentPrice > 50 ? 3 : currentPrice > 10 ? 8 : 15);
     
-    for (let i = 0; i < 30; i++) {
+    // Calculate number of days based on range
+    const days = range === '1y' ? 365 : range === '90d' ? 90 : range === '30d' ? 30 : 7;
+    
+    for (let i = 0; i < days; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
       
       // Add small trend and variation
       const trend = (Math.random() - 0.5) * 0.1;
       const variation = (Math.random() - 0.5) * 0.3;
-      const currentQuantity = Math.max(1, Math.floor(baseQuantity * (1 + trend * i / 30 + variation)));
+      const currentQuantity = Math.max(1, Math.floor(baseQuantity * (1 + trend * i / days + variation)));
+      
+      // Generate realistic sold volume (10-30% of available listings)
+      const soldVolume24h = Math.floor(currentQuantity * (0.1 + Math.random() * 0.2));
       
       quantityData.push({
         date: date.toISOString().split('T')[0],
         quantity: currentQuantity,
         activeListings: currentQuantity,
-        soldVolume24h: Math.floor(currentQuantity * (0.1 + Math.random() * 0.3))
+        soldVolume24h: soldVolume24h
       });
     }
     

@@ -52,20 +52,38 @@ type Skin = {
   rarity?: string;
   isStattrak?: boolean;
   isStar?: boolean;
+  // Current prices
   priceLatest?: number;
+  priceLatestSell?: number;
   priceMedian?: number;
-  priceMedian7d?: number;
   priceAvg?: number;
+  priceSafe?: number;
   priceMin?: number;
   priceMax?: number;
-  // Market activity fields
-  offerVolume?: number;
+  // Historical prices
+  priceMedian24h?: number;
+  priceMedian7d?: number;
+  priceMedian30d?: number;
+  priceMedian90d?: number;
+  priceAvg24h?: number;
+  priceAvg7d?: number;
+  priceAvg30d?: number;
+  priceAvg90d?: number;
+  // Sales statistics
+  soldToday?: number;
   sold24h?: number;
   sold7d?: number;
   sold30d?: number;
   sold90d?: number;
-  buyOrderVolume?: number;
+  soldTotal?: number;
+  hoursToSold?: number;
+  // Steam market data
   buyOrderPrice?: number;
+  buyOrderMedian?: number;
+  buyOrderAvg?: number;
+  buyOrderVolume?: number;
+  offerVolume?: number;
+  // Legacy market activity fields
   marketStats?: {
     medianPrice?: number;
     volume24h?: number;
@@ -211,7 +229,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
     return skin ? portfolioSkins.includes(skin.id) : false;
   }, [skin, portfolioSkins]);
 
-  const marketStats = skin?.marketStats || {};
+  // Market statistics are now directly in the skin object
   const skinCaseInfo = skin?.caseInfo;
   const variants = skin?.variants || [];
   const history = skin?.history || [];
@@ -568,17 +586,17 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   <div className="text-2xl font-bold text-foreground">
                     {skin.marketPrice ? formatUSD(skin.marketPrice) : 'N/A'}
                   </div>
-                  {marketStats.priceChangePercent24h && (
+                  {skin.priceMedian24h && skin.priceLatest && (
                     <Badge 
-                      variant={marketStats.priceChangePercent24h >= 0 ? "default" : "destructive"}
+                      variant={((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100) >= 0 ? "default" : "destructive"}
                       className="text-sm"
                     >
-                      {marketStats.priceChangePercent24h >= 0 ? (
+                      {((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100) >= 0 ? (
                         <TrendingUp className="h-3 w-3 mr-1" />
                       ) : (
                         <TrendingDown className="h-3 w-3 mr-1" />
                       )}
-                      {marketStats.priceChangePercent24h >= 0 ? '+' : ''}{safeToFixed(marketStats.priceChangePercent24h, 2)}%
+                      {((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100) >= 0 ? '+' : ''}{safeToFixed(((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100), 2)}%
                       </Badge>
                     )}
              </div>
@@ -811,7 +829,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
             </CardTitle>
           </CardHeader>
             <CardContent className="p-5 pt-0">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {/* Price Statistics */}
                 <div className="space-y-1">
                   <div className="text-sm text-muted-foreground">Latest Price</div>
@@ -893,9 +911,44 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 </div>
                 
                 <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Volume 24h</div>
+                  <div className="text-sm text-muted-foreground">Buy Order Median</div>
+                  <div className="text-xl font-semibold text-blue-600">
+                    {skin.buyOrderMedian ? formatUSD(skin.buyOrderMedian) : 'N/A'}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Buy Order Avg</div>
+                  <div className="text-xl font-semibold text-blue-600">
+                    {skin.buyOrderAvg ? formatUSD(skin.buyOrderAvg) : 'N/A'}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Hours to Sold</div>
                   <div className="text-xl font-semibold text-foreground">
-                    {marketStats.volume24h ? marketStats.volume24h.toLocaleString() : (skin.sold24h ? skin.sold24h.toLocaleString() : 'N/A')}
+                    {skin.hoursToSold ? `${skin.hoursToSold.toFixed(1)}h` : 'N/A'}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Sold (24h)</div>
+                  <div className="text-xl font-semibold text-foreground">
+                    {skin.sold24h ? skin.sold24h.toLocaleString() : 'N/A'}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Sold (Today)</div>
+                  <div className="text-xl font-semibold text-foreground">
+                    {skin.soldToday ? skin.soldToday.toLocaleString() : 'N/A'}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Sold (Total)</div>
+                  <div className="text-xl font-semibold text-foreground">
+                    {skin.soldTotal ? skin.soldTotal.toLocaleString() : 'N/A'}
                   </div>
                 </div>
                 </div>
@@ -905,13 +958,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                 <div className="flex gap-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">24h Change:</span>
-                    <Badge variant={marketStats.priceChangePercent24h && marketStats.priceChangePercent24h >= 0 ? "default" : "destructive"}>
-                      {marketStats.priceChangePercent24h && marketStats.priceChangePercent24h >= 0 ? (
+                    <Badge variant={skin.priceMedian24h && skin.priceLatest && ((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100) >= 0 ? "default" : "destructive"}>
+                      {skin.priceMedian24h && skin.priceLatest && ((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100) >= 0 ? (
                         <TrendingUp className="h-3 w-3 mr-1" />
                       ) : (
                         <TrendingDown className="h-3 w-3 mr-1" />
                       )}
-                      {marketStats.priceChangePercent24h ? `${marketStats.priceChangePercent24h >= 0 ? '+' : ''}${safeToFixed(marketStats.priceChangePercent24h, 2)}%` : 'N/A'}
+                      {skin.priceMedian24h && skin.priceLatest ? `${((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(2)}%` : 'N/A'}
                     </Badge>
               </div>
                   

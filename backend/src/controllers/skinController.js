@@ -4,11 +4,42 @@ import { fetchSkinPrice } from "../services/steamService.js";
 // {/* Get price history for a skin */}
 export const getPriceHistory = async (req, res) => {
   const { skinId } = req.params;
+  const { range = '90d' } = req.query; // Support for different time ranges
+  
   try {
-    console.log(`[DEBUG] Fetching price history for skin ID: ${skinId}`);
+    console.log(`[DEBUG] Fetching price history for skin ID: ${skinId}, range: ${range}`);
+    
+    // Calculate date range based on query parameter
+    const now = new Date();
+    let startDate = new Date();
+    
+    switch (range) {
+      case '7d':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case '30d':
+        startDate.setDate(now.getDate() - 30);
+        break;
+      case '90d':
+        startDate.setDate(now.getDate() - 90);
+        break;
+      case '1y':
+        startDate.setDate(now.getDate() - 365);
+        break;
+      case 'all':
+        startDate = new Date('2020-01-01'); // Far back enough
+        break;
+      default:
+        startDate.setDate(now.getDate() - 90);
+    }
     
     const history = await prisma.priceHistory.findMany({
-      where: { skinId: parseInt(skinId) },
+      where: { 
+        skinId: parseInt(skinId),
+        date: {
+          gte: startDate
+        }
+      },
       orderBy: { date: 'asc' },
       select: {
         date: true,
@@ -16,7 +47,7 @@ export const getPriceHistory = async (req, res) => {
       }
     });
     
-    console.log(`[DEBUG] Found ${history.length} price history entries for skin ${skinId}`);
+    console.log(`[DEBUG] Found ${history.length} price history entries for skin ${skinId} in range ${range}`);
     
     // If no price history exists, try to generate some sample data
     if (history.length === 0) {
@@ -25,23 +56,58 @@ export const getPriceHistory = async (req, res) => {
       // Get current skin price
       const skin = await prisma.skin.findUnique({
         where: { id: parseInt(skinId) },
-        select: { priceMedian: true, priceAvg: true, priceLatest: true }
+        select: { 
+          priceMedian: true, 
+          priceAvg: true, 
+          priceLatest: true,
+          priceMedian24h: true,
+          priceMedian7d: true,
+          priceMedian30d: true
+        }
       });
       
       if (skin) {
         const currentPrice = skin.priceLatest || skin.priceMedian || skin.priceAvg;
         if (currentPrice && currentPrice > 0) {
-          // Generate 30 days of sample data with some variation
+          // Generate realistic sample data based on range
           const sampleHistory = [];
           const today = new Date();
+          const days = range === 'all' ? 365 : range === '1y' ? 365 : 
+                      range === '90d' ? 90 : range === '30d' ? 30 : 7;
           
-          for (let i = 29; i >= 0; i--) {
+          // Use historical prices if available for more realistic data
+          const price24h = skin.priceMedian24h || currentPrice;
+          const price7d = skin.priceMedian7d || currentPrice;
+          const price30d = skin.priceMedian30d || currentPrice;
+          
+          for (let i = days - 1; i >= 0; i--) {
             const date = new Date(today);
             date.setDate(date.getDate() - i);
             
-            // Add some random variation (±5%)
-            const variation = (Math.random() - 0.5) * 0.1; // ±5% = range of 0.1 = 10% total spread
-            const price = currentPrice * (1 + variation * 0.5); // Apply only half to keep it realistic
+            // Create realistic price progression
+            let price;
+            if (i >= 30) {
+              // Use 30d price as base for older data
+              price = price30d;
+            } else if (i >= 7) {
+              // Interpolate between 30d and 7d
+              const progress = (i - 7) / 23;
+              price = price7d + (price30d - price7d) * progress;
+            } else if (i >= 1) {
+              // Interpolate between 7d and 24h
+              const progress = (i - 1) / 6;
+              price = price24h + (price7d - price24h) * progress;
+            } else {
+              // Use current price for today
+              price = currentPrice;
+            }
+            
+            // Add small daily variation (±2%)
+            const variation = (Math.random() - 0.5) * 0.04;
+            price = price * (1 + variation);
+            
+            // Ensure price doesn't go below 0.01
+            price = Math.max(0.01, price);
             
             sampleHistory.push({
               date: date.toISOString().split('T')[0],
@@ -49,13 +115,38 @@ export const getPriceHistory = async (req, res) => {
             });
           }
           
-          console.log(`[DEBUG] Generated ${sampleHistory.length} sample price history entries`);
-          return res.json(sampleHistory);
+          console.log(`[DEBUG] Generated ${sampleHistory.length} sample price history entries for range ${range}`);
+          return res.json({
+            success: true,
+            data: sampleHistory,
+            range,
+            source: 'generated',
+            totalDays: days
+          });
         }
       }
+      
+      return res.json({
+        success: true,
+        data: [],
+        range,
+        source: 'none'
+      });
     }
     
-    res.json(history);
+    // Format the history data
+    const formattedHistory = history.map(entry => ({
+      date: entry.date.toISOString().split('T')[0],
+      price: entry.price
+    }));
+    
+    res.json({
+      success: true,
+      data: formattedHistory,
+      range,
+      source: 'database',
+      totalDays: history.length
+    });
   } catch (err) {
     console.error(`[ERROR] Failed to fetch price history for skin ${skinId}:`, err);
     res.status(500).json({ error: "Could not fetch price history" });
@@ -335,16 +426,49 @@ export const getSkinMarketStats = async (req, res) => {
   try {
     console.log(`[DEBUG] Fetching market stats for skin ID: ${skinId}`);
     
-    // Get current skin data first
+    // Get comprehensive skin data with all market statistics
     const skin = await prisma.skin.findUnique({
       where: { id: parseInt(skinId) },
       select: {
+        // Current prices
         priceLatest: true,
+        priceLatestSell: true,
         priceAvg: true,
         priceMedian: true,
+        priceSafe: true,
+        priceMin: true,
+        priceMax: true,
+        
+        // Historical prices
         priceMedian24h: true,
         priceMedian7d: true,
-        priceMedian30d: true
+        priceMedian30d: true,
+        priceMedian90d: true,
+        priceAvg24h: true,
+        priceAvg7d: true,
+        priceAvg30d: true,
+        priceAvg90d: true,
+        
+        // Sales statistics
+        soldToday: true,
+        sold24h: true,
+        sold7d: true,
+        sold30d: true,
+        sold90d: true,
+        soldTotal: true,
+        hoursToSold: true,
+        
+        // Steam market data
+        buyOrderPrice: true,
+        buyOrderMedian: true,
+        buyOrderAvg: true,
+        buyOrderVolume: true,
+        offerVolume: true,
+        
+        // Metadata
+        priceUpdatedAt: true,
+        unstable: true,
+        unstableReason: true
       }
     });
     
@@ -352,68 +476,65 @@ export const getSkinMarketStats = async (req, res) => {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    // Get price history for calculations
-    const priceHistory = await prisma.priceHistory.findMany({
-      where: { skinId: parseInt(skinId) },
-      orderBy: { date: 'desc' },
-      take: 30 // Last 30 days
-    });
-    
-    // Use current skin price as fallback if no price history
-    const currentPrice = skin.priceLatest || skin.priceAvg || skin.priceMedian || 0;
-    
-    if (priceHistory.length === 0) {
-      // Generate sample market data based on current price
-      const volume24h = Math.floor(Math.random() * 50) + 1;
-      const volume7d = volume24h * 7 + Math.floor(Math.random() * 20);
-      const volume30d = volume7d * 4 + Math.floor(Math.random() * 50);
-      
-      return res.json({
-        volume24h,
-        volume7d,
-        volume30d,
-        currentPrice,
-        medianPrice: currentPrice,
-        lowestPrice: currentPrice * 0.9, // 10% below current
-        maxPrice: currentPrice * 1.1, // 10% above current
-        avgPrice: currentPrice,
-        buyOrders: Math.floor(Math.random() * 20) + 1,
-        activeListings: Math.floor(Math.random() * 15) + 1,
-        lastUpdated: new Date().toISOString()
-      });
-    }
-    
-    // Calculate statistics
-    const prices = priceHistory.map(h => h.price);
-    const historyCurrentPrice = prices[0];
-    const lowestPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
-    
-    // Calculate median
-    const sortedPrices = [...prices].sort((a, b) => a - b);
-    const medianPrice = sortedPrices.length % 2 === 0
-      ? (sortedPrices[sortedPrices.length / 2 - 1] + sortedPrices[sortedPrices.length / 2]) / 2
-      : sortedPrices[Math.floor(sortedPrices.length / 2)];
-    
-    // Simulate volume data (in real implementation, this would come from trade data)
-    const volume24h = Math.floor(Math.random() * 50) + 1;
-    const volume7d = volume24h * 7 + Math.floor(Math.random() * 20);
-    const volume30d = volume7d * 4 + Math.floor(Math.random() * 50);
-    
+    // Use real data from database - no more sample data
     const stats = {
-      volume24h,
-      volume7d,
-      volume30d,
-      currentPrice: historyCurrentPrice,
-      medianPrice,
-      lowestPrice,
-      maxPrice,
-      avgPrice,
-      buyOrders: Math.floor(Math.random() * 20) + 1,
-      activeListings: Math.floor(Math.random() * 15) + 1,
-      lastUpdated: new Date().toISOString()
+      // Current prices
+      latestPrice: skin.priceLatest || 0,
+      latestSellPrice: skin.priceLatestSell || 0,
+      medianPrice: skin.priceMedian || 0,
+      averagePrice: skin.priceAvg || 0,
+      safePrice: skin.priceSafe || 0,
+      minPrice: skin.priceMin || 0,
+      maxPrice: skin.priceMax || 0,
+      
+      // Historical prices (90d)
+      medianPrice24h: skin.priceMedian24h || 0,
+      medianPrice7d: skin.priceMedian7d || 0,
+      medianPrice30d: skin.priceMedian30d || 0,
+      medianPrice90d: skin.priceMedian90d || 0,
+      averagePrice24h: skin.priceAvg24h || 0,
+      averagePrice7d: skin.priceAvg7d || 0,
+      averagePrice30d: skin.priceAvg30d || 0,
+      averagePrice90d: skin.priceAvg90d || 0,
+      
+      // Sales statistics
+      soldToday: skin.soldToday || 0,
+      sold24h: skin.sold24h || 0,
+      sold7d: skin.sold7d || 0,
+      sold30d: skin.sold30d || 0,
+      sold90d: skin.sold90d || 0,
+      soldTotal: skin.soldTotal || 0,
+      hoursToSold: skin.hoursToSold || 0,
+      
+      // Market data
+      buyOrderPrice: skin.buyOrderPrice || 0,
+      buyOrderMedian: skin.buyOrderMedian || 0,
+      buyOrderAvg: skin.buyOrderAvg || 0,
+      buyOrderVolume: skin.buyOrderVolume || 0,
+      offerVolume: skin.offerVolume || 0, // Available Listings
+      
+      // Metadata
+      lastUpdated: skin.priceUpdatedAt || new Date(),
+      unstable: skin.unstable || false,
+      unstableReason: skin.unstableReason || null,
+      
+      // Calculated fields for compatibility
+      currentPrice: skin.priceLatest || skin.priceMedian || skin.priceAvg || 0,
+      activeListings: skin.offerVolume || 0,
+      buyOrders: skin.buyOrderVolume || 0,
+      volume24h: skin.sold24h || 0,
+      volume7d: skin.sold7d || 0,
+      volume30d: skin.sold30d || 0,
+      volume90d: skin.sold90d || 0
     };
+    
+    console.log(`[DEBUG] Market stats for skin ${skinId}:`, {
+      latestPrice: stats.latestPrice,
+      offerVolume: stats.offerVolume,
+      sold7d: stats.sold7d,
+      sold30d: stats.sold30d,
+      buyOrderVolume: stats.buyOrderVolume
+    });
     
     res.json(stats);
   } catch (err) {

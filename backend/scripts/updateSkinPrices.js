@@ -203,6 +203,8 @@ async function updateBatch(skip, take, filterActive) {
         console.log(
           `✓ [${result.source}] ${skin.marketHashName} → ${priceDisplay} | offers: ${
             result.offervolume ?? "n/a"
+          } | sold7d: ${result.sold7d ?? "n/a"} | buyOrders: ${
+            result.buyordervolume ?? "n/a"
           } | wear: ${result.wear || 'n/a'} | rarity: ${result.rarity || 'n/a'}`
         );
         
