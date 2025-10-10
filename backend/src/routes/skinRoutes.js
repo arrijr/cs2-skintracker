@@ -216,6 +216,47 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
   try {
     const skin = await prisma.skin.findUnique({
       where: { id: skinId },
+      select: {
+        id: true,
+        name: true,
+        marketHashName: true,
+        imageUrl: true,
+        weaponType: true,
+        collection: true,
+        wear: true,
+        rarity: true,
+        quality: true,
+        isStattrak: true,
+        isStar: true,
+        itemType: true,
+        itemName: true,
+        itemGroup: true,
+        // All price fields
+        priceLatest: true,
+        priceMedian: true,
+        priceAvg: true,
+        priceMin: true,
+        priceMax: true,
+        priceMedian7d: true,
+        priceMedian24h: true,
+        priceMedian30d: true,
+        // Market activity fields
+        offerVolume: true,
+        soldToday: true,
+        sold24h: true,
+        sold7d: true,
+        sold30d: true,
+        sold90d: true,
+        soldTotal: true,
+        buyOrderVolume: true,
+        buyOrderPrice: true,
+        buyOrderMedian: true,
+        buyOrderAvg: true,
+        // Metadata
+        priceUpdatedAt: true,
+        unstable: true,
+        unstableReason: true
+      }
     });
     if (!skin) {
       return res.status(404).json({ message: "Skin not found" });
@@ -252,9 +293,17 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
       }
     }
 
-    // Get price history for charts
+    // Get price history for charts (last 90 days)
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    
     const history = await prisma.priceHistory.findMany({
-      where: { skinId },
+      where: { 
+        skinId,
+        date: {
+          gte: ninetyDaysAgo
+        }
+      },
       orderBy: { date: 'asc' },
       select: {
         date: true,
@@ -262,9 +311,12 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
       }
     });
 
-    // Generate sample history if none exists
+    console.log(`[DEBUG] Found ${history.length} price history entries for skin ${skinId}`);
+
+    // Generate sample history if none exists or too few entries
     let priceHistory = history;
-    if (history.length === 0 && marketPrice) {
+    if (history.length < 7 && marketPrice) {
+      console.log(`[DEBUG] Generating sample price history for skin ${skinId} (only ${history.length} real entries)`);
       const sampleHistory = [];
       const today = new Date();
       

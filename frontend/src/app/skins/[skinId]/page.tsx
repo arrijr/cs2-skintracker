@@ -715,13 +715,13 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                             </CardContent>
                           </Card>
 
-          {/* Quantity History Chart - Full Width */}
+          {/* Available Listings Chart - Full Width */}
           <Card className="rounded-2xl shadow-sm">
             <CardHeader className="p-5">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-base font-semibold">
               <BarChart3 className="h-5 w-5" />
-              Quantity History
+              Available Listings
             </CardTitle>
                 <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
                   <ToggleGroupItem value="7d" size="sm">7D</ToggleGroupItem>
