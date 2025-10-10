@@ -10,6 +10,7 @@ import { updateSteamWebAPIData } from "./steamWebAPIDataUpdate.js";
 import { dailySteamWebAPIDataUpdate } from "./dailySteamWebAPIDataUpdate.js";
 import { dailyCasePriceHistory } from "./dailyCasePriceHistory.js";
 import { dailySkinPriceHistory } from "./dailySkinPriceHistory.js";
+import { dailySkinQuantityHistory } from "./dailySkinQuantityHistory.js";
 
 // {/* 02:00 UTC → z.B. 04:00 Berlin im Sommer */}
 // Preise updaten über dein robustes Script (separater Prozess = stabiler)
@@ -108,5 +109,20 @@ cron.schedule("0 7 * * *", async () => {
     }
   } catch (error) {
     console.error("[CRON] Error in daily skin price history:", error);
+  }
+});
+
+// {/* täglich um 07:30 UTC */} Daily Skin Quantity History
+cron.schedule("30 7 * * *", async () => {
+  console.log("[CRON] Starting daily skin quantity history...");
+  try {
+    const result = await dailySkinQuantityHistory();
+    if (result.success) {
+      console.log(`[CRON] Skin quantity history completed: ${result.successCount} skins updated`);
+    } else {
+      console.log("[CRON] Skin quantity history completed with errors:", result.error);
+    }
+  } catch (error) {
+    console.error("[CRON] Error in daily skin quantity history:", error);
   }
 });

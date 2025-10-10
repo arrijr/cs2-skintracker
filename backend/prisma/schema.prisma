@@ -93,6 +93,7 @@ model Skin {
   transactions   Transaction[]
   marketSnapshots MarketSnapshot[]
   caseSkins      CaseSkin[]
+  quantityHistory SkinQuantityHistory[]
 
   @@index([rarity])
   @@index([wear])
@@ -343,5 +344,22 @@ model CasePriceHistory {
 
   @@unique([caseId, date]) // One price record per case per day
   @@index([caseId, date])
+  @@index([date])
+}
+
+model SkinQuantityHistory {
+  id              Int      @id @default(autoincrement())
+  skin            Skin     @relation(fields: [skinId], references: [id])
+  skinId          Int
+  date            DateTime @db.Date // YYYY-MM-DD format
+  quantity        Int      // Offer volume (active listings) on this date
+  activeListings  Int      // Same as quantity, for clarity
+  soldVolume24h   Int?     // Number sold in the last 24h from this date
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([skinId, date]) // One quantity record per skin per day
+  @@index([skinId, date])
   @@index([date])
 }

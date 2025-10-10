@@ -512,55 +512,92 @@ router.get("/:skinId/history/quantity", async (req, res) => {
       case '90d':
         startDate.setDate(now.getDate() - 90);
         break;
+      case '1y':
+        startDate.setDate(now.getDate() - 365);
+        break;
       default:
         startDate.setDate(now.getDate() - 30);
     }
     
-    // Get skin for price reference
+    // Get real quantity history from database
+    const quantityHistory = await prisma.skinQuantityHistory.findMany({
+      where: {
+        skinId: parseInt(skinId),
+        date: {
+          gte: startDate
+        }
+      },
+      orderBy: {
+        date: 'asc'
+      },
+      select: {
+        date: true,
+        quantity: true,
+        activeListings: true,
+        soldVolume24h: true
+      }
+    });
+    
+    // If we have real data, use it
+    if (quantityHistory && quantityHistory.length > 0) {
+      console.log(`[DEBUG] Found ${quantityHistory.length} real quantity history entries for skin ${skinId}`);
+      
+      const quantityData = quantityHistory.map(entry => ({
+        date: entry.date.toISOString().split('T')[0],
+        quantity: entry.quantity,
+        activeListings: entry.activeListings,
+        soldVolume24h: entry.soldVolume24h || 0
+      }));
+      
+      return res.json({
+        success: true,
+        data: quantityData,
+        range,
+        skinId: parseInt(skinId),
+        source: 'database'
+      });
+    }
+    
+    // Fallback: Generate sample data if no real data exists yet
+    console.log(`[DEBUG] No real quantity history found, generating sample data for skin ${skinId}`);
+    
     const skin = await prisma.skin.findUnique({
       where: { id: parseInt(skinId) },
-      select: { priceMedian: true, priceAvg: true, priceLatest: true }
+      select: { priceMedian: true, priceAvg: true, priceLatest: true, offerVolume: true }
     });
     
     if (!skin) {
       return res.status(404).json({ error: 'Skin not found' });
     }
     
-    // Generate realistic quantity data based on price with trend
+    // Generate realistic quantity data based on current offer volume or price
     const quantityData = [];
     const currentPrice = skin.priceLatest || skin.priceMedian || skin.priceAvg || 0;
-    
-    // Generate base quantity based on price (higher price = lower quantity)
-    const baseQuantity = currentPrice > 100 ? 1 : currentPrice > 50 ? 3 : currentPrice > 10 ? 8 : 15;
-    let currentQuantity = baseQuantity;
+    const baseQuantity = skin.offerVolume || (currentPrice > 100 ? 1 : currentPrice > 50 ? 3 : currentPrice > 10 ? 8 : 15);
     
     for (let i = 0; i < 30; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
       
       // Add small trend and variation
-      const trend = (Math.random() - 0.5) * 0.1; // Small trend
-      const variation = (Math.random() - 0.5) * 0.3; // ±15% daily variation
-      currentQuantity = baseQuantity * (1 + trend * i / 30 + variation);
-      
-      // Ensure quantity is realistic
-      currentQuantity = Math.max(1, Math.floor(currentQuantity));
+      const trend = (Math.random() - 0.5) * 0.1;
+      const variation = (Math.random() - 0.5) * 0.3;
+      const currentQuantity = Math.max(1, Math.floor(baseQuantity * (1 + trend * i / 30 + variation)));
       
       quantityData.push({
         date: date.toISOString().split('T')[0],
         quantity: currentQuantity,
         activeListings: currentQuantity,
-        soldVolume24h: Math.floor(currentQuantity * (0.1 + Math.random() * 0.3)) // 10-40% of listings sold
+        soldVolume24h: Math.floor(currentQuantity * (0.1 + Math.random() * 0.3))
       });
     }
-    
-    console.log(`[DEBUG] Generated ${quantityData.length} quantity history entries for skin ${skinId}`);
     
     res.json({
       success: true,
       data: quantityData,
       range,
-      skinId: parseInt(skinId)
+      skinId: parseInt(skinId),
+      source: 'generated'
     });
   } catch (err) {
     console.error(`[ERROR] Failed to fetch quantity history for skin ${skinId}:`, err);
