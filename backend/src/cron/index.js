@@ -8,6 +8,8 @@ import { calculateAndStorePortfolioValues } from "../services/portfolioHistorySe
 import runPortfolioHistoryCron from "./portfolioHistoryCron.js";
 import { updateSteamWebAPIData } from "./steamWebAPIDataUpdate.js";
 import { dailySteamWebAPIDataUpdate } from "./dailySteamWebAPIDataUpdate.js";
+import { dailyCasePriceHistory } from "./dailyCasePriceHistory.js";
+import { dailySkinPriceHistory } from "./dailySkinPriceHistory.js";
 
 // {/* 02:00 UTC → z.B. 04:00 Berlin im Sommer */}
 // Preise updaten über dein robustes Script (separater Prozess = stabiler)
@@ -76,5 +78,35 @@ cron.schedule("0 6 * * *", async () => {
     }
   } catch (error) {
     console.error("[CRON] Error in daily SteamWebAPI data update:", error);
+  }
+});
+
+// {/* täglich um 06:30 UTC */} Daily Case Price History
+cron.schedule("30 6 * * *", async () => {
+  console.log("[CRON] Starting daily case price history...");
+  try {
+    const result = await dailyCasePriceHistory();
+    if (result.success) {
+      console.log(`[CRON] Case price history completed: ${result.successCount} cases updated`);
+    } else {
+      console.log("[CRON] Case price history completed with errors:", result.error);
+    }
+  } catch (error) {
+    console.error("[CRON] Error in daily case price history:", error);
+  }
+});
+
+// {/* täglich um 07:00 UTC */} Daily Skin Price History
+cron.schedule("0 7 * * *", async () => {
+  console.log("[CRON] Starting daily skin price history...");
+  try {
+    const result = await dailySkinPriceHistory();
+    if (result.success) {
+      console.log(`[CRON] Skin price history completed: ${result.successCount} skins updated`);
+    } else {
+      console.log("[CRON] Skin price history completed with errors:", result.error);
+    }
+  } catch (error) {
+    console.error("[CRON] Error in daily skin price history:", error);
   }
 });
