@@ -431,7 +431,7 @@ export default function CaseDetailPage() {
                       {getPriceChangeIcon(caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0)}
                       <span className="font-medium">
                         {(caseData.steamData?.priceChange24h ?? caseData.priceChange24h) !== undefined 
-                          ? (caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0) > 0 ? '+' : '' + safeToFixed(caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0, 2) + '%'
+                          ? `${(caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0) > 0 ? '+' : ''}${safeToFixed(caseData.steamData?.priceChange24h ?? caseData.priceChange24h ?? 0, 2)}%`
                           : 'N/A'
                         }
                       </span>
@@ -443,7 +443,7 @@ export default function CaseDetailPage() {
                       {getPriceChangeIcon(caseData.steamData?.priceChange7d ?? caseData.priceChange7d ?? 0)}
                       <span className="font-medium">
                         {(caseData.steamData?.priceChange7d ?? caseData.priceChange7d) !== undefined 
-                          ? (caseData.steamData?.priceChange7d ?? caseData.priceChange7d ?? 0) > 0 ? '+' : '' + safeToFixed(caseData.steamData?.priceChange7d ?? caseData.priceChange7d ?? 0, 2) + '%'
+                          ? `${(caseData.steamData?.priceChange7d ?? caseData.priceChange7d ?? 0) > 0 ? '+' : ''}${safeToFixed(caseData.steamData?.priceChange7d ?? caseData.priceChange7d ?? 0, 2)}%`
                           : 'N/A'
                         }
                       </span>
@@ -455,7 +455,7 @@ export default function CaseDetailPage() {
                       {getPriceChangeIcon(caseData.steamData?.priceChange30d ?? caseData.priceChange30d ?? 0)}
                       <span className="font-medium">
                         {(caseData.steamData?.priceChange30d ?? caseData.priceChange30d) !== undefined 
-                          ? (caseData.steamData?.priceChange30d ?? caseData.priceChange30d ?? 0) > 0 ? '+' : '' + safeToFixed(caseData.steamData?.priceChange30d ?? caseData.priceChange30d ?? 0, 2) + '%'
+                          ? `${(caseData.steamData?.priceChange30d ?? caseData.priceChange30d ?? 0) > 0 ? '+' : ''}${safeToFixed(caseData.steamData?.priceChange30d ?? caseData.priceChange30d ?? 0, 2)}%`
                           : 'N/A'
                         }
                       </span>

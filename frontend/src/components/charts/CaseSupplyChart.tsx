@@ -56,8 +56,11 @@ export default function CaseSupplyChart({ data, className = "" }: CaseSupplyChar
   }
 
 
-  // Sort data by date
-  const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  // Sort data by date and exclude today's data (incomplete)
+  const today = new Date().toISOString().split('T')[0];
+  const sortedData = [...data]
+    .filter(item => item.date !== today) // Exclude today's data
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   
   // Calculate daily sales from cumulative data
   const dailySalesData = sortedData.map((item, index) => {
