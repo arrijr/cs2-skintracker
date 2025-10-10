@@ -26,6 +26,27 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
 - **JobRun tracking** - Complete monitoring of cronjob success/failure status
 - **Enhanced supply charts** - Real offer volume and daily sales as bar/line charts
 
+## [2025-10-10] - Cases & Skins Improvements Phase 1
+
+### Added
+- **Breadcrumbs System for Skins** - Dynamic breadcrumb navigation with case context
+  - Backend endpoint: `/api/v1/skins/:skinId/case-breadcrumb`
+  - Frontend integration: `Home > Cases > [Case Name] > Skins > [Skin Name]`
+  - Automatic case detection from CaseSkin relationships
+- **Extended Case Statistics Endpoint** - Aggregated market overview data
+  - Total Available Listings across all cases (from offerVolume)
+  - Total Sold 7d/30d/90d (aggregated from soldData JSON)
+  - Total Market Cap calculation
+  - Enhanced `/api/v1/cases/stats` endpoint with real-time data
+
+### Fixed
+- **CORS Issues** - Resolved Vercel frontend to Render backend communication
+  - Added detailed CORS logging for debugging
+  - Improved Vercel-specific origin handling
+  - Enhanced manual CORS header setting as backup
+- **Price Change Display** - Fixed percentage display showing only "+" without numbers
+- **Sales History Chart** - Removed today's incomplete data to prevent steep drop
+
 ## [2025-10-07] - Complete Case Contents Implementation
 
 ### Added
