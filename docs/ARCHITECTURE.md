@@ -106,6 +106,20 @@ sequenceDiagram
 
 ## Cronjob Architecture
 
+### Cronjob Schedule Overview
+
+| Time (UTC) | Cronjob | Purpose | Target Table |
+|------------|---------|---------|--------------|
+| 02:00 | updateSkinPrices.js | Update skin prices from Steam | Skin |
+| 02:10 | Portfolio history (daily) | Store daily portfolio values | PortfolioHistory |
+| 03:00 | SteamWebAPI data update | Update general market data | Various |
+| 06:00 | dailySteamWebAPIDataUpdate | Update case market data | CaseSupply |
+| 06:30 | dailyCasePriceHistory | Store daily case prices | CasePriceHistory |
+| 07:00 | dailySkinPriceHistory | Store daily skin prices | PriceHistory |
+| 07:30 | dailySkinQuantityHistory | Store daily offer volumes | SkinQuantityHistory |
+| 12:00 | Portfolio history (12h) | Store 12-hourly portfolio values | PortfolioHistory |
+| Every 30min | Price alerts | Check user price alerts | Notifications |
+
 ### Daily SteamWebAPI Data Update
 ```mermaid
 sequenceDiagram
@@ -118,11 +132,33 @@ sequenceDiagram
     Cron->>Job: Trigger at 06:00 UTC
     Job->>API: Fetch all case data
     API->>Job: Return offerVolume, sold24h/7d/30d/90d
-           Job->>DB: Update case prices and supply data
-           Job->>DB: Update CasePriceHistory with current prices
-           Job->>DB: Log job run status
-           Job->>Admin: Report success/failure
-           Admin->>DB: Query job run history
+    Job->>DB: Update case prices and supply data
+    Job->>DB: Store soldData JSON in CaseSupply
+    Job->>DB: Log job run status
+    Job->>Admin: Report success/failure
+    Admin->>DB: Query job run history
+```
+
+### Price & Quantity History Flow
+```mermaid
+sequenceDiagram
+    participant Cron as Cron Scheduler
+    participant CasePriceJob as dailyCasePriceHistory
+    participant SkinPriceJob as dailySkinPriceHistory
+    participant QuantityJob as dailySkinQuantityHistory
+    participant DB as PostgreSQL
+    
+    Cron->>CasePriceJob: 06:30 UTC - Store case prices
+    CasePriceJob->>DB: Read latest CaseSupply prices
+    CasePriceJob->>DB: Create/update CasePriceHistory entries
+    
+    Cron->>SkinPriceJob: 07:00 UTC - Store skin prices
+    SkinPriceJob->>DB: Read Skin prices (batched)
+    SkinPriceJob->>DB: Create/update PriceHistory entries
+    
+    Cron->>QuantityJob: 07:30 UTC - Store offer volumes
+    QuantityJob->>DB: Read Skin offerVolume (batched)
+    QuantityJob->>DB: Create/update SkinQuantityHistory entries
 ```
 
 ## Database Schema
