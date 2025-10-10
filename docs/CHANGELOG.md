@@ -38,6 +38,26 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
   - Total Sold 7d/30d/90d (aggregated from soldData JSON)
   - Total Market Cap calculation
   - Enhanced `/api/v1/cases/stats` endpoint with real-time data
+- **Price History Cronjobs** - Daily automated price tracking
+  - Case Price History: `dailyCasePriceHistory.js` (06:30 UTC)
+  - Skin Price History: `dailySkinPriceHistory.js` (07:00 UTC)
+  - Batched processing for 26,000+ skins
+- **Quantity History System** - Track offer volume over time
+  - New `SkinQuantityHistory` database table
+  - Daily cronjob: `dailySkinQuantityHistory.js` (07:30 UTC)
+  - API endpoint: `/skins/:skinId/history/quantity`
+  - Real data tracking with fallback to generated data
+- **Extended Market Statistics** - Comprehensive market data display
+  - Offer Volume (active listings)
+  - Sold 7d/30d/90d statistics
+  - Buy Orders volume and price
+  - 4-column responsive grid layout
+  - Color-coded values (blue for buy orders, green/red for min/max)
+- **Case Section Component** - Source case display on skin pages
+  - Shows case info with image and name
+  - "View Case" button for navigation
+  - Grid of all skins from the same case
+  - Responsive design (grid + carousel)
 
 ### Fixed
 - **CORS Issues** - Resolved Vercel frontend to Render backend communication
@@ -46,6 +66,11 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
   - Enhanced manual CORS header setting as backup
 - **Price Change Display** - Fixed percentage display showing only "+" without numbers
 - **Sales History Chart** - Removed today's incomplete data to prevent steep drop
+- **Skin Detail API** - Added explicit select fields for all market data
+  - Now returns: offerVolume, sold7d/30d/90d, buyOrderVolume, buyOrderPrice
+  - Improved price history loading with 90-day range
+  - Better logging for debugging data issues
+- **Chart Naming** - Renamed "Quantity History" to "Available Listings" for clarity
 
 ## [2025-10-07] - Complete Case Contents Implementation
 
