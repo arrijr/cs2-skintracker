@@ -407,6 +407,43 @@ const getCaseStats = async (req, res) => {
       where: { isDiscontinued: false }
     });
 
+    // Get aggregated supply data from caseSupply table
+    const today = new Date().toISOString().split('T')[0];
+    const supplyStats = await prisma.caseSupply.findMany({
+      where: {
+        date: new Date(today)
+      },
+      select: {
+        offerVolume: true,
+        soldData: true,
+        price: true,
+        marketCap: true
+      }
+    });
+
+    // Calculate totals from supply data
+    let totalAvailableListings = 0;
+    let totalSold7d = 0;
+    let totalSold30d = 0;
+    let totalSold90d = 0;
+    let totalMarketCap = 0;
+
+    supplyStats.forEach(supply => {
+      totalAvailableListings += supply.offerVolume || 0;
+      totalMarketCap += supply.marketCap || 0;
+      
+      if (supply.soldData) {
+        try {
+          const soldData = JSON.parse(supply.soldData);
+          totalSold7d += soldData.sold7d || 0;
+          totalSold30d += soldData.sold30d || 0;
+          totalSold90d += soldData.sold90d || 0;
+        } catch (error) {
+          console.error('Error parsing soldData:', error);
+        }
+      }
+    });
+
     res.json({
       totalCases: stats._count.id,
       activeCases: activeCount,
@@ -416,7 +453,13 @@ const getCaseStats = async (req, res) => {
       averageTimeToExtinction: stats._avg.timeToExtinction,
       totalRemaining: stats._sum.remaining,
       totalDropped: stats._sum.dropped,
-      totalUnboxed: stats._sum.unboxed
+      totalUnboxed: stats._sum.unboxed,
+      // New aggregated statistics from supply data
+      totalAvailableListings,
+      totalSold7d,
+      totalSold30d,
+      totalSold90d,
+      totalMarketCap
     });
 
   } catch (error) {
