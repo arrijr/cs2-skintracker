@@ -95,7 +95,7 @@
 
 Benötigte Secrets für GitHub Actions:
 1. `DATABASE_URL` - Supabase/PostgreSQL Connection String
-2. `STEAMWEBAPI_KEY` - Steam WebAPI Key
+2. `STEAM_API_KEY` - Steam WebAPI Key ⚠️ **WICHTIG**: Exakter Name aus Render!
 
 **Setup**:
 1. Gehe zu GitHub > Settings > Secrets and variables > Actions
