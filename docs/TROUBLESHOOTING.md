@@ -362,6 +362,80 @@ NODE_ENV=development node scripts/testSteamAPI.js
 
 ---
 
+## Falsche Skin-Preise (Veraltet oder komplett falsch)
+---------------------------------------------------
+
+**Problem**: Skin-Preise sind veraltet oder komplett falsch (z.B. 0,06€ statt 26€)
+
+**Symptome**:
+* Preise weichen stark von Steam-Preisen ab
+* Available Listings sind falsch
+* Market Statistics stimmen nicht überein
+* Preise wurden seit Wochen nicht aktualisiert
+
+**Root Cause**: 
+- Render Cronjobs laufen NICHT ohne Premium Plan
+- `updateSkinPrices.js` Script wird nicht automatisch ausgeführt
+- Alte Preisdaten in der Datenbank
+
+**Sofort-Lösung: Manuelle Preis-Aktualisierung**
+
+1. **Admin-Panel verwenden** (Empfohlen):
+   - Öffne `/admin/update-prices` im Browser
+   - Klicke "Update All Skins" für alle Skins
+   - ODER gib eine Skin-ID ein für einzelnen Update
+   - Warte bis der Update abgeschlossen ist (Log-Output beobachten)
+
+2. **API direkt aufrufen** (Alternative):
+   ```powershell
+   # Einzelnen Skin updaten
+   $body = @{ skinIds = @(19829) } | ConvertTo-Json
+   Invoke-RestMethod -Uri "https://cs2-skintracker.onrender.com/api/v1/admin/update-skin-data" -Method POST -ContentType "application/json" -Body $body
+   
+   # Alle Skins updaten
+   $body = @{} | ConvertTo-Json
+   Invoke-RestMethod -Uri "https://cs2-skintracker.onrender.com/api/v1/admin/update-skin-data" -Method POST -ContentType "application/json" -Body $body
+   ```
+
+**Dauerhafte Lösung: GitHub Actions**
+
+GitHub Actions führen automatisch täglich Preis-Updates durch (kostenlos!):
+
+1. **Workflows sind bereits eingerichtet**:
+   - `.github/workflows/update-skin-prices.yml` - Tägliche Preis-Updates (02:00 UTC)
+   - `.github/workflows/save-price-history.yml` - Speichert Price History (03:00 UTC)
+   - `.github/workflows/save-quantity-history.yml` - Speichert Quantity History (03:30 UTC)
+
+2. **GitHub Secrets konfigurieren**:
+   - Gehe zu GitHub > Settings > Secrets and variables > Actions
+   - Füge hinzu:
+     - `DATABASE_URL` - Deine Supabase Connection String
+     - `STEAMWEBAPI_KEY` - Dein Steam WebAPI Key
+
+3. **Manuell triggern** (für sofortigen Update):
+   - Gehe zu GitHub > Actions
+   - Wähle "Update Skin Prices Daily"
+   - Klicke "Run workflow"
+   - Warte bis der Workflow abgeschlossen ist (ca. 5-10 Minuten)
+
+**Preis-Update Ablauf**:
+1. **02:00 UTC**: `updateSkinPrices.js` läuft → holt aktuelle Preise von SteamWebAPI
+2. **03:00 UTC**: `savePriceHistory.js` läuft → speichert tägliche Price History
+3. **03:30 UTC**: `saveQuantityHistory.js` läuft → speichert Offer Volume History
+
+**Monitoring**:
+- Check GitHub Actions Tab für Status der Workflows
+- Logs zeigen Details zu Updates (Anzahl Skins, Fehler, Dauer)
+- Admin-Panel zeigt Update-Status in Echtzeit
+
+**Verhindern von falschen Preisen**:
+1. GitHub Actions Workflows müssen aktiviert bleiben
+2. Secrets müssen aktuell sein
+3. API Keys müssen gültig sein (Steam WebAPI Key prüfen)
+4. Bei Problemen: Admin-Panel verwenden für manuelle Updates
+
+---
+
 ## Getting Help
 --------------
 
