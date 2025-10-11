@@ -40,7 +40,7 @@ jobs:
       - name: Run Price Update Script
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          STEAMWEBAPI_KEY: ${{ secrets.STEAMWEBAPI_KEY }}
+          STEAMWEBAPI_KEY: ${{ secrets.STEAM_API_KEY }}
           NODE_ENV: production
         run: |
           cd backend
