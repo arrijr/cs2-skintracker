@@ -332,120 +332,18 @@ export const getSkinCaseInfo = async (req, res) => {
 };
 
 // {/* Get case information for a skin */}
+// DISABLED: This endpoint created artificial collections based on weaponType
+// Now using only real case relationships from getSkinById endpoint
 export const getSkinCase = async (req, res) => {
   const { skinId } = req.params;
-  try {
-    console.log(`[DEBUG] Fetching case info for skin ID: ${skinId}`);
-    
-    // Get the skin to find its case/collection
-    const skin = await prisma.skin.findUnique({
-      where: { id: parseInt(skinId) },
-      select: { 
-        itemGroup: true, 
-        weaponType: true, 
-        itemName: true,
-        name: true,
-        rarity: true,
-        quality: true
-      }
-    });
-    
-    if (!skin) {
-      console.log(`[DEBUG] Skin ${skinId} not found in database`);
-      return res.status(404).json({ error: 'Skin not found' });
-    }
-    
-    console.log(`[DEBUG] Skin found: itemGroup="${skin.itemGroup}", weaponType="${skin.weaponType}", itemName="${skin.itemName}"`);
-    
-    // Show case information for skins that have related items
-    // We'll show "related skins" for most weapon types, but call them "collections"
-    // Only exclude certain types that don't make sense as collections
-    const excludeTypes = [
-      'sealed graffiti',
-      'package',
-      'key',
-      'sticker',
-      'music kit',
-      'agent',
-      'patch'
-    ];
-    
-    const shouldShowCollection = skin.weaponType && 
-      !excludeTypes.some(type => skin.weaponType.toLowerCase().includes(type));
-    
-    if (!shouldShowCollection) {
-      console.log(`[DEBUG] Skin ${skinId} type "${skin.weaponType}" excluded from collections`);
-      return res.json({
-        caseName: null,
-        skins: [],
-        totalSkins: 0,
-        originalWeaponType: skin.weaponType,
-        originalItemGroup: skin.itemGroup
-      });
-    }
-    
-    // Determine collection name based on weapon type
-    let caseName = skin.weaponType || "Unknown Collection";
-    
-    // Format collection name for better display
-    if (caseName.includes("knife") || caseName.includes("gloves")) {
-      caseName = "Knife & Glove Collection";
-    } else if (caseName.includes("2018") || caseName.includes("2019") || caseName.includes("2020") || 
-               caseName.includes("2021") || caseName.includes("2022") || caseName.includes("2023") || 
-               caseName.includes("2024")) {
-      // Tournament stickers - format nicely
-      caseName = caseName.replace(/(\d{4})/, '$1 Major Collection');
-    } else if (caseName.includes("souvenir")) {
-      caseName = "Souvenir Collection";
-    } else {
-      // For regular weapons, create a collection name
-      caseName = `${caseName.charAt(0).toUpperCase() + caseName.slice(1)} Collection`;
-    }
-    
-    // Find all skins from the same collection (weapon type)
-    const caseSkins = await prisma.skin.findMany({
-      where: {
-        AND: [
-          { weaponType: skin.weaponType }, // Same weapon type
-          { id: { not: parseInt(skinId) } } // Exclude current skin
-        ]
-      },
-      select: {
-        id: true,
-        name: true,
-        wear: true,
-        rarity: true,
-        quality: true,
-        isStattrak: true,
-        isStar: true,
-        priceAvg: true,
-        priceMedian: true,
-        priceLatest: true,
-        imageUrl: true,
-        weaponType: true
-      },
-      orderBy: [
-        { rarity: 'asc' },
-        { name: 'asc' }
-      ],
-      take: 24 // Limit to 24 skins for better performance
-    });
-    
-    console.log(`[DEBUG] Found ${caseSkins.length} skins in case "${caseName}"`);
-    
-    const caseInfo = {
-      caseName: caseName,
-      skins: caseSkins,
-      totalSkins: caseSkins.length,
-      originalWeaponType: skin.weaponType,
-      originalItemGroup: skin.itemGroup
-    };
-    
-    res.json(caseInfo);
-  } catch (err) {
-    console.error(`[ERROR] Failed to fetch case info for skin ${skinId}:`, err);
-    res.status(500).json({ error: "Could not fetch case information" });
-  }
+  
+  // Return empty result - no artificial collections
+  res.json({
+    caseName: null,
+    skins: [],
+    totalSkins: 0,
+    message: "Use /skins/:skinId endpoint for real case relationships"
+  });
 };
 
 // {/* Get market statistics for a skin */}
