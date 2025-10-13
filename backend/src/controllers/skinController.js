@@ -158,14 +158,39 @@ export const getSkinById = async (req, res) => {
   const { skinId } = req.params;
   try {
     const skin = await prisma.skin.findUnique({
-      where: { id: parseInt(skinId) }
+      where: { id: parseInt(skinId) },
+      include: {
+        caseSkins: {
+          include: {
+            case: {
+              select: {
+                id: true,
+                name: true,
+                imageUrl: true
+              }
+            }
+          }
+        }
+      }
     });
     
     if (!skin) {
       return res.status(404).json({ error: 'Skin not found' });
     }
 
-    res.json(skin);
+    // Add caseInfo to the response if case relationship exists
+    let responseData = { ...skin };
+    
+    if (skin.caseSkins && skin.caseSkins.length > 0) {
+      // Use the first case (most skins belong to one case)
+      const firstCase = skin.caseSkins[0].case;
+      responseData.caseInfo = {
+        id: firstCase.id,
+        name: firstCase.name
+      };
+    }
+
+    res.json(responseData);
   } catch (err) {
     res.status(500).json({ error: "Could not fetch skin" });
   }

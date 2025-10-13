@@ -1071,7 +1071,42 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </Card>
             )}
 
-        {/* Case Information */}
+        {/* Source Section - Case Information */}
+        {skin?.caseInfo && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ExternalLink className="h-5 w-5" />
+                Source Case
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">
+                      {skin.caseInfo.name.charAt(0)}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{skin.caseInfo.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      This skin can be obtained from this case
+                    </p>
+                  </div>
+                </div>
+                <Link href={`/cases/${skin.caseInfo.id}`}>
+                  <Button variant="outline" className="gap-2">
+                    <ExternalLink className="h-4 w-4" />
+                    View Case
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Case Information - Related Skins */}
           {caseInfo && caseInfo.cases.length > 0 && (
             <CaseSection skinId={caseInfo.cases[0].id} />
           )}
