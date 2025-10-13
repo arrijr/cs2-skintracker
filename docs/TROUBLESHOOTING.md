@@ -436,6 +436,63 @@ GitHub Actions führen automatisch täglich Preis-Updates durch (kostenlos!):
 
 ---
 
+## Falsche "Source Case" Anzeige (P90 Collection etc.)
+
+**Problem**: Skin-Detail-Seiten zeigen falsche "Source Case" wie "P90 Collection" statt echter Cases.
+
+**Symptome**:
+* Skin zeigt "P90 Collection" als "Source Case"
+* Link führt zu "Error loading case"
+* Falsche Collection-Namen basierend auf weaponType
+
+**Root Cause**: 
+* Backend-Endpoints erstellten künstliche Collections basierend auf `weaponType`
+* `/skins/:skinId/case-info` Endpoint generierte "P90 Collection" etc.
+* `getSkinCase` Controller erstellte weaponType-basierte Collections
+
+**Lösung (Implementiert)**:
+1. **Entfernt**: `/skins/:skinId/case-info` Endpoint (erstellte künstliche Collections)
+2. **Deaktiviert**: `getSkinCase` Controller (erstellte weaponType-basierte Collections)
+3. **Verwendet**: Nur `/skins/:skinId` Endpoint mit echten `CaseSkin` Beziehungen
+
+**Verifikation**:
+* Skins mit echten Case-Beziehungen zeigen korrekte "Source Case"
+* Skins ohne Case-Beziehung zeigen keine "Source Case" Section
+* Keine künstlichen "P90 Collection" etc. mehr
+* Links funktionieren nur bei echten Cases
+
+**Frontend-Logic**:
+```tsx
+{/* Source Section - nur bei echter Case-Beziehung */}
+{skin?.caseInfo && skin.caseInfo.id && skin.caseInfo.name && (
+  <Card>
+    <CardHeader>
+      <CardTitle>Source Case</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <h3>{skin.caseInfo.name}</h3>
+      <Link href={`/cases/${skin.caseInfo.id}`}>
+        <Button>View Case</Button>
+      </Link>
+    </CardContent>
+  </Card>
+)}
+```
+
+**Backend-Logic**:
+```javascript
+// Nur echte Case-Beziehungen aus CaseSkin table
+if (skin.caseSkins && skin.caseSkins.length > 0) {
+  const firstCase = skin.caseSkins[0].case;
+  responseData.caseInfo = {
+    id: firstCase.id,
+    name: firstCase.name
+  };
+}
+```
+
+---
+
 ## Getting Help
 --------------
 
