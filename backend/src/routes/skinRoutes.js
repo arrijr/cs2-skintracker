@@ -216,6 +216,19 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
   try {
     const skin = await prisma.skin.findUnique({
       where: { id: skinId },
+      include: {
+        caseSkins: {
+          include: {
+            case: {
+              select: {
+                id: true,
+                name: true,
+                imageUrl: true
+              }
+            }
+          }
+        }
+      },
       select: {
         id: true,
         name: true,
@@ -363,12 +376,14 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
       priceChangePercent24h: Math.round(priceChangePercent * 100) / 100
     };
 
-    // Get case information
+    // Get case information - Only real case relationships from CaseSkin table
     let caseInfo = null;
-    if (skin.weaponType && !['sealed graffiti', 'package', 'key', 'sticker', 'music kit', 'agent', 'patch'].some(type => skin.weaponType.toLowerCase().includes(type))) {
+    if (skin.caseSkins && skin.caseSkins.length > 0) {
+      // Use the first case (most skins belong to one case)
+      const firstCase = skin.caseSkins[0].case;
       caseInfo = {
-        name: skin.weaponType.charAt(0).toUpperCase() + skin.weaponType.slice(1) + ' Collection',
-        id: skinId
+        id: firstCase.id,
+        name: firstCase.name
       };
     }
 
@@ -416,10 +431,13 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
       };
     });
 
+    // Remove caseSkins from response (internal data)
+    const { caseSkins, ...skinWithoutCaseSkins } = skin;
+    
     const response = {
       success: true,
       data: {
-        ...skin,
+        ...skinWithoutCaseSkins,
         marketPrice,
         marketStats,
         caseInfo,
