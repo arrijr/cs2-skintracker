@@ -453,7 +453,8 @@ GitHub Actions führen automatisch täglich Preis-Updates durch (kostenlos!):
 **Lösung (Implementiert)**:
 1. **Entfernt**: `/skins/:skinId/case-info` Endpoint (erstellte künstliche Collections)
 2. **Deaktiviert**: `getSkinCase` Controller (erstellte weaponType-basierte Collections)
-3. **Verwendet**: Nur `/skins/:skinId` Endpoint mit echten `CaseSkin` Beziehungen
+3. **Behoben**: `/skins/:skinId` Route Handler (entfernte weaponType-basierte caseInfo Erstellung)
+4. **Verwendet**: Nur echte `CaseSkin` Beziehungen aus der Datenbank
 
 **Verifikation**:
 * Skins mit echten Case-Beziehungen zeigen korrekte "Source Case"
