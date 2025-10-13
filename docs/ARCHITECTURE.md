@@ -231,6 +231,19 @@ model CaseSkin {
 }
 ```
 
+### Case-Skin Relationships
+
+Skins können Cases zugeordnet sein via `CaseSkin` table:
+- `CaseSkin.caseId` → `Case.id`
+- `CaseSkin.skinId` → `Skin.id`
+- `CaseSkin.rarity` → Drop-Seltenheit
+- `CaseSkin.dropChance` → Drop-Wahrscheinlichkeit
+
+**Wichtig**: Nicht alle Skins haben Case-Beziehungen!
+- Skin-Detail-Page zeigt "Source Case" nur bei vorhandener Beziehung
+- Backend liefert `caseInfo` nur wenn `caseSkins.length > 0`
+- Falls keine Beziehung existiert, wird keine Case-Verlinkung angezeigt
+
 ## API Architecture
 
 ### RESTful Endpoints

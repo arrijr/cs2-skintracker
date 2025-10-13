@@ -1071,8 +1071,8 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </Card>
             )}
 
-        {/* Source Section - Case Information */}
-        {skin?.caseInfo && (
+        {/* Source Section - nur bei echter Case-Beziehung */}
+        {skin?.caseInfo && skin.caseInfo.id && skin.caseInfo.name && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

@@ -190,6 +190,9 @@ export const getSkinById = async (req, res) => {
       };
     }
 
+    // Remove caseSkins from response (internal data)
+    delete responseData.caseSkins;
+
     res.json(responseData);
   } catch (err) {
     res.status(500).json({ error: "Could not fetch skin" });
