@@ -1,6 +1,0 @@
-// backend/src/middleware/auth.js
-// console.log('Auth-Middleware hit → Authorization:', req.headers.authorization);
-
-// backend/src/app.js
-// console.log("Watchlist routes loaded!", watchlistRoutes);
-// console.log("Portfolio routes loaded!", portfolioRoutes);
