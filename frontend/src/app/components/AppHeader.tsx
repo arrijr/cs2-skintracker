@@ -23,6 +23,7 @@ export default function AppHeader() {
     { name: 'Home', href: '/' },
     { name: 'Skins', href: '/skins' },
     { name: 'Cases', href: '/cases' },
+    { name: 'Blog', href: '/blog' },
     ...(isSignedIn ? [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'Portfolio', href: '/portfolio' },

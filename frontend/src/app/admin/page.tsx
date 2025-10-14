@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle, RefreshCw, BarChart3, Settings, FileText, Search, TrendingUp } from "lucide-react";
+import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle, RefreshCw, BarChart3, Settings, FileText, Search, TrendingUp, BookOpen, Edit } from "lucide-react";
 import BuildInfo from "../components/BuildInfo";
 import AdminMiniMetrics from "../components/AdminMiniMetrics";
 import { safeLower } from "@/lib/strings";
@@ -300,6 +300,52 @@ export default function AdminPage() {
 
               {/* Admin Mini Metrics */}
               <AdminMiniMetrics showDetails={true} />
+
+              {/* Quick Actions */}
+              <Card className="card-enhanced hover-lift">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="w-5 h-5" />
+                    Quick Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a 
+                      href="/admin/blog" 
+                      className="flex items-center gap-3 p-4 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-800 transition-colors group"
+                    >
+                      <BookOpen className="w-6 h-6 text-brand-celadon-400 group-hover:text-brand-celadon-300" />
+                      <div>
+                        <div className="font-medium">Manage Blog</div>
+                        <div className="text-sm text-muted-foreground">View all posts</div>
+                      </div>
+                    </a>
+
+                    <a 
+                      href="/admin/blog/editor" 
+                      className="flex items-center gap-3 p-4 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-800 transition-colors group"
+                    >
+                      <Edit className="w-6 h-6 text-brand-celadon-400 group-hover:text-brand-celadon-300" />
+                      <div>
+                        <div className="font-medium">New Blog Post</div>
+                        <div className="text-sm text-muted-foreground">Create article</div>
+                      </div>
+                    </a>
+
+                    <a 
+                      href="/admin/update-prices" 
+                      className="flex items-center gap-3 p-4 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-800 transition-colors group"
+                    >
+                      <RefreshCw className="w-6 h-6 text-brand-celadon-400 group-hover:text-brand-celadon-300" />
+                      <div>
+                        <div className="font-medium">Update Prices</div>
+                        <div className="text-sm text-muted-foreground">Manual trigger</div>
+                      </div>
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
               
               {/* KPI Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
