@@ -19,6 +19,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import adminMetricsRoutes from "./routes/adminMetricsRoutes.js";
 import logsRoutes from "./routes/logsRoutes.js";
 import marketSnapshotRoutes from "./routes/marketSnapshotRoutes.js";
+import blogRoutes from "./routes/blogRoutes.js";
 
 dotenv.config();
 
@@ -169,6 +170,7 @@ app.use("/api/v1/logs", logsRoutes);
 app.use("/api/v1", marketSnapshotRoutes);
 app.use("/api/v1/admin", adminLimiter, adminRoutes);
 app.use("/api/v1/admin/metrics", adminLimiter, adminMetricsRoutes);
+app.use("/api/v1/blog", blogRoutes);
 
 // 404
 app.use((req, res) => {
