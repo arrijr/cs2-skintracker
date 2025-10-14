@@ -183,20 +183,35 @@ async function updateBatch(skip, take, filterActive) {
           ...(result.unstablereason && { unstableReason: result.unstablereason }),
         };
 
-        // Only update if we have meaningful changes
+        // Validate that we have meaningful changes
         const hasChanges = Object.values(updateData).some(val => val !== null && val !== undefined);
         
-        if (hasChanges) {
+        if (!hasChanges) {
+          console.warn(`⚠️ [${skin.marketHashName}] No valid data to update!`);
+          miss++;
+          continue;
+        }
+
+        // Additional validation: ensure critical fields are present
+        const hasCriticalData = updateData.priceLatest || updateData.priceMedian || updateData.priceAvg;
+        if (!hasCriticalData) {
+          console.warn(`⚠️ [${skin.marketHashName}] No price data in update!`);
+        }
+
+        try {
           await prisma.skin.update({
             where: { id: skin.id },
             data: updateData,
           });
           updated++;
+        } catch (dbError) {
+          console.error(`❌ DB update failed for "${skin.marketHashName}":`, dbError.message);
+          throw dbError; // Rethrow to trigger outer catch
         }
 
         ok++;
         if (ok % 50 === 0) {
-          console.log(`✅ ${ok} Preise aktualisiert (batch offset ${skip})`);
+          console.log(`✅ ${ok} Preise aktualisiert, ${updated} DB updates (batch offset ${skip})`);
         }
         
         const priceDisplay = price ? parsePrice(price) : 'N/A';

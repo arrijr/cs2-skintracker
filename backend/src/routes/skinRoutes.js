@@ -285,55 +285,11 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
 
     console.log(`[DEBUG] Found ${history.length} price history entries for skin ${skinId}`);
 
-    // Generate sample history if none exists or too few entries
-    let priceHistory = history;
-    if (history.length < 7 && marketPrice) {
-      console.log(`[DEBUG] Generating sample price history for skin ${skinId} (only ${history.length} real entries)`);
-      const sampleHistory = [];
-      const today = new Date();
-      
-      // Generate more realistic price history with trend
-      let currentPrice = marketPrice;
-      const trend = (Math.random() - 0.5) * 0.02; // Small overall trend
-      
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        
-        // Add trend and small random variation
-        const variation = (Math.random() - 0.5) * 0.05; // ±2.5% daily variation
-        const trendEffect = trend * (30 - i) / 30; // Gradual trend over time
-        currentPrice = marketPrice * (1 + trendEffect + variation);
-        
-        // Ensure price doesn't go below 0.01
-        currentPrice = Math.max(0.01, currentPrice);
-        
-        sampleHistory.push({
-          date: date.toISOString().split('T')[0],
-          price: Math.round(currentPrice * 100) / 100
-        });
-      }
-      priceHistory = sampleHistory;
-    }
-
-    // Get market statistics - more realistic values
-    const baseVolume = marketPrice > 100 ? 1 : marketPrice > 50 ? 3 : marketPrice > 10 ? 8 : 15;
-    const volumeVariation = (Math.random() - 0.5) * 0.4; // ±20% variation
-    const volume24h = Math.max(1, Math.floor(baseVolume * (1 + volumeVariation)));
-    
-    // Calculate realistic price change based on price level
-    const priceChangePercent = marketPrice > 100 ? (Math.random() - 0.5) * 2 : // ±1% for expensive items
-                              marketPrice > 10 ? (Math.random() - 0.5) * 5 : // ±2.5% for mid-range
-                              (Math.random() - 0.5) * 10; // ±5% for cheap items
-    
-    const priceChange24h = marketPrice ? (marketPrice * priceChangePercent / 100) : 0;
-    
-    const marketStats = {
-      medianPrice: skin.priceMedian || marketPrice,
-      volume24h: volume24h,
-      priceChange24h: Math.round(priceChange24h * 100) / 100,
-      priceChangePercent24h: Math.round(priceChangePercent * 100) / 100
-    };
+    // Use REAL price history data only - NO sample data generation
+    const priceHistory = history.map(entry => ({
+      date: entry.date.toISOString().split('T')[0],
+      price: entry.price
+    }));
 
     // Get case information - Only real case relationships from CaseSkin table
     let caseInfo = null;
@@ -346,7 +302,7 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
       };
     }
 
-    // Get variants (same weapon type)
+    // Get variants (same weapon type) with REAL prices only
     const variants = await prisma.skin.findMany({
       where: {
         AND: [
@@ -360,35 +316,17 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
         priceMedian: true,
         priceAvg: true,
         priceLatest: true,
-        imageUrl: true
+        imageUrl: true,
+        rarity: true
       },
       take: 8
     });
 
-    // Add marketPrice to variants with realistic pricing
-    const variantsWithPrice = variants.map(variant => {
-      let basePrice = variant.priceLatest || variant.priceMedian || variant.priceAvg || 0;
-      
-      // If no price data, generate realistic price based on weapon type and rarity
-      if (basePrice === 0) {
-        // Generate realistic price based on weapon type
-        const weaponType = variant.name?.toLowerCase() || '';
-        if (weaponType.includes('knife') || weaponType.includes('bayonet')) {
-          basePrice = Math.random() * 500 + 50; // $50-$550
-        } else if (weaponType.includes('awp') || weaponType.includes('ak') || weaponType.includes('m4')) {
-          basePrice = Math.random() * 100 + 5; // $5-$105
-        } else if (weaponType.includes('pistol') || weaponType.includes('glock') || weaponType.includes('usp')) {
-          basePrice = Math.random() * 20 + 0.5; // $0.50-$20.50
-        } else {
-          basePrice = Math.random() * 10 + 0.1; // $0.10-$10.10
-        }
-      }
-      
-      return {
-        ...variant,
-        marketPrice: Math.round(basePrice * 100) / 100
-      };
-    });
+    // Use REAL prices only - NO generated prices
+    const variantsWithPrice = variants.map(variant => ({
+      ...variant,
+      marketPrice: variant.priceLatest || variant.priceMedian || variant.priceAvg || null
+    }));
 
     // Remove caseSkins from response (internal data)
     const { caseSkins, ...skinWithoutCaseSkins } = skin;
@@ -398,7 +336,6 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
       data: {
         ...skinWithoutCaseSkins,
         marketPrice,
-        marketStats,
         caseInfo,
         variants: variantsWithPrice,
         history: priceHistory
@@ -505,52 +442,16 @@ router.get("/:skinId/history/quantity", async (req, res) => {
       });
     }
     
-    // Fallback: Generate sample data if no real data exists yet
-    console.log(`[DEBUG] No real quantity history found, generating sample data for skin ${skinId}`);
-    
-    const skin = await prisma.skin.findUnique({
-      where: { id: parseInt(skinId) },
-      select: { priceMedian: true, priceAvg: true, priceLatest: true, offerVolume: true }
-    });
-    
-    if (!skin) {
-      return res.status(404).json({ error: 'Skin not found' });
-    }
-    
-    // Generate realistic quantity data based on current offer volume or price
-    const quantityData = [];
-    const currentPrice = skin.priceLatest || skin.priceMedian || skin.priceAvg || 0;
-    const baseQuantity = skin.offerVolume || (currentPrice > 100 ? 1 : currentPrice > 50 ? 3 : currentPrice > 10 ? 8 : 15);
-    
-    // Calculate number of days based on range
-    const days = range === '1y' ? 365 : range === '90d' ? 90 : range === '30d' ? 30 : 7;
-    
-    for (let i = 0; i < days; i++) {
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i);
-      
-      // Add small trend and variation
-      const trend = (Math.random() - 0.5) * 0.1;
-      const variation = (Math.random() - 0.5) * 0.3;
-      const currentQuantity = Math.max(1, Math.floor(baseQuantity * (1 + trend * i / days + variation)));
-      
-      // Generate realistic sold volume (10-30% of available listings)
-      const soldVolume24h = Math.floor(currentQuantity * (0.1 + Math.random() * 0.2));
-      
-      quantityData.push({
-        date: date.toISOString().split('T')[0],
-        quantity: currentQuantity,
-        activeListings: currentQuantity,
-        soldVolume24h: soldVolume24h
-      });
-    }
+    // NO SAMPLE DATA - Return empty if no real data exists
+    console.log(`[DEBUG] No real quantity history found for skin ${skinId}, returning empty data`);
     
     res.json({
       success: true,
-      data: quantityData,
+      data: [],
       range,
       skinId: parseInt(skinId),
-      source: 'generated'
+      source: 'none',
+      message: 'No quantity history available yet. Data will be collected daily.'
     });
   } catch (err) {
     console.error(`[ERROR] Failed to fetch quantity history for skin ${skinId}:`, err);

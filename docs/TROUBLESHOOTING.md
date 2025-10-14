@@ -25,6 +25,72 @@ Skin Import Process:
 
 ---
 
+## 🛡️ **Data Loss Prevention**
+
+**Problem**: Skin prices and quantity data disappearing or showing fake/sample data.
+
+**Root Causes Identified**:
+1. Backend was generating sample data as "fallback" when DB was empty
+2. Frontend was generating artificial quantity data
+3. GitHub Workflows were not running or failing silently
+
+**Permanent Solution (Implemented)**:
+
+### Backend Changes
+- **REMOVED** all sample data generation from `backend/src/routes/skinRoutes.js`
+- API now returns ONLY real data from database
+- Empty data returns empty arrays with proper messages
+
+### Frontend Changes
+- **REMOVED** sample quantity data generation
+- Frontend now fetches real data from `/skins/:skinId/history/quantity` endpoint
+- Shows "No data available yet" message when no real data exists
+
+### Data Collection Scripts
+- `backend/scripts/updateSkinPrices.js` - Updates current skin prices from SteamWebAPI
+- `backend/scripts/savePriceHistory.js` - Saves daily price snapshots to PriceHistory table
+- `backend/scripts/saveQuantityHistory.js` - Saves daily quantity snapshots to SkinQuantityHistory table
+- `backend/scripts/verifyDataIntegrity.js` - Checks for data gaps and missing data
+
+### GitHub Actions (Automated Daily)
+1. **02:00 UTC** - `update-skin-prices.yml` - Updates all skin prices from API
+2. **03:00 UTC** - `save-price-history.yml` - Saves price history snapshot
+3. **03:30 UTC** - `save-quantity-history.yml` - Saves quantity history snapshot
+
+### Monitoring & Validation
+- Data Integrity Service (`backend/src/services/dataIntegrityService.js`) validates data quality
+- Automatic alerts if >10% of data updates fail
+- Logs all operations to `JobRun` table for tracking
+
+### Manual Verification
+Run verification script to check for data gaps:
+```bash
+cd backend
+node scripts/verifyDataIntegrity.js
+```
+
+This checks:
+- Skins without price data
+- Skins with stale data (>7 days old)
+- Gaps in PriceHistory table
+- Gaps in SkinQuantityHistory table
+
+**Prevention Checklist**:
+- ✅ No sample data generation in code
+- ✅ Daily automated data collection via GitHub Actions
+- ✅ Data integrity monitoring and alerts
+- ✅ Validation scripts to catch gaps early
+- ✅ Supabase automatic daily backups enabled
+
+**Recovery Steps** (if data is lost):
+1. Check GitHub Actions logs for failures
+2. Run `verifyDataIntegrity.js` to identify gaps
+3. Manually trigger failed workflows
+4. For historical data: Restore from Supabase backup if needed
+5. Run all three scripts manually in sequence if needed
+
+---
+
 ## Quantity History Chart Width Issues
 ------------------------------------
 

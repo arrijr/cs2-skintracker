@@ -234,49 +234,36 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
   const variants = skin?.variants || [];
   const history = skin?.history || [];
   
-  // Extract quantity data from history
-  // TODO: Backend should provide real quantity data from market snapshots
-  const quantityData = useMemo(() => {
-    if (!history || history.length === 0) return [];
-    
-    // Check if history has quantity data
-    const hasQuantity = history.some((item: any) => item.quantity && item.quantity > 0);
-    
-    if (hasQuantity) {
-      return history
-        .filter((item: any) => item.quantity && item.quantity > 0)
-        .map((item: any) => ({
-          date: item.date,
-          quantity: item.quantity
-        }));
-    }
-    
-    // Generate sample quantity data based on price volatility
-    // Higher price = lower quantity (inverse relationship)
-    const avgPrice = history.reduce((sum: number, item: any) => sum + (item.price || 0), 0) / history.length;
-    
-    // Create more data points for better chart distribution
-    // Create one data point per day for clean, even distribution
-    const data = history.map((item: any, index: number) => {
-      const priceRatio = avgPrice > 0 ? (avgPrice / (item.price || avgPrice)) : 1;
-      const baseQuantity = 30;
+  // Load REAL quantity data from API - NO sample data generation
+  const [quantityData, setQuantityData] = useState<Array<{date: string, quantity: number}>>([]);
+  const [quantityLoading, setQuantityLoading] = useState(false);
+
+  // Fetch real quantity history from backend
+  useEffect(() => {
+    const loadQuantityHistory = async () => {
+      if (!params.skinId) return;
       
-      // Generate quantity inversely proportional to price
-      const variation = (Math.sin(index * 0.5) + 1) * 0.3; // Range: 0 to 0.6
-      const quantity = Math.max(5, Math.floor(baseQuantity * priceRatio * (0.7 + variation)));
-      
-      return {
-        date: item.date,
-        quantity: quantity
-      };
-    });
-    
-    // Debug logging
-    console.log('[QuantityData] Generated data:', data.length, 'items');
-    console.log('[QuantityData] First 3 items:', data.slice(0, 3));
-    
-    return data;
-  }, [history]);
+      setQuantityLoading(true);
+      try {
+        const response = await fetchJson(apiUrl(`/skins/${params.skinId}/history/quantity?range=${timeRange}`));
+        
+        if (response.success && response.data && response.data.length > 0) {
+          setQuantityData(response.data);
+          console.log(`[QuantityData] Loaded ${response.data.length} real entries from ${response.source}`);
+        } else {
+          setQuantityData([]);
+          console.log('[QuantityData] No real data available yet');
+        }
+      } catch (err) {
+        console.error('Error loading quantity history:', err);
+        setQuantityData([]);
+      } finally {
+        setQuantityLoading(false);
+      }
+    };
+
+    loadQuantityHistory();
+  }, [params.skinId, timeRange]);
 
   // Edge-sensitive hover handler for quantity chart
   const handleQuantityMouseMove = useCallback((event: any) => {
@@ -750,6 +737,12 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
               </div>
           </CardHeader>
             <CardContent className="p-5 pt-0">
+            {quantityLoading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                Loading quantity data...
+              </div>
+            ) : quantityData && quantityData.length > 0 ? (
               <ChartContainer
                 config={{
                   quantity: {
@@ -817,6 +810,11 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No quantity history available yet. Data will be collected daily.
+              </div>
+            )}
             </CardContent>
           </Card>
 

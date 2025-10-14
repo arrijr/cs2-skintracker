@@ -39,6 +39,11 @@ jobs:
         run: |
           cd backend
           node scripts/saveQuantityHistory.js
+          
+      - name: Log Success Details
+        if: success()
+        run: |
+          echo "✅ Quantity history successfully saved to database" >> $GITHUB_STEP_SUMMARY
 
       - name: Create Summary
         if: always()
