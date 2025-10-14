@@ -163,6 +163,7 @@ model PriceHistory {
   price   Float
   skin    Skin     @relation(fields: [skinId], references: [id])
 
+  @@unique([skinId, date])
   @@index([skinId, date])
 }
 
