@@ -17,7 +17,10 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
 - `saveQuantityHistory.js` - Daily quantity history snapshot script  
 - `verifyDataIntegrity.js` - Data gap detection and validation script
 - `dataIntegrityService.js` - Data validation and monitoring service
+- `backfillHistoricalData.js` - Generate 90 days of historical data (one-time)
+- `fetchRealHistoricalData.js` - Fetch real historical data from SteamWebAPI.com
 - Automated daily GitHub Actions workflows (02:00, 03:00, 03:30 UTC)
+- Historical data recovery workflows (manual triggers)
 - Comprehensive data integrity monitoring and alerting
 - "No data available" messages when real data doesn't exist yet
 

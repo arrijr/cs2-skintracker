@@ -1,0 +1,80 @@
+name: Fetch Real Historical Data
+
+on:
+  workflow_dispatch: # Nur manueller Trigger
+    inputs:
+      confirm_fetch:
+        description: 'Type "CONFIRM" to fetch real historical data from SteamWebAPI.com'
+        required: true
+        default: ''
+
+jobs:
+  fetch-real-historical-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Generate Prisma Client
+        run: |
+          cd backend
+          npx prisma generate
+
+      - name: Verify Confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm_fetch }}" != "CONFIRM" ]; then
+            echo "❌ Confirmation required. Please type 'CONFIRM' to fetch real historical data."
+            exit 1
+          fi
+          echo "✅ Confirmation received. Starting real historical data fetch..."
+
+      - name: Fetch Real Historical Data
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          NODE_ENV: production
+        run: |
+          cd backend
+          node scripts/fetchRealHistoricalData.js
+          
+      - name: Log Success Details
+        if: success()
+        run: |
+          echo "✅ Real historical data fetch completed successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 This script has:" >> $GITHUB_STEP_SUMMARY
+          echo "- Attempted to fetch real historical data from SteamWebAPI.com" >> $GITHUB_STEP_SUMMARY
+          echo "- Processed multiple API endpoints for historical data" >> $GITHUB_STEP_SUMMARY
+          echo "- Added real price history entries where available" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔄 This complements the backfill script for comprehensive historical data." >> $GITHUB_STEP_SUMMARY
+
+      - name: Create Summary
+        if: always()
+        run: |
+          echo "## Real Historical Data Fetch Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Confirmation:** ${{ github.event.inputs.confirm_fetch }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "::error::Real historical data fetch failed! Check the logs for details."
+

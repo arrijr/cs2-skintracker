@@ -51,11 +51,17 @@ Skin Import Process:
 - `backend/scripts/savePriceHistory.js` - Saves daily price snapshots to PriceHistory table
 - `backend/scripts/saveQuantityHistory.js` - Saves daily quantity snapshots to SkinQuantityHistory table
 - `backend/scripts/verifyDataIntegrity.js` - Checks for data gaps and missing data
+- `backend/scripts/backfillHistoricalData.js` - Generates 90 days of historical data (one-time)
+- `backend/scripts/fetchRealHistoricalData.js` - Fetches real historical data from SteamWebAPI.com
 
 ### GitHub Actions (Automated Daily)
 1. **02:00 UTC** - `update-skin-prices.yml` - Updates all skin prices from API
 2. **03:00 UTC** - `save-price-history.yml` - Saves price history snapshot
 3. **03:30 UTC** - `save-quantity-history.yml` - Saves quantity history snapshot
+
+### Historical Data Recovery (One-time)
+1. **`backfill-historical-data.yml`** - Generates 90 days of realistic historical data
+2. **`fetch-real-historical-data.yml`** - Attempts to fetch real historical data from SteamWebAPI.com
 
 ### Monitoring & Validation
 - Data Integrity Service (`backend/src/services/dataIntegrityService.js`) validates data quality
