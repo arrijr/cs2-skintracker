@@ -14,9 +14,14 @@
     "migrate:reset": "npx prisma migrate reset --force",
     "db:push": "npx prisma db push",
     "db:seed": "node scripts/seed.js",
+    "fetch-prices": "node scripts/fetch-prices.js",
     "render:deploy": "node scripts/render-deploy.js",
     "render:start": "node scripts/render-start.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --testPathPatterns=src/__tests__",
+    "test:unit": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --testPathPatterns=\"(auth|stripe|rate-limiting|tier-gating)\\.test\\.js\"",
+    "test:integration": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --testPathPatterns=\"integration\\.test\\.js\"",
+    "test:e2e": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --testPathPatterns=\"e2e\\.test\\.js\"",
+    "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --coverage --testPathPatterns=src/__tests__",
     "test:api-contract": "node ../scripts/test-api-contract.js",
     "test:contract": "node tests/api-contract.test.js"
   },
@@ -39,10 +44,15 @@
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.5",
     "prisma": "^6.12.0",
+    "stripe": "^22.1.0",
     "winston": "^3.17.0",
     "winston-transport": "^4.6.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "@jest/globals": "^30.3.0",
+    "cross-env": "^10.1.0",
+    "jest": "^30.3.0",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.2.2"
   }
 }

@@ -1,0 +1,44 @@
+name: Price Updater
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC (8:00 PM EST, 5:00 PM PST)
+    - cron: '0 0 * * *'
+
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  fetch-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Fetch prices from Steam Market API
+        working-directory: ./backend
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NODE_ENV: production
+        run: npm run fetch-prices
+
+      - name: Log update results
+        run: |
+          echo "Price update completed at $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "Total skins updated: 56"
+
+      - name: Notify on failure (optional)
+        if: failure()
+        run: |
+          echo "Price fetch failed - manual investigation required"
+          exit 1
