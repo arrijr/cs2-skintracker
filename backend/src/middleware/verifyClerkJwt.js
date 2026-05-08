@@ -75,6 +75,10 @@ export async function verifyClerkJwt(req, res, next) {
 
     // Skip JWT verification if JWKS ENV vars are not configured
     if (!CLERK_JWKS_URL || !CLERK_ISSUER || !CLERK_AUDIENCE) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('[AUTH] FATAL: Missing Clerk env vars in production');
+        return res.status(500).json({ error: 'Server misconfigured' });
+      }
       console.warn("[JWT VERIFY] Skipping JWT verification - JWKS not configured");
       // Create a mock payload for testing
       req.clerkJwt = { sub: "test-user", aud: audience, iss: issuer };
@@ -116,16 +120,19 @@ export async function verifyClerkJwt(req, res, next) {
         // Nutzlast für Controller verfügbar machen
         req.clerkJwt = payload;
         
-        // Extract user ID from JWT payload
+        // Extract user ID from JWT payload via DB lookup
         const clerkUserId = payload?.sub;
         if (clerkUserId) {
-          // For now, use a simple mapping approach
-          // TODO: Implement proper database lookup
-          req.userId = 67140; // Hardcoded for testing - this is the real user ID
-          req.auth = { userId: 67140 };
-          console.log("[JWT VERIFY] Using hardcoded user ID:", req.userId, "for clerk:", clerkUserId);
+          const user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
+          if (!user) {
+            console.error("[JWT VERIFY] User not found for clerkId:", clerkUserId);
+            return res.status(401).json({ error: 'User not found' });
+          }
+          req.userId = user.id;
+          req.auth = { userId: user.id };
+          console.log("[JWT VERIFY] Resolved userId:", req.userId, "for clerk:", clerkUserId);
         }
-        
+
         next();
       }
     );

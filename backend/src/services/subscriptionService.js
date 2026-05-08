@@ -3,10 +3,8 @@
  * Handles subscription lifecycle: creation, updates, cancellation, tier checking
  */
 
-import { PrismaClient } from '@prisma/client';
+import prisma from '../prisma/prismaClient.js';
 import logger from '../utils/logger.js';
-
-const prisma = new PrismaClient();
 
 export const subscriptionService = {
   /**
