@@ -22,7 +22,7 @@
     "test:integration": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --testPathPatterns=\"integration\\.test\\.js\"",
     "test:e2e": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --testPathPatterns=\"e2e\\.test\\.js\"",
     "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --coverage --testPathPatterns=src/__tests__",
-    "test:sprint2": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --testPathPatterns=sprint2",
+    "test:sprint2": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --testPathPattern=sprint2",
     "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --watch",
     "test:api-contract": "node ../scripts/test-api-contract.js",
     "test:contract": "node tests/api-contract.test.js"
