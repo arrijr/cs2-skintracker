@@ -245,7 +245,7 @@ export const addToPortfolio = async (req, res) => {
       // Don't fail the main operation if history update fails
     }
 
-    return res.json({ message: "Added to portfolio", id: entry.id });
+    return res.status(201).json({ id: entry.id, skinId: entry.skinId, amount: entry.amount, buyPrice: entry.buyPrice, buyDate: entry.buyDate });
   } catch (err) {
     console.error(err);
     if (!res.headersSent) {
@@ -501,6 +501,55 @@ export const getPortfolioKPIs = async (req, res) => {
   } catch (error) {
     console.error("Failed to get portfolio KPIs:", error);
     res.status(500).json({ error: "Failed to get portfolio KPIs" });
+  }
+};
+
+// GET PORTFOLIO SUMMARY (Sprint 2 - returns shape expected by tests)
+export const getPortfolioSummary = async (req, res) => {
+  try {
+    const userId = req.userId || req.auth?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const entries = await prisma.portfolio.findMany({
+      where: { userId },
+      include: { skin: true },
+      orderBy: { buyDate: 'asc' }
+    });
+
+    let totalValue = 0;
+    let totalInvested = 0;
+
+    const positions = entries.map((entry) => {
+      const currentPrice = entry.skin.priceLatest || entry.skin.priceAvg || entry.buyPrice;
+      const value = currentPrice * entry.amount;
+      const invested = entry.buyPrice * entry.amount;
+      totalValue += value;
+      totalInvested += invested;
+      return {
+        id: entry.id,
+        skinId: entry.skinId,
+        skinName: entry.skin.name,
+        amount: entry.amount,
+        buyPrice: entry.buyPrice,
+        currentPrice,
+        value,
+        invested,
+        unrealizedPL: value - invested
+      };
+    });
+
+    return res.json({
+      totalValue,
+      totalInvested,
+      unrealizedPL: totalValue - totalInvested,
+      positionCount: entries.length,
+      positions
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 

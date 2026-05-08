@@ -73,8 +73,8 @@ export async function verifyClerkJwt(req, res, next) {
       });
     }
 
-    // Skip JWT verification if JWKS is not configured
-    if (!client || !issuer || !audience) {
+    // Skip JWT verification if JWKS ENV vars are not configured
+    if (!CLERK_JWKS_URL || !CLERK_ISSUER || !CLERK_AUDIENCE) {
       console.warn("[JWT VERIFY] Skipping JWT verification - JWKS not configured");
       // Create a mock payload for testing
       req.clerkJwt = { sub: "test-user", aud: audience, iss: issuer };
