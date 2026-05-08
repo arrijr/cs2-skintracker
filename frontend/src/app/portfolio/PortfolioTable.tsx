@@ -197,7 +197,7 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" data-testid="portfolio-table">
       {/* Portfolio Filter & Searchbar */}
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 items-center">
         <input

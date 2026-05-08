@@ -51,10 +51,11 @@ export class AuthHelper {
 
   /**
    * Check if user is redirected to sign-in
+   * Note: Only checks URL — sign-in page uses Clerk's <SignIn> component
+   * which may not render an h1 when Clerk CDN is blocked in tests.
    */
   async expectRedirectToSignIn() {
-    await this.page.waitForURL(/.*sign-in/);
-    await this.page.locator('h1').waitFor({ state: 'visible' });
+    await this.page.waitForURL(/.*sign-in/, { timeout: 10000 });
   }
 
   /**

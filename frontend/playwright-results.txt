@@ -1,0 +1,60 @@
+
+Running 55 tests using 1 worker
+
+[1A[2K[1/55] [chromium] › tests\e2e.spec.ts:27:10 › CS2 Skin Tracker - E2E Smoke Tests › Authentication Guards › should redirect unauthenticated users to sign-in — CLERK_SECRET_KEY not set in .env.local; middleware cannot verify sessions so no redirect occurs
+[1A[2K[2/55] [chromium] › tests\e2e.spec.ts:32:10 › CS2 Skin Tracker - E2E Smoke Tests › Authentication Guards › should redirect unauthenticated users from admin — CLERK_SECRET_KEY not set in .env.local; middleware cannot verify sessions so no redirect occurs
+[1A[2K[3/55] [chromium] › tests\e2e.spec.ts:37:10 › CS2 Skin Tracker - E2E Smoke Tests › Authentication Guards › should redirect unauthenticated users from watchlist — CLERK_SECRET_KEY not set in .env.local; middleware cannot verify sessions so no redirect occurs
+[1A[2K[4/55] [chromium] › tests\e2e.spec.ts:42:5 › CS2 Skin Tracker - E2E Smoke Tests › Authentication Guards › should allow access to public routes
+[1A[2K[5/55] [chromium] › tests\e2e.spec.ts:55:10 › CS2 Skin Tracker - E2E Smoke Tests › Premium Feature Guards › should show premium paywall for protected features — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[6/55] [chromium] › tests\e2e.spec.ts:64:10 › CS2 Skin Tracker - E2E Smoke Tests › Premium Feature Guards › should hide premium features for free users — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[7/55] [chromium] › tests\e2e.spec.ts:77:10 › CS2 Skin Tracker - E2E Smoke Tests › Admin Role Guards › should block non-admin users from admin routes — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[8/55] [chromium] › tests\e2e.spec.ts:86:10 › CS2 Skin Tracker - E2E Smoke Tests › Admin Role Guards › should allow admin users to access admin routes — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[9/55] [chromium] › tests\e2e.spec.ts:99:5 › CS2 Skin Tracker - E2E Smoke Tests › Core User Flows › should display skins page correctly
+[1A[2K[10/55] [chromium] › tests\e2e.spec.ts:107:5 › CS2 Skin Tracker - E2E Smoke Tests › Core User Flows › should handle skin search
+[1A[2K[11/55] [chromium] › tests\e2e.spec.ts:121:5 › CS2 Skin Tracker - E2E Smoke Tests › Core User Flows › should navigate to skin detail page
+[1A[2K[12/55] [chromium] › tests\e2e.spec.ts:135:10 › CS2 Skin Tracker - E2E Smoke Tests › Core User Flows › should show portfolio page for authenticated users — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[13/55] [chromium] › tests\e2e.spec.ts:147:5 › CS2 Skin Tracker - E2E Smoke Tests › Error Handling › should handle 404 pages gracefully
+[1A[2K[14/55] [chromium] › tests\e2e.spec.ts:154:10 › CS2 Skin Tracker - E2E Smoke Tests › Error Handling › should handle API errors gracefully — depends on error state UI not yet implemented
+[1A[2K[15/55] [chromium] › tests\e2e.spec.ts:160:10 › CS2 Skin Tracker - E2E Smoke Tests › Error Handling › should handle network failures — offline mode not implemented in app
+[1A[2K[16/55] [chromium] › tests\e2e.spec.ts:169:5 › CS2 Skin Tracker - E2E Smoke Tests › Responsive Design › should work on mobile devices
+[1A[2K[17/55] [chromium] › tests\e2e.spec.ts:181:10 › CS2 Skin Tracker - E2E Smoke Tests › Responsive Design › should work on tablet devices — requires authenticated portfolio page; localStorage mock incompatible with Clerk SDK
+[1A[2K[18/55] [chromium] › tests\e2e.spec.ts:190:5 › CS2 Skin Tracker - E2E Smoke Tests › Performance › should load pages within acceptable time
+[1A[2K[19/55] [chromium] › tests\e2e.spec.ts:201:5 › CS2 Skin Tracker - E2E Smoke Tests › Performance › should not have memory leaks
+[1A[2K[20/55] [chromium] › tests\features.spec.ts:20:10 › Feature-Specific E2E Tests › Portfolio Features › should display portfolio chart correctly — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[21/55] [chromium] › tests\features.spec.ts:30:10 › Feature-Specific E2E Tests › Portfolio Features › should show portfolio health score for premium users — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[22/55] [chromium] › tests\features.spec.ts:40:10 › Feature-Specific E2E Tests › Portfolio Features › should show market intelligence for premium users — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[23/55] [chromium] › tests\features.spec.ts:50:10 › Feature-Specific E2E Tests › Portfolio Features › should hide premium features for free users — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[24/55] [chromium] › tests\features.spec.ts:65:5 › Feature-Specific E2E Tests › Skins Features › should search and filter skins
+[1A[2K[25/55] [chromium] › tests\features.spec.ts:81:5 › Feature-Specific E2E Tests › Skins Features › should display skin details correctly
+[1A[2K[26/55] [chromium] › tests\features.spec.ts:91:10 › Feature-Specific E2E Tests › Skins Features › should show market stats for skins — market-stats and volume-data data-testids not yet added to skin detail page
+[1A[2K[27/55] [chromium] › tests\features.spec.ts:104:10 › Feature-Specific E2E Tests › Watchlist Features › should add skin to watchlist — requires real Clerk session; add-to-watchlist button only renders when signed in
+[1A[2K[28/55] [chromium] › tests\features.spec.ts:116:10 › Feature-Specific E2E Tests › Watchlist Features › should display watchlist correctly — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[29/55] [chromium] › tests\features.spec.ts:125:10 › Feature-Specific E2E Tests › Watchlist Features › should remove skin from watchlist — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[30/55] [chromium] › tests\features.spec.ts:139:10 › Feature-Specific E2E Tests › Admin Features › should display admin metrics — requires real Clerk session with admin role; localStorage mock incompatible with Clerk SDK
+[1A[2K[31/55] [chromium] › tests\features.spec.ts:150:10 › Feature-Specific E2E Tests › Admin Features › should show build information — requires real Clerk session with admin role; localStorage mock incompatible with Clerk SDK
+[1A[2K[32/55] [chromium] › tests\features.spec.ts:160:10 › Feature-Specific E2E Tests › Admin Features › should handle admin API errors gracefully — requires real Clerk session with admin role; localStorage mock incompatible with Clerk SDK
+[1A[2K[33/55] [chromium] › tests\features.spec.ts:172:5 › Feature-Specific E2E Tests › Responsive Design › should work on mobile devices
+[1A[2K[34/55] [chromium] › tests\features.spec.ts:183:10 › Feature-Specific E2E Tests › Responsive Design › should work on tablet devices — requires authenticated portfolio; localStorage mock incompatible with Clerk SDK
+[1A[2K[35/55] [chromium] › tests\features.spec.ts:196:5 › Feature-Specific E2E Tests › Performance Tests › should load pages quickly
+[1A[2K[36/55] [chromium] › tests\features.spec.ts:205:5 › Feature-Specific E2E Tests › Performance Tests › should handle large datasets
+[1A[2K[37/55] [chromium] › tests\guards.spec.ts:20:10 › Guard Functionality Tests › Authentication Guards › should protect portfolio route from unauthenticated users — CLERK_SECRET_KEY not set in .env.local; middleware cannot verify sessions so no redirect occurs
+[1A[2K[38/55] [chromium] › tests\guards.spec.ts:27:10 › Guard Functionality Tests › Authentication Guards › should protect admin route from unauthenticated users — CLERK_SECRET_KEY not set in .env.local; middleware cannot verify sessions so no redirect occurs
+[1A[2K[39/55] [chromium] › tests\guards.spec.ts:34:10 › Guard Functionality Tests › Authentication Guards › should protect watchlist route from unauthenticated users — CLERK_SECRET_KEY not set in .env.local; middleware cannot verify sessions so no redirect occurs
+[1A[2K[40/55] [chromium] › tests\guards.spec.ts:41:10 › Guard Functionality Tests › Authentication Guards › should allow authenticated users to access protected routes — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[41/55] [chromium] › tests\guards.spec.ts:52:10 › Guard Functionality Tests › Role-Based Guards › should block regular users from admin routes — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[42/55] [chromium] › tests\guards.spec.ts:59:10 › Guard Functionality Tests › Role-Based Guards › should allow admin users to access admin routes — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[43/55] [chromium] › tests\guards.spec.ts:67:10 › Guard Functionality Tests › Role-Based Guards › should show appropriate error for insufficient permissions — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[44/55] [chromium] › tests\guards.spec.ts:77:10 › Guard Functionality Tests › Premium Feature Guards › should show premium paywall for free users — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[45/55] [chromium] › tests\guards.spec.ts:87:10 › Guard Functionality Tests › Premium Feature Guards › should allow premium users to access premium features — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[46/55] [chromium] › tests\guards.spec.ts:97:10 › Guard Functionality Tests › Premium Feature Guards › should hide premium analytics for free users — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[47/55] [chromium] › tests\guards.spec.ts:110:10 › Guard Functionality Tests › Route Protection › should protect API routes with authentication — Next.js API routes not applicable; backend on separate port 5000
+[1A[2K[48/55] [chromium] › tests\guards.spec.ts:117:10 › Guard Functionality Tests › Route Protection › should protect admin API routes with admin role — Next.js API routes not applicable; backend on separate port 5000
+[1A[2K[49/55] [chromium] › tests\guards.spec.ts:124:10 › Guard Functionality Tests › Route Protection › should allow admin access to admin API routes — Next.js API routes not applicable; backend on separate port 5000
+[1A[2K[50/55] [chromium] › tests\guards.spec.ts:135:10 › Guard Functionality Tests › Session Management › should handle expired sessions gracefully — CLERK_SECRET_KEY not set in .env.local; middleware cannot verify sessions so no redirect occurs
+[1A[2K[51/55] [chromium] › tests\guards.spec.ts:144:10 › Guard Functionality Tests › Session Management › should handle invalid tokens gracefully — CLERK_SECRET_KEY not set in .env.local; middleware cannot verify sessions so no redirect occurs
+[1A[2K[52/55] [chromium] › tests\guards.spec.ts:153:10 › Guard Functionality Tests › Session Management › should clear session data on logout — requires real Clerk session; logout button only renders when signed in
+[1A[2K[53/55] [chromium] › tests\guards.spec.ts:167:10 › Guard Functionality Tests › Error Boundaries › should handle authentication errors gracefully — depends on error state UI; redirect happens before error UI renders
+[1A[2K[54/55] [chromium] › tests\guards.spec.ts:176:10 › Guard Functionality Tests › Error Boundaries › should handle authorization errors gracefully — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K[55/55] [chromium] › tests\guards.spec.ts:185:10 › Guard Functionality Tests › Error Boundaries › should handle network errors gracefully — requires real Clerk session; localStorage mock incompatible with Clerk SDK
+[1A[2K  42 skipped
+  13 passed (31.1s)

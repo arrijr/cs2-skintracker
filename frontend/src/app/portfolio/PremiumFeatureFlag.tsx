@@ -37,7 +37,7 @@ export default function PremiumFeatureFlag({
   // If feature is disabled via environment variable, show fallback
   if (!isFeatureEnabled) {
     return fallback || (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+      <div className="bg-gray-900 rounded-xl p-6 shadow-md" data-testid="premium-feature">
         <div className="text-center py-8">
           <div className="text-2xl mb-4">🔒</div>
           <h4 className="text-lg font-medium mb-2">Feature Disabled</h4>
@@ -92,7 +92,7 @@ export default function PremiumFeatureFlag({
 
   // If not premium, show upgrade prompt
   return (
-    <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+    <div className="bg-gray-900 rounded-xl p-6 shadow-md" data-testid="premium-feature-flag">
       <div className="text-center py-8">
         <Lock className="w-16 h-16 mx-auto mb-4 text-amber-400" />
         <h4 className="text-xl font-medium mb-2">Premium Feature</h4>

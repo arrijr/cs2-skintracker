@@ -482,7 +482,7 @@ export default function SkinDetailPage({ params }: { params: { skinId: string } 
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background" data-testid="skin-detail">
         <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 py-6 space-y-6">
         {/* Back Button */}
         <div className="flex items-center gap-4">

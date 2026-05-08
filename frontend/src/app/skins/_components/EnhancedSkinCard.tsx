@@ -265,7 +265,8 @@ export function EnhancedSkinCard({
 
   // Grid view
   return (
-    <Card 
+    <Card
+      data-testid="skin-card"
       className={cn(
         "group cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-slate-500/10",
         "border-slate-700/50 hover:border-slate-600/50",

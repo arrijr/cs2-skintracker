@@ -40,7 +40,7 @@ export default function WatchlistTable({ watchlist, onRemove, onUpdateAlert }: P
   const [editingAlert, setEditingAlert] = useState<number | null>(null);
   const [alertPrice, setAlertPrice] = useState<string>("");
   return (
-    <div className="bg-gray-900 rounded-xl p-6 shadow-md w-full max-w-3xl mx-auto mt-8">
+    <div className="bg-gray-900 rounded-xl p-6 shadow-md w-full max-w-3xl mx-auto mt-8" data-testid="watchlist-table">
       <h2 className="text-xl font-bold mb-4">Watchlist</h2>
       <table className="w-full text-sm">
         <thead>

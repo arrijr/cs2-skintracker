@@ -299,7 +299,9 @@ export default function AdminPage() {
               </div>
 
               {/* Admin Mini Metrics */}
-              <AdminMiniMetrics showDetails={true} />
+              <div data-testid="admin-metrics">
+                <AdminMiniMetrics showDetails={true} />
+              </div>
 
               {/* Quick Actions */}
               <Card className="card-enhanced hover-lift">

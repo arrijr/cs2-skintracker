@@ -11,8 +11,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Use 1 worker to avoid overwhelming the Next.js dev server with concurrent connections */
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -22,6 +22,13 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    /* Use domcontentloaded to avoid hanging on external scripts (e.g. Clerk CDN) */
+    navigationTimeout: 30000,
+    /* Default to domcontentloaded so tests don't wait for external scripts */
+    actionTimeout: 15000,
+    /* Default waitUntil — prevents hanging on Clerk CDN script load */
+    navigationOptions: { waitUntil: 'domcontentloaded' },
   },
 
   /* Configure projects for major browsers */

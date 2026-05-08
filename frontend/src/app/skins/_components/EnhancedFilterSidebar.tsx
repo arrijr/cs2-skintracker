@@ -139,9 +139,10 @@ export function EnhancedFilterSidebar({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="relative">
+          <div className="relative" data-testid="skin-search">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
             <Input
+              data-testid="skin-search-input"
               placeholder="Search skins..."
               value={filters.q}
               onChange={(e) => onFilterChange('q', e.target.value)}

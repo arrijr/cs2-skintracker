@@ -17,9 +17,11 @@ type Props = {
 
 export default function PortfolioChart({ history, onRangeChange }: Props) {
   return (
-    <PortfolioHistoryChart
-      history={history}
-      onRangeChange={onRangeChange}
-    />
+    <div data-testid="portfolio-chart">
+      <PortfolioHistoryChart
+        history={history}
+        onRangeChange={onRangeChange}
+      />
+    </div>
   );
 }
