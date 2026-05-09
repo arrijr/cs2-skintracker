@@ -96,7 +96,7 @@ export async function verifyClerkJwt(req, res, next) {
         // audience: [audience, "cs2-skintracker-api-dev", "cs2-skintrackr-api-dev"],
         issuer: issuer,
       },
-      (err, payload) => {
+      async (err, payload) => {
         if (err) {
           console.error("[JWT VERIFY] failed:", err?.message, {
             issuer: issuer,
