@@ -5,6 +5,7 @@
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSubscription } from "@/hooks/useSubscription";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
 import { useUserRole } from "@/hooks/useUserRole";
 import { PortfolioValueChart } from "@/components/charts/PortfolioValueChart";
@@ -40,7 +41,20 @@ export default function Dashboard() {
   const router = useRouter();
   const { data, error, isLoading, mutate, portfolio, history, kpis } = usePortfolioData();
   const { isPremium } = useUserRole();
-  
+  const { checkout } = useSubscription();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handleUpgrade = async () => {
+    setCheckoutLoading(true);
+    try {
+      await checkout('pro');
+    } catch (err) {
+      console.error('Checkout failed:', err);
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
   const [chartRange, setChartRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all'>('7d');
   const [movers, setMovers] = useState<{ gainers: any[]; losers: any[] }>({ gainers: [], losers: [] });
   const [moverTimeframe, setMoverTimeframe] = useState<'24h' | '7d'>('24h');
@@ -180,8 +194,12 @@ export default function Dashboard() {
                     <Crown className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
                     <h3 className="font-semibold text-white mb-1">Premium Required</h3>
                     <p className="text-sm text-gray-300 mb-3">Unlock enhanced alerts and unlimited watchlist items</p>
-                    <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold">
-                      Upgrade to Premium
+                    <Button
+                      onClick={handleUpgrade}
+                      disabled={checkoutLoading}
+                      className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold"
+                    >
+                      {checkoutLoading ? 'Wird geladen...' : 'Upgrade to Premium'}
                     </Button>
                   </div>
                 )}

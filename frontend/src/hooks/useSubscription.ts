@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
 import { loadStripe } from '@stripe/stripe-js';
 
 interface Subscription {
@@ -21,7 +22,8 @@ interface Subscription {
 }
 
 export function useSubscription() {
-  const { isSignedIn, getToken } = useUser();
+  const { isSignedIn } = useUser();
+  const { getToken } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
