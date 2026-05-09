@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { loadStripe } from '@stripe/stripe-js';
 
 interface Subscription {
   id: number;
@@ -91,7 +92,19 @@ export function useSubscription() {
         throw new Error(`HTTP ${res.status}`);
       }
 
-      const { url } = await res.json();
+      const { sessionId, url } = await res.json();
+
+      // Use Stripe.js redirectToCheckout (avoids apiKey issues with direct URL)
+      if (sessionId && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+        if (stripe) {
+          const { error } = await stripe.redirectToCheckout({ sessionId });
+          if (error) throw new Error(error.message);
+          return;
+        }
+      }
+
+      // Fallback: direct URL redirect
       if (url) {
         window.location.href = url;
       }
