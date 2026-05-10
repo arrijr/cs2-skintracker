@@ -92,3 +92,60 @@ describe('volatilityEvaluator', () => {
     expect(result.payload.reason).toMatch(/historical/i);
   });
 });
+
+import { floatTierEvaluator } from '../services/alerts/evaluators/floatTierEvaluator.js';
+
+describe('floatTierEvaluator', () => {
+  it('triggers when wear matches tier and price below max', async () => {
+    const result = await floatTierEvaluator.evaluate({
+      id: 1,
+      type: 'float_tier',
+      config: { tier: 'FN', maxPrice: 200 },
+      skin: { wear: 'Factory New', priceLatest: 180 },
+    });
+    expect(result.triggered).toBe(true);
+    expect(result.payload.tier).toBe('FN');
+    expect(result.payload.currentPrice).toBe(180);
+  });
+
+  it('does not trigger when price above max', async () => {
+    const result = await floatTierEvaluator.evaluate({
+      id: 1,
+      type: 'float_tier',
+      config: { tier: 'FN', maxPrice: 200 },
+      skin: { wear: 'Factory New', priceLatest: 250 },
+    });
+    expect(result.triggered).toBe(false);
+  });
+
+  it('does not trigger when wear does not match tier', async () => {
+    const result = await floatTierEvaluator.evaluate({
+      id: 1,
+      type: 'float_tier',
+      config: { tier: 'FN', maxPrice: 200 },
+      skin: { wear: 'Field-Tested', priceLatest: 100 },
+    });
+    expect(result.triggered).toBe(false);
+  });
+
+  it('returns triggered:false with reason when invalid tier', async () => {
+    const result = await floatTierEvaluator.evaluate({
+      id: 1,
+      type: 'float_tier',
+      config: { tier: 'XX', maxPrice: 200 },
+      skin: { wear: 'Factory New', priceLatest: 100 },
+    });
+    expect(result.triggered).toBe(false);
+    expect(result.payload.reason).toMatch(/tier/i);
+  });
+
+  it('returns triggered:false with reason when skin has no wear', async () => {
+    const result = await floatTierEvaluator.evaluate({
+      id: 1,
+      type: 'float_tier',
+      config: { tier: 'FN', maxPrice: 200 },
+      skin: { wear: null, priceLatest: 100 },
+    });
+    expect(result.triggered).toBe(false);
+  });
+});

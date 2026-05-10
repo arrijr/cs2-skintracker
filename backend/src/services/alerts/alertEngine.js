@@ -3,6 +3,7 @@ import logger from '../../utils/logger.js';
 import { deliverEmail } from './delivery/emailDelivery.js';
 import { deliverDiscord } from './delivery/discordDelivery.js';
 import { volatilityEvaluator } from './evaluators/volatilityEvaluator.js';
+import { floatTierEvaluator } from './evaluators/floatTierEvaluator.js';
 
 const evaluators = new Map();
 
@@ -29,6 +30,7 @@ registerEvaluator('price_threshold', {
 });
 
 registerEvaluator('volatility', volatilityEvaluator);
+registerEvaluator('float_tier', floatTierEvaluator);
 
 export async function evaluateAlert(alert) {
   const evaluator = evaluators.get(alert.type);
