@@ -12,7 +12,10 @@ interface UserRole {
   isPremium: boolean;
 }
 
-const ADMIN_EMAILS = ['admin@example.com', 'arthur@example.com'];
+const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 /**
  * Hook to get current user role information.
@@ -22,17 +25,19 @@ const ADMIN_EMAILS = ['admin@example.com', 'arthur@example.com'];
  */
 export function useUserRole(): UserRole {
   const { user, isLoaded } = useUser();
-  const { tier } = useSubscription();
+  const { tier, isLoading: subLoading } = useSubscription();
   const email =
     user?.primaryEmailAddress?.emailAddress ||
     user?.emailAddresses?.[0]?.emailAddress;
+  // NOTE: unsafeMetadata is client-writable in the Clerk SDK — never trust it
+  // for privilege decisions. Only publicMetadata (server-set) or env-allowlisted
+  // emails grant admin.
   const isAdmin =
     user?.publicMetadata?.role === 'admin' ||
-    user?.unsafeMetadata?.role === 'admin' ||
     ADMIN_EMAILS.includes(email || '');
   return {
     role: isAdmin ? 'admin' : (user ? 'user' : null),
-    loading: !isLoaded,
+    loading: !isLoaded || subLoading,
     isAdmin,
     isUser: !isAdmin && !!user,
     isPremium: tier === 'lite' || tier === 'pro',

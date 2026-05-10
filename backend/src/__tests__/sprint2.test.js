@@ -157,7 +157,8 @@ describe('Sprint 2 - Portfolio & Subscription Integration', () => {
         // If we got 200, the gate is broken
         expect(res.status).toBe(403);
       } catch (err) {
-        expect([401, 403, 500]).toContain(err.response?.status);
+        // Only 401 (no auth) or 403 (gate working) acceptable. 500 = server crash, must fail.
+        expect([401, 403]).toContain(err.response?.status);
       }
     });
 
@@ -176,7 +177,7 @@ describe('Sprint 2 - Portfolio & Subscription Integration', () => {
         expect(res.status).toBe(200);
         expect(res.data).toHaveProperty('research');
       } catch (err) {
-        // Allow 401 in envs without dev server / auth mock
+        // Allow 401 in envs without dev server / auth mock. Never accept 500.
         expect([200, 401]).toContain(err.response?.status ?? 200);
       } finally {
         if (prisma) {
