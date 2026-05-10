@@ -197,11 +197,11 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "excellent": return "text-green-400 bg-green-600/20 border-green-600/40";
-      case "good": return "text-blue-400 bg-blue-600/20 border-blue-600/40";
-      case "warning": return "text-yellow-400 bg-yellow-600/20 border-yellow-600/40";
-      case "critical": return "text-red-400 bg-red-600/20 border-red-600/40";
-      default: return "text-gray-400 bg-gray-600/20 border-gray-600/40";
+      case "excellent": return "text-green-400 bg-green-500/10 border-green-500/30";
+      case "good": return "text-purple-400 bg-purple-500/10 border-purple-500/30";
+      case "warning": return "text-yellow-400 bg-yellow-500/10 border-yellow-500/30";
+      case "critical": return "text-red-400 bg-red-500/10 border-red-500/30";
+      default: return "text-slate-400 bg-slate-800/60 border-slate-700/50";
     }
   };
 
@@ -217,7 +217,7 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-400";
-    if (score >= 60) return "text-blue-400";
+    if (score >= 60) return "text-purple-400";
     if (score >= 40) return "text-yellow-400";
     return "text-red-400";
   };
@@ -233,12 +233,12 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
 
   if (!PORTFOLIO_HEALTH_ENABLED) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Portfolio Health Score</h3>
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+        <h3 className="text-xl font-semibold mb-4 text-white">Portfolio Health Score</h3>
         <div className="text-center py-8">
           <div className="text-2xl mb-4">🔒</div>
-          <h4 className="text-lg font-medium mb-2">Portfolio Health Score Disabled</h4>
-          <p className="text-sm text-gray-400 mb-4">
+          <h4 className="text-lg font-medium mb-2 text-white">Portfolio Health Score Disabled</h4>
+          <p className="text-sm text-slate-400 mb-4">
             Enable portfolio health score with NEXT_PUBLIC_PORTFOLIO_HEALTH_SCORE=true
           </p>
         </div>
@@ -248,14 +248,14 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
 
   if (!isPremium) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
         <div className="text-center py-8">
-          <Activity className="w-16 h-16 mx-auto mb-4 text-amber-400" />
-          <h4 className="text-xl font-medium mb-2">Unlock Portfolio Health Score</h4>
-          <p className="text-sm text-gray-400 mb-6">
+          <Activity className="w-16 h-16 mx-auto mb-4 text-purple-400" />
+          <h4 className="text-xl font-medium mb-2 text-white">Unlock Portfolio Health Score</h4>
+          <p className="text-sm text-slate-400 mb-6">
             Get comprehensive portfolio health analysis: Diversification, risk assessment, and liquidity metrics.
           </p>
-          <button className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black px-6 py-2 rounded-lg font-medium hover:from-amber-600 hover:to-yellow-600 transition-all">
+          <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all">
             Upgrade to Premium
           </button>
         </div>
@@ -265,9 +265,9 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
 
   if (!healthScore) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Portfolio Health Score</h3>
-        <div className="text-center py-8 text-gray-400">
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+        <h3 className="text-xl font-semibold mb-4 text-white">Portfolio Health Score</h3>
+        <div className="text-center py-8 text-slate-400">
           No portfolio data available for health analysis.
         </div>
       </div>
@@ -275,16 +275,16 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
   }
 
   return (
-    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
+    <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-bold text-white">Portfolio Health Score</h3>
         <div className="flex items-center gap-2">
-          <div className="text-xs bg-amber-600/20 text-amber-400 px-2 py-1 rounded">
+          <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">
             🔒 Premium Feature
           </div>
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded hover:bg-blue-600/30 transition-colors"
+            className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/30 px-2 py-1 rounded hover:bg-purple-500/20 transition-colors"
           >
             {showDetails ? "Hide Details" : "Show Details"}
           </button>
@@ -296,35 +296,35 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
         <div className={`text-6xl font-bold mb-2 ${getScoreColor(healthScore.overall)}`}>
           {healthScore.overall}
         </div>
-        <div className="text-lg text-gray-300 mb-2">
+        <div className="text-lg text-slate-300 mb-2">
           {getScoreLabel(healthScore.overall)}
         </div>
-        <div className="text-sm text-gray-400">
+        <div className="text-sm text-slate-400">
           Last updated: {new Date(healthScore.lastUpdated).toLocaleString()}
         </div>
       </div>
 
       {/* Category Scores */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
+        <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-green-400 mb-1">
             {healthScore.diversification}
           </div>
-          <div className="text-sm text-gray-400">Diversification</div>
+          <div className="text-sm text-slate-400">Diversification</div>
         </div>
         
-        <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-blue-400 mb-1">
+        <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-purple-400 mb-1">
             {healthScore.risk}
           </div>
-          <div className="text-sm text-gray-400">Risk Management</div>
+          <div className="text-sm text-slate-400">Risk Management</div>
         </div>
         
-        <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-blue-400 mb-1">
+        <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-purple-400 mb-1">
             {healthScore.liquidity}
           </div>
-          <div className="text-sm text-gray-400">Liquidity</div>
+          <div className="text-sm text-slate-400">Liquidity</div>
         </div>
       </div>
 
@@ -334,8 +334,8 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
           onClick={() => setActiveCategory("overall")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeCategory === "overall"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <Activity className="inline w-4 h-4 mr-1" />
@@ -345,8 +345,8 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
           onClick={() => setActiveCategory("diversification")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeCategory === "diversification"
-              ? "bg-green-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <Shield className="inline w-4 h-4 mr-1" />
@@ -356,8 +356,8 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
           onClick={() => setActiveCategory("risk")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeCategory === "risk"
-              ? "bg-red-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <AlertTriangle className="inline w-4 h-4 mr-1" />
@@ -367,8 +367,8 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
           onClick={() => setActiveCategory("liquidity")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeCategory === "liquidity"
-              ? "bg-purple-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <TrendingUp className="inline w-4 h-4 mr-1" />
@@ -415,11 +415,11 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
       )}
 
       {/* Health Summary */}
-      <div className="mt-6 pt-6 border-t border-gray-700">
+      <div className="mt-6 pt-6 border-t border-slate-700/50">
         <h4 className="text-lg font-medium mb-4">Health Summary</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
-            <div className="text-gray-400 mb-2">Strengths:</div>
+            <div className="text-slate-400 mb-2">Strengths:</div>
             <ul className="space-y-1 text-green-400">
               {healthScore.metrics
                 .filter(m => m.status === "excellent" || m.status === "good")
@@ -433,7 +433,7 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
             </ul>
           </div>
           <div>
-            <div className="text-gray-400 mb-2">Areas for Improvement:</div>
+            <div className="text-slate-400 mb-2">Areas for Improvement:</div>
             <ul className="space-y-1 text-yellow-400">
               {healthScore.metrics
                 .filter(m => m.status === "warning" || m.status === "critical")

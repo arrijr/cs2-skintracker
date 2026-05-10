@@ -279,8 +279,8 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
     switch (trend) {
       case "bullish": return "text-green-400";
       case "bearish": return "text-red-400";
-      case "neutral": return "text-blue-400";
-      default: return "text-gray-400";
+      case "neutral": return "text-purple-400";
+      default: return "text-slate-400";
     }
   };
 
@@ -295,30 +295,30 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
 
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
-      case "positive": return "text-green-400 bg-green-600/20 border-green-600/40";
-      case "negative": return "text-red-400 bg-red-600/20 border-red-600/40";
-      case "neutral": return "text-blue-400 bg-blue-600/20 border-blue-600/40";
-      default: return "text-gray-400 bg-gray-600/20 border-gray-600/40";
+      case "positive": return "text-green-400 bg-green-500/10 border-green-500/30";
+      case "negative": return "text-red-400 bg-red-500/10 border-red-500/30";
+      case "neutral": return "text-purple-400 bg-purple-500/10 border-purple-500/30";
+      default: return "text-slate-400 bg-slate-800/60 border-slate-700/50";
     }
   };
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case "high": return "bg-red-600/20 text-red-400";
-      case "medium": return "bg-yellow-600/20 text-yellow-400";
-      case "low": return "bg-blue-600/20 text-blue-400";
-      default: return "bg-gray-600/20 text-gray-400";
+      case "high": return "bg-red-500/10 text-red-400 border border-red-500/30";
+      case "medium": return "bg-yellow-500/10 text-yellow-400 border border-yellow-500/30";
+      case "low": return "bg-purple-500/10 text-purple-400 border border-purple-500/30";
+      default: return "bg-slate-800/60 text-slate-400 border border-slate-700/50";
     }
   };
 
   if (!MARKET_INTELLIGENCE_ENABLED) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Market Intelligence</h3>
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+        <h3 className="text-xl font-semibold mb-4 text-white">Market Intelligence</h3>
         <div className="text-center py-8">
           <div className="text-2xl mb-4">🔒</div>
-          <h4 className="text-lg font-medium mb-2">Market Intelligence Disabled</h4>
-          <p className="text-sm text-gray-400 mb-4">
+          <h4 className="text-lg font-medium mb-2 text-white">Market Intelligence Disabled</h4>
+          <p className="text-sm text-slate-400 mb-4">
             Enable market intelligence with NEXT_PUBLIC_PORTFOLIO_MARKET_INTELLIGENCE=true
           </p>
         </div>
@@ -328,14 +328,14 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
 
   if (!isPremium) {
     return (
-      <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
         <div className="text-center py-8">
-          <Brain className="w-16 h-16 mx-auto mb-4 text-amber-400" />
-          <h4 className="text-xl font-medium mb-2">Unlock Market Intelligence</h4>
-          <p className="text-sm text-gray-400 mb-6">
+          <Brain className="w-16 h-16 mx-auto mb-4 text-purple-400" />
+          <h4 className="text-xl font-medium mb-2 text-white">Unlock Market Intelligence</h4>
+          <p className="text-sm text-slate-400 mb-6">
             Get AI-powered market insights: Price predictions, cycle analysis, and market news.
           </p>
-          <button className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black px-6 py-2 rounded-lg font-medium hover:from-amber-600 hover:to-yellow-600 transition-all">
+          <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all">
             Upgrade to Premium
           </button>
         </div>
@@ -344,11 +344,11 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
   }
 
   return (
-    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
+    <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-bold text-white">Market Intelligence</h3>
         <div className="flex items-center gap-2">
-          <div className="text-xs bg-amber-600/20 text-amber-400 px-2 py-1 rounded">
+          <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">
             🔒 Premium Feature
           </div>
         </div>
@@ -360,8 +360,8 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
           onClick={() => setActiveTab("predictions")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "predictions"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <Target className="inline w-4 h-4 mr-1" />
@@ -371,8 +371,8 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
           onClick={() => setActiveTab("cycles")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "cycles"
-              ? "bg-green-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <BarChart3 className="inline w-4 h-4 mr-1" />
@@ -382,8 +382,8 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
           onClick={() => setActiveTab("news")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "news"
-              ? "bg-purple-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <Newspaper className="inline w-4 h-4 mr-1" />
@@ -393,8 +393,8 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
           onClick={() => setActiveTab("calendar")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "calendar"
-              ? "bg-orange-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <Calendar className="inline w-4 h-4 mr-1" />
@@ -414,8 +414,8 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
                   onClick={() => setSelectedTimeframe(timeframe)}
                   className={`px-2 py-1 rounded text-xs transition-colors ${
                     selectedTimeframe === timeframe
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                      : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
                   }`}
                 >
                   {timeframe}
@@ -427,14 +427,14 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
           {pricePredictions.length > 0 ? (
             <div className="space-y-3">
               {pricePredictions.slice(0, 8).map(prediction => (
-                <div key={prediction.skinId} className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
+                <div key={prediction.skinId} className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="font-medium">{prediction.skinName}</div>
                     <div className="flex items-center gap-2">
                       <span className={`text-sm ${getTrendColor(prediction.trend)}`}>
                         {getTrendIcon(prediction.trend)}
                       </span>
-                      <span className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded">
+                      <span className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/30 px-2 py-1 rounded">
                         {prediction.confidence}% confidence
                       </span>
                     </div>
@@ -442,32 +442,32 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <div className="text-gray-400">Current Price</div>
+                      <div className="text-slate-400">Current Price</div>
                       <div className="font-medium">${prediction.currentPrice.toFixed(2)}</div>
                     </div>
                     <div>
-                      <div className="text-gray-400">Predicted Price</div>
+                      <div className="text-slate-400">Predicted Price</div>
                       <div className={`font-medium ${getTrendColor(prediction.trend)}`}>
                         ${prediction.predictedPrice.toFixed(2)}
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-400">Expected Change</div>
+                      <div className="text-slate-400">Expected Change</div>
                       <div className={`font-medium ${getTrendColor(prediction.trend)}`}>
                         {((prediction.predictedPrice - prediction.currentPrice) / prediction.currentPrice * 100).toFixed(1)}%
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-400">Timeframe</div>
+                      <div className="text-slate-400">Timeframe</div>
                       <div className="font-medium">{prediction.timeframe}</div>
                     </div>
                   </div>
 
                   <div className="mt-3">
-                    <div className="text-xs text-gray-400 mb-1">Key Factors:</div>
+                    <div className="text-xs text-slate-400 mb-1">Key Factors:</div>
                     <div className="flex flex-wrap gap-1">
                       {prediction.factors.map((factor, index) => (
-                        <span key={index} className="text-xs bg-gray-700 px-2 py-1 rounded">
+                        <span key={index} className="text-xs bg-slate-800/60 border border-slate-700/50 px-2 py-1 rounded">
                           {factor}
                         </span>
                       ))}
@@ -477,7 +477,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-slate-400">
               No price predictions available.
             </div>
           )}
@@ -490,22 +490,22 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
           
           {marketCycle ? (
             <div className="space-y-4">
-              <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-6 text-center">
-                <div className="text-4xl font-bold text-blue-400 mb-2">
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-6 text-center">
+                <div className="text-4xl font-bold text-purple-400 mb-2">
                   {marketCycle.phase.charAt(0).toUpperCase() + marketCycle.phase.slice(1)}
                 </div>
-                <div className="text-lg text-gray-300 mb-2">{marketCycle.description}</div>
-                <div className="text-sm text-gray-400 mb-4">
+                <div className="text-lg text-slate-300 mb-2">{marketCycle.description}</div>
+                <div className="text-sm text-slate-400 mb-4">
                   Confidence: {marketCycle.confidence}% | Duration: {marketCycle.estimatedDuration}
                 </div>
-                <div className="text-sm text-gray-300">{marketCycle.recommendation}</div>
+                <div className="text-sm text-slate-300">{marketCycle.recommendation}</div>
               </div>
 
-              <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
                 <h5 className="font-medium mb-3">Key Indicators:</h5>
                 <div className="flex flex-wrap gap-2">
                   {marketCycle.indicators.map((indicator, index) => (
-                    <span key={index} className="text-sm bg-blue-600/20 text-blue-400 px-3 py-1 rounded">
+                    <span key={index} className="text-sm bg-purple-500/10 text-purple-400 border border-purple-500/30 px-3 py-1 rounded">
                       {indicator}
                     </span>
                   ))}
@@ -513,7 +513,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-slate-400">
               Insufficient data for market cycle analysis.
             </div>
           )}
@@ -546,7 +546,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-slate-400">
               No market news available.
             </div>
           )}
@@ -560,17 +560,17 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
           {marketEvents.length > 0 ? (
             <div className="space-y-3">
               {marketEvents.map(event => (
-                <div key={event.id} className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
+                <div key={event.id} className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h5 className="font-medium">{event.title}</h5>
                     <span className={`text-xs px-2 py-1 rounded ${getImpactColor(event.impact)}`}>
                       {event.impact.toUpperCase()} Impact
                     </span>
                   </div>
-                  <p className="text-sm text-gray-400 mb-2">{event.description}</p>
+                  <p className="text-sm text-slate-400 mb-2">{event.description}</p>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500">{event.category.replace('_', ' ')}</span>
-                    <span className="text-blue-400">
+                    <span className="text-slate-500">{event.category.replace('_', ' ')}</span>
+                    <span className="text-purple-400">
                       {new Date(event.date).toLocaleDateString()}
                     </span>
                   </div>
@@ -578,7 +578,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-slate-400">
               No upcoming events.
             </div>
           )}
@@ -586,8 +586,8 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
       )}
 
       {/* Disclaimer */}
-      <div className="mt-6 pt-6 border-t border-gray-700">
-        <div className="text-xs text-gray-500 text-center">
+      <div className="mt-6 pt-6 border-t border-slate-700/50">
+        <div className="text-xs text-slate-500 text-center">
           <Zap className="inline w-3 h-3 mr-1" />
           AI-powered insights are for informational purposes only. 
           Always conduct your own research before making investment decisions.

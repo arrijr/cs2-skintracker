@@ -37,20 +37,20 @@ export default function PremiumFeatureFlag({
   // If feature is disabled via environment variable, show fallback
   if (!isFeatureEnabled) {
     return fallback || (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md" data-testid="premium-feature">
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md" data-testid="premium-feature">
         <div className="text-center py-8">
           <div className="text-2xl mb-4">🔒</div>
-          <h4 className="text-lg font-medium mb-2">Feature Disabled</h4>
-          <p className="text-sm text-gray-400">
-            {isPremium 
+          <h4 className="text-lg font-medium mb-2 text-white">Feature Disabled</h4>
+          <p className="text-sm text-slate-400">
+            {isPremium
               ? `${feature} is currently disabled. Enable with environment variable.`
               : `This premium feature requires a subscription.`
             }
           </p>
           {!isPremium && (
-            <button 
+            <button
               onClick={() => window.open('/profile', '_blank')}
-              className="mt-4 bg-gradient-to-r from-amber-500 to-yellow-500 text-black px-6 py-2 rounded-lg font-medium hover:from-amber-600 hover:to-yellow-600 transition-all"
+              className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
             >
               <Crown className="inline w-4 h-4 mr-2" />
               Upgrade to Premium
@@ -64,12 +64,12 @@ export default function PremiumFeatureFlag({
   // If loading, show skeleton
   if (loading) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md animate-pulse">
-        <div className="h-6 bg-gray-800 rounded mb-4"></div>
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md animate-pulse">
+        <div className="h-6 bg-slate-800/60 rounded mb-4"></div>
         <div className="space-y-3">
-          <div className="h-4 bg-gray-800 rounded"></div>
-          <div className="h-4 bg-gray-800 rounded w-5/6"></div>
-          <div className="h-4 bg-gray-800 rounded w-4/6"></div>
+          <div className="h-4 bg-slate-800/60 rounded"></div>
+          <div className="h-4 bg-slate-800/60 rounded w-5/6"></div>
+          <div className="h-4 bg-slate-800/60 rounded w-4/6"></div>
         </div>
       </div>
     );
@@ -80,7 +80,7 @@ export default function PremiumFeatureFlag({
     return (
       <div className="relative">
         <div className="absolute top-2 right-2 z-10">
-          <div className="flex items-center gap-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+          <div className="flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-medium">
             <Crown className="w-3 h-3" />
             Premium Active
           </div>
@@ -92,33 +92,33 @@ export default function PremiumFeatureFlag({
 
   // If not premium, show upgrade prompt
   return (
-    <div className="bg-gray-900 rounded-xl p-6 shadow-md" data-testid="premium-feature-flag">
+    <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md" data-testid="premium-feature-flag">
       <div className="text-center py-8">
-        <Lock className="w-16 h-16 mx-auto mb-4 text-amber-400" />
-        <h4 className="text-xl font-medium mb-2">Premium Feature</h4>
-        <p className="text-sm text-gray-400 mb-6">
+        <Lock className="w-16 h-16 mx-auto mb-4 text-purple-400" />
+        <h4 className="text-xl font-medium mb-2 text-white">Premium Feature</h4>
+        <p className="text-sm text-slate-400 mb-6">
           This feature requires a premium subscription.
         </p>
-        
+
         {showUpgrade && (
           <div className="space-y-3">
-            <button 
+            <button
               onClick={() => {
                 // TODO: Redirect to upgrade page or open modal
                 console.log('Upgrade clicked for feature:', feature);
               }}
-              className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black px-6 py-2 rounded-lg font-medium hover:from-amber-600 hover:to-yellow-600 transition-all"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
             >
               <Crown className="inline w-4 h-4 mr-2" />
               Upgrade to Premium
             </button>
-            
-            <button 
+
+            <button
               onClick={() => {
                 // Redirect to Clerk dashboard for premium upgrade
                 window.open('/profile', '_blank');
               }}
-              className="block mx-auto text-xs text-gray-500 hover:text-gray-400 underline"
+              className="block mx-auto text-xs text-slate-500 hover:text-slate-400 underline"
             >
               Manage Subscription
             </button>
@@ -157,7 +157,7 @@ export function usePremiumStatus() {
 // Premium badge component
 export function PremiumBadge({ className = "" }: { className?: string }) {
   return (
-    <div className={`inline-flex items-center gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-xs px-2 py-1 rounded-full font-medium ${className}`}>
+    <div className={`inline-flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-medium ${className}`}>
       <Crown className="w-3 h-3" />
       Premium
     </div>
