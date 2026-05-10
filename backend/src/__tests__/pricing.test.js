@@ -73,3 +73,80 @@ describe('fetchPrice', () => {
     expect(calls).toBe(3);
   });
 });
+
+import { recordPriceResult } from '../services/pricing/priceRefreshJob.js';
+import { nextDeadState, DEAD_ITEM_THRESHOLD } from '../services/pricing/deadItemTracker.js';
+
+describe('nextDeadState', () => {
+  it('resets to 0 on found', () => {
+    expect(nextDeadState(2, true, 200)).toEqual({ nextCount: 0, markInactive: false });
+  });
+  it('increments on 404', () => {
+    expect(nextDeadState(1, false, 404)).toEqual({ nextCount: 2, markInactive: false });
+  });
+  it('marks inactive after 3rd consecutive 404', () => {
+    expect(nextDeadState(2, false, 404)).toEqual({ nextCount: 3, markInactive: true });
+  });
+  it('does not bump on transient 429', () => {
+    expect(nextDeadState(2, false, 429)).toEqual({ nextCount: 2, markInactive: false });
+  });
+});
+
+describe('recordPriceResult', () => {
+  it('updates skin row + creates snapshot on success', async () => {
+    const updateSkin = jest.fn();
+    const createSnap = jest.fn();
+    const fakePrisma = {
+      skin: { update: updateSkin },
+      marketSnapshot: { create: createSnap },
+    };
+    const item = { id: 1, itemType: 'skin', marketHashName: 'X' };
+    const result = { found: true, priceLatest: 10, priceMedian: 11, volume24h: 5 };
+    await recordPriceResult(item, result, { prismaClient: fakePrisma });
+    expect(updateSkin).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 1 },
+      data: expect.objectContaining({ priceLatest: 10, priceMedian: 11 }),
+    }));
+    expect(createSnap).toHaveBeenCalled();
+  });
+
+  it('increments consecutive404 on not-found for marketItem', async () => {
+    const updateItem = jest.fn();
+    const fakePrisma = {
+      marketItem: { update: updateItem },
+      marketSnapshot: { create: jest.fn() },
+    };
+    const item = { id: 5, itemType: 'market_item', marketHashName: 'Y', consecutive404: 1 };
+    const result = { found: false, status: 404 };
+    await recordPriceResult(item, result, { prismaClient: fakePrisma });
+    expect(updateItem).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 5 },
+      data: expect.objectContaining({ consecutive404: 2 }),
+    }));
+  });
+
+  it('marks marketItem inactive after 3 consecutive 404s', async () => {
+    const updateItem = jest.fn();
+    const fakePrisma = {
+      marketItem: { update: updateItem },
+      marketSnapshot: { create: jest.fn() },
+    };
+    const item = { id: 5, itemType: 'market_item', marketHashName: 'Y', consecutive404: 2 };
+    const result = { found: false, status: 404 };
+    await recordPriceResult(item, result, { prismaClient: fakePrisma });
+    expect(updateItem).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ consecutive404: 3, isActive: false }),
+    }));
+  });
+
+  it('does not create snapshot when not found', async () => {
+    const createSnap = jest.fn();
+    const fakePrisma = {
+      skin: { update: jest.fn() },
+      marketSnapshot: { create: createSnap },
+    };
+    const item = { id: 1, itemType: 'skin', marketHashName: 'X' };
+    await recordPriceResult(item, { found: false, status: 404 }, { prismaClient: fakePrisma });
+    expect(createSnap).not.toHaveBeenCalled();
+  });
+});
