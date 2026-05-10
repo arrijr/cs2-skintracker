@@ -62,8 +62,9 @@ export function AlertCard({ alert, onToggle, onDelete }: AlertCardProps) {
           <Switch
             checked={alert.isActive}
             onCheckedChange={(checked) => onToggle(alert.id, checked)}
+            aria-label={`Toggle alert ${alert.id}`}
           />
-          <Button variant="ghost" size="sm" onClick={() => onDelete(alert.id)} className="text-red-400 hover:text-red-300">
+          <Button variant="ghost" size="sm" onClick={() => onDelete(alert.id)} aria-label="Delete alert" className="text-red-400 hover:text-red-300">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
