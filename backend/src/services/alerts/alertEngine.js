@@ -1,5 +1,7 @@
 import prisma from '../../prisma/prismaClient.js';
 import logger from '../../utils/logger.js';
+import { deliverEmail } from './delivery/emailDelivery.js';
+import { deliverDiscord } from './delivery/discordDelivery.js';
 
 const evaluators = new Map();
 
@@ -36,6 +38,40 @@ export async function evaluateAlert(alert) {
   }
 }
 
+export async function deliverAlert({ alert, result }) {
+  const delivered = [];
+  const failed = [];
+
+  for (const channel of alert.channels) {
+    let res;
+    if (channel === 'email') {
+      res = await deliverEmail({ alert, result });
+    } else if (channel === 'discord') {
+      res = await deliverDiscord({ alert, result, webhookUrl: alert.user?.discordWebhook });
+    } else {
+      res = { ok: false, error: `unknown channel ${channel}` };
+    }
+    if (res.ok) delivered.push(channel);
+    else failed.push(channel);
+  }
+
+  await prisma.alertEvent.create({
+    data: {
+      alertId: alert.id,
+      payload: result.payload,
+      delivered,
+      failed,
+      errorLog: failed.length ? failed.join('; ') : null,
+    },
+  });
+  await prisma.alert.update({
+    where: { id: alert.id },
+    data: { lastTriggeredAt: new Date() },
+  });
+
+  return { delivered, failed };
+}
+
 export async function runAllAlerts() {
   const alerts = await prisma.alert.findMany({
     where: { isActive: true },
@@ -50,7 +86,8 @@ export async function runAllAlerts() {
     }
     const result = await evaluateAlert(alert);
     if (result?.triggered) {
-      results.push({ alert, result });
+      const delivery = await deliverAlert({ alert, result });
+      results.push({ alert, result, delivery });
     }
   }
   return results;

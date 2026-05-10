@@ -18,6 +18,7 @@ model User {
   timezone     String?    // IANA timezone string
   emailAlerts  Boolean    @default(true)  // Email notification preference
   pushAlerts   Boolean    @default(false) // Push notification preference
+  discordWebhook String?  // Discord webhook URL for alert delivery
   isPremium    Boolean    @default(false)
   role         String     @default("user") // user, admin
   createdAt    DateTime   @default(now())
