@@ -1,0 +1,42 @@
+name: Manual Job Trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Job name'
+        required: true
+        type: choice
+        options:
+          - catalog-sync
+          - price-refresh
+          - price-refresh-chunk
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend deps
+        working-directory: backend
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: backend
+        run: npx prisma generate
+
+      - name: Run job
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NODE_TLS_REJECT_UNAUTHORIZED: '0'
+        run: node scripts/run-job.js ${{ github.event.inputs.job }}

@@ -77,7 +77,7 @@ export async function refreshItemPrice(item, { prismaClient = defaultPrisma, fet
 /**
  * Iterate all active items and refresh prices. 3s spacing between requests.
  */
-export async function runPriceRefresh({ prismaClient = defaultPrisma, sleepImpl = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
+export async function runPriceRefresh({ prismaClient = defaultPrisma, sleepImpl = (ms) => new Promise((r) => setTimeout(r, ms)), maxItems, offset = 0 } = {}) {
   const skins = await prismaClient.skin.findMany({ select: { id: true, marketHashName: true } });
   const cases = await prismaClient.case.findMany({ select: { id: true, name: true } });
   const marketItems = await prismaClient.marketItem.findMany({
@@ -91,13 +91,18 @@ export async function runPriceRefresh({ prismaClient = defaultPrisma, sleepImpl 
     ...marketItems.map((m) => ({ ...m, itemType: 'market_item' })),
   ];
 
-  logger.info('Price refresh starting', { count: all.length });
+  // Apply offset + maxItems for chunked runs
+  const slice = maxItems != null
+    ? all.slice(offset, offset + maxItems)
+    : all.slice(offset);
+
+  logger.info('Price refresh starting', { count: slice.length, offset, total: all.length });
   let ok = 0;
   let notFound = 0;
   let errors = 0;
 
-  for (let i = 0; i < all.length; i++) {
-    const item = all[i];
+  for (let i = 0; i < slice.length; i++) {
+    const item = slice[i];
     try {
       const result = await refreshItemPrice(item, { prismaClient });
       if (result.found) ok++;
@@ -107,11 +112,12 @@ export async function runPriceRefresh({ prismaClient = defaultPrisma, sleepImpl 
       errors++;
       logger.error('refreshItemPrice threw', { id: item.id, type: item.itemType, error: err.message });
     }
-    if (i < all.length - 1) {
+    if (i < slice.length - 1) {
       await sleepImpl(REFRESH_DELAY_MS);
     }
   }
 
-  logger.info('Price refresh complete', { ok, notFound, errors });
-  return { ok, notFound, errors, total: all.length };
+  logger.info('Price refresh complete', { ok, notFound, errors, processed: slice.length, total: all.length });
+  // Backward-compatible return shape: `total` = full population, `processed` = items in this run
+  return { ok, notFound, errors, processed: slice.length, total: all.length };
 }
