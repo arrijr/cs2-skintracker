@@ -13,20 +13,17 @@ const REFRESH_DELAY_MS = 3000;
 export async function recordPriceResult(item, result, { prismaClient = defaultPrisma } = {}) {
   const { nextCount, markInactive } = nextDeadState(item.consecutive404, result.found, result.status);
 
-  const baseUpdate = {
-    priceUpdatedAt: new Date(),
-  };
-
-  if (result.found) {
-    baseUpdate.priceLatest = result.priceLatest;
-    baseUpdate.priceMedian = result.priceMedian;
-    baseUpdate.volume24h = result.volume24h ?? null;
-  }
-
+  // Per-table update payload (Skin uses sold24h, MarketItem uses volume24h, Case uses price)
   if (item.itemType === 'skin') {
+    const skinUpdate = { priceUpdatedAt: new Date() };
+    if (result.found) {
+      skinUpdate.priceLatest = result.priceLatest;
+      skinUpdate.priceMedian = result.priceMedian;
+      if (result.volume24h != null) skinUpdate.sold24h = result.volume24h;
+    }
     await prismaClient.skin.update({
       where: { id: item.id },
-      data: baseUpdate,
+      data: skinUpdate,
     });
   } else if (item.itemType === 'case') {
     const caseUpdate = { lastUpdated: new Date() };
@@ -36,13 +33,19 @@ export async function recordPriceResult(item, result, { prismaClient = defaultPr
       data: caseUpdate,
     });
   } else if (item.itemType === 'market_item') {
+    const marketItemUpdate = {
+      priceUpdatedAt: new Date(),
+      consecutive404: nextCount,
+      ...(markInactive ? { isActive: false } : {}),
+    };
+    if (result.found) {
+      marketItemUpdate.priceLatest = result.priceLatest;
+      marketItemUpdate.priceMedian = result.priceMedian;
+      marketItemUpdate.volume24h = result.volume24h ?? null;
+    }
     await prismaClient.marketItem.update({
       where: { id: item.id },
-      data: {
-        ...baseUpdate,
-        consecutive404: nextCount,
-        ...(markInactive ? { isActive: false } : {}),
-      },
+      data: marketItemUpdate,
     });
   }
 
