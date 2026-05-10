@@ -1,9 +1,8 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../prisma/prismaClient.js';
 import fetch from 'node-fetch';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Update skin data immediately
 router.post('/update-skin-data', async (req, res) => {

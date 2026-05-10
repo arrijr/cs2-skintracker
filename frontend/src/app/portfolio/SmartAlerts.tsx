@@ -186,10 +186,10 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case "high": return "text-red-400 bg-red-600/20 border-red-600/40";
-      case "medium": return "text-yellow-400 bg-yellow-600/20 border-yellow-600/40";
-      case "low": return "text-blue-400 bg-blue-600/20 border-blue-600/40";
-      default: return "text-gray-400 bg-gray-600/20 border-gray-600/40";
+      case "high": return "text-red-400 bg-red-500/10 border-red-500/30";
+      case "medium": return "text-yellow-400 bg-yellow-500/10 border-yellow-500/30";
+      case "low": return "text-purple-400 bg-purple-500/10 border-purple-500/30";
+      default: return "text-slate-400 bg-slate-800/60 border-slate-700/50";
     }
   };
 
@@ -204,12 +204,12 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
 
   if (!SMART_ALERTS_ENABLED) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Smart Alerts</h3>
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+        <h3 className="text-xl font-semibold mb-4 text-white">Smart Alerts</h3>
         <div className="text-center py-8">
           <div className="text-2xl mb-4">🔒</div>
-          <h4 className="text-lg font-medium mb-2">Smart Alerts Disabled</h4>
-          <p className="text-sm text-gray-400 mb-4">
+          <h4 className="text-lg font-medium mb-2 text-white">Smart Alerts Disabled</h4>
+          <p className="text-sm text-slate-400 mb-4">
             Enable smart alerts with NEXT_PUBLIC_PORTFOLIO_SMART_ALERTS=true
           </p>
         </div>
@@ -219,14 +219,14 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
 
   if (!isPremium) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
         <div className="text-center py-8">
-          <Bell className="w-16 h-16 mx-auto mb-4 text-amber-400" />
-          <h4 className="text-xl font-medium mb-2">Unlock Smart Alerts</h4>
-          <p className="text-sm text-gray-400 mb-6">
+          <Bell className="w-16 h-16 mx-auto mb-4 text-purple-400" />
+          <h4 className="text-xl font-medium mb-2 text-white">Unlock Smart Alerts</h4>
+          <p className="text-sm text-slate-400 mb-6">
             Get intelligent portfolio insights: Technical indicators, rebalancing alerts, and risk management.
           </p>
-          <button className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black px-6 py-2 rounded-lg font-medium hover:from-amber-600 hover:to-yellow-600 transition-all">
+          <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all">
             Upgrade to Premium
           </button>
         </div>
@@ -238,15 +238,15 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
   const hasAlerts = activeAlerts.length > 0;
 
   return (
-    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
+    <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-bold text-white">Smart Alerts</h3>
         <div className="flex items-center gap-2">
-          <div className="text-xs bg-amber-600/20 text-amber-400 px-2 py-1 rounded">
+          <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">
             🔒 Premium Feature
           </div>
           {hasAlerts && (
-            <div className="text-xs bg-red-600/20 text-red-400 px-2 py-1 rounded">
+            <div className="text-xs bg-red-500/10 text-red-400 border border-red-500/30 px-2 py-1 rounded">
               {activeAlerts.length} Active
             </div>
           )}
@@ -259,8 +259,8 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
           onClick={() => setActiveTab("technical")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "technical"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <TrendingUp className="inline w-4 h-4 mr-1" />
@@ -270,8 +270,8 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
           onClick={() => setActiveTab("rebalancing")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "rebalancing"
-              ? "bg-green-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <Settings className="inline w-4 h-4 mr-1" />
@@ -281,8 +281,8 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
           onClick={() => setActiveTab("risk")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "risk"
-              ? "bg-red-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <Shield className="inline w-4 h-4 mr-1" />
@@ -292,8 +292,8 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
           onClick={() => setActiveTab("price")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "price"
-              ? "bg-purple-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <Bell className="inline w-4 h-4 mr-1" />
@@ -340,8 +340,8 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
       ) : (
         <div className="text-center py-8">
           <div className="text-2xl mb-4">✅</div>
-          <h4 className="text-lg font-medium mb-2">All Clear!</h4>
-          <p className="text-sm text-gray-400">
+          <h4 className="text-lg font-medium mb-2 text-white">All Clear!</h4>
+          <p className="text-sm text-slate-400">
             No active alerts at the moment. Your portfolio is performing well.
           </p>
         </div>
@@ -349,29 +349,29 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
 
       {/* Technical Indicators Summary */}
       {technicalIndicators && (
-        <div className="mt-6 pt-6 border-t border-gray-700">
+        <div className="mt-6 pt-6 border-t border-slate-700/50">
           <h4 className="text-lg font-medium mb-4 text-white">Technical Indicators</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <Tooltip content="Relative Strength Index. >70 = overbought, <30 = oversold">
-              <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
-                <div className="text-gray-400 flex items-center justify-center gap-1">
+              <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
+                <div className="text-slate-400 flex items-center justify-center gap-1">
                   RSI (14)
-                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
                 </div>
                 <div className={`font-medium ${
-                  technicalIndicators.rsi > 70 ? 'text-red-400' : 
-                  technicalIndicators.rsi < 30 ? 'text-blue-400' : 'text-green-400'
+                  technicalIndicators.rsi > 70 ? 'text-red-400' :
+                  technicalIndicators.rsi < 30 ? 'text-purple-400' : 'text-green-400'
                 }`}>
                   {technicalIndicators.rsi.toFixed(1)}
                 </div>
               </div>
             </Tooltip>
-            
+
             <Tooltip content="Moving Average Convergence Divergence. >0 = bullish, <0 = bearish">
-              <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
-                <div className="text-gray-400 flex items-center justify-center gap-1">
+              <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
+                <div className="text-slate-400 flex items-center justify-center gap-1">
                   MACD
-                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
                 </div>
                 <div className={`font-medium ${
                   technicalIndicators.macd > 0 ? 'text-green-400' : 'text-red-400'
@@ -380,26 +380,26 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
                 </div>
               </div>
             </Tooltip>
-            
+
             <Tooltip content="Simple Moving Average over 20 periods. Short-term trend indicator">
-              <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
-                <div className="text-gray-400 flex items-center justify-center gap-1">
+              <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
+                <div className="text-slate-400 flex items-center justify-center gap-1">
                   SMA 20
-                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
                 </div>
-                <div className="font-medium text-blue-400">
+                <div className="font-medium text-purple-400">
                   ${technicalIndicators.sma20.toFixed(2)}
                 </div>
               </div>
             </Tooltip>
-            
+
             <Tooltip content="Simple Moving Average over 50 periods. Medium-term trend indicator">
-              <div className="text-center p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
-                <div className="text-gray-400 flex items-center justify-center gap-1">
+              <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
+                <div className="text-slate-400 flex items-center justify-center gap-1">
                   SMA 50
-                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
                 </div>
-                <div className="font-medium text-blue-400">
+                <div className="font-medium text-purple-400">
                   ${technicalIndicators.sma50.toFixed(2)}
                 </div>
               </div>

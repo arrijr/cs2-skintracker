@@ -92,8 +92,9 @@ export async function verifyClerkJwt(req, res, next) {
       getKey,
       {
         algorithms: ["RS256"],
-        // Temporarily disable audience validation to debug
-        // audience: [audience, "cs2-skintracker-api-dev", "cs2-skintrackr-api-dev"],
+        // Audience must match CLERK_AUDIENCE env var exactly (single value).
+        // If Clerk JWT template changes, update CLERK_AUDIENCE in Vercel env.
+        audience: audience,
         issuer: issuer,
       },
       async (err, payload) => {

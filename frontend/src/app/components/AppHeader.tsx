@@ -112,7 +112,7 @@ export default function AppHeader() {
 
                   {/* Mobile Profile Dropdown */}
                   {isLoaded && (
-                    <div className="pt-4 border-t border-neutral-800">
+                    <div className="pt-4 border-t border-slate-700/50">
                       <ProfileDropdown />
                     </div>
                   )}

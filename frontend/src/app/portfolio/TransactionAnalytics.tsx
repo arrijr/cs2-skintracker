@@ -193,12 +193,12 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
 
   if (!TRANSACTION_ANALYTICS_ENABLED) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Transaction Analytics</h3>
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+        <h3 className="text-xl font-semibold mb-4 text-white">Transaction Analytics</h3>
         <div className="text-center py-8">
           <div className="text-2xl mb-4">🔒</div>
-          <h4 className="text-lg font-medium mb-2">Transaction Analytics Disabled</h4>
-          <p className="text-sm text-gray-400 mb-4">
+          <h4 className="text-lg font-medium mb-2 text-white">Transaction Analytics Disabled</h4>
+          <p className="text-sm text-slate-400 mb-4">
             Enable transaction analytics with NEXT_PUBLIC_PORTFOLIO_TRANSACTION_ANALYTICS=true
           </p>
         </div>
@@ -208,14 +208,14 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
 
   if (!isPremium) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
         <div className="text-center py-8">
-          <DollarSign className="w-16 h-16 mx-auto mb-4 text-amber-400" />
-          <h4 className="text-xl font-medium mb-2">Unlock Transaction Analytics</h4>
-          <p className="text-sm text-gray-400 mb-6">
+          <DollarSign className="w-16 h-16 mx-auto mb-4 text-purple-400" />
+          <h4 className="text-xl font-medium mb-2 text-white">Unlock Transaction Analytics</h4>
+          <p className="text-sm text-slate-400 mb-6">
             Get professional transaction insights: Realized P/L, tax reporting, and performance attribution.
           </p>
-          <button className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black px-6 py-2 rounded-lg font-medium hover:from-amber-600 hover:to-yellow-600 transition-all">
+          <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all">
             Upgrade to Premium
           </button>
         </div>
@@ -224,11 +224,11 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
   }
 
   return (
-    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
+    <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-bold text-white">Transaction Analytics</h3>
         <div className="flex items-center gap-2">
-          <div className="text-xs bg-amber-600/20 text-amber-400 px-2 py-1 rounded">
+          <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">
             🔒 Premium Feature
           </div>
         </div>
@@ -242,8 +242,8 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
             onClick={() => setSelectedRange(range)}
             className={`px-3 py-1 rounded text-sm transition-colors ${
               selectedRange === range
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
             }`}
           >
             {range}
@@ -257,8 +257,8 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
           onClick={() => setActiveTab("overview")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "overview"
-              ? "bg-green-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <BarChart3 className="inline w-4 h-4 mr-1" />
@@ -268,8 +268,8 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
           onClick={() => setActiveTab("transactions")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "transactions"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <FileText className="inline w-4 h-4 mr-1" />
@@ -279,8 +279,8 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
           onClick={() => setActiveTab("tax")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "tax"
-              ? "bg-purple-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <Calculator className="inline w-4 h-4 mr-1" />
@@ -290,8 +290,8 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
           onClick={() => setActiveTab("attribution")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             activeTab === "attribution"
-              ? "bg-orange-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <TrendingUp className="inline w-4 h-4 mr-1" />
@@ -304,62 +304,62 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
         <div className="space-y-6">
           {/* Realized P/L Summary */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 text-center">
               <div className={`text-lg font-bold ${
                 realizedPL.totalRealizedPL >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
                 ${realizedPL.totalRealizedPL.toFixed(2)}
               </div>
-              <div className="text-xs text-gray-400">Realized P/L</div>
+              <div className="text-xs text-slate-400">Realized P/L</div>
             </div>
             
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
-              <div className="text-lg font-bold text-blue-400">
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-lg font-bold text-purple-400">
                 ${realizedPL.totalCostBasis.toFixed(2)}
               </div>
-              <div className="text-xs text-gray-400">Total Cost Basis</div>
+              <div className="text-xs text-slate-400">Total Cost Basis</div>
             </div>
             
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
-              <div className="text-lg font-bold text-blue-400">
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-lg font-bold text-purple-400">
                 ${realizedPL.totalProceeds.toFixed(2)}
               </div>
-              <div className="text-xs text-gray-400">Total Proceeds</div>
+              <div className="text-xs text-slate-400">Total Proceeds</div>
             </div>
             
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 text-center">
               <div className={`text-lg font-bold ${
                 realizedPL.realizedPLPercent >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
                 {realizedPL.realizedPLPercent.toFixed(1)}%
               </div>
-              <div className="text-xs text-gray-400">Realized P/L %</div>
+              <div className="text-xs text-slate-400">Realized P/L %</div>
             </div>
           </div>
 
           {/* Transaction Summary */}
-          <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
             <h4 className="text-lg font-medium mb-4 text-white">Transaction Summary</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="text-center">
-                <div className="text-gray-400">Total Transactions</div>
+                <div className="text-slate-400">Total Transactions</div>
                 <div className="font-medium text-white">{transactions.length}</div>
               </div>
               <div className="text-center">
-                <div className="text-gray-400">Buy Transactions</div>
+                <div className="text-slate-400">Buy Transactions</div>
                 <div className="font-medium text-green-400">
                   {transactions.filter(t => t.type === "buy").length}
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-gray-400">Sell Transactions</div>
+                <div className="text-slate-400">Sell Transactions</div>
                 <div className="font-medium text-red-400">
                   {transactions.filter(t => t.type === "sell").length}
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-gray-400">Tax Lots</div>
-                <div className="font-medium text-blue-400">{taxLots.length}</div>
+                <div className="text-slate-400">Tax Lots</div>
+                <div className="font-medium text-purple-400">{taxLots.length}</div>
               </div>
             </div>
           </div>
@@ -375,8 +375,8 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
                 key={transaction.id}
                 className={`p-4 rounded-lg border ${
                   transaction.type === "buy" 
-                    ? "border-green-600/40 bg-green-600/10" 
-                    : "border-red-600/40 bg-red-600/10"
+                    ? "border-green-500/30 bg-green-500/10"
+                    : "border-red-500/30 bg-red-500/10"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -386,14 +386,14 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
                     }`} />
                     <div>
                       <div className="font-medium">{transaction.skinName}</div>
-                      <div className="text-sm text-gray-400">
+                      <div className="text-sm text-slate-400">
                         {transaction.type.toUpperCase()} {transaction.quantity}x @ ${transaction.price.toFixed(2)}
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="font-medium">${transaction.total.toFixed(2)}</div>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-slate-400">
                       {new Date(transaction.date).toLocaleDateString()}
                     </div>
                   </div>
@@ -401,7 +401,7 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
               </div>
             ))
           ) : (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-slate-400">
               No transactions found for the selected time range.
             </div>
           )}
@@ -414,39 +414,39 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
           
           {/* Tax Summary */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
-              <div className="text-lg font-bold text-blue-400">{taxLots.length}</div>
-              <div className="text-xs text-gray-400">Total Tax Lots</div>
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-lg font-bold text-purple-400">{taxLots.length}</div>
+              <div className="text-xs text-slate-400">Total Tax Lots</div>
             </div>
             
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 text-center">
               <div className="text-lg font-bold text-green-400">
                 ${taxLots.reduce((sum, lot) => sum + lot.costBasis, 0).toFixed(2)}
               </div>
-              <div className="text-xs text-gray-400">Total Cost Basis</div>
+              <div className="text-xs text-slate-400">Total Cost Basis</div>
             </div>
             
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 text-center">
               <div className="text-lg font-bold text-purple-400">
                 {Math.round(taxLots.reduce((sum, lot) => sum + lot.holdingPeriod, 0) / taxLots.length)} days
               </div>
-              <div className="text-xs text-gray-400">Avg Holding Period</div>
+              <div className="text-xs text-slate-400">Avg Holding Period</div>
             </div>
             
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 text-center">
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4 text-center">
               <div className="text-lg font-bold text-yellow-400">
                 {taxLots.filter(lot => lot.holdingPeriod > 365).length}
               </div>
-              <div className="text-xs text-gray-400">Long-term Holdings</div>
+              <div className="text-xs text-slate-400">Long-term Holdings</div>
             </div>
           </div>
 
           {/* Tax Lots Table */}
-          <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-700">
+                  <tr className="border-b border-slate-700/50">
                     <th className="text-left py-2">Skin</th>
                     <th className="text-left py-2">Quantity</th>
                     <th className="text-left py-2">Cost Basis</th>
@@ -456,7 +456,7 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
                 </thead>
                 <tbody>
                   {taxLots.map(lot => (
-                    <tr key={`${lot.skinId}-${lot.buyDate}`} className="border-b border-gray-700/50">
+                    <tr key={`${lot.skinId}-${lot.buyDate}`} className="border-b border-slate-700/50/50">
                       <td className="py-2">{lot.skinName}</td>
                       <td className="py-2">{lot.quantity}</td>
                       <td className="py-2">${lot.costBasis.toFixed(2)}</td>
@@ -464,8 +464,8 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
                       <td className="py-2">
                         <span className={`px-2 py-1 rounded text-xs ${
                           lot.holdingPeriod > 365 
-                            ? "bg-green-600/20 text-green-400" 
-                            : "bg-blue-600/20 text-blue-400"
+                            ? "bg-green-500/10 text-green-400 border border-green-500/30"
+                            : "bg-purple-500/10 text-purple-400 border border-purple-500/30"
                         }`}>
                           {lot.holdingPeriod} days
                         </span>
@@ -486,7 +486,7 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
           {performanceAttribution ? (
             <div className="space-y-3">
               {performanceAttribution.slice(0, 10).map(item => (
-                <div key={item.skinId} className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
+                <div key={item.skinId} className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="font-medium">{item.skinName}</div>
                     <div className={`text-sm font-medium ${
@@ -495,7 +495,7 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
                       ${item.unrealizedPL.toFixed(2)} ({item.unrealizedPLPercent.toFixed(1)}%)
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-sm text-gray-400">
+                  <div className="flex items-center justify-between text-sm text-slate-400">
                     <div>Weight: {(item.weight * 100).toFixed(1)}%</div>
                     <div>Qty: {item.quantity}x</div>
                     <div>Cost: ${item.costValue.toFixed(2)}</div>
@@ -504,7 +504,7 @@ export default function TransactionAnalytics({ portfolio, history, isPremium = f
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-slate-400">
               No performance attribution data available.
             </div>
           )}

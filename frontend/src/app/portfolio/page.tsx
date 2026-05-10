@@ -21,6 +21,8 @@ import SmartAlerts from "./SmartAlerts";
 import TransactionAnalytics from "./TransactionAnalytics";
 import PortfolioHealthScore from "./PortfolioHealthScore";
 import MarketIntelligence from "./MarketIntelligence";
+import { KPICard } from "@/components/ui/kpi-card";
+import { tokens } from "@/lib/design-tokens";
 
 
 // {/* Authentifizierte Hooks */}
@@ -101,7 +103,7 @@ export default function PortfolioPage() {
   }
 
   return (
-    <div className="dashboard-bg text-white p-2 sm:p-4">
+    <div className={`${tokens.bg.base} text-white p-2 sm:p-4 min-h-screen`}>
       {/* Error Banner */}
       {error && (
         <Card className="mb-6 border-destructive">
@@ -136,7 +138,7 @@ export default function PortfolioPage() {
       {/* Main */}
       <main className="max-w-6xl mx-auto section-container relative z-10">
         {/* Header KPIs Section */}
-        <Card className="card-standard">
+        <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
           <CardHeader className="pb-8">
             <CardTitle className="text-h1 animate-slide-in-left mb-4">Your Portfolio</CardTitle>
             <CardDescription className="text-body animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
@@ -145,82 +147,45 @@ export default function PortfolioPage() {
           </CardHeader>
           <CardContent className="pt-0">
           
-          {/* Hero KPIs - Only the most important metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <div className="text-center p-6 bg-gray-800/30 rounded-xl">
-              <div className="text-4xl font-bold text-green-400 mb-2">
-                ${kpiData?.portfolioValue?.toFixed(2) || "0.00"}
-              </div>
-              <div className="text-lg text-gray-300 mb-1">Total Value</div>
-              <div className="text-sm text-gray-500">Current portfolio worth</div>
-              {kpiData?.portfolioChange24h !== 0 && kpiData && (
-                <div className={`text-sm mt-2 px-2 py-1 rounded-full inline-block ${
-                  kpiData.portfolioChange24h > 0 
-                    ? 'bg-green-500/20 text-green-400' 
-                    : 'bg-red-500/20 text-red-400'
-                }`}>
-                  {kpiData.portfolioChange24h > 0 ? "+" : ""}{kpiData.portfolioChange24h.toFixed(1)}% 24h
-                </div>
-              )}
-            </div>
-            
-            <div className="text-center p-6 bg-gray-800/30 rounded-xl">
-              <div className={`text-4xl font-bold mb-2 ${
-                (kpiData?.unrealizedPL || 0) >= 0 ? 'text-green-400' : 'text-red-400'
-              }`}>
-                ${kpiData?.unrealizedPL?.toFixed(2) || "0.00"}
-              </div>
-              <div className="text-lg text-gray-300 mb-1">Unrealized P/L</div>
-              <div className="text-sm text-gray-500">Current profit/loss</div>
-              {kpiData?.portfolioChange7d !== 0 && kpiData && (
-                <div className={`text-sm mt-2 px-2 py-1 rounded-full inline-block ${
-                  kpiData.portfolioChange7d > 0 
-                    ? 'bg-green-500/20 text-green-400' 
-                    : 'bg-red-500/20 text-red-400'
-                }`}>
-                  {kpiData.portfolioChange7d > 0 ? "+" : ""}{kpiData.portfolioChange7d.toFixed(1)}% 7d
-                </div>
-              )}
-            </div>
-            
-            <div className="text-center p-6 bg-gray-800/30 rounded-xl">
-              <div className="text-4xl font-bold text-blue-400 mb-2">
-                {kpiData?.portfolioCount || portfolioSkins.length}
-              </div>
-              <div className="text-lg text-gray-300 mb-1">Portfolio Skins</div>
-              <div className="text-sm text-gray-500">Total items owned</div>
-            </div>
+          {/* Hero KPIs */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <KPICard
+              label="Total Value"
+              value={`$${kpiData?.portfolioValue?.toFixed(2) || "0.00"}`}
+              delta={kpiData?.portfolioChange24h !== 0 ? kpiData?.portfolioChange24h : undefined}
+              deltaLabel="24h"
+            />
+            <KPICard
+              label="Unrealized P/L"
+              value={`$${kpiData?.unrealizedPL?.toFixed(2) || "0.00"}`}
+              delta={kpiData?.portfolioChange7d !== 0 ? kpiData?.portfolioChange7d : undefined}
+              deltaLabel="7d"
+            />
+            <KPICard
+              label="Portfolio Skins"
+              value={String(kpiData?.portfolioCount || portfolioSkins.length)}
+            />
           </div>
 
-          {/* Secondary Info - Less prominent */}
+          {/* Secondary Info */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="text-center p-4 bg-gray-800/20 rounded-lg">
-              <div className="text-2xl font-bold text-gray-300">
-                ${kpiData?.totalInvested?.toFixed(2) || "0.00"}
-              </div>
-              <div className="text-sm text-gray-500">Total Invested</div>
-            </div>
-            
-            <div className="text-center p-4 bg-gray-800/20 rounded-lg">
-              <div className="text-2xl font-bold text-gray-300">
-                {kpiData?.watchlistCount || watchlist.length}
-              </div>
-              <div className="text-sm text-gray-500">Watchlist</div>
-            </div>
-            
-            <div className="text-center p-4 bg-gray-800/20 rounded-lg">
-              <div className="text-2xl font-bold text-gray-300">
-                {kpiData?.activeAlerts || 0}
-              </div>
-              <div className="text-sm text-gray-500">Active Alerts</div>
-            </div>
-            
-            <div className="text-center p-4 bg-gray-800/20 rounded-lg">
-              <div className="text-2xl font-bold text-gray-300">
-                {kpiData?.portfolioChange24h?.toFixed(1) || "0.0"}%
-              </div>
-              <div className="text-sm text-gray-500">24h Change</div>
-            </div>
+            <KPICard
+              label="Total Invested"
+              value={`$${kpiData?.totalInvested?.toFixed(2) || "0.00"}`}
+            />
+            <KPICard
+              label="Watchlist"
+              value={String(kpiData?.watchlistCount || watchlist.length)}
+            />
+            <KPICard
+              label="Active Alerts"
+              value={String(kpiData?.activeAlerts || 0)}
+            />
+            <KPICard
+              label="24h Change"
+              value={`${kpiData?.portfolioChange24h?.toFixed(1) || "0.0"}%`}
+              delta={kpiData?.portfolioChange24h !== 0 ? kpiData?.portfolioChange24h : undefined}
+            />
           </div>
 
           {/* Last Updated */}
@@ -231,10 +196,10 @@ export default function PortfolioPage() {
         </Card>
 
       {/* Portfolio Chart Section */}
-      <Card className="card-standard">
+      <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
         <CardHeader className="pb-8">
           <CardTitle className="text-2xl font-bold text-white mb-3">Portfolio Value History</CardTitle>
-          <CardDescription className="text-lg text-gray-400">
+          <CardDescription className="text-lg text-slate-400">
             Track your portfolio performance over time
           </CardDescription>
         </CardHeader>
@@ -248,20 +213,20 @@ export default function PortfolioPage() {
           <TabsList className="grid w-full grid-cols-2 bg-slate-800/50 border-slate-700/50">
             <TabsTrigger 
               value="portfolio" 
-              className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
             >
               Portfolio
             </TabsTrigger>
             <TabsTrigger 
               value="watchlist"
-              className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
             >
               Watchlist
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="portfolio" className="space-y-6">
-            <Card className="card-enhanced">
+            <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
               <CardHeader>
                 <CardTitle className="text-white animate-slide-in-left">Portfolio</CardTitle>
                 <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
@@ -280,7 +245,7 @@ export default function PortfolioPage() {
           </TabsContent>
           
           <TabsContent value="watchlist" className="space-y-6">
-            <Card className="card-enhanced">
+            <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
               <CardHeader>
                 <CardTitle className="text-white animate-slide-in-left">Watchlist</CardTitle>
                 <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
@@ -323,10 +288,10 @@ export default function PortfolioPage() {
 
         {/* Advanced Charts */}
         <PremiumFeatureFlag feature="advanced-charts">
-          <Card className="card-standard">
+          <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
             <CardHeader className="pb-8">
               <CardTitle className="text-2xl font-bold text-white mb-3">Advanced Charts</CardTitle>
-              <CardDescription className="text-lg text-gray-400">
+              <CardDescription className="text-lg text-slate-400">
                 Professional-grade charting and analysis tools
               </CardDescription>
             </CardHeader>
@@ -342,10 +307,10 @@ export default function PortfolioPage() {
 
           {/* Smart Alerts */}
           <PremiumFeatureFlag feature="smart-alerts">
-            <Card className="card-standard">
+            <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
               <CardHeader className="pb-8">
                 <CardTitle className="text-2xl font-bold text-white mb-3">Smart Alerts</CardTitle>
-                <CardDescription className="text-lg text-gray-400">
+                <CardDescription className="text-lg text-slate-400">
                   Intelligent price alerts and notifications
                 </CardDescription>
               </CardHeader>
@@ -361,10 +326,10 @@ export default function PortfolioPage() {
 
           {/* Transaction Analytics */}
           <PremiumFeatureFlag feature="transaction-analytics">
-            <Card className="card-standard">
+            <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
               <CardHeader className="pb-8">
                 <CardTitle className="text-2xl font-bold text-white mb-3">Transaction Analytics</CardTitle>
-                <CardDescription className="text-lg text-gray-400">
+                <CardDescription className="text-lg text-slate-400">
                   Detailed analysis of your trading activity
                 </CardDescription>
               </CardHeader>
@@ -380,10 +345,10 @@ export default function PortfolioPage() {
 
           {/* Portfolio Health Score */}
           <PremiumFeatureFlag feature="portfolio-health-score">
-            <Card className="card-standard">
+            <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
               <CardHeader className="pb-8">
                 <CardTitle className="text-2xl font-bold text-white mb-3">Portfolio Health Score</CardTitle>
-                <CardDescription className="text-lg text-gray-400">
+                <CardDescription className="text-lg text-slate-400">
                   Assess the health and risk of your portfolio
                 </CardDescription>
               </CardHeader>
@@ -399,10 +364,10 @@ export default function PortfolioPage() {
 
           {/* Market Intelligence */}
           <PremiumFeatureFlag feature="market-intelligence">
-            <Card className="card-standard">
+            <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
               <CardHeader className="pb-8">
                 <CardTitle className="text-2xl font-bold text-white mb-3">Market Intelligence</CardTitle>
-                <CardDescription className="text-lg text-gray-400">
+                <CardDescription className="text-lg text-slate-400">
                   Market insights and trends analysis
                 </CardDescription>
               </CardHeader>

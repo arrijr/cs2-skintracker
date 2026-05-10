@@ -16,6 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { KPICard } from "@/components/ui/kpi-card";
+import { tokens } from "@/lib/design-tokens";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -65,7 +67,7 @@ export default function Dashboard() {
   const plPercentage = totalInvested > 0 ? (unrealizedPL / totalInvested) * 100 : 0;
 
   return (
-    <div className="dashboard-bg text-white min-h-screen">
+    <div className={`${tokens.bg.base} text-white min-h-screen`}>
       <div className="container mx-auto px-4 py-8">
         
         {/* Header - Clear and Simple */}
@@ -88,41 +90,37 @@ export default function Dashboard() {
             </Button>
           </div>
           
-          {/* Key Metrics - Enhanced like Screenshot */}
+          {/* Key Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-              <div className="text-2xl font-bold text-white">{formatUSD(totalValue)}</div>
-              <div className="text-sm text-slate-400">Total Value</div>
-              {change24h !== 0 && (
-                <div className={`text-xs mt-1 ${change24h >= 0 ? 'text-green-400' : 'text-red-500'}`}>
-                  {change24h >= 0 ? '+' : ''}{formatUSD(change24h * totalValue / 100)}
-                </div>
-              )}
-            </div>
-            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-              <div className="text-2xl font-bold text-white">{formatUSD(totalValue / Math.max(portfolio?.length || 1, 1))}</div>
-              <div className="text-sm text-slate-400">Avg. price / skin</div>
-            </div>
-            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-              <div className="text-2xl font-bold text-white">{portfolio?.length || 0}</div>
-              <div className="text-sm text-slate-400"># Skins</div>
-            </div>
-            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-              <div className="text-2xl font-bold text-white">{formatUSD(totalInvested)}</div>
-              <div className="text-sm text-slate-400">Total invested</div>
-            </div>
-            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-              <div className={`text-2xl font-bold ${change24h >= 0 ? 'text-green-400' : 'text-red-500'}`}>
-                {formatUSD(change24h * totalValue / 100)}
-              </div>
-              <div className="text-sm text-slate-400">Daily P/L</div>
-            </div>
-            <div className="bg-card/50 rounded-lg p-4 border border-border/50">
-              <div className={`text-2xl font-bold ${change7d >= 0 ? 'text-green-400' : 'text-red-500'}`}>
-                {formatUSD(change7d * totalValue / 100)}
-              </div>
-              <div className="text-sm text-slate-400">7d P/L</div>
-            </div>
+            <KPICard
+              label="Total Value"
+              value={formatUSD(totalValue)}
+              delta={change24h !== 0 ? change24h : undefined}
+              deltaLabel="24h"
+            />
+            <KPICard
+              label="Avg. price / skin"
+              value={formatUSD(totalValue / Math.max(portfolio?.length || 1, 1))}
+            />
+            <KPICard
+              label="# Skins"
+              value={String(portfolio?.length || 0)}
+            />
+            <KPICard
+              label="Total invested"
+              value={formatUSD(totalInvested)}
+            />
+            <KPICard
+              label="Daily P/L"
+              value={formatUSD(change24h * totalValue / 100)}
+              delta={change24h !== 0 ? change24h : undefined}
+            />
+            <KPICard
+              label="7d P/L"
+              value={formatUSD(change7d * totalValue / 100)}
+              delta={change7d !== 0 ? change7d : undefined}
+              deltaLabel="7d"
+            />
           </div>
         </div>
 
@@ -131,7 +129,7 @@ export default function Dashboard() {
           
           {/* Portfolio Chart - Main Focus */}
           <div className="lg:col-span-3">
-            <Card className="card-primary">
+            <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl font-bold text-white">Portfolio Overview</CardTitle>
@@ -158,28 +156,28 @@ export default function Dashboard() {
 
           {/* Alerts & Watchlist - Like Screenshot */}
           <div className="lg:col-span-1">
-            <Card className="card-secondary h-full">
+            <Card className={`${tokens.bg.surface} ${tokens.border.default} h-full`}>
               <CardHeader>
                 <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-blue-500" />
+                  <AlertCircle className="h-5 w-5 text-purple-400" />
                   Alerts & Watchlist
-                  <Lock className="h-4 w-4 text-gray-400" />
+                  <Lock className="h-4 w-4 text-slate-400" />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Premium Status */}
                 {isPremium ? (
                   <div className="text-center p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg">
-                    <Crown className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                    <Crown className="h-8 w-8 mx-auto mb-2 text-green-400" />
                     <h3 className="font-semibold text-white mb-1">Premium Active</h3>
-                    <p className="text-sm text-gray-300 mb-3">You have access to all premium features</p>
+                    <p className="text-sm text-slate-300 mb-3">You have access to all premium features</p>
                     <div className="text-xs text-green-400">✓ Enhanced alerts ✓ Unlimited watchlist</div>
                   </div>
                 ) : (
-                  <div className="text-center p-4 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg">
-                    <Crown className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
+                  <div className="text-center p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-lg">
+                    <Crown className="h-8 w-8 mx-auto mb-2 text-purple-400" />
                     <h3 className="font-semibold text-white mb-1">Premium Required</h3>
-                    <p className="text-sm text-gray-300 mb-3">Unlock enhanced alerts and unlimited watchlist items</p>
+                    <p className="text-sm text-slate-300 mb-3">Unlock enhanced alerts and unlimited watchlist items</p>
                     <Button
                       onClick={() => router.push('/pricing')}
                       className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold"
@@ -219,7 +217,7 @@ export default function Dashboard() {
 
          {/* Portfolio Breakdown, Market Pulse, Events */}
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-           <Card className="card-enhanced">
+           <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
              <CardHeader>
                <CardTitle className="text-lg font-bold text-white">Portfolio Breakdown</CardTitle>
              </CardHeader>
@@ -228,12 +226,12 @@ export default function Dashboard() {
              </CardContent>
            </Card>
 
-           <Card className="card-enhanced">
+           <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
              <CardHeader>
                <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
                  <Activity className="h-5 w-5 text-green-400" />
                  Market Pulse
-                 <Lock className="h-4 w-4 text-gray-400" />
+                 <Lock className="h-4 w-4 text-slate-400" />
                </CardTitle>
              </CardHeader>
              <CardContent>
@@ -246,12 +244,12 @@ export default function Dashboard() {
              </CardContent>
            </Card>
 
-           <Card className="card-enhanced">
+           <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
              <CardHeader>
                <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                 <Globe className="h-5 w-5 text-blue-500" />
+                 <Globe className="h-5 w-5 text-purple-400" />
                  Market Events
-                 <Lock className="h-4 w-4 text-gray-400" />
+                 <Lock className="h-4 w-4 text-slate-400" />
                </CardTitle>
              </CardHeader>
              <CardContent>
@@ -262,7 +260,7 @@ export default function Dashboard() {
 
          {/* Top Movers */}
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-           <Card className="card-enhanced">
+           <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
              <CardHeader>
                <div className="flex items-center justify-between">
                  <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
@@ -284,10 +282,10 @@ export default function Dashboard() {
              </CardContent>
            </Card>
 
-           <Card className="card-enhanced">
+           <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
              <CardHeader>
                <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                 <TrendingDown className="h-5 w-5 text-red-500" />
+                 <TrendingDown className="h-5 w-5 text-red-400" />
                  Top Losers
                </CardTitle>
              </CardHeader>
@@ -303,7 +301,7 @@ export default function Dashboard() {
 
         {/* Empty State - Clear Call to Action */}
         {(!portfolio || portfolio.length === 0) && (
-          <Card className="card-enhanced">
+          <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
             <CardContent className="text-center py-12">
               <Package className="h-16 w-16 text-slate-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">No Skins in Portfolio</h3>

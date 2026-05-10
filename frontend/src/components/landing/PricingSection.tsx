@@ -1,57 +1,73 @@
-// /frontend/src/components/landing/PricingSection.tsx — [Frontend]
-// {/* Pricing Section for Landing Page */}
-"use client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Star, Zap, Shield } from "lucide-react";
+import { Check, Star, Zap, Shield, Crown } from "lucide-react";
 import Link from "next/link";
 
-const plans = [
+interface Plan {
+  id: "free" | "lite" | "pro";
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: string[];
+  highlight: boolean;
+  ctaLabel: string;
+  gradient: string;
+}
+
+const plans: Plan[] = [
   {
+    id: "free",
     name: "Free",
-    price: "$0",
+    price: "0€",
     period: "forever",
-    description: "Perfect for getting started",
+    description: "Perfect to get started",
     features: [
       "Up to 5 skins in watchlist",
       "1 price alert",
       "Basic portfolio tracking",
       "Live price updates",
-      "Community support"
+      "Community support",
     ],
-    limitations: [
-      "Limited analytics",
-      "No export features"
-    ],
-    cta: "Get Started Free",
-    href: "/sign-up",
-    popular: false,
-    color: "border-brand-slate-500",
-    bgColor: "bg-brand-slate-800/30"
+    highlight: false,
+    ctaLabel: "Start free",
+    gradient: "from-slate-600 to-slate-700",
   },
   {
-    name: "Premium",
-    price: "$9.99",
+    id: "lite",
+    name: "Lite",
+    price: "4.99€",
     period: "per month",
-    description: "For serious traders",
+    description: "For collectors & content creators",
     features: [
-      "Unlimited skins in watchlist",
-      "Up to 20 price alerts",
-      "Advanced portfolio analytics",
-      "Market insights & benchmarks",
-      "Export data (CSV, JSON)",
-      "Priority support",
-      "Historical data access",
-      "Custom alert conditions"
+      "Unlimited watchlist",
+      "5 price alerts",
+      "90-day price history",
+      "Advanced analytics",
+      "Email notifications",
     ],
-    limitations: [],
-    cta: "Start Premium Trial",
-    href: "/sign-up?plan=premium",
-    popular: true,
-    color: "border-brand-celadon-500",
-    bgColor: "bg-brand-celadon-500/5"
-  }
+    highlight: false,
+    ctaLabel: "Choose Lite",
+    gradient: "from-amber-500 to-orange-500",
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: "19.99€",
+    period: "per month",
+    description: "For professional traders",
+    features: [
+      "Everything in Lite",
+      "Unlimited price alerts",
+      "Volatility analysis (7d/30d/90d)",
+      "Rarity scoring & research tools",
+      "CSV export & priority support",
+    ],
+    highlight: true,
+    ctaLabel: "Choose Pro",
+    gradient: "from-purple-500 to-pink-500",
+  },
 ];
 
 export default function PricingSection() {
@@ -59,93 +75,75 @@ export default function PricingSection() {
     <section className="py-20 bg-slate-900/30">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
-          
           {/* Section Header */}
           <div className="text-center mb-16">
-            <Badge variant="outline" className="border-brand-slate-500/30 text-brand-slate-400 bg-brand-slate-500/10 mb-4">
+            <Badge variant="outline" className="border-purple-500/30 text-purple-400 bg-purple-500/10 mb-4">
               Simple Pricing
             </Badge>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
               Choose your{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-celadon-500 to-brand-slate-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
                 trading level
               </span>
             </h2>
             <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-              Start free and upgrade anytime. No hidden fees, no long-term contracts.
+              Start free and upgrade anytime. No hidden fees, cancel whenever.
             </p>
           </div>
 
           {/* Pricing Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {plans.map((plan, index) => (
-              <Card 
-                key={plan.name}
-                className={`card-enhanced group hover:scale-105 transition-all duration-300 ${plan.color} ${plan.bgColor} ${
-                  plan.popular ? 'ring-2 ring-brand-celadon-500/50 shadow-xl shadow-brand-celadon-500/10' : ''
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {plans.map((plan) => (
+              <Card
+                key={plan.id}
+                className={`relative bg-slate-900/60 backdrop-blur border transition-all duration-300 ${
+                  plan.highlight
+                    ? "border-purple-500/50 shadow-2xl shadow-purple-500/20 lg:scale-105"
+                    : "border-slate-700/50 hover:border-slate-600"
                 }`}
-                style={{ animationDelay: `${index * 0.2}s` }}
               >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-brand-celadon-500 text-white px-4 py-1">
+                {plan.highlight && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1">
                       <Star className="h-3 w-3 mr-1" />
                       Most Popular
                     </Badge>
                   </div>
                 )}
-                
+
                 <CardHeader className="text-center pb-4">
                   <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                  <div className="space-y-1">
-                    <div className="text-4xl font-bold text-white">
-                      {plan.price}
-                      <span className="text-lg text-slate-400 font-normal">/{plan.period}</span>
-                    </div>
-                    <p className="text-slate-300">{plan.description}</p>
+                  <div className="mb-2">
+                    <span className="text-5xl font-bold text-white">{plan.price}</span>
+                    <span className="text-slate-400 ml-1">/{plan.period}</span>
                   </div>
+                  <p className="text-slate-300">{plan.description}</p>
                 </CardHeader>
 
                 <CardContent className="space-y-6">
-                  {/* Features */}
-                  <div className="space-y-3">
-                    {plan.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center gap-3">
-                        <div className="w-5 h-5 bg-brand-green/20 rounded-full flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3 text-brand-green" />
+                  <ul className="space-y-3">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-3">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check className="h-3 w-3 text-green-400" />
                         </div>
                         <span className="text-slate-300 text-sm">{feature}</span>
-                      </div>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
 
-                  {/* Limitations (only for Free plan) */}
-                  {plan.limitations.length > 0 && (
-                    <div className="space-y-2 pt-4 border-t border-slate-700/50">
-                      <p className="text-slate-400 text-sm font-medium">Limitations:</p>
-                      {plan.limitations.map((limitation, limitIndex) => (
-                        <div key={limitIndex} className="flex items-center gap-3">
-                          <div className="w-5 h-5 bg-slate-600/20 rounded-full flex items-center justify-center flex-shrink-0">
-                            <X className="h-3 w-3 text-slate-500" />
-                          </div>
-                          <span className="text-slate-500 text-sm">{limitation}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* CTA Button */}
-                  <Button 
-                    className={`w-full py-3 text-lg font-semibold btn-enhanced ${
-                      plan.popular 
-                        ? 'bg-brand-green hover:bg-brand-green/90 text-white' 
-                        : 'bg-slate-700 hover:bg-slate-600 text-white'
-                    }`}
+                  <Button
                     asChild
+                    className={`w-full py-6 text-base font-semibold ${
+                      plan.id === "free"
+                        ? "bg-slate-700 hover:bg-slate-600 text-white"
+                        : `bg-gradient-to-r ${plan.gradient} hover:opacity-90 text-white`
+                    }`}
                   >
-                    <Link href={plan.href}>
-                      {plan.cta}
-                      {plan.popular && <Zap className="ml-2 h-5 w-5" />}
+                    <Link href="/pricing">
+                      {plan.id === "pro" && <Crown className="mr-2 h-5 w-5" />}
+                      {plan.ctaLabel}
+                      {plan.highlight && <Zap className="ml-2 h-5 w-5" />}
                     </Link>
                   </Button>
                 </CardContent>
@@ -153,11 +151,21 @@ export default function PricingSection() {
             ))}
           </div>
 
-          {/* Bottom Note */}
+          {/* Trust signals */}
           <div className="text-center mt-12">
-            <div className="inline-flex items-center gap-2 text-slate-400 text-sm">
-              <Shield className="h-4 w-4" />
-              <span>No credit card required • Cancel anytime • 30-day money-back guarantee</span>
+            <div className="inline-flex flex-wrap items-center justify-center gap-6 text-slate-400 text-sm">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                <span>Secure payment via Stripe</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-400" />
+                <span>Cancel anytime</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-400" />
+                <span>No hidden fees</span>
+              </div>
             </div>
           </div>
         </div>

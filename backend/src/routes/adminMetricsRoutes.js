@@ -1,10 +1,9 @@
 // /backend/src/routes/adminMetricsRoutes.js (Backend)
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../prisma/prismaClient.js";
 import clerkAdminAuth from "../middleware/clerkAdminAuth.js";
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // All routes require admin authentication
 router.use(clerkAdminAuth);

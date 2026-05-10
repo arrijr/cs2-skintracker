@@ -88,9 +88,9 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
 
   if (!chartData) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Advanced Charts</h3>
-        <div className="text-center text-gray-400 py-8">
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+        <h3 className="text-xl font-semibold mb-4 text-white">Advanced Charts</h3>
+        <div className="text-center text-slate-400 py-8">
           Not enough data to generate advanced charts
         </div>
       </div>
@@ -211,7 +211,7 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
       case "heatmap":
         return (
           <div className="h-80 flex items-center justify-center">
-            <div className="text-center text-gray-400">
+            <div className="text-center text-slate-400">
               <BarChart3 className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p>Heatmap Chart</p>
               <p className="text-sm">Coming soon...</p>
@@ -226,12 +226,12 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
 
   if (!ADVANCED_CHARTS_ENABLED) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Advanced Charts</h3>
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+        <h3 className="text-xl font-semibold mb-4 text-white">Advanced Charts</h3>
         <div className="text-center py-8">
           <div className="text-2xl mb-4">🔒</div>
-          <h4 className="text-lg font-medium mb-2">Advanced Charting Disabled</h4>
-          <p className="text-sm text-gray-400 mb-4">
+          <h4 className="text-lg font-medium mb-2 text-white">Advanced Charting Disabled</h4>
+          <p className="text-sm text-slate-400 mb-4">
             Enable advanced charts with NEXT_PUBLIC_PORTFOLIO_ADVANCED_CHARTS=true
           </p>
         </div>
@@ -240,11 +240,11 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
   }
 
   return (
-    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-md">
+    <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-bold text-white">Advanced Charts</h3>
         {!isPremium && (
-          <div className="text-xs bg-amber-600/20 text-amber-400 px-2 py-1 rounded">
+          <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">
             🔒 Premium Feature
           </div>
         )}
@@ -256,8 +256,8 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
           onClick={() => setSelectedChart("candlestick")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             selectedChart === "candlestick"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <TrendingUp className="inline w-4 h-4 mr-1" />
@@ -267,8 +267,8 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
           onClick={() => setSelectedChart("volume")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             selectedChart === "volume"
-              ? "bg-green-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <BarChart3 className="inline w-4 h-4 mr-1" />
@@ -278,8 +278,8 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
           onClick={() => setSelectedChart("correlation")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             selectedChart === "correlation"
-              ? "bg-purple-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <PieChart className="inline w-4 h-4 mr-1" />
@@ -289,8 +289,8 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
           onClick={() => setSelectedChart("heatmap")}
           className={`px-3 py-1 rounded text-sm transition-colors ${
             selectedChart === "heatmap"
-              ? "bg-orange-600 text-white"
-              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-slate-800/60 text-slate-300 hover:border-slate-600 border border-slate-700/50"
           }`}
         >
           <BarChart3 className="inline w-4 h-4 mr-1" />
@@ -304,7 +304,7 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
           {renderChart()}
           
           {/* Chart Info */}
-          <div className="mt-4 text-sm text-gray-400">
+          <div className="mt-4 text-sm text-slate-400">
             {selectedChart === "candlestick" && (
               <p>Portfolio value over time with daily changes</p>
             )}
@@ -321,13 +321,13 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-8 max-w-md mx-auto">
-            <Lock className="w-16 h-16 mx-auto mb-4 text-amber-400" />
-            <h4 className="text-xl font-medium mb-2">Unlock Advanced Charts</h4>
-            <p className="text-sm text-gray-400 mb-6">
+          <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-lg p-8 max-w-md mx-auto">
+            <Lock className="w-16 h-16 mx-auto mb-4 text-purple-400" />
+            <h4 className="text-xl font-medium mb-2 text-white">Unlock Advanced Charts</h4>
+            <p className="text-sm text-slate-400 mb-6">
               Get professional-grade charting: Candlesticks, Volume Analysis, Correlation Matrix, and Performance Heatmaps.
             </p>
-            <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all">
+            <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all">
               Upgrade to Premium
             </button>
           </div>
@@ -336,39 +336,39 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
 
       {/* Chart Stats */}
       {isPremium && selectedChart === "candlestick" && (
-        <div className="mt-6 pt-6 border-t border-gray-700">
+        <div className="mt-6 pt-6 border-t border-slate-700/50">
           <div className="grid grid-cols-3 gap-4 text-sm">
             <Tooltip content="Highest single-day percentage gain in your portfolio">
-              <div className="text-center p-3 bg-gray-800/30 border border-gray-700/50 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
-                <div className="text-gray-400 flex items-center justify-center gap-1 mb-1">
+              <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
+                <div className="text-slate-400 flex items-center justify-center gap-1 mb-1">
                   Best Day
-                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
                 </div>
                 <div className="text-green-400 font-medium">
                   {Math.max(...chartData.candlestick.map(entry => entry.changePercent)).toFixed(2)}%
                 </div>
               </div>
             </Tooltip>
-            
+
             <Tooltip content="Lowest single-day percentage loss in your portfolio">
-              <div className="text-center p-3 bg-gray-800/30 border border-gray-700/50 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
-                <div className="text-gray-400 flex items-center justify-center gap-1 mb-1">
+              <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
+                <div className="text-slate-400 flex items-center justify-center gap-1 mb-1">
                   Worst Day
-                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
                 </div>
                 <div className="text-red-400 font-medium">
                   {Math.min(...chartData.candlestick.map(entry => entry.changePercent)).toFixed(2)}%
                 </div>
               </div>
             </Tooltip>
-            
+
             <Tooltip content="Average daily percentage change across all trading days">
-              <div className="text-center p-3 bg-gray-800/30 border border-gray-700/50 rounded-lg hover:bg-gray-800/50 transition-colors cursor-help">
-                <div className="text-gray-400 flex items-center justify-center gap-1 mb-1">
+              <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
+                <div className="text-slate-400 flex items-center justify-center gap-1 mb-1">
                   Avg Daily Change
-                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
                 </div>
-                <div className="text-blue-400 font-medium">
+                <div className="text-purple-400 font-medium">
                   {(chartData.candlestick.reduce((sum, entry) => sum + entry.changePercent, 0) / chartData.candlestick.length).toFixed(2)}%
                 </div>
               </div>

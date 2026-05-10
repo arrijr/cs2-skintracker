@@ -25,56 +25,56 @@ const plans: Plan[] = [
   {
     id: 'free',
     name: 'Free',
-    price: '0€',
-    period: 'für immer',
-    description: 'Zum Einstieg ideal',
+    price: '€0',
+    period: 'forever',
+    description: 'Perfect to get started',
     features: [
-      'Bis zu 5 Skins in Watchlist',
-      '1 Preisalarm',
-      'Basis Portfolio-Tracking',
-      'Live-Preisupdates',
-      'Community Support',
+      'Up to 5 skins in watchlist',
+      '1 price alert',
+      'Basic portfolio tracking',
+      'Live price updates',
+      'Community support',
     ],
     highlight: false,
-    ctaLabel: 'Kostenlos starten',
+    ctaLabel: 'Start free',
     gradient: 'from-slate-600 to-slate-700',
   },
   {
     id: 'lite',
     name: 'Lite',
-    price: '4,99€',
-    period: 'pro Monat',
-    description: 'Für Sammler & Content Creator',
+    price: '€4.99',
+    period: 'per month',
+    description: 'For collectors & content creators',
     features: [
-      'Unbegrenzte Watchlist',
-      '5 Preisalarme',
-      '90-Tage Preishistorie',
-      'Erweiterte Analysen',
-      'E-Mail Benachrichtigungen',
-      'Portfolio-Übersicht mit KPIs',
+      'Unlimited watchlist',
+      '5 price alerts',
+      '90-day price history',
+      'Advanced analytics',
+      'Email notifications',
+      'Portfolio overview with KPIs',
     ],
     highlight: false,
-    ctaLabel: 'Lite wählen',
+    ctaLabel: 'Choose Lite',
     gradient: 'from-amber-500 to-orange-500',
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: '19,99€',
-    period: 'pro Monat',
-    description: 'Für professionelle Trader',
+    price: '€19.99',
+    period: 'per month',
+    description: 'For professional traders',
     features: [
-      'Alles aus Lite',
-      'Unbegrenzte Preisalarme',
-      'Volatilitätsanalyse (7d/30d/90d)',
-      'Rarity-Scoring & Research Tools',
-      '180-Tage Preishistorie',
-      'CSV-Export',
-      'Priority Support',
-      'API-Zugriff (kommt bald)',
+      'Everything in Lite',
+      'Unlimited price alerts',
+      'Volatility analysis (7d/30d/90d)',
+      'Rarity scoring & research tools',
+      '180-day price history',
+      'CSV export',
+      'Priority support',
+      'API access (coming soon)',
     ],
     highlight: true,
-    ctaLabel: 'Pro wählen',
+    ctaLabel: 'Choose Pro',
     gradient: 'from-purple-500 to-pink-500',
   },
 ];
@@ -114,13 +114,13 @@ export default function PricingPage() {
             Pricing
           </Badge>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-            Wähle deinen{' '}
+            Choose your{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-              Trading-Plan
+              trading plan
             </span>
           </h1>
           <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-            Starte kostenlos und upgrade wann du willst. Keine versteckten Kosten, jederzeit kündbar.
+            Start free and upgrade whenever you want. No hidden fees, cancel anytime.
           </p>
         </div>
 
@@ -143,7 +143,7 @@ export default function PricingPage() {
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                     <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1">
                       <Star className="h-3 w-3 mr-1" />
-                      Beliebteste Wahl
+                      Most popular
                     </Badge>
                   </div>
                 )}
@@ -152,7 +152,7 @@ export default function PricingPage() {
                   <div className="absolute -top-4 right-4">
                     <Badge className="bg-green-500 text-white px-3 py-1">
                       <Check className="h-3 w-3 mr-1" />
-                      Aktiv
+                      Active
                     </Badge>
                   </div>
                 )}
@@ -168,8 +168,8 @@ export default function PricingPage() {
 
                 <CardContent className="space-y-6">
                   <ul className="space-y-3">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-3">
                         <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <Check className="h-3 w-3 text-green-400" />
                         </div>
@@ -188,9 +188,9 @@ export default function PricingPage() {
                     }`}
                   >
                     {isLoading ? (
-                      'Wird geladen...'
+                      'Loading...'
                     ) : isCurrent ? (
-                      'Dein aktueller Plan'
+                      'Your current plan'
                     ) : (
                       <>
                         {plan.id === 'pro' && <Crown className="mr-2 h-5 w-5" />}
@@ -210,42 +210,42 @@ export default function PricingPage() {
           <div className="flex flex-wrap items-center justify-center gap-6 text-slate-400 text-sm">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              <span>Sichere Zahlung via Stripe</span>
+              <span>Secure payment via Stripe</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-4 w-4 text-green-400" />
-              <span>Jederzeit kündbar</span>
+              <span>Cancel anytime</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-4 w-4 text-green-400" />
-              <span>Keine versteckten Gebühren</span>
+              <span>No hidden fees</span>
             </div>
           </div>
         </div>
 
         {/* FAQ */}
         <div className="mt-20 max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-white text-center mb-8">Häufige Fragen</h2>
+          <h2 className="text-3xl font-bold text-white text-center mb-8">Frequently asked questions</h2>
           <div className="space-y-4">
             {[
               {
-                q: 'Kann ich jederzeit kündigen?',
-                a: 'Ja. Du kannst dein Abo jederzeit in deinen Account-Einstellungen kündigen. Die Kündigung wird zum Ende des aktuellen Abrechnungszeitraums wirksam.',
+                q: 'Can I cancel anytime?',
+                a: 'Yes. You can cancel your subscription anytime in your account settings. The cancellation takes effect at the end of the current billing period.',
               },
               {
-                q: 'Was passiert mit meinen Daten wenn ich downgrade?',
-                a: 'Deine Portfolio-Daten bleiben erhalten. Du verlierst nur den Zugriff auf Premium-Features wie Research Tools und CSV-Export.',
+                q: 'What happens to my data if I downgrade?',
+                a: 'Your portfolio data is preserved. You only lose access to premium features like research tools and CSV export.',
               },
               {
-                q: 'Welche Zahlungsmethoden akzeptiert ihr?',
-                a: 'Wir akzeptieren alle gängigen Kreditkarten (Visa, Mastercard, Amex) sowie SEPA-Lastschrift via Stripe.',
+                q: 'Which payment methods do you accept?',
+                a: 'We accept all major credit cards (Visa, Mastercard, Amex) and SEPA direct debit via Stripe.',
               },
               {
-                q: 'Gibt es eine kostenlose Testphase?',
-                a: 'Der Free-Tier ist unbegrenzt kostenlos. Für Lite und Pro bieten wir aktuell keine Testphase, aber du kannst jederzeit kündigen.',
+                q: 'Is there a free trial?',
+                a: 'The Free tier is unlimited and forever free. Lite and Pro do not currently offer a trial, but you can cancel anytime.',
               },
-            ].map((item, idx) => (
-              <Card key={idx} className="bg-slate-900/40 border-slate-700/50">
+            ].map((item) => (
+              <Card key={item.q} className="bg-slate-900/40 border-slate-700/50">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-white mb-2">{item.q}</h3>
                   <p className="text-slate-300">{item.a}</p>

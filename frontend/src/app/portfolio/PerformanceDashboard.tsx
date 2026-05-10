@@ -110,9 +110,9 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
 
   if (!metrics) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Portfolio Performance</h3>
-        <div className="text-center text-gray-400 py-8">
+      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+        <h3 className="text-xl font-semibold mb-4 text-white">Portfolio Performance</h3>
+        <div className="text-center text-slate-400 py-8">
           Not enough data to calculate performance metrics
         </div>
       </div>
@@ -127,7 +127,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
       <div className="flex items-center justify-between mb-12">
         <h3 className="text-2xl font-bold text-white">Portfolio Performance</h3>
         {!isPremium && (
-          <div className="text-xs bg-amber-600/20 text-amber-400 px-3 py-1 rounded-full">
+          <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full">
             🔒 Premium Feature
           </div>
         )}
@@ -139,37 +139,37 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
           <div className="text-5xl font-bold text-white mb-2">
             {formatCurrency(metrics.currentValue)}
           </div>
-          <div className="text-lg text-gray-400 mb-1">Current Value</div>
-          <div className="text-sm text-gray-500">Total portfolio value</div>
+          <div className="text-lg text-slate-400 mb-1">Current Value</div>
+          <div className="text-sm text-slate-500">Total portfolio value</div>
         </div>
-        
+
         <div className="text-center">
           <div className={`text-5xl font-bold mb-2 ${metrics.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {formatCurrency(metrics.totalReturn)}
           </div>
-          <div className="text-lg text-gray-400 mb-1">Total Return</div>
-          <div className="text-sm text-gray-500">Profit/Loss</div>
+          <div className="text-lg text-slate-400 mb-1">Total Return</div>
+          <div className="text-sm text-slate-500">Profit/Loss</div>
         </div>
-        
+
         <div className="text-center">
           <div className={`text-5xl font-bold mb-2 ${metrics.totalReturnPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {formatPercent(metrics.totalReturnPercent)}
           </div>
-          <div className="text-lg text-gray-400 mb-1">Return %</div>
-          <div className="text-sm text-gray-500">Performance</div>
+          <div className="text-lg text-slate-400 mb-1">Return %</div>
+          <div className="text-sm text-slate-500">Performance</div>
         </div>
       </div>
 
       {/* Advanced Analytics - Collapsible Section */}
       {isPremium ? (
         <details className="group">
-          <summary className="cursor-pointer flex items-center justify-between p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800/70 transition-colors">
+          <summary className="cursor-pointer flex items-center justify-between p-4 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors">
             <div className="flex items-center gap-3">
-              <Activity className="w-5 h-5 text-blue-400" />
+              <Activity className="w-5 h-5 text-purple-400" />
               <span className="text-lg font-medium text-white">Advanced Analytics</span>
-              <span className="text-sm text-gray-400">(Optional)</span>
+              <span className="text-sm text-slate-400">(Optional)</span>
             </div>
-            <div className="text-gray-400 group-open:rotate-180 transition-transform duration-200">
+            <div className="text-slate-400 group-open:rotate-180 transition-transform duration-200">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -180,37 +180,37 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
           
           <div className="card-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <Tooltip content="Risk-adjusted return. Higher is better. >1 is good, >2 is excellent.">
-              <div className="card-metric bg-gray-800/50 border-gray-700/50">
+              <div className="card-metric bg-slate-800/60 border border-slate-700/50">
                 <div className="flex items-center justify-center gap-2 mb-3">
-                  <Activity className="w-5 h-5 text-blue-400" />
-                  <span className="text-caption">Sharpe Ratio</span>
-                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors cursor-help" />
+                  <Activity className="w-5 h-5 text-purple-400" />
+                  <span className="text-caption text-slate-400">Sharpe Ratio</span>
+                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors cursor-help" />
                 </div>
-                <div className="text-xl font-bold text-blue-400">
+                <div className="text-xl font-bold text-purple-400">
                   {metrics.sharpeRatio.toFixed(3)}
                 </div>
               </div>
             </Tooltip>
 
             <Tooltip content="Portfolio volatility vs market. >1 = more volatile, <1 = less volatile.">
-              <div className="card-metric bg-gray-800/50 border-gray-700/50">
+              <div className="card-metric bg-slate-800/60 border border-slate-700/50">
                 <div className="flex items-center justify-center gap-2 mb-3">
-                  <BarChart3 className="w-5 h-5 text-blue-400" />
-                  <span className="text-caption">Beta</span>
-                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors cursor-help" />
+                  <BarChart3 className="w-5 h-5 text-purple-400" />
+                  <span className="text-caption text-slate-400">Beta</span>
+                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors cursor-help" />
                 </div>
-                <div className="text-xl font-bold text-blue-400">
+                <div className="text-xl font-bold text-purple-400">
                   {metrics.beta.toFixed(2)}
                 </div>
               </div>
             </Tooltip>
 
             <Tooltip content="Excess return vs market benchmark. Positive = outperforming market.">
-              <div className={`card-metric ${metrics.alpha >= 0 ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+              <div className={`card-metric ${metrics.alpha >= 0 ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Target className={`w-5 h-5 ${metrics.alpha >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                  <span className="text-caption">Alpha</span>
-                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors cursor-help" />
+                  <span className="text-caption text-slate-400">Alpha</span>
+                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors cursor-help" />
                 </div>
                 <div className={`text-xl font-bold ${metrics.alpha >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {formatPercent(metrics.alpha * 100)}
@@ -219,11 +219,11 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
             </Tooltip>
 
             <Tooltip content="Maximum peak-to-trough decline. Lower is better.">
-              <div className="card-metric bg-red-500/10 border-red-500/20">
+              <div className="card-metric bg-red-500/10 border border-red-500/20">
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Shield className="w-5 h-5 text-red-400" />
-                  <span className="text-caption">Max Drawdown</span>
-                  <Info className="w-3 h-3 text-gray-500 hover:text-gray-300 transition-colors cursor-help" />
+                  <span className="text-caption text-slate-400">Max Drawdown</span>
+                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors cursor-help" />
                 </div>
                 <div className="text-xl font-bold text-red-400">
                   {metrics.maxDrawdown.toFixed(1)}%
@@ -234,32 +234,32 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
 
           <div className="card-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <Tooltip content="Daily return volatility. Higher = more risk.">
-              <div className="card-metric bg-gray-800/50 border-gray-700/50">
-                <div className="text-lg font-bold text-blue-400">
+              <div className="card-metric bg-slate-800/60 border border-slate-700/50">
+                <div className="text-lg font-bold text-purple-400">
                   {metrics.volatility.toFixed(2)}%
                 </div>
-                <div className="text-caption">Daily Volatility</div>
+                <div className="text-caption text-slate-400">Daily Volatility</div>
               </div>
             </Tooltip>
 
-            <div className="card-metric bg-gray-800/50 border-gray-700/50">
-              <div className="text-lg font-bold text-blue-400">
+            <div className="card-metric bg-slate-800/60 border border-slate-700/50">
+              <div className="text-lg font-bold text-purple-400">
                 {metrics.dailyReturnsCount}
               </div>
-              <div className="text-caption">Data Points</div>
+              <div className="text-caption text-slate-400">Data Points</div>
             </div>
           </div>
           </div>
         </details>
       ) : (
         <div className="text-center py-8">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-auto">
+          <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-lg p-6 max-w-md mx-auto">
             <div className="text-2xl mb-4">🔒</div>
-            <h4 className="text-lg font-medium mb-2">Unlock Advanced Analytics</h4>
-            <p className="text-sm text-gray-400 mb-4">
+            <h4 className="text-lg font-medium mb-2 text-white">Unlock Advanced Analytics</h4>
+            <p className="text-sm text-slate-400 mb-4">
               Get professional-grade portfolio insights: Sharpe Ratio, Beta, Alpha, Max Drawdown, and more.
             </p>
-            <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 transition-all">
+            <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all">
               Upgrade to Premium
             </button>
           </div>
@@ -267,7 +267,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
       )}
 
       {/* Performance Summary */}
-      <div className="mt-8 pt-6 border-t border-gray-700">
+      <div className="mt-8 pt-6 border-t border-slate-700/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {metrics.totalReturnPercent >= 0 ? (
@@ -286,9 +286,9 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
               </div>
             )}
           </div>
-          
+
           {isPremium && (
-            <div className="text-xs text-gray-500 bg-gray-800/50 px-3 py-2 rounded-lg">
+            <div className="text-xs text-slate-500 bg-slate-800/60 border border-slate-700/50 px-3 py-2 rounded-lg">
               Last updated: {new Date().toLocaleString()}
             </div>
           )}

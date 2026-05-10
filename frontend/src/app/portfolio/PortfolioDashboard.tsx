@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import UpgradeModal from './UpgradeModal';
 import { useSubscription } from '@/hooks/useSubscription';
+import { KPICard } from '@/components/ui/kpi-card';
+import { tokens } from '@/lib/design-tokens';
 
 interface Position {
   skinId: number;
@@ -83,9 +85,9 @@ export default function PortfolioDashboard() {
 
   if (!isSignedIn) {
     return (
-      <Card className="border-amber-200 bg-amber-50">
+      <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
         <CardContent className="pt-6">
-          <p className="text-center text-gray-600">Melden Sie sich an, um Ihr Portfolio zu sehen.</p>
+          <p className={`text-center ${tokens.text.secondary}`}>Melden Sie sich an, um Ihr Portfolio zu sehen.</p>
         </CardContent>
       </Card>
     );
@@ -106,12 +108,12 @@ export default function PortfolioDashboard() {
 
   if (error) {
     return (
-      <Card className="border-red-200 bg-red-50">
+      <Card className={`${tokens.bg.surface} border-red-500/30`}>
         <CardContent className="pt-6 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
           <div>
-            <p className="font-semibold text-red-900">Fehler beim Laden</p>
-            <p className="text-sm text-red-800">{error}</p>
+            <p className="font-semibold text-white">Fehler beim Laden</p>
+            <p className="text-sm text-red-400">{error}</p>
           </div>
         </CardContent>
       </Card>
@@ -120,12 +122,12 @@ export default function PortfolioDashboard() {
 
   if (!portfolio || portfolio.positionCount === 0) {
     return (
-      <Card>
+      <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
         <CardContent className="pt-6 text-center space-y-4">
-          <Wallet className="w-12 h-12 mx-auto text-gray-300" />
+          <Wallet className={`w-12 h-12 mx-auto ${tokens.text.muted}`} />
           <div>
-            <p className="font-semibold">Ihr Portfolio ist leer</p>
-            <p className="text-sm text-gray-500">Fügen Sie Skins hinzu, um zu beginnen</p>
+            <p className={`font-semibold ${tokens.text.primary}`}>Ihr Portfolio ist leer</p>
+            <p className={`text-sm ${tokens.text.muted}`}>Fügen Sie Skins hinzu, um zu beginnen</p>
           </div>
         </CardContent>
       </Card>
@@ -138,89 +140,50 @@ export default function PortfolioDashboard() {
     <div className="space-y-6">
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Value */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Gesamtwert</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{portfolio.totalValue.toFixed(2)}€</div>
-            <p className="text-xs text-gray-500 mt-1">Aktueller Marktwert</p>
-          </CardContent>
-        </Card>
-
-        {/* Invested */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Investiert</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{portfolio.totalInvested.toFixed(2)}€</div>
-            <p className="text-xs text-gray-500 mt-1">Gesamtkaufpreis</p>
-          </CardContent>
-        </Card>
-
-        {/* Unrealized P/L */}
-        <Card className={isPositive ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Gewinn/Verlust</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`flex items-baseline gap-1 text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-              {isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-              {portfolio.unrealizedPL.toFixed(2)}€
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {portfolio.unrealizedPLPercent.toFixed(2)}%
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Positions */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Positionen</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{portfolio.positionCount}</div>
-            <p className="text-xs text-gray-500 mt-1">Unterschiedliche Skins</p>
-          </CardContent>
-        </Card>
+        <KPICard label="Gesamtwert" value={`${portfolio.totalValue.toFixed(2)}€`} />
+        <KPICard label="Investiert" value={`${portfolio.totalInvested.toFixed(2)}€`} />
+        <KPICard
+          label="Gewinn/Verlust"
+          value={`${portfolio.unrealizedPL.toFixed(2)}€`}
+          delta={portfolio.unrealizedPLPercent}
+          icon={isPositive ? <TrendingUp className="w-4 h-4 text-green-400" /> : <TrendingDown className="w-4 h-4 text-red-400" />}
+        />
+        <KPICard label="Positionen" value={String(portfolio.positionCount)} />
       </div>
 
       {/* Positions Table */}
-      <Card>
+      <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
         <CardHeader>
-          <CardTitle>Positionen</CardTitle>
-          <CardDescription>Ihre gehaltenen Skins</CardDescription>
+          <CardTitle className={tokens.text.primary}>Positionen</CardTitle>
+          <CardDescription className={tokens.text.muted}>Ihre gehaltenen Skins</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-2 font-semibold">Skin</th>
-                  <th className="text-right py-2 px-2 font-semibold">Menge</th>
-                  <th className="text-right py-2 px-2 font-semibold">Ø Kurs</th>
-                  <th className="text-right py-2 px-2 font-semibold">Aktuell</th>
-                  <th className="text-right py-2 px-2 font-semibold">Wert</th>
-                  <th className="text-right py-2 px-2 font-semibold">P/L</th>
+                <tr className="border-b border-slate-700/50">
+                  <th className={`text-left py-2 px-2 font-semibold ${tokens.text.muted}`}>Skin</th>
+                  <th className={`text-right py-2 px-2 font-semibold ${tokens.text.muted}`}>Menge</th>
+                  <th className={`text-right py-2 px-2 font-semibold ${tokens.text.muted}`}>Ø Kurs</th>
+                  <th className={`text-right py-2 px-2 font-semibold ${tokens.text.muted}`}>Aktuell</th>
+                  <th className={`text-right py-2 px-2 font-semibold ${tokens.text.muted}`}>Wert</th>
+                  <th className={`text-right py-2 px-2 font-semibold ${tokens.text.muted}`}>P/L</th>
                 </tr>
               </thead>
               <tbody>
                 {portfolio.positions.map((pos) => (
-                  <tr key={pos.skinId} className="border-b hover:bg-gray-50">
+                  <tr key={pos.skinId} className="border-b border-slate-700/50 hover:bg-slate-800/60 transition-colors">
                     <td className="py-3 px-2">
                       <div>
-                        <p className="font-medium">{pos.skinName}</p>
-                        <p className="text-xs text-gray-500">{pos.marketHashName}</p>
+                        <p className={`font-medium ${tokens.text.primary}`}>{pos.skinName}</p>
+                        <p className={`text-xs ${tokens.text.muted}`}>{pos.marketHashName}</p>
                       </div>
                     </td>
-                    <td className="text-right py-3 px-2">{pos.amount}</td>
-                    <td className="text-right py-3 px-2">{pos.avgBuyPrice.toFixed(2)}€</td>
-                    <td className="text-right py-3 px-2">{pos.currentPrice.toFixed(2)}€</td>
-                    <td className="text-right py-3 px-2 font-medium">{pos.totalValue.toFixed(2)}€</td>
-                    <td className={`text-right py-3 px-2 font-medium ${pos.unrealizedPL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <td className={`text-right py-3 px-2 ${tokens.text.secondary}`}>{pos.amount}</td>
+                    <td className={`text-right py-3 px-2 ${tokens.text.secondary}`}>{pos.avgBuyPrice.toFixed(2)}€</td>
+                    <td className={`text-right py-3 px-2 ${tokens.text.secondary}`}>{pos.currentPrice.toFixed(2)}€</td>
+                    <td className={`text-right py-3 px-2 font-medium ${tokens.text.primary}`}>{pos.totalValue.toFixed(2)}€</td>
+                    <td className={`text-right py-3 px-2 font-medium ${pos.unrealizedPL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {pos.unrealizedPL.toFixed(2)}€
                     </td>
                   </tr>
@@ -233,26 +196,26 @@ export default function PortfolioDashboard() {
 
       {/* Pro Tier CTA */}
       {tier !== 'pro' && (
-        <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+        <Card className="border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-purple-600" />
+            <CardTitle className="flex items-center gap-2 text-white">
+              <BarChart3 className="w-5 h-5 text-purple-400" />
               Research Tools
             </CardTitle>
-            <CardDescription>Erweiterte Analysen für Ihr Portfolio</CardDescription>
+            <CardDescription className={tokens.text.secondary}>Erweiterte Analysen für Ihr Portfolio</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ul className="space-y-2 text-sm">
+            <ul className={`space-y-2 text-sm ${tokens.text.secondary}`}>
               <li className="flex items-center gap-2">
-                <span className="text-purple-600">•</span>
+                <span className="text-purple-400">•</span>
                 Volatilitätsanalyse (30/90 Tage)
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-purple-600">•</span>
+                <span className="text-purple-400">•</span>
                 Rarity Scoring basierend auf Marktdaten
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-purple-600">•</span>
+                <span className="text-purple-400">•</span>
                 CSV-Export für deine Übersicht
               </li>
             </ul>
@@ -262,7 +225,7 @@ export default function PortfolioDashboard() {
       )}
 
       {/* Last Updated */}
-      <p className="text-xs text-gray-500 text-right">
+      <p className={`text-xs ${tokens.text.muted} text-right`}>
         Aktualisiert: {new Date(portfolio.lastUpdated).toLocaleString('de-DE')}
       </p>
     </div>
