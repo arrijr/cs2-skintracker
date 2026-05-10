@@ -97,6 +97,19 @@ describe('catalogSyncJob.syncCategoryToDb', () => {
     expect(fakePrisma.case.upsert).toHaveBeenCalledTimes(1);
   });
 
+  it('routes patches category to marketItem with category=patch (not patche)', async () => {
+    const fakePrisma = {
+      marketItem: { upsert: jest.fn().mockResolvedValue({ id: 1 }) },
+    };
+    const items = [
+      { externalId: 'p-1', category: 'patches', name: 'Patch A', marketHashName: 'Patch A', imageUrl: null, rarity: null, collection: null, metadata: {} },
+    ];
+    await syncCategoryToDb('patches', items, { prismaClient: fakePrisma });
+    expect(fakePrisma.marketItem.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      create: expect.objectContaining({ category: 'patch' }),
+    }));
+  });
+
   it('captures errors per item without aborting', async () => {
     const fakePrisma = {
       marketItem: {

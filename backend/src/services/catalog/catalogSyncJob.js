@@ -6,6 +6,16 @@ const MARKET_ITEM_CATEGORIES = new Set([
   'stickers', 'agents', 'patches', 'graffiti', 'music_kits', 'collectibles', 'keys',
 ]);
 
+const CATEGORY_TO_DB_VALUE = {
+  stickers: 'sticker',
+  agents: 'agent',
+  patches: 'patch',
+  graffiti: 'graffiti',
+  music_kits: 'music_kit',
+  collectibles: 'collectible',
+  keys: 'key',
+};
+
 /**
  * Upsert already-normalized items for one category.
  * Returns { upserted, errors }.
@@ -45,8 +55,7 @@ export async function syncCategoryToDb(category, items, { prismaClient = default
           },
         });
       } else if (MARKET_ITEM_CATEGORIES.has(category)) {
-        // music_kits stays plural in DB (no trailing-s strip on underscored compound); others lose trailing s
-        const dbCategory = category === 'music_kits' ? 'music_kit' : category.replace(/s$/, '');
+        const dbCategory = CATEGORY_TO_DB_VALUE[category] ?? category;
         await prismaClient.marketItem.upsert({
           where: { marketHashName: item.marketHashName },
           create: {
