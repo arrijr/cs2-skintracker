@@ -49,7 +49,7 @@ export const subscriptionService = {
     try {
       // Extract user ID and tier from metadata
       const userId = parseInt(stripeSubscription.metadata?.userId || 0);
-      const tier = stripeSubscription.metadata?.tier || 'creator';
+      const tier = stripeSubscription.metadata?.tier || 'lite';
 
       if (!userId) {
         logger.error('No userId in Stripe metadata', { stripeSubId: stripeSubscription.id });
@@ -58,7 +58,7 @@ export const subscriptionService = {
 
       const sub = await prisma.user.update({
         where: { id: userId },
-        data: { isPremium: tier === 'pro' || tier === 'creator' }
+        data: { isPremium: tier === 'pro' || tier === 'lite' }
       });
 
       logger.info('Subscription updated from Stripe', {
@@ -117,14 +117,14 @@ export const subscriptionService = {
   /**
    * Check if user has required tier
    * @param {number} userId - User ID
-   * @param {string} requiredTier - Required tier (free, creator, pro)
+   * @param {string} requiredTier - Required tier (free, lite, pro)
    * @returns {Promise<boolean>} True if user has tier or higher
    */
   async checkTier(userId, requiredTier) {
     try {
       const sub = await this.getOrCreateSubscription(userId);
 
-      const tierHierarchy = { free: 0, creator: 1, pro: 2 };
+      const tierHierarchy = { free: 0, lite: 1, pro: 2 };
       const userLevel = tierHierarchy[sub?.tier || 'free'] || 0;
       const requiredLevel = tierHierarchy[requiredTier] || 0;
 
@@ -159,7 +159,7 @@ export const subscriptionService = {
         maxSkins: 0, // Unlimited for now
         priceHistoryDays: 30
       },
-      creator: {
+      lite: {
         canCreatePortfolio: true,
         canAccessResearch: false,
         canExportCSV: false,
@@ -189,7 +189,7 @@ export const subscriptionService = {
     try {
       const sub = await prisma.user.update({
         where: { id: userId },
-        data: { isPremium: newTier === 'pro' || newTier === 'creator' }
+        data: { isPremium: newTier === 'pro' || newTier === 'lite' }
       });
 
       logger.info('Subscription status updated manually', {

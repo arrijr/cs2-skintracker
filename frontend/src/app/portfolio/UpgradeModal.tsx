@@ -16,14 +16,14 @@ import { Crown, Zap, Check } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 
 interface UpgradeModalProps {
-  tier?: 'creator' | 'pro';
+  tier?: 'lite' | 'pro';
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   triggerText?: string;
 }
 
 export default function UpgradeModal({
-  tier = 'creator',
+  tier = 'lite',
   isOpen,
   onOpenChange,
   triggerText = 'Upgrade'
@@ -33,8 +33,8 @@ export default function UpgradeModal({
   const [error, setError] = useState<string | null>(null);
 
   const tiers = {
-    creator: {
-      name: 'Creator',
+    lite: {
+      name: 'Lite',
       price: '4,99',
       currency: '€',
       period: '/Monat',
@@ -46,7 +46,7 @@ export default function UpgradeModal({
         'Echtzeit-Preisupdates',
         'Email-Benachrichtigungen'
       ],
-      cta: 'Creator wählen',
+      cta: 'Lite wählen',
       color: 'from-amber-400 to-orange-400'
     },
     pro: {
@@ -56,7 +56,7 @@ export default function UpgradeModal({
       period: '/Monat',
       description: 'Für professionelle Trader und Analysten',
       features: [
-        'Alles aus Creator-Plan',
+        'Alles aus Lite-Plan',
         'Volatilitätsanalyse (30/90 Tage)',
         'Rarity-Scoring Heuristiken',
         'Preisgeschichte (180 Tage)',

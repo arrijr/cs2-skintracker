@@ -10,7 +10,7 @@ import { loadStripe } from '@stripe/stripe-js';
 
 interface Subscription {
   id: number;
-  tier: 'free' | 'creator' | 'pro';
+  tier: 'free' | 'lite' | 'pro';
   status: 'active' | 'inactive' | 'canceled' | 'pending';
   stripeSubId?: string;
   currentPeriodStart?: string;
@@ -78,7 +78,7 @@ export function useSubscription() {
     fetchSubscription();
   }, [isSignedIn, getToken]);
 
-  const checkout = async (tier: 'creator' | 'pro') => {
+  const checkout = async (tier: 'lite' | 'pro') => {
     try {
       const token = await getToken();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/checkout`, {
@@ -94,22 +94,9 @@ export function useSubscription() {
         throw new Error(`HTTP ${res.status}`);
       }
 
-      const { sessionId, url } = await res.json();
-
-      // Use Stripe.js redirectToCheckout (avoids apiKey issues with direct URL)
-      if (sessionId && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
-        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-        if (stripe) {
-          const { error } = await stripe.redirectToCheckout({ sessionId });
-          if (error) throw new Error(error.message);
-          return;
-        }
-      }
-
-      // Fallback: direct URL redirect
-      if (url) {
-        window.location.href = url;
-      }
+      const { url } = await res.json();
+      if (!url) throw new Error('No checkout URL returned');
+      window.location.href = url;
     } catch (err) {
       console.error('Checkout failed:', err);
       throw err;

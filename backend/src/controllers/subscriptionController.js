@@ -24,8 +24,8 @@ export const createCheckoutSession = async (req, res) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    if (!['creator', 'pro'].includes(tier)) {
-      return res.status(400).json({ error: 'Invalid tier. Use: creator or pro' });
+    if (!['lite', 'pro'].includes(tier)) {
+      return res.status(400).json({ error: 'Invalid tier. Use: lite or pro' });
     }
 
     // Get or create subscription
@@ -33,8 +33,8 @@ export const createCheckoutSession = async (req, res) => {
     let customerId = sub.stripeCustomerId;
 
     // Get price ID from environment
-    const priceId = tier === 'creator'
-      ? process.env.STRIPE_PRICE_CREATOR_ID
+    const priceId = tier === 'lite'
+      ? process.env.STRIPE_PRICE_LITE_ID
       : process.env.STRIPE_PRICE_PRO_ID;
 
     if (!priceId) {
