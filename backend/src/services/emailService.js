@@ -36,7 +36,7 @@ export async function sendAlertEmail({ to, subject, alertType, skinName, payload
         <a href="https://skintrackr.com/alerts" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; text-decoration: none; border-radius: 6px;">Manage alerts</a>
       </div>
       <p style="color: #64748b; font-size: 12px; margin-top: 16px; text-align: center;">
-        skintrackr.com
+        skintrackr.com · <a href="https://skintrackr.com/account" style="color: #94a3b8;">manage preferences</a>
       </p>
     </div>
   `;
@@ -45,6 +45,10 @@ export async function sendAlertEmail({ to, subject, alertType, skinName, payload
     to,
     subject: `[skintrackr] ${subject}`,
     html,
+    headers: {
+      'List-Unsubscribe': '<mailto:unsubscribe@skintrackr.com>, <https://skintrackr.com/account>',
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
   });
 }
 

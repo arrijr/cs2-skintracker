@@ -7,7 +7,7 @@ export async function deliverEmail({ alert, result }) {
     return { ok: false, error: 'no email on user record' };
   }
   if (user.emailAlerts === false) {
-    return { ok: false, error: 'user has emailAlerts=false' };
+    return { ok: true, skipped: true, reason: 'user opted out of email alerts' };
   }
   try {
     await sendAlertEmail({
@@ -25,17 +25,21 @@ export async function deliverEmail({ alert, result }) {
 }
 
 function buildSubject(alert, result) {
-  const skin = alert.skin?.name || 'your portfolio';
-  switch (alert.type) {
-    case 'price_threshold':
-      return `${skin} hit €${result.payload.currentPrice}`;
-    case 'volatility':
-      return `${skin} volatility spike (${result.payload.changePercent}%)`;
-    case 'float_tier':
-      return `Rare float listed: ${skin}`;
-    case 'case_ev':
-      return `Case-EV inversion: ${alert.case?.name || skin}`;
-    default:
-      return `Alert: ${alert.type}`;
-  }
+  const raw = (() => {
+    const skin = alert.skin?.name || 'your portfolio';
+    switch (alert.type) {
+      case 'price_threshold':
+        return `${skin} hit €${result.payload.currentPrice}`;
+      case 'volatility':
+        return `${skin} volatility spike (${result.payload.changePercent}%)`;
+      case 'float_tier':
+        return `Rare float listed: ${skin}`;
+      case 'case_ev':
+        return `Case-EV inversion: ${alert.case?.name || skin}`;
+      default:
+        return `Alert: ${alert.type}`;
+    }
+  })();
+  // Strip CRLF to prevent header injection, trim length
+  return raw.replace(/[\r\n]+/g, ' ').slice(0, 200);
 }

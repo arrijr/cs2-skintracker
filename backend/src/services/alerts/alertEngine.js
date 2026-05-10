@@ -41,6 +41,7 @@ export async function evaluateAlert(alert) {
 export async function deliverAlert({ alert, result }) {
   const delivered = [];
   const failed = [];
+  const channelErrors = {};
 
   for (const channel of alert.channels) {
     let res;
@@ -51,8 +52,17 @@ export async function deliverAlert({ alert, result }) {
     } else {
       res = { ok: false, error: `unknown channel ${channel}` };
     }
-    if (res.ok) delivered.push(channel);
-    else failed.push(channel);
+    if (res.skipped) {
+      // user opt-out — log but don't count as delivered or failed
+      logger.info('Channel skipped (user preference)', { alertId: alert.id, channel, reason: res.reason });
+      continue;
+    }
+    if (res.ok) {
+      delivered.push(channel);
+    } else {
+      failed.push(channel);
+      channelErrors[channel] = res.error;
+    }
   }
 
   await prisma.alertEvent.create({
@@ -61,7 +71,9 @@ export async function deliverAlert({ alert, result }) {
       payload: result.payload,
       delivered,
       failed,
-      errorLog: failed.length ? failed.join('; ') : null,
+      errorLog: Object.keys(channelErrors).length
+        ? Object.entries(channelErrors).map(([c, e]) => `${c}: ${e}`).join('; ')
+        : null,
     },
   });
   await prisma.alert.update({
