@@ -18,6 +18,7 @@ model User {
   timezone     String?    // IANA timezone string
   emailAlerts  Boolean    @default(true)  // Email notification preference
   pushAlerts   Boolean    @default(false) // Push notification preference
+  discordWebhook String?  // Discord webhook URL for alert delivery
   isPremium    Boolean    @default(false)
   role         String     @default("user") // user, admin
   createdAt    DateTime   @default(now())
@@ -29,6 +30,7 @@ model User {
   auditLogs    AuditLog[]
   jobRuns      JobRun[]
   blogPosts    BlogPost[]
+  alerts       Alert[]
 }
 
 model Skin {
@@ -95,6 +97,7 @@ model Skin {
   marketSnapshots MarketSnapshot[]
   caseSkins      CaseSkin[]
   quantityHistory SkinQuantityHistory[]
+  alerts         Alert[]
 
   @@index([rarity])
   @@index([wear])
@@ -129,6 +132,41 @@ model Watchlist {
   createdAt   DateTime @default(now())
 
   @@unique([userId, skinId]) // doppelte Einträge verhindern
+}
+
+model Alert {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skinId          Int?      // null = portfolio-wide alert
+  skin            Skin?     @relation(fields: [skinId], references: [id], onDelete: Cascade)
+  caseId          Int?      // for case_ev alerts
+  case            Case?     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  type            String    // "price_threshold" | "volatility" | "float_tier" | "case_ev"
+  config          Json      // type-specific config
+  channels        String[]  // ["email", "discord"]
+  isActive        Boolean   @default(true)
+  cooldownMinutes Int       @default(60)
+  lastTriggeredAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  events          AlertEvent[]
+
+  @@index([userId, isActive])
+  @@index([type, isActive])
+}
+
+model AlertEvent {
+  id          Int       @id @default(autoincrement())
+  alertId     Int
+  alert       Alert     @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  triggeredAt DateTime  @default(now())
+  payload     Json
+  delivered   String[]
+  failed      String[]
+  errorLog    String?
+
+  @@index([alertId, triggeredAt])
 }
 
 model Portfolio {
@@ -285,7 +323,8 @@ model Case {
   caseSkins       CaseSkin[]
   casePriceHistory CasePriceHistory[]
   casePortfolio   CasePortfolio[]
-  
+  alerts          Alert[]
+
   @@index([isDiscontinued])
   @@index([price])
   @@index([timeToExtinction])
