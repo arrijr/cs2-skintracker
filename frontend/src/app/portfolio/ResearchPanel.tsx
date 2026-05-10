@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,7 +32,8 @@ interface ResearchData {
 }
 
 export default function ResearchPanel() {
-  const { isSignedIn, getToken } = useUser();
+  const { isSignedIn } = useUser();
+  const { getToken } = useAuth();
   const { canAccessResearch, tier } = useSubscription();
   const [research, setResearch] = useState<ResearchData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
