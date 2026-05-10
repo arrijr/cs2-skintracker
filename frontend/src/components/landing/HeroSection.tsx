@@ -13,14 +13,14 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-purple-900 via-brand-slate-900 to-brand-purple-900" />
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(161,232,175,0.1),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(116,124,146,0.1),transparent_50%)]" />
       
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-10 w-2 h-2 bg-brand-slate-500 rounded-full animate-pulse" />
-        <div className="absolute top-40 right-20 w-1 h-1 bg-brand-celadon-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-20 left-10 w-2 h-2 bg-slate-500 rounded-full animate-pulse" />
+        <div className="absolute top-40 right-20 w-1 h-1 bg-purple-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
         <div className="absolute bottom-40 left-20 w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
         <div className="absolute bottom-20 right-40 w-1 h-1 bg-brand-purple-600 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
       </div>

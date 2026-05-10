@@ -27,9 +27,9 @@ const features = [
     icon: BarChart3,
     title: "Portfolio Tracking",
     description: "See your gains and performance at a glance with detailed analytics.",
-    color: "text-brand-celadon-500",
-    bgColor: "bg-brand-celadon-500/10",
-    borderColor: "border-brand-celadon-500/30"
+    color: "text-purple-500",
+    bgColor: "bg-purple-500/10",
+    borderColor: "border-purple-500/30"
   },
   {
     icon: Heart,
@@ -43,9 +43,9 @@ const features = [
     icon: TrendingUp,
     title: "Market Insights",
     description: "Advanced analytics & benchmarks to make informed trading decisions.",
-    color: "text-brand-slate-500",
-    bgColor: "bg-brand-slate-500/10",
-    borderColor: "border-brand-slate-500/30"
+    color: "text-slate-400",
+    bgColor: "bg-slate-500/10",
+    borderColor: "border-slate-500/30"
   },
   {
     icon: Shield,
