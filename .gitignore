@@ -26,4 +26,21 @@ node_modules/
 
 # Task files
 # tasks.json
-# tasks/ 
+# tasks/
+
+# Build / test artifacts
+**/.vercel/
+**/coverage/
+**/test-results/
+**/playwright-report/
+**/playwright-*.txt
+backend/test-*.txt
+
+# Local outputs
+backend/outputs/
+backend/scripts/seed-direct.mjs
+backend/seed-live.mjs
+backend/test-conn.mjs
+trigger-price-updater.js
+verify-redeploy.js
+monitor-production.js
