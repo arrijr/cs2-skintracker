@@ -272,23 +272,48 @@ model JobRun {
 }
 
 model MarketSnapshot {
-  id              Int      @id @default(autoincrement())
-  skin            Skin     @relation(fields: [skinId], references: [id])
-  skinId          Int
-  date            DateTime @db.Date // YYYY-MM-DD format
-  priceUsd        Float?   // Current price in USD
-  activeListings  Int      // Number of active listings on market
-  soldVolume24h   Int?     // Items sold in last 24h (if available)
-  source          String   @default("steam") // Data source
-  fetchedAt       DateTime @default(now())
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             Int       @id @default(autoincrement())
+  itemType       String    @default("skin") // 'skin' | 'case' | 'market_item'
+  skinId         Int?
+  skin           Skin?     @relation(fields: [skinId], references: [id], onDelete: Cascade)
+  caseId         Int?
+  case           Case?     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  marketItemId   Int?
+  marketItem     MarketItem? @relation(fields: [marketItemId], references: [id], onDelete: Cascade)
+  date           DateTime
+  priceUsd       Float
+  activeListings Int?
+  soldVolume24h  Int?
+  source         String
+  fetchedAt      DateTime  @default(now())
 
-  @@unique([skinId, date]) // One snapshot per skin per day
+  @@index([itemType, date])
   @@index([skinId, date])
-  @@index([date])
-  @@index([source])
+  @@index([marketItemId, date])
+}
+
+model MarketItem {
+  id              Int       @id @default(autoincrement())
+  category        String    // 'sticker' | 'agent' | 'patch' | 'graffiti' | 'music_kit' | 'collectible' | 'key'
+  externalId      String    // bymykel id
+  name            String
+  marketHashName  String    @unique
+  imageUrl        String?
+  rarity          String?
+  collection      String?
+  metadata        Json?
+  priceLatest     Float?
+  priceMedian     Float?
+  volume24h       Int?
+  priceUpdatedAt  DateTime?
+  isActive        Boolean   @default(true)
+  consecutive404  Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  snapshots       MarketSnapshot[]
+
+  @@index([category, isActive])
+  @@index([marketHashName])
 }
 
 model Case {
@@ -324,6 +349,7 @@ model Case {
   casePriceHistory CasePriceHistory[]
   casePortfolio   CasePortfolio[]
   alerts          Alert[]
+  marketSnapshots MarketSnapshot[]
 
   @@index([isDiscontinued])
   @@index([price])
