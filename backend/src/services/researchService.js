@@ -152,13 +152,11 @@ function calculateRarityScore(skin) {
  */
 async function getPortfolioResearch(userId) {
   try {
-    // Verify user has Pro tier
-    const sub = await prisma.userSubscriptions.findUnique({
-      where: { userId }
-    });
-
-    if (!sub || !sub.canAccessResearch) {
-      throw new Error('Pro tier required for research tools');
+    // Verify user has Pro tier (source of truth: User.isPremium)
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const tier = user?.isPremium ? 'pro' : 'free';
+    if (tier !== 'pro') {
+      throw new Error('Pro tier required for portfolio research');
     }
 
     // Get all portfolio entries
