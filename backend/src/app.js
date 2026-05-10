@@ -8,6 +8,7 @@ import "./cron/index.js";
 
 import userRoutes from "./routes/userRoutes.js";
 import skinRoutes from "./routes/skinRoutes.js";
+import marketItemRoutes from "./routes/marketItemRoutes.js";
 import caseRoutes from "./routes/cases.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
 import portfolioRoutes from "./routes/portfolioRoutes.js";
@@ -81,6 +82,7 @@ app.options(/.*/, cors(corsOptions));
 // Routes (nur Pfade, keine URLs!)
 app.use("/api/v1/users", sensitiveLimiter, userRoutes);
 app.use("/api/v1/skins", skinRoutes);
+app.use("/api/v1/market-items", marketItemRoutes);
 app.use("/api/v1/cases", caseRoutes);
 app.use("/api/v1/watchlist", watchlistRoutes);
 app.use("/api/v1/portfolio", portfolioRoutes);
