@@ -1,8 +1,14 @@
 name: Cron — Price Refresh (chunked)
 
+# Prevent overlapping runs hitting Steam Market simultaneously
+concurrency:
+  group: price-refresh
+  cancel-in-progress: false
+
 on:
   schedule:
-    # 4 chunks over 24h, each 4000 items × 3s ≈ 3.3h
+    # 4 chunks over 24h. 3 × 4000 + 1 × 5000 = 17000 items max coverage at 3s each.
+    # Chunk sizes ≤ 5000 keep each run < 4.2h (within 5.8h timeout).
     - cron: '30 3 * * *'   # 03:30 UTC: offset 0
     - cron: '30 9 * * *'   # 09:30 UTC: offset 4000
     - cron: '30 15 * * *'  # 15:30 UTC: offset 8000
@@ -52,7 +58,7 @@ jobs:
               03) echo "offset=0" >> $GITHUB_OUTPUT; echo "size=4000" >> $GITHUB_OUTPUT ;;
               09) echo "offset=4000" >> $GITHUB_OUTPUT; echo "size=4000" >> $GITHUB_OUTPUT ;;
               15) echo "offset=8000" >> $GITHUB_OUTPUT; echo "size=4000" >> $GITHUB_OUTPUT ;;
-              21) echo "offset=12000" >> $GITHUB_OUTPUT; echo "size=10000" >> $GITHUB_OUTPUT ;;
+              21) echo "offset=12000" >> $GITHUB_OUTPUT; echo "size=5000" >> $GITHUB_OUTPUT ;;
               *) echo "offset=0" >> $GITHUB_OUTPUT; echo "size=4000" >> $GITHUB_OUTPUT ;;
             esac
           fi

@@ -117,6 +117,7 @@ export async function runPriceRefresh({ prismaClient = defaultPrisma, sleepImpl 
     }
   }
 
-  logger.info('Price refresh complete', { ok, notFound, errors, processed: slice.length, totalAvailable: all.length });
-  return { ok, notFound, errors, total: slice.length, totalAvailable: all.length };
+  logger.info('Price refresh complete', { ok, notFound, errors, processed: slice.length, total: all.length });
+  // Backward-compatible return shape: `total` = full population, `processed` = items in this run
+  return { ok, notFound, errors, processed: slice.length, total: all.length };
 }
