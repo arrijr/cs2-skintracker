@@ -57,6 +57,22 @@ export async function createAlert(req, res) {
     });
   }
 
+  // Validate type-specific FK requirements + existence
+  if (type === 'case_ev') {
+    if (caseId == null) {
+      return res.status(400).json({ error: 'case_ev alert requires caseId' });
+    }
+    const exists = await prisma.case.findUnique({ where: { id: caseId }, select: { id: true } });
+    if (!exists) return res.status(404).json({ error: `case ${caseId} not found` });
+  } else {
+    // price_threshold, volatility, float_tier all require skinId
+    if (skinId == null) {
+      return res.status(400).json({ error: `${type} alert requires skinId` });
+    }
+    const exists = await prisma.skin.findUnique({ where: { id: skinId }, select: { id: true } });
+    if (!exists) return res.status(404).json({ error: `skin ${skinId} not found` });
+  }
+
   try {
     const alert = await prisma.alert.create({
       data: {
@@ -80,13 +96,47 @@ export async function createAlert(req, res) {
 export async function updateAlert(req, res) {
   const userId = req.userId;
   if (!userId) return res.status(401).json({ error: 'auth required' });
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid id' });
   const alert = await prisma.alert.findUnique({ where: { id } });
   if (!alert || alert.userId !== userId) {
     return res.status(404).json({ error: 'alert not found' });
   }
   const { config, channels, isActive, cooldownMinutes } = req.body || {};
+
+  // Validate channels if provided
+  if (channels !== undefined) {
+    if (!Array.isArray(channels) || channels.length === 0) {
+      return res.status(400).json({ error: 'channels must be a non-empty array' });
+    }
+    for (const ch of channels) {
+      if (!VALID_CHANNELS.includes(ch)) {
+        return res.status(400).json({ error: `invalid channel: ${ch}`, validChannels: VALID_CHANNELS });
+      }
+    }
+  }
+
+  // Validate config shape if provided
+  if (config !== undefined && (config === null || typeof config !== 'object')) {
+    return res.status(400).json({ error: 'config must be an object' });
+  }
+
+  // If reactivating, enforce quota (matches createAlert logic)
+  if (isActive === true && alert.isActive === false) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const tier = getTierFromUser(user);
+    const activeCount = await prisma.alert.count({ where: { userId, isActive: true } });
+    const quota = TIER_QUOTA[tier];
+    if (activeCount >= quota) {
+      return res.status(403).json({
+        error: 'alert quota exceeded for tier — cannot reactivate',
+        tier,
+        quota,
+        current: activeCount,
+      });
+    }
+  }
+
   const updated = await prisma.alert.update({
     where: { id },
     data: {
@@ -103,7 +153,7 @@ export async function updateAlert(req, res) {
 export async function deleteAlert(req, res) {
   const userId = req.userId;
   if (!userId) return res.status(401).json({ error: 'auth required' });
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid id' });
   const alert = await prisma.alert.findUnique({ where: { id } });
   if (!alert || alert.userId !== userId) {
@@ -116,7 +166,7 @@ export async function deleteAlert(req, res) {
 export async function getAlertEvents(req, res) {
   const userId = req.userId;
   if (!userId) return res.status(401).json({ error: 'auth required' });
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid id' });
   const alert = await prisma.alert.findUnique({ where: { id } });
   if (!alert || alert.userId !== userId) {
