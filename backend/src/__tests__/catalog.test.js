@@ -5,7 +5,7 @@ import { syncCategoryToDb } from '../services/catalog/catalogSyncJob.js';
 describe('bymykelClient', () => {
   it('exposes the 9 supported categories', () => {
     expect(CATEGORIES).toEqual(expect.arrayContaining([
-      'skins', 'cases', 'stickers', 'agents', 'patches', 'graffiti', 'music_kits', 'collectibles', 'keys'
+      'skins', 'crates', 'stickers', 'agents', 'patches', 'graffiti', 'music_kits', 'collectibles', 'keys'
     ]));
   });
 
@@ -85,15 +85,15 @@ describe('catalogSyncJob.syncCategoryToDb', () => {
     expect(fakePrisma.marketItem.upsert).not.toHaveBeenCalled();
   });
 
-  it('routes cases category to prisma.case upsert', async () => {
+  it('routes crates category to prisma.case upsert', async () => {
     const fakePrisma = {
       case: { upsert: jest.fn().mockResolvedValue({ id: 7 }) },
       marketItem: { upsert: jest.fn() },
     };
     const items = [
-      { externalId: 'case-1', category: 'cases', name: 'Operation Bravo Case', marketHashName: 'Operation Bravo Case', imageUrl: 'x.png', rarity: null, collection: null, metadata: {} },
+      { externalId: 'case-1', category: 'crates', name: 'Operation Bravo Case', marketHashName: 'Operation Bravo Case', imageUrl: 'x.png', rarity: null, collection: null, metadata: {} },
     ];
-    await syncCategoryToDb('cases', items, { prismaClient: fakePrisma });
+    await syncCategoryToDb('crates', items, { prismaClient: fakePrisma });
     expect(fakePrisma.case.upsert).toHaveBeenCalledTimes(1);
   });
 

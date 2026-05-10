@@ -33,7 +33,7 @@ export async function syncCategoryToDb(category, items, { prismaClient = default
             collection: item.collection,
           },
         });
-      } else if (category === 'cases') {
+      } else if (category === 'crates') {
         await prismaClient.case.upsert({
           where: { name: item.name },
           create: {
@@ -45,7 +45,8 @@ export async function syncCategoryToDb(category, items, { prismaClient = default
           },
         });
       } else if (MARKET_ITEM_CATEGORIES.has(category)) {
-        const dbCategory = category.replace(/s$/, '');
+        // music_kits stays plural in DB (no trailing-s strip on underscored compound); others lose trailing s
+        const dbCategory = category === 'music_kits' ? 'music_kit' : category.replace(/s$/, '');
         await prismaClient.marketItem.upsert({
           where: { marketHashName: item.marketHashName },
           create: {

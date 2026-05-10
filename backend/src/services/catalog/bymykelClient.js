@@ -4,7 +4,7 @@ const BASE_URL = 'https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public
 
 export const CATEGORIES = [
   'skins',
-  'cases',
+  'crates',
   'stickers',
   'agents',
   'patches',

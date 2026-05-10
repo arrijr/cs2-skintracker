@@ -130,8 +130,8 @@ cron.schedule("30 7 * * *", async () => {
   }
 });
 
-// {/* 02:00 UTC daily */} Catalog sync (bymykel → DB)
-cron.schedule("0 2 * * *", async () => {
+// {/* 02:30 UTC daily */} Catalog sync (bymykel → DB) — staggered to avoid 02:00 updateSkinPrices slot
+cron.schedule("30 2 * * *", async () => {
   logger.info("[CRON] Catalog sync starting");
   try {
     const summary = await runCatalogSync();
@@ -141,8 +141,8 @@ cron.schedule("0 2 * * *", async () => {
   }
 }, { timezone: "UTC" });
 
-// {/* 03:00 UTC daily */} Price refresh (Steam Market → DB)
-cron.schedule("0 3 * * *", async () => {
+// {/* 03:30 UTC daily */} Price refresh (Steam Market → DB) — staggered to avoid 03:00 SteamWebAPI slot
+cron.schedule("30 3 * * *", async () => {
   logger.info("[CRON] Price refresh starting");
   try {
     const summary = await runPriceRefresh();
