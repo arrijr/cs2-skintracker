@@ -1,36 +1,19 @@
 // /frontend/src/app/page.tsx — [Frontend]
-// {/* Landing Page - Main entry point */}
-"use client";
-import { useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+// Landing Page - Main entry point
 import HeroSection from "@/components/landing/HeroSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
+import SocialProofSection from "@/components/landing/SocialProofSection";
 import PricingSection from "@/components/landing/PricingSection";
 import Footer from "@/components/landing/Footer";
 
-export default function Home() {
-  const { user, isLoaded } = useUser();
-  const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Landing page should always show - no automatic redirect
-  // Users can manually navigate to dashboard via header or CTAs
-
-  if (!mounted) {
-    return null;
-  }
-
+export default function HomePage() {
   return (
-    <div className="landing-bg">
+    <main className="min-h-screen bg-slate-950">
       <HeroSection />
       <FeaturesSection />
+      <SocialProofSection />
       <PricingSection />
       <Footer />
-    </div>
+    </main>
   );
 }
