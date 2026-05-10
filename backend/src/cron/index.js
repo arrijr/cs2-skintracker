@@ -11,6 +11,9 @@ import { dailySteamWebAPIDataUpdate } from "./dailySteamWebAPIDataUpdate.js";
 import { dailyCasePriceHistory } from "./dailyCasePriceHistory.js";
 import { dailySkinPriceHistory } from "./dailySkinPriceHistory.js";
 import { dailySkinQuantityHistory } from "./dailySkinQuantityHistory.js";
+import { runCatalogSync } from "../services/catalog/catalogSyncJob.js";
+import { runPriceRefresh } from "../services/pricing/priceRefreshJob.js";
+import logger from "../utils/logger.js";
 
 // {/* 02:00 UTC → z.B. 04:00 Berlin im Sommer */}
 // Preise updaten über dein robustes Script (separater Prozess = stabiler)
@@ -126,3 +129,25 @@ cron.schedule("30 7 * * *", async () => {
     console.error("[CRON] Error in daily skin quantity history:", error);
   }
 });
+
+// {/* 02:00 UTC daily */} Catalog sync (bymykel → DB)
+cron.schedule("0 2 * * *", async () => {
+  logger.info("[CRON] Catalog sync starting");
+  try {
+    const summary = await runCatalogSync();
+    logger.info("[CRON] Catalog sync done", { summary });
+  } catch (err) {
+    logger.error("[CRON] Catalog sync failed", { error: err.message });
+  }
+}, { timezone: "UTC" });
+
+// {/* 03:00 UTC daily */} Price refresh (Steam Market → DB)
+cron.schedule("0 3 * * *", async () => {
+  logger.info("[CRON] Price refresh starting");
+  try {
+    const summary = await runPriceRefresh();
+    logger.info("[CRON] Price refresh done", { summary });
+  } catch (err) {
+    logger.error("[CRON] Price refresh failed", { error: err.message });
+  }
+}, { timezone: "UTC" });
