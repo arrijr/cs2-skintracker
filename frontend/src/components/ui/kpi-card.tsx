@@ -13,14 +13,20 @@ interface KPICardProps {
 
 export function KPICard({ label, value, delta, deltaLabel, icon }: KPICardProps) {
   const isPositive = (delta ?? 0) >= 0;
+  const accentBorder = delta !== undefined
+    ? isPositive ? "border-l-2 border-l-green-500/50" : "border-l-2 border-l-red-500/50"
+    : "";
+  const bgTint = delta !== undefined
+    ? isPositive ? "bg-green-500/5" : "bg-red-500/5"
+    : "";
   return (
-    <Card className={`${tokens.bg.surface} ${tokens.border.default} ${tokens.border.hover} transition-colors`}>
-      <CardContent className="p-6">
+    <Card className={`${tokens.bg.surface} ${tokens.border.default} ${tokens.border.hover} ${accentBorder} ${bgTint} transition-colors`}>
+      <CardContent className="p-4">
         <div className="flex items-start justify-between mb-2">
           <span className={`text-sm font-medium ${tokens.text.muted}`}>{label}</span>
           {icon}
         </div>
-        <div className={`text-3xl font-bold ${tokens.text.primary} mb-1`}>{value}</div>
+        <div className={`text-2xl font-bold ${tokens.text.primary} mb-1`}>{value}</div>
         {delta !== undefined && (
           <div className={`flex items-center gap-1 text-sm ${isPositive ? tokens.text.success : tokens.text.danger}`}>
             {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}

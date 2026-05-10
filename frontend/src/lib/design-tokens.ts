@@ -20,12 +20,12 @@ export const tokens = {
   accent: {
     primary: 'from-purple-500 to-pink-500',
     primaryHover: 'hover:from-purple-600 hover:to-pink-600',
-    lite: 'from-amber-500 to-orange-500',
-    liteHover: 'hover:from-amber-600 hover:to-orange-600',
+    lite: 'from-purple-400 to-pink-400',
+    liteHover: 'hover:from-purple-500 hover:to-pink-500',
   },
   badge: {
     pro: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white',
-    lite: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white',
+    lite: 'bg-gradient-to-r from-purple-400 to-pink-400 text-white',
     free: 'bg-slate-700 text-slate-200',
     active: 'bg-green-500 text-white',
   },

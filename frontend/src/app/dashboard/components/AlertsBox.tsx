@@ -138,7 +138,7 @@ export default function AlertsBox({
             onClick={onAddAlert}
             variant="outline" 
             size="sm" 
-            className="w-full border-brand-blue/30 text-brand-blue hover:bg-brand-blue/10 btn-enhanced"
+            className="w-full border-purple-500/30 text-purple-400 hover:bg-purple-500/10 btn-enhanced"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Alert
@@ -212,7 +212,7 @@ export default function AlertsBox({
                 onClick={() => window.location.href = '/skins'}
                 variant="outline" 
                 size="sm"
-                className="border-brand-blue/30 text-brand-blue hover:bg-brand-blue/10"
+                className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
               >
                 <Eye className="h-4 w-4 mr-2" />
                 Browse Skins

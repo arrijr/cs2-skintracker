@@ -55,7 +55,7 @@ const plans: Plan[] = [
     ],
     highlight: false,
     ctaLabel: 'Choose Lite',
-    gradient: 'from-amber-500 to-orange-500',
+    gradient: 'from-purple-400 to-pink-400',
   },
   {
     id: 'pro',
@@ -135,7 +135,7 @@ export default function PricingPage() {
                 key={plan.id}
                 className={`relative bg-slate-900/60 backdrop-blur border transition-all duration-300 ${
                   plan.highlight
-                    ? 'border-purple-500/50 shadow-2xl shadow-purple-500/20 scale-105'
+                    ? 'border-purple-500/50 shadow-2xl shadow-purple-500/20 lg:scale-105'
                     : 'border-slate-700/50 hover:border-slate-600'
                 }`}
               >
@@ -143,7 +143,7 @@ export default function PricingPage() {
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                     <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1">
                       <Star className="h-3 w-3 mr-1" />
-                      Most popular
+                      Most Popular
                     </Badge>
                   </div>
                 )}
@@ -184,7 +184,9 @@ export default function PricingPage() {
                     className={`w-full py-6 text-base font-semibold ${
                       plan.id === 'free'
                         ? 'bg-slate-700 hover:bg-slate-600 text-white'
-                        : `bg-gradient-to-r ${plan.gradient} hover:opacity-90 text-white`
+                        : plan.id === 'lite'
+                        ? 'bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white'
+                        : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
                     }`}
                   >
                     {isLoading ? (

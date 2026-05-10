@@ -147,7 +147,7 @@ export function EnhancedPortfolioBreakdown({
                   className={`h-2 rounded-full transition-all duration-300 ${
                     type === 'rarity' ? getRarityColor(key).split(' ')[0] : 
                     type === 'exterior' ? getExteriorColor(key).split(' ')[0] : 
-                    'bg-brand-blue'
+                    'bg-purple-600'
                   }`}
                   style={{ width: `${percentage}%` }}
                 />
@@ -165,19 +165,19 @@ export function EnhancedPortfolioBreakdown({
         <TabsList className="grid w-full grid-cols-3 bg-slate-800/50">
           <TabsTrigger 
             value="rarity" 
-            className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=inactive]:text-slate-400"
+            className="data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400"
           >
             Rarity
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
             value="weapon"
-            className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=inactive]:text-slate-400"
+            className="data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400"
           >
             Weapon
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
             value="exterior"
-            className="data-[state=active]:bg-brand-blue data-[state=active]:text-white data-[state=inactive]:text-slate-400"
+            className="data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400"
           >
             Exterior
           </TabsTrigger>

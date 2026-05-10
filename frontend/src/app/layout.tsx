@@ -59,7 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkWrapper>
       <html lang="en" className="dark">
-        <body className="bg-neutral-950 text-white min-h-screen">
+        <body className="bg-slate-950 text-white min-h-screen">
           <ErrorProvider>
             <Providers>
               {/* Global Error Banner */}
@@ -72,17 +72,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {children}
               </main>
 
-              {/* Footer with Build Info */}
-              <footer className="border-t border-neutral-800 bg-neutral-950/50 backdrop-blur">
-                <div className="container-cs2 py-6">
-                  <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-                    <div className="text-sm text-neutral-400">
-                      © 2024 CS2 Skin Price Tracker. Built with Next.js & Clerk.
-                    </div>
-                    <BuildInfo className="max-w-md" />
-                  </div>
-                </div>
-              </footer>
+              {/* Build Info - dev only */}
+              <BuildInfo className="max-w-md" />
 
               {/* Toast Notifications */}
               <Toaster />

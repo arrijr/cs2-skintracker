@@ -1,248 +1,246 @@
-# Design System - CS2 Skin Tracker
-====
+# Design System — SkinTrackr
 
-## Overview
-This document defines the consistent design system used throughout the CS2 Skin Tracker application. All components should follow these guidelines to ensure a cohesive and professional user experience.
+**Last Updated**: May 2026  
+**Source of truth**: `frontend/src/app/globals.css` + `frontend/src/lib/design-tokens.ts`
 
-## Color Palette
-----
+---
 
-### Primary Colors - CS2 Skin Tracker Palette
-* **Celadon**: `#A1E8AF` - Primary actions, success states, positive values
-* **Celadon Dark**: `#94C595` - Secondary actions, hover states
-* **Slate Gray**: `#747C92` - Neutral elements, text, borders
-* **Midnight Blue**: `#372772` - Accent elements, special highlights
-* **Dark Purple**: `#3A2449` - Dark backgrounds, premium features
+## Brand Identity
 
-### Color Usage Guidelines
-* **Celadon (Primary)**: Use for main CTAs, success states, positive price changes
-* **Celadon Dark (Secondary)**: Use for secondary buttons, hover states
-* **Slate Gray (Neutral)**: Use for text, borders, disabled states
-* **Midnight Blue (Accent)**: Use for special features, highlights
-* **Dark Purple (Dark)**: Use for dark mode backgrounds, premium sections
+**Aesthetic**: Dark, premium, data-driven — like a trading terminal, not a game tool.  
+**Mood**: Confident, serious, modern. Purple/pink gradient = premium energy.  
+**NOT**: Neon gamer, childish, cluttered.
 
-### Rarity Colors - Updated with New Palette
-* **Covert**: `text-red-500 bg-red-500/10 border-red-500/30` - Red (highest rarity)
-* **Classified**: `text-pink-500 bg-pink-500/10 border-pink-500/30` - Pink
-* **Restricted**: `text-brand-purple-600 bg-brand-purple-600/10 border-brand-purple-600/30` - Purple
-* **Mil-Spec**: `text-brand-slate-500 bg-brand-slate-500/10 border-brand-slate-500/30` - Slate
-* **Industrial**: `text-cyan-500 bg-cyan-500/10 border-cyan-500/30` - Cyan
-* **Consumer**: `text-brand-slate-400 bg-brand-slate-400/10 border-brand-slate-400/30` - Light Slate
+---
 
-### Wear Colors - Updated with New Palette
-* **Factory New (FN)**: `text-brand-celadon-500 bg-brand-celadon-500/10 border-brand-celadon-500/30` - Celadon
-* **Minimal Wear (MW)**: `text-brand-celadon-400 bg-brand-celadon-400/10 border-brand-celadon-400/30` - Light Celadon
-* **Field-Tested (FT)**: `text-yellow-500 bg-yellow-500/10 border-yellow-500/30` - Yellow
-* **Well-Worn (WW)**: `text-orange-500 bg-orange-500/10 border-orange-500/30` - Orange
-* **Battle-Scarred (BS)**: `text-red-500 bg-red-500/10 border-red-500/30` - Red
+## Color System
 
-### Price Change Colors - Updated with New Palette
-* **Positive**: `text-brand-celadon-500` - Price increases (Celadon)
-* **Negative**: `text-red-500` - Price decreases (Red)
-* **Neutral**: `text-brand-slate-400` - No change (Slate)
+### Backgrounds (Dark Theme)
+| Token | Class | Hex | Usage |
+|-------|-------|-----|-------|
+| Base | `bg-slate-950` | `#020617` | Page background, body |
+| Surface | `bg-slate-900/60` | `#0f172a` 60% | Cards, panels |
+| Elevated | `bg-slate-800/60` | `#1e293b` 60% | Inputs, inner cards |
+| Overlay | `bg-black/40` | — | Modals, backdrops |
 
-## Card Design System
-----
-
-### Base Card Classes
-```css
-.card-enhanced {
-  @apply transition-all duration-300 ease-in-out;
-  @apply hover:shadow-xl hover:shadow-slate-500/10;
-  @apply border border-slate-600/30;
-  @apply hover:border-slate-500/50;
-  @apply hover:bg-gradient-to-br hover:from-slate-700/30 hover:to-slate-800/30;
-}
-
-.card-glass {
-  @apply bg-slate-800/30 backdrop-blur-sm;
-  @apply border border-slate-700/50;
-  @apply shadow-lg shadow-slate-900/20;
-}
+### Brand Gradient (Primary)
 ```
-
-### Card States
-* **Default**: `border-slate-700/50 bg-slate-800/30`
-* **Hover**: `hover:border-slate-600/50 hover:bg-slate-700/40`
-* **Active**: `border-brand-blue/50 bg-brand-blue/10`
-* **Error**: `border-red-500/50 bg-red-500/10`
-
-## Animation System
-----
-
-### Hover Effects
-* **Scale**: `hover:scale-105` for cards, `hover:scale-110` for images
-* **Translate**: `hover:-translate-y-1` for subtle lift
-* **Glow**: `hover:shadow-xl hover:shadow-slate-500/10`
-
-### Transitions
-* **Duration**: `duration-300` for most interactions
-* **Easing**: `ease-in-out` for smooth animations
-* **Stagger**: Use `animation-delay` for sequential animations
-
-### Keyframe Animations
-```css
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-30px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
+bg-gradient-to-r from-purple-500 to-pink-500
+hover: from-purple-600 to-pink-600
 ```
+Used for: Primary CTAs, Pro badges, premium features, highlights.
 
-## Component Patterns
-----
+### Tier Colors
+| Tier | Gradient | Usage |
+|------|---------|-------|
+| Pro | `from-purple-500 to-pink-500` | Pro plan CTA, Pro badges |
+| Lite | `from-purple-400 to-pink-400` | Lite plan CTA, Lite badges |
+| Free | `bg-slate-700` | Free plan CTA (outline style) |
 
-### Enhanced Cards
-All data cards should follow this pattern:
-* **Container**: `card-enhanced` class
-* **Image**: Aspect ratio container with hover scale
-* **Overlay**: Gradient overlay on hover
-* **Badges**: Top-right corner for special indicators
-* **Content**: Structured with title, subtitle, price, stats
-* **Actions**: Hover-revealed action buttons
+### Semantic Colors
+| Purpose | Class | Usage |
+|---------|-------|-------|
+| Positive / Profit | `text-green-400` | Price up, P&L positive |
+| Negative / Loss | `text-red-400` | Price down, P&L negative |
+| Warning | `text-amber-400` | Alerts triggered, caution |
+| Premium accent | `text-purple-400` | Locked features, premium labels |
 
-### Filter Sidebars
-* **Cards**: Use `card-glass` for filter groups
-* **Headers**: Icon + title with brand colors
-* **Quick Filters**: Grid layout with color-coded buttons
-* **Tooltips**: Help icons with detailed explanations
-* **Actions**: Clear, save, share buttons at bottom
+### Rarity Colors
+| Rarity | Color |
+|--------|-------|
+| Covert | `text-red-500` |
+| Classified | `text-pink-500` |
+| Restricted | `text-purple-500` |
+| Mil-Spec | `text-slate-400` |
+| Industrial | `text-cyan-500` |
+| Consumer | `text-slate-500` |
 
-### Grid Layouts
-* **Responsive**: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5`
-* **Gap**: `gap-4` for consistent spacing
-* **View Toggle**: Grid/List view switcher
-* **Loading**: Skeleton components matching layout
+### Wear Colors
+| Wear | Color |
+|------|-------|
+| Factory New | `text-green-400` |
+| Minimal Wear | `text-green-300` |
+| Field-Tested | `text-yellow-400` |
+| Well-Worn | `text-orange-400` |
+| Battle-Scarred | `text-red-400` |
+
+---
 
 ## Typography
-----
 
-### Headings
-* **H1**: `text-3xl sm:text-4xl font-bold text-white`
-* **H2**: `text-xl font-semibold text-white`
-* **H3**: `text-lg font-semibold text-white`
+| Role | Classes |
+|------|---------|
+| Page title | `text-3xl font-bold text-white` |
+| Section heading | `text-xl font-semibold text-white` |
+| Card title | `text-base font-semibold text-white` |
+| Body | `text-sm text-slate-300` |
+| Muted / label | `text-sm text-slate-400` |
+| Price | `text-lg font-bold text-white` |
+| Positive value | `text-green-400 font-medium` |
+| Negative value | `text-red-400 font-medium` |
 
-### Body Text
-* **Primary**: `text-white`
-* **Secondary**: `text-slate-300`
-* **Muted**: `text-slate-400`
-* **Small**: `text-sm text-slate-400`
+---
 
-### Special Text
-* **Price**: `text-lg font-bold text-white`
-* **Change Positive**: `text-green-400 font-medium`
-* **Change Negative**: `text-red-400 font-medium`
+## Buttons
 
-## Interactive Elements
-----
+| Variant | Classes | Usage |
+|---------|---------|-------|
+| Primary (CTA) | `bg-gradient-to-r from-purple-500 to-pink-500 text-white` | Main actions, Sign up |
+| Secondary | `bg-slate-700 hover:bg-slate-600 text-white` | Free plan, secondary actions |
+| Outline | `border border-slate-600 text-slate-300 hover:bg-slate-800` | Tertiary actions |
+| Ghost | `text-slate-400 hover:text-white hover:bg-slate-800` | Nav, subtle actions |
+| Premium | `.btn-premium` → purple/pink gradient | Upgrade CTAs |
+| Danger | `bg-red-500 hover:bg-red-600 text-white` | Delete, destructive |
 
-### Buttons - Updated with New Palette
-* **Primary**: `bg-brand-celadon-500 hover:bg-brand-celadon-600 text-white` - Main actions
-* **Secondary**: `bg-brand-slate-700 hover:bg-brand-slate-600 text-white` - Secondary actions
-* **Outline**: `border-brand-slate-500/50 text-brand-slate-300 hover:bg-brand-slate-700/50` - Subtle actions
-* **Ghost**: `text-brand-slate-400 hover:text-white hover:bg-brand-slate-800` - Minimal actions
-* **Success**: `bg-brand-celadon-500 hover:bg-brand-celadon-600 text-white` - Success states
-* **Warning**: `bg-yellow-500 hover:bg-yellow-600 text-white` - Warning states
-* **Danger**: `bg-red-500 hover:bg-red-600 text-white` - Error states
+**Rule**: Never mix button colors at the same hierarchy level. One primary CTA per section.
 
-### Badges - Updated with New Palette
-* **Default**: `border-brand-slate-500/30 text-brand-slate-300 bg-brand-slate-500/10`
-* **Active**: `border-brand-celadon-500/30 text-brand-celadon-400 bg-brand-celadon-500/10`
-* **Success**: `border-brand-celadon-500/30 text-brand-celadon-400 bg-brand-celadon-500/10`
-* **Warning**: `border-yellow-500/30 text-yellow-400 bg-yellow-500/10`
-* **Error**: `border-red-500/30 text-red-400 bg-red-500/10`
-* **Info**: `border-brand-slate-500/30 text-brand-slate-400 bg-brand-slate-500/10`
+---
 
-### Inputs - Updated with New Palette
-* **Base**: `bg-brand-slate-700/50 border-brand-slate-500/50 text-white placeholder:text-brand-slate-400`
-* **Focus**: `focus:ring-2 focus:ring-brand-celadon-500/50`
-* **Error**: `border-red-500/50 bg-red-500/10`
-* **Success**: `border-brand-celadon-500/50 bg-brand-celadon-500/10`
+## CSS Component Classes
 
-## Layout Guidelines
-----
+Defined in `globals.css`:
 
-### Spacing
-* **Section**: `space-y-6` for major sections
-* **Card Content**: `space-y-4` for card interiors
-* **Form Elements**: `space-y-3` for form groups
-* **Button Groups**: `gap-2` for button collections
-
-### Containers
-* **Main**: `container mx-auto px-4 py-8`
-* **Cards**: `p-4` or `p-6` for content
-* **Sidebar**: `w-full lg:w-80` for filter sidebars
-
-### Backgrounds
-* **Main**: `dashboard-bg` class with gradient
-* **Cards**: `bg-slate-800/30 backdrop-blur-sm`
-* **Overlays**: `bg-black/40 backdrop-blur-sm`
-
-## Implementation Checklist
-----
-
-When creating new components, ensure:
-* [ ] Uses consistent color palette
-* [ ] Implements proper hover effects
-* [ ] Follows card design patterns
-* [ ] Includes proper loading states
-* [ ] Has responsive design
-* [ ] Uses consistent spacing
-* [ ] Implements proper animations
-* [ ] Includes accessibility features
-* [ ] Follows typography guidelines
-* [ ] Matches existing component style
-
-## Examples
-----
-
-### Enhanced Card Component
-```tsx
-<Card className="card-enhanced group cursor-pointer">
-  <CardContent className="p-0">
-    <div className="relative aspect-square overflow-hidden rounded-t-lg">
-      <Image src={imageUrl} alt={name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      <Badge className="absolute top-2 left-2">{rarity}</Badge>
-    </div>
-    <div className="p-4 space-y-3">
-      <h3 className="font-semibold text-white group-hover:text-brand-green transition-colors">{name}</h3>
-      <div className="flex justify-between items-center">
-        <div className="text-lg font-bold text-white">{price}</div>
-        <div className="text-green-400 text-sm">{change}%</div>
-      </div>
-    </div>
-  </CardContent>
-</Card>
+```css
+.input-main        /* Dark search/input fields — slate-800 bg, purple focus ring */
+.btn-premium       /* Purple/pink gradient — for upgrade CTAs */
+.btn-enhanced      /* Scale + focus ring hover effects */
+.btn-glow          /* Shimmer effect on hover */
+.card-brand        /* Standard card with brand styling */
+.card-premium      /* Premium-tier card variant */
+.card-enhanced     /* Hover lift + border glow */
+.card-glass        /* Backdrop blur glass card */
 ```
 
-### Filter Sidebar Section
-```tsx
-<Card className="card-glass">
-  <CardHeader className="pb-4">
-    <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-      <Icon className="h-5 w-5 text-brand-blue" />
-      Section Title
-    </CardTitle>
-  </CardHeader>
-  <CardContent className="space-y-4">
-    {/* Filter content */}
-  </CardContent>
-</Card>
+---
+
+## Cards
+
+### Standard Card
+```
+bg-slate-900/60 backdrop-blur border border-slate-700/50
+hover: border-slate-600 shadow-xl shadow-slate-900/20
 ```
 
-This design system ensures consistency across all components and provides a professional, modern look that users will recognize and appreciate.
+### Premium/Highlighted Card
+```
+border-purple-500/50 shadow-2xl shadow-purple-500/20
+```
+
+### Glass Card
+```
+bg-slate-800/30 backdrop-blur-sm border border-slate-700/50
+```
+
+---
+
+## Inputs
+
+Always use `.input-main` class:
+```
+bg-slate-800/60 border border-slate-600/50 text-white
+placeholder: text-slate-500
+focus: ring-2 ring-purple-500/50
+```
+
+**Never** use default browser input styling (appears white on dark background).
+
+---
+
+## Badges
+
+| Type | Classes |
+|------|---------|
+| Pro | `bg-gradient-to-r from-purple-500 to-pink-500 text-white` |
+| Lite | `bg-gradient-to-r from-purple-400 to-pink-400 text-white` |
+| Free | `bg-slate-700 text-slate-200` |
+| Active | `bg-green-500 text-white` |
+| Coming Soon | `border border-slate-600 text-slate-400` |
+| High severity | `bg-red-500/20 text-red-400 border-red-500/30` |
+| Medium severity | `bg-amber-500/20 text-amber-400 border-amber-500/30` |
+
+---
+
+## Layout
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| Container | `container mx-auto px-4` | Page wrapper |
+| Section gap | `py-20` | Between landing sections |
+| Card gap | `gap-6` | Between cards in grid |
+| Card padding | `p-6` | Inside cards |
+| Inner padding | `p-4` | Dense cards |
+
+### Grids
+- **Skins**: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`
+- **Dashboard KPIs**: `grid-cols-2 md:grid-cols-3 lg:grid-cols-6`
+- **Pricing**: `grid-cols-1 md:grid-cols-3`
+- **Features**: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
+
+---
+
+## Animations
+
+| Class | Effect |
+|-------|--------|
+| `.animate-fade-in` | Fade up on mount |
+| `.animate-slide-up` | Slide + fade from below |
+| `.animate-shimmer` | Loading shimmer |
+| `.animate-float` | Gentle float loop |
+| `.hover-lift` | `hover:-translate-y-1 transition` |
+| `hover:scale-105` | Scale on card hover |
+
+Standard duration: `duration-300 ease-in-out`
+
+---
+
+## Navigation
+
+- **Header**: `sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-700/50`
+- Nav links: `text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg px-3 py-2`
+- Active state: `text-white bg-slate-800`
+
+---
+
+## Borders
+
+| Use | Class |
+|-----|-------|
+| Default | `border-slate-700/50` |
+| Hover | `hover:border-slate-600` |
+| Accent (premium) | `border-purple-500/50` |
+| Error | `border-red-500/50` |
+
+---
+
+## Premium Feature Gates
+
+When a feature is locked for free users:
+1. Show a `Lock` icon (Lucide) in the card header
+2. Dim content with `opacity-50` or replace with placeholder
+3. Show upgrade CTA with `.btn-premium` + `Crown` icon
+4. Card gets `border-purple-500/30` to signal premium
+
+**Never** hide features completely — show the value, gate the access.
+
+---
+
+## Localization
+
+**Language**: English only. No German strings in the UI.  
+All user-facing text must be in English regardless of developer locale.
+
+---
+
+## Design Tokens File
+
+Quick reference — import from `@/lib/design-tokens`:
+
+```ts
+tokens.bg.base          // 'bg-slate-950'
+tokens.bg.surface       // 'bg-slate-900/60 backdrop-blur'
+tokens.border.accent    // 'border-purple-500/50'
+tokens.text.muted       // 'text-slate-400'
+tokens.accent.primary   // 'from-purple-500 to-pink-500'
+tokens.badge.pro        // purple/pink gradient badge
+tokens.badge.lite       // lighter purple/pink gradient badge
+```

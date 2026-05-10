@@ -183,7 +183,7 @@ export default function Dashboard() {
                       className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold"
                     >
                       <Crown className="h-4 w-4 mr-2" />
-                      Pläne ansehen
+                      View Plans
                     </Button>
                   </div>
                 )}

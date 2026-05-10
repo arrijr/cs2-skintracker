@@ -602,6 +602,17 @@
   }
 }
 
+/* Input Styles */
+@layer components {
+  .input-main {
+    @apply w-full rounded-lg px-3 py-2 text-sm text-white;
+    @apply bg-slate-800/60 border border-slate-600/50;
+    @apply placeholder:text-slate-500;
+    @apply focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50;
+    @apply transition-colors duration-200;
+  }
+}
+
 /* Button Enhancements */
 @layer components {
   .btn-enhanced {
@@ -621,9 +632,9 @@
   }
   
   .btn-premium {
-    @apply bg-gradient-to-r from-yellow-500 to-orange-500;
-    @apply hover:from-yellow-600 hover:to-orange-600;
-    @apply shadow-lg shadow-yellow-500/25;
+    @apply bg-gradient-to-r from-purple-500 to-pink-500;
+    @apply hover:from-purple-600 hover:to-pink-600;
+    @apply shadow-lg shadow-purple-500/25;
     @apply text-white font-semibold;
   }
 }

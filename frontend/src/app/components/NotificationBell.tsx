@@ -197,7 +197,7 @@ export default function NotificationBell({ className = "" }: NotificationBellPro
         
         {loading ? (
           <div className="p-4 text-center text-muted-foreground">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand-blue mx-auto mb-2"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-400 mx-auto mb-2"></div>
             <p className="text-sm">Loading notifications...</p>
           </div>
         ) : notifications.length > 0 ? (
@@ -221,7 +221,7 @@ export default function NotificationBell({ className = "" }: NotificationBellPro
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium truncate">{notification.title}</p>
                       {!notification.read && (
-                        <div className="w-2 h-2 bg-brand-blue rounded-full flex-shrink-0 mt-1"></div>
+                        <div className="w-2 h-2 bg-purple-400 rounded-full flex-shrink-0 mt-1"></div>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">

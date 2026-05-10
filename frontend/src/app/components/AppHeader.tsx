@@ -1,6 +1,7 @@
 // /frontend/src/app/components/AppHeader.tsx (Frontend)
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useState } from "react";
 import { Menu, X, Shield } from "lucide-react";
@@ -18,6 +19,7 @@ export default function AppHeader() {
 
   // Use centralized role hook
   const { isAdmin } = useUserRole();
+  const pathname = usePathname();
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -47,7 +49,11 @@ export default function AppHeader() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  pathname === item.href
+                    ? "text-white bg-slate-800"
+                    : "text-slate-300 hover:text-white hover:bg-slate-800"
+                }`}
               >
                 {item.name}
               </Link>
@@ -102,7 +108,11 @@ export default function AppHeader() {
                       <Link
                         key={item.name}
                         href={item.href}
-                        className="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          pathname === item.href
+                            ? "text-white bg-slate-800"
+                            : "text-slate-300 hover:text-white hover:bg-slate-800"
+                        }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {item.name}
