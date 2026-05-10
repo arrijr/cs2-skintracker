@@ -149,3 +149,74 @@ describe('floatTierEvaluator', () => {
     expect(result.triggered).toBe(false);
   });
 });
+
+import { caseEvEvaluator } from '../services/alerts/evaluators/caseEvEvaluator.js';
+
+describe('caseEvEvaluator', () => {
+  it('triggers when case price is below EV by margin', async () => {
+    const alert = {
+      id: 1,
+      type: 'case_ev',
+      config: { evMarginPercent: 10 },
+      case: {
+        id: 1,
+        name: 'Operation Bravo Case',
+        price: 80,
+        skins: [
+          { dropChance: 0.5, skin: { priceLatest: 100 } },
+          { dropChance: 0.5, skin: { priceLatest: 100 } },
+        ],
+      },
+    };
+    const result = await caseEvEvaluator.evaluate(alert, {
+      caseDataFetcher: async () => alert.case,
+    });
+    expect(result.triggered).toBe(true);
+    expect(result.payload.evMargin).toBeCloseTo(20, 1);
+  });
+
+  it('does not trigger when below required margin', async () => {
+    const alert = {
+      id: 1,
+      type: 'case_ev',
+      config: { evMarginPercent: 30 },
+      case: {
+        id: 1,
+        price: 90,
+        skins: [{ dropChance: 1.0, skin: { priceLatest: 100 } }],
+      },
+    };
+    const result = await caseEvEvaluator.evaluate(alert, {
+      caseDataFetcher: async () => alert.case,
+    });
+    expect(result.triggered).toBe(false);
+  });
+
+  it('returns triggered:false when EV is zero', async () => {
+    const alert = {
+      id: 1,
+      type: 'case_ev',
+      config: { evMarginPercent: 10 },
+      case: {
+        id: 1,
+        price: 50,
+        skins: [{ dropChance: 0, skin: { priceLatest: 100 } }],
+      },
+    };
+    const result = await caseEvEvaluator.evaluate(alert, {
+      caseDataFetcher: async () => alert.case,
+    });
+    expect(result.triggered).toBe(false);
+    expect(result.payload.reason).toMatch(/EV/);
+  });
+
+  it('returns triggered:false when no caseId on alert', async () => {
+    const result = await caseEvEvaluator.evaluate({
+      id: 1,
+      type: 'case_ev',
+      config: { evMarginPercent: 10 },
+    });
+    expect(result.triggered).toBe(false);
+    expect(result.payload.reason).toMatch(/caseId/i);
+  });
+});
