@@ -1,0 +1,67 @@
+name: Cron — Price Refresh (chunked)
+
+on:
+  schedule:
+    # 4 chunks over 24h, each 4000 items × 3s ≈ 3.3h
+    - cron: '30 3 * * *'   # 03:30 UTC: offset 0
+    - cron: '30 9 * * *'   # 09:30 UTC: offset 4000
+    - cron: '30 15 * * *'  # 15:30 UTC: offset 8000
+    - cron: '30 21 * * *'  # 21:30 UTC: offset 12000
+  workflow_dispatch:
+    inputs:
+      offset:
+        description: 'Chunk offset (default 0)'
+        required: false
+        default: '0'
+      size:
+        description: 'Chunk size (default 4000)'
+        required: false
+        default: '4000'
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350  # ~5h hard cap (3.3h expected)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend deps
+        working-directory: backend
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: backend
+        run: npx prisma generate
+
+      - name: Determine chunk offset
+        id: chunk
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "offset=${{ github.event.inputs.offset }}" >> $GITHUB_OUTPUT
+            echo "size=${{ github.event.inputs.size }}" >> $GITHUB_OUTPUT
+          else
+            HOUR=$(date -u +%H)
+            case "$HOUR" in
+              03) echo "offset=0" >> $GITHUB_OUTPUT; echo "size=4000" >> $GITHUB_OUTPUT ;;
+              09) echo "offset=4000" >> $GITHUB_OUTPUT; echo "size=4000" >> $GITHUB_OUTPUT ;;
+              15) echo "offset=8000" >> $GITHUB_OUTPUT; echo "size=4000" >> $GITHUB_OUTPUT ;;
+              21) echo "offset=12000" >> $GITHUB_OUTPUT; echo "size=10000" >> $GITHUB_OUTPUT ;;
+              *) echo "offset=0" >> $GITHUB_OUTPUT; echo "size=4000" >> $GITHUB_OUTPUT ;;
+            esac
+          fi
+
+      - name: Run price refresh chunk
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NODE_TLS_REJECT_UNAUTHORIZED: '0'
+          CHUNK_OFFSET: ${{ steps.chunk.outputs.offset }}
+          CHUNK_SIZE: ${{ steps.chunk.outputs.size }}
+        run: node scripts/run-job.js price-refresh-chunk
