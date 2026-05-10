@@ -2,6 +2,7 @@ import prisma from '../../prisma/prismaClient.js';
 import logger from '../../utils/logger.js';
 import { deliverEmail } from './delivery/emailDelivery.js';
 import { deliverDiscord } from './delivery/discordDelivery.js';
+import { volatilityEvaluator } from './evaluators/volatilityEvaluator.js';
 
 const evaluators = new Map();
 
@@ -26,6 +27,8 @@ registerEvaluator('price_threshold', {
     };
   },
 });
+
+registerEvaluator('volatility', volatilityEvaluator);
 
 export async function evaluateAlert(alert) {
   const evaluator = evaluators.get(alert.type);
