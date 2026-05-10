@@ -1,4 +1,3 @@
-"use client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, Bell, BarChart3, FileText, Smartphone, Shield } from "lucide-react";
@@ -63,10 +62,10 @@ export default function FeaturesSection() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, idx) => {
+            {features.map((feature) => {
               const Icon = feature.icon;
               return (
-                <Card key={idx} className="bg-slate-900/60 backdrop-blur border border-slate-700/50 hover:border-slate-600 transition-colors">
+                <Card key={feature.title} className="bg-slate-900/60 backdrop-blur border border-slate-700/50 hover:border-slate-600 transition-colors">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center">

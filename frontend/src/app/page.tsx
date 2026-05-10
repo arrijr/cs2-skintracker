@@ -1,10 +1,16 @@
 // /frontend/src/app/page.tsx — [Frontend]
 // Landing Page - Main entry point
+import type { Metadata } from "next";
 import HeroSection from "@/components/landing/HeroSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import SocialProofSection from "@/components/landing/SocialProofSection";
 import PricingSection from "@/components/landing/PricingSection";
 import Footer from "@/components/landing/Footer";
+
+export const metadata: Metadata = {
+  title: "skintrackr.com — The Robinhood for CS2 Skins",
+  description: "Investor-grade portfolio tracking, smart alerts, and tax-ready reports for serious CS2 traders. Free forever for casual collectors.",
+};
 
 export default function HomePage() {
   return (

@@ -1,4 +1,3 @@
-"use client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,51 +21,51 @@ const plans: Plan[] = [
     id: "free",
     name: "Free",
     price: "0€",
-    period: "für immer",
-    description: "Zum Einstieg ideal",
+    period: "forever",
+    description: "Perfect to get started",
     features: [
-      "Bis zu 5 Skins in Watchlist",
-      "1 Preisalarm",
-      "Basis Portfolio-Tracking",
-      "Live-Preisupdates",
-      "Community Support",
+      "Up to 5 skins in watchlist",
+      "1 price alert",
+      "Basic portfolio tracking",
+      "Live price updates",
+      "Community support",
     ],
     highlight: false,
-    ctaLabel: "Kostenlos starten",
+    ctaLabel: "Start free",
     gradient: "from-slate-600 to-slate-700",
   },
   {
     id: "lite",
     name: "Lite",
-    price: "4,99€",
-    period: "pro Monat",
-    description: "Für Sammler & Content Creator",
+    price: "4.99€",
+    period: "per month",
+    description: "For collectors & content creators",
     features: [
-      "Unbegrenzte Watchlist",
-      "5 Preisalarme",
-      "90-Tage Preishistorie",
-      "Erweiterte Analysen",
-      "E-Mail Benachrichtigungen",
+      "Unlimited watchlist",
+      "5 price alerts",
+      "90-day price history",
+      "Advanced analytics",
+      "Email notifications",
     ],
     highlight: false,
-    ctaLabel: "Lite wählen",
+    ctaLabel: "Choose Lite",
     gradient: "from-amber-500 to-orange-500",
   },
   {
     id: "pro",
     name: "Pro",
-    price: "19,99€",
-    period: "pro Monat",
-    description: "Für professionelle Trader",
+    price: "19.99€",
+    period: "per month",
+    description: "For professional traders",
     features: [
-      "Alles aus Lite",
-      "Unbegrenzte Preisalarme",
-      "Volatilitätsanalyse (7d/30d/90d)",
-      "Rarity-Scoring & Research Tools",
-      "CSV-Export & Priority Support",
+      "Everything in Lite",
+      "Unlimited price alerts",
+      "Volatility analysis (7d/30d/90d)",
+      "Rarity scoring & research tools",
+      "CSV export & priority support",
     ],
     highlight: true,
-    ctaLabel: "Pro wählen",
+    ctaLabel: "Choose Pro",
     gradient: "from-purple-500 to-pink-500",
   },
 ];
@@ -123,8 +122,8 @@ export default function PricingSection() {
 
                 <CardContent className="space-y-6">
                   <ul className="space-y-3">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-3">
                         <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <Check className="h-3 w-3 text-green-400" />
                         </div>
@@ -157,15 +156,15 @@ export default function PricingSection() {
             <div className="inline-flex flex-wrap items-center justify-center gap-6 text-slate-400 text-sm">
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
-                <span>Sichere Zahlung via Stripe</span>
+                <span>Secure payment via Stripe</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-400" />
-                <span>Jederzeit kündbar</span>
+                <span>Cancel anytime</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-400" />
-                <span>Keine versteckten Gebühren</span>
+                <span>No hidden fees</span>
               </div>
             </div>
           </div>
