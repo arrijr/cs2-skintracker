@@ -30,36 +30,8 @@ interface MarketEventsProps {
   isLoading?: boolean;
 }
 
-// Mock events data - replace with real API
-const getEventsData = (): MarketEvent[] => [
-  {
-    id: '1',
-    date: '2024-09-20',
-    title: 'CS2 Major Update 1.2.1',
-    description: 'New weapon skins, map updates, and performance improvements',
-    type: 'update',
-    impact: 'high',
-    url: 'https://counter-strike.net/news'
-  },
-  {
-    id: '2', 
-    date: '2024-09-15',
-    title: 'Operation Shattered Web 2',
-    description: 'New operation with exclusive cases and missions',
-    type: 'operation',
-    impact: 'high',
-    url: 'https://counter-strike.net/operations'
-  },
-  {
-    id: '3',
-    date: '2024-09-10',
-    title: 'IEM Cologne 2024',
-    description: 'Major tournament affecting skin prices and market activity',
-    type: 'tournament',
-    impact: 'medium',
-    url: 'https://liquipedia.net/counterstrike/IEM_Cologne/2024'
-  }
-];
+// Live events data - populated via API when available
+const getEventsData = (): MarketEvent[] => [];
 
 const getEventIcon = (type: MarketEvent['type']) => {
   switch (type) {
@@ -197,14 +169,17 @@ export default function MarketEvents({
             ))}
           </div>
         ) : (
-          <div className="text-center py-6 text-muted-foreground space-y-3">
-            <div className="space-y-2">
-              <Calendar className="h-10 w-10 mx-auto opacity-50" />
-              <h4 className="font-medium">No Recent Events</h4>
-              <p className="text-sm max-w-xs">
+          <div className="flex flex-col items-center justify-center py-8 px-4 rounded-lg border border-slate-700/50 bg-slate-800/20 text-muted-foreground space-y-3">
+            <Calendar className="h-10 w-10 opacity-40" />
+            <div className="text-center space-y-1">
+              <h4 className="font-medium text-slate-300">No Recent Events</h4>
+              <p className="text-sm text-slate-500 max-w-xs">
                 Market events and updates will appear here when available.
               </p>
             </div>
+            <span className="text-xs text-slate-600 border border-slate-700/60 rounded-full px-3 py-1">
+              Live events coming soon
+            </span>
           </div>
         )}
       </CardContent>

@@ -186,7 +186,7 @@ export function EnhancedSkinCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-white truncate group-hover:text-brand-green transition-colors">
+                  <h3 className="font-semibold text-white truncate group-hover:text-purple-400 transition-colors">
                     {skin.name}
                   </h3>
                   <p className="text-sm text-slate-400 truncate">
@@ -347,7 +347,7 @@ export function EnhancedSkinCard({
               variant="secondary"
               size="sm"
               onClick={handleAddClick}
-              className="h-8 px-3 bg-white/20 hover:bg-brand-green/20 text-white hover:text-brand-green transition-all duration-200"
+              className="h-8 px-3 bg-white/20 hover:bg-purple-500/20 text-white hover:text-purple-300 transition-all duration-200"
             >
               <Plus className="h-4 w-4 mr-1" />
               Add
@@ -359,7 +359,7 @@ export function EnhancedSkinCard({
         <div className="p-4 space-y-3">
           {/* Title */}
           <div className="space-y-1">
-            <h3 className="font-semibold text-white truncate group-hover:text-brand-green transition-colors">
+            <h3 className="font-semibold text-white truncate group-hover:text-purple-400 transition-colors">
               {skin.name}
             </h3>
             <p className="text-sm text-slate-400 truncate">

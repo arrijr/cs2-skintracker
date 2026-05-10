@@ -130,7 +130,7 @@ export function EnhancedMovers({
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-white truncate group-hover:text-brand-green transition-colors">
+                    <h4 className="font-semibold text-white truncate group-hover:text-purple-400 transition-colors">
                       {item.name}
                     </h4>
                     <div className="flex items-center gap-2 mt-1">
@@ -156,7 +156,7 @@ export function EnhancedMovers({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-slate-400 hover:text-brand-blue"
+                      className="h-8 w-8 p-0 text-slate-400 hover:text-purple-400"
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowPreview(item);
@@ -167,7 +167,7 @@ export function EnhancedMovers({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-slate-400 hover:text-brand-green"
+                      className="h-8 w-8 p-0 text-slate-400 hover:text-purple-400"
                       onClick={(e) => {
                         e.stopPropagation();
                         // Add to watchlist

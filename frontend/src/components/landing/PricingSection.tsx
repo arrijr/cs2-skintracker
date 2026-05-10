@@ -20,7 +20,7 @@ const plans: Plan[] = [
   {
     id: "free",
     name: "Free",
-    price: "0€",
+    price: "€0",
     period: "forever",
     description: "Perfect to get started",
     features: [
@@ -37,7 +37,7 @@ const plans: Plan[] = [
   {
     id: "lite",
     name: "Lite",
-    price: "4.99€",
+    price: "€4.99",
     period: "per month",
     description: "For collectors & content creators",
     features: [
@@ -49,12 +49,12 @@ const plans: Plan[] = [
     ],
     highlight: false,
     ctaLabel: "Choose Lite",
-    gradient: "from-amber-500 to-orange-500",
+    gradient: "from-purple-400 to-pink-400",
   },
   {
     id: "pro",
     name: "Pro",
-    price: "19.99€",
+    price: "€19.99",
     period: "per month",
     description: "For professional traders",
     features: [
