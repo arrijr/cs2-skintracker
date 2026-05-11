@@ -261,3 +261,87 @@ describe('matchInventory', () => {
     expect(fakePrisma.skin.findMany).not.toHaveBeenCalled();
   });
 });
+
+import { importSkinMatches } from '../services/steam/portfolioImporter.js';
+
+describe('importSkinMatches', () => {
+  function makeMatch(over) {
+    return {
+      kind: 'skin', skinId: 5, caseId: null, marketItemId: null,
+      marketHashName: 'AK-47 | Redline (FT)', name: 'AK-47 | Redline',
+      amount: 2, tradable: true, marketable: true, currentPrice: 12.5,
+      ...over,
+    };
+  }
+
+  it('creates a Portfolio row per skin match with buyPrice=null when mode=empty', async () => {
+    const created = [];
+    const fakePrisma = {
+      portfolio: { create: jest.fn(async (args) => { created.push(args.data); return { id: created.length, ...args.data }; }) },
+    };
+    const matches = [makeMatch(), makeMatch({ skinId: 6, currentPrice: 99 })];
+    const result = await importSkinMatches({ userId: 7, matches, costBasisMode: 'empty' }, { prismaClient: fakePrisma });
+    expect(result.created).toBe(2);
+    expect(created[0]).toEqual(expect.objectContaining({ userId: 7, skinId: 5, amount: 2, buyPrice: null }));
+    expect(created[0].importedFromSteamAt).toBeInstanceOf(Date);
+    expect(created[1].skinId).toBe(6);
+    expect(created[1].buyPrice).toBeNull();
+  });
+
+  it('uses currentPrice as buyPrice when mode=current_market', async () => {
+    const fakePrisma = {
+      portfolio: { create: jest.fn(async (args) => ({ id: 1, ...args.data })) },
+    };
+    const matches = [makeMatch({ currentPrice: 12.5 })];
+    const result = await importSkinMatches({ userId: 1, matches, costBasisMode: 'current_market' }, { prismaClient: fakePrisma });
+    expect(result.created).toBe(1);
+    expect(fakePrisma.portfolio.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ buyPrice: 12.5 }),
+    }));
+  });
+
+  it('uses custom map (skinId -> buyPrice/buyDate) when mode=custom', async () => {
+    const fakePrisma = {
+      portfolio: { create: jest.fn(async (args) => ({ id: 1, ...args.data })) },
+    };
+    const matches = [makeMatch({ skinId: 5 }), makeMatch({ skinId: 6 })];
+    const custom = [
+      { skinId: 5, buyPrice: 8.0, buyDate: new Date('2025-01-15') },
+      { skinId: 6, buyPrice: null, buyDate: null },
+    ];
+    await importSkinMatches({ userId: 1, matches, costBasisMode: 'custom', custom }, { prismaClient: fakePrisma });
+    expect(fakePrisma.portfolio.create).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      data: expect.objectContaining({ skinId: 5, buyPrice: 8.0, buyDate: new Date('2025-01-15') }),
+    }));
+    expect(fakePrisma.portfolio.create).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      data: expect.objectContaining({ skinId: 6, buyPrice: null }),
+    }));
+  });
+
+  it('skips non-skin matches (case, market_item)', async () => {
+    const fakePrisma = {
+      portfolio: { create: jest.fn() },
+    };
+    const matches = [
+      { kind: 'case', amount: 1, caseId: 9 },
+      { kind: 'market_item', amount: 1, marketItemId: 77 },
+    ];
+    const result = await importSkinMatches({ userId: 1, matches, costBasisMode: 'empty' }, { prismaClient: fakePrisma });
+    expect(result.created).toBe(0);
+    expect(fakePrisma.portfolio.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects unknown costBasisMode', async () => {
+    const fakePrisma = { portfolio: { create: jest.fn() } };
+    await expect(
+      importSkinMatches({ userId: 1, matches: [makeMatch()], costBasisMode: 'bogus' }, { prismaClient: fakePrisma })
+    ).rejects.toThrow(/invalid costBasisMode/i);
+  });
+
+  it('rejects missing userId', async () => {
+    const fakePrisma = { portfolio: { create: jest.fn() } };
+    await expect(
+      importSkinMatches({ matches: [makeMatch()], costBasisMode: 'empty' }, { prismaClient: fakePrisma })
+    ).rejects.toThrow(/userId/);
+  });
+});
