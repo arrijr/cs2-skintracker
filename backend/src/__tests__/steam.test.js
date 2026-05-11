@@ -173,3 +173,91 @@ describe('fetchInventory', () => {
     expect(n).toBe(1);
   });
 });
+
+import { matchInventory } from '../services/steam/inventoryMatcher.js';
+
+describe('matchInventory', () => {
+  it('matches a Skin by marketHashName', async () => {
+    const fakePrisma = {
+      skin:       { findMany: jest.fn().mockResolvedValue([{ id: 5, name: 'AK-47 | Redline', marketHashName: 'AK-47 | Redline (Field-Tested)', priceLatest: 12.5 }]) },
+      case:       { findMany: jest.fn().mockResolvedValue([]) },
+      marketItem: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    const items = [{ marketHashName: 'AK-47 | Redline (Field-Tested)', amount: 2, tradable: true, marketable: true }];
+    const result = await matchInventory(items, { prismaClient: fakePrisma });
+    expect(result.matched).toEqual([{
+      kind: 'skin',
+      skinId: 5,
+      caseId: null,
+      marketItemId: null,
+      marketHashName: 'AK-47 | Redline (Field-Tested)',
+      name: 'AK-47 | Redline',
+      amount: 2,
+      tradable: true,
+      marketable: true,
+      currentPrice: 12.5,
+    }]);
+    expect(result.skipped).toHaveLength(0);
+  });
+
+  it('matches a Case by name (not marketHashName)', async () => {
+    const fakePrisma = {
+      skin:       { findMany: jest.fn().mockResolvedValue([]) },
+      case:       { findMany: jest.fn().mockResolvedValue([{ id: 9, name: 'Operation Bravo Case', price: 80 }]) },
+      marketItem: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    const items = [{ marketHashName: 'Operation Bravo Case', amount: 1, tradable: true, marketable: true }];
+    const result = await matchInventory(items, { prismaClient: fakePrisma });
+    expect(result.matched).toHaveLength(1);
+    expect(result.matched[0].kind).toBe('case');
+    expect(result.matched[0].caseId).toBe(9);
+  });
+
+  it('matches a MarketItem (sticker) by marketHashName', async () => {
+    const fakePrisma = {
+      skin:       { findMany: jest.fn().mockResolvedValue([]) },
+      case:       { findMany: jest.fn().mockResolvedValue([]) },
+      marketItem: { findMany: jest.fn().mockResolvedValue([{ id: 77, name: 'Sticker | Foo (Holo)', marketHashName: 'Sticker | Foo (Holo)', category: 'sticker', priceLatest: 5 }]) },
+    };
+    const items = [{ marketHashName: 'Sticker | Foo (Holo)', amount: 3, tradable: false, marketable: true }];
+    const result = await matchInventory(items, { prismaClient: fakePrisma });
+    expect(result.matched).toHaveLength(1);
+    expect(result.matched[0].kind).toBe('market_item');
+    expect(result.matched[0].marketItemId).toBe(77);
+  });
+
+  it('lists unmatched items in skipped with reason', async () => {
+    const fakePrisma = {
+      skin:       { findMany: jest.fn().mockResolvedValue([]) },
+      case:       { findMany: jest.fn().mockResolvedValue([]) },
+      marketItem: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    const items = [{ marketHashName: 'Unknown New Item', amount: 1, tradable: true, marketable: true }];
+    const result = await matchInventory(items, { prismaClient: fakePrisma });
+    expect(result.matched).toHaveLength(0);
+    expect(result.skipped).toEqual([{ marketHashName: 'Unknown New Item', amount: 1, reason: 'not_in_catalog' }]);
+  });
+
+  it('prefers Skin match over MarketItem match for same name', async () => {
+    const fakePrisma = {
+      skin:       { findMany: jest.fn().mockResolvedValue([{ id: 5, name: 'X', marketHashName: 'X', priceLatest: 10 }]) },
+      case:       { findMany: jest.fn().mockResolvedValue([]) },
+      marketItem: { findMany: jest.fn().mockResolvedValue([{ id: 99, name: 'X', marketHashName: 'X', priceLatest: 10 }]) },
+    };
+    const items = [{ marketHashName: 'X', amount: 1, tradable: true, marketable: true }];
+    const result = await matchInventory(items, { prismaClient: fakePrisma });
+    expect(result.matched).toHaveLength(1);
+    expect(result.matched[0].kind).toBe('skin');
+  });
+
+  it('returns empty for empty input', async () => {
+    const fakePrisma = {
+      skin:       { findMany: jest.fn() },
+      case:       { findMany: jest.fn() },
+      marketItem: { findMany: jest.fn() },
+    };
+    const result = await matchInventory([], { prismaClient: fakePrisma });
+    expect(result).toEqual({ matched: [], skipped: [] });
+    expect(fakePrisma.skin.findMany).not.toHaveBeenCalled();
+  });
+});
