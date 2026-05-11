@@ -52,7 +52,10 @@ function getKey(header, cb) {
 export async function verifyClerkJwt(req, res, next) {
   try {
     const auth = req.headers.authorization || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+    let token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+    if (!token && typeof req.query.token === 'string' && req.query.token) {
+      token = req.query.token;
+    }
 
     console.log("[JWT VERIFY] Debug info:", {
       hasAuth: !!auth,

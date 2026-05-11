@@ -24,6 +24,7 @@ import blogRoutes from "./routes/blogRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import researchRoutes from "./routes/researchRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
+import steamRoutes from "./routes/steamRoutes.js";
 
 dotenv.config();
 
@@ -98,6 +99,7 @@ app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/subscriptions", subscriptionRoutes);
 app.use("/api/v1/research", researchRoutes);
 app.use("/api/v1/alerts", alertRoutes);
+app.use("/api/v1/steam", steamRoutes);
 
 // 404
 app.use((req, res) => {
