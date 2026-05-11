@@ -60,3 +60,116 @@ describe('steamOpenId — parseSteamIdFromClaimedId', () => {
     expect(parseSteamIdFromClaimedId('https://steamcommunity.com/openid/id/notanumber')).toBeNull();
   });
 });
+
+import {
+  fetchInventory,
+  parseInventory,
+  clearInventoryCache,
+} from '../services/steam/steamInventoryClient.js';
+
+describe('parseInventory', () => {
+  it('joins assets with descriptions by classid+instanceid', () => {
+    const raw = {
+      success: 1,
+      assets: [
+        { classid: '100', instanceid: '0', assetid: 'A1' },
+        { classid: '100', instanceid: '0', assetid: 'A2' },
+        { classid: '200', instanceid: '0', assetid: 'B1' },
+      ],
+      descriptions: [
+        { classid: '100', instanceid: '0', market_hash_name: 'AK-47 | Redline (Field-Tested)', tradable: 1, marketable: 1 },
+        { classid: '200', instanceid: '0', market_hash_name: 'AWP | Asiimov (Battle-Scarred)', tradable: 1, marketable: 1 },
+      ],
+    };
+    const parsed = parseInventory(raw);
+    expect(parsed).toEqual([
+      { marketHashName: 'AK-47 | Redline (Field-Tested)', amount: 2, tradable: true, marketable: true },
+      { marketHashName: 'AWP | Asiimov (Battle-Scarred)', amount: 1, tradable: true, marketable: true },
+    ]);
+  });
+
+  it('groups duplicate market_hash_names across different classids', () => {
+    const raw = {
+      success: 1,
+      assets: [
+        { classid: '1', instanceid: '0', assetid: 'A' },
+        { classid: '2', instanceid: '0', assetid: 'B' },
+      ],
+      descriptions: [
+        { classid: '1', instanceid: '0', market_hash_name: 'Same Skin', tradable: 1, marketable: 1 },
+        { classid: '2', instanceid: '0', market_hash_name: 'Same Skin', tradable: 0, marketable: 1 },
+      ],
+    };
+    const parsed = parseInventory(raw);
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0]).toEqual({ marketHashName: 'Same Skin', amount: 2, tradable: false, marketable: true });
+  });
+
+  it('returns empty array on success=0 or missing fields', () => {
+    expect(parseInventory({ success: 0 })).toEqual([]);
+    expect(parseInventory({})).toEqual([]);
+    expect(parseInventory(null)).toEqual([]);
+  });
+});
+
+describe('fetchInventory', () => {
+  it('returns parsed inventory on 200', async () => {
+    clearInventoryCache();
+    const fetchImpl = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        success: 1,
+        assets: [{ classid: '1', instanceid: '0', assetid: 'X' }],
+        descriptions: [{ classid: '1', instanceid: '0', market_hash_name: 'Test', tradable: 1, marketable: 1 }],
+      }),
+    });
+    const items = await fetchInventory('76561198000000001', { fetchImpl, sleepImpl: async () => {} });
+    expect(items).toEqual([{ marketHashName: 'Test', amount: 1, tradable: true, marketable: true }]);
+  });
+
+  it('throws on 403 (private inventory)', async () => {
+    clearInventoryCache();
+    const fetchImpl = async () => ({ ok: false, status: 403, text: async () => '' });
+    await expect(
+      fetchInventory('76561198000000002', { fetchImpl, sleepImpl: async () => {} })
+    ).rejects.toThrow(/private/i);
+  });
+
+  it('retries 429 then succeeds', async () => {
+    clearInventoryCache();
+    let n = 0;
+    const fetchImpl = async () => {
+      n++;
+      if (n === 1) return { ok: false, status: 429, headers: { get: () => '1' }, text: async () => '' };
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ success: 1, assets: [], descriptions: [] }),
+      };
+    };
+    const items = await fetchInventory('76561198000000003', { fetchImpl, sleepImpl: async () => {} });
+    expect(items).toEqual([]);
+    expect(n).toBe(2);
+  });
+
+  it('caches results for 5 min per steamId', async () => {
+    clearInventoryCache();
+    let n = 0;
+    const fetchImpl = async () => {
+      n++;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          success: 1,
+          assets: [{ classid: '1', instanceid: '0', assetid: 'A' }],
+          descriptions: [{ classid: '1', instanceid: '0', market_hash_name: 'Cached', tradable: 1, marketable: 1 }],
+        }),
+      };
+    };
+    await fetchInventory('76561198000000004', { fetchImpl, sleepImpl: async () => {} });
+    await fetchInventory('76561198000000004', { fetchImpl, sleepImpl: async () => {} });
+    expect(n).toBe(1);
+  });
+});
