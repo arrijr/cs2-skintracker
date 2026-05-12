@@ -2,6 +2,7 @@
 import express from "express";
 import prisma from "../prisma/prismaClient.js";
 import clerkAdminAuth from "../middleware/clerkAdminAuth.js";
+import { calculateBusinessMetrics } from "../services/metricsService.js";
 
 const router = express.Router();
 
@@ -362,6 +363,16 @@ router.get("/range", async (req, res) => {
       success: false,
       error: 'Failed to fetch range metrics'
     });
+  }
+});
+
+// GET /api/v1/admin/business-metrics — MRR, user tiers, churn estimate
+router.get('/business-metrics', async (req, res) => {
+  try {
+    const metrics = await calculateBusinessMetrics();
+    res.json({ success: true, data: metrics });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
