@@ -20,7 +20,7 @@ export function MarketplaceLink({ marketplace, path, params, children, className
       className={className}
     >
       {children}
-      <ExternalLink className="inline h-3 w-3 ml-1 opacity-60" />
+      <ExternalLink className="inline h-3 w-3 ml-1 opacity-60" aria-hidden="true" />
     </a>
   );
 }
