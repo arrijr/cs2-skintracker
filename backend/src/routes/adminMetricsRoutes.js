@@ -372,7 +372,11 @@ router.get('/business-metrics', async (req, res) => {
     const metrics = await calculateBusinessMetrics();
     res.json({ success: true, data: metrics });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to calculate business metrics',
+      ...(process.env.NODE_ENV === 'development' && { details: err.message }),
+    });
   }
 });
 
