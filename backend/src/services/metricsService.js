@@ -10,15 +10,16 @@ import prisma from '../prisma/prismaClient.js';
 
 const LITE_PRICE = 4.99;
 const PRO_PRICE = 19.99;
-const FIXED_MONTHLY_COSTS = 21; // break-even denominator (cheapest tier)
+// Vercel Pro $20 + domain $1/mo
+const FIXED_MONTHLY_COSTS = 21;
 
 export async function calculateBusinessMetrics() {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  const [totalUsers, payingUsers, churnedUsers] = await Promise.all([
+  const [totalUsers, payingUsers, recentNonPremiumUpdatesRaw] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { isPremium: true } }),
-    // Rough churn: users who had premium but now don't, updated in last 30 days
+    // Proxy for churn: non-premium users updated in last 30 days (includes new signups, not actual churned premium users)
     prisma.user.count({
       where: {
         isPremium: false,
@@ -34,8 +35,8 @@ export async function calculateBusinessMetrics() {
 
   const mrr = liteUsers * LITE_PRICE + proUsers * PRO_PRICE;
   const arpu = payingUsers > 0 ? mrr / payingUsers : 0;
-  const estimatedMonthlyChurn =
-    payingUsers > 0 ? Math.round((churnedUsers / payingUsers) * 100) : 0;
+  const recentNonPremiumUpdates =
+    payingUsers > 0 ? Math.round((recentNonPremiumUpdatesRaw / payingUsers) * 100) : 0;
 
   return {
     mrr: Math.round(mrr * 100) / 100,
@@ -45,8 +46,8 @@ export async function calculateBusinessMetrics() {
     liteUsers,
     proUsers,
     arpu: Math.round(arpu * 100) / 100,
-    estimatedMonthlyChurn,
-    breakEvenUsers: Math.ceil(FIXED_MONTHLY_COSTS / LITE_PRICE),
+    recentNonPremiumUpdates,
+    breakEvenUsers: Math.ceil(FIXED_MONTHLY_COSTS / PRO_PRICE),
     generatedAt: new Date().toISOString(),
   };
 }

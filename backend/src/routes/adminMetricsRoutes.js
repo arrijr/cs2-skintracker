@@ -366,7 +366,7 @@ router.get("/range", async (req, res) => {
   }
 });
 
-// GET /api/v1/admin/business-metrics — MRR, user tiers, churn estimate
+// GET /api/v1/admin/metrics/business-metrics — MRR, user tiers, churn estimate
 router.get('/business-metrics', async (req, res) => {
   try {
     const metrics = await calculateBusinessMetrics();

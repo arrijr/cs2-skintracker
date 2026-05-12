@@ -71,7 +71,7 @@ describe('metricsService', () => {
 
     const metrics = await calculateBusinessMetrics();
     expect(typeof metrics.arpu).toBe('number');
-    expect(typeof metrics.estimatedMonthlyChurn).toBe('number');
+    expect(typeof metrics.recentNonPremiumUpdates).toBe('number');
     expect(typeof metrics.breakEvenUsers).toBe('number');
   });
 
@@ -95,6 +95,6 @@ describe('metricsService', () => {
     const metrics = await calculateBusinessMetrics();
     expect(metrics.mrr).toBe(0);
     expect(metrics.arpu).toBe(0);
-    expect(metrics.estimatedMonthlyChurn).toBe(0);
+    expect(metrics.recentNonPremiumUpdates).toBe(0);
   });
 });
