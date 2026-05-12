@@ -7,6 +7,8 @@ declare global {
 export function track(event: string, props?: Record<string, string | number>) {
   if (typeof window !== 'undefined' && window.plausible) {
     window.plausible(event, { props });
+  } else if (process.env.NODE_ENV !== 'production') {
+    console.debug('[analytics]', event, props);
   }
 }
 
@@ -42,6 +44,7 @@ const legacyAnalytics = {
   trackEngagement: noop,
 };
 
+/** @deprecated Use `events.*` or `track()` directly. Legacy no-op shim for backward compat. */
 export function useAnalytics() {
   return legacyAnalytics;
 }

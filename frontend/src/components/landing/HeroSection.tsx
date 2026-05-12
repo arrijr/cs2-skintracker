@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,8 +40,8 @@ export default function HeroSection() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-10 justify-center items-center">
-            <Button size="lg" asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-lg px-8 py-6 gap-2" onClick={() => events.ctaClicked('hero')}>
-              <Link href="/sign-up">
+            <Button size="lg" asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-lg px-8 py-6 gap-2">
+              <Link href="/sign-up" onClick={() => events.ctaClicked('hero')}>
                 Start Free
                 <ArrowRight className="h-5 w-5" />
               </Link>

@@ -81,7 +81,6 @@ export function useSubscription() {
 
   const checkout = async (tier: 'lite' | 'pro') => {
     try {
-      events.upgradeClicked(tier);
       const token = await getToken();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/checkout`, {
         method: 'POST',
@@ -98,6 +97,7 @@ export function useSubscription() {
 
       const { url } = await res.json();
       if (!url) throw new Error('No checkout URL returned');
+      events.upgradeClicked(tier);
       window.location.href = url;
     } catch (err) {
       console.error('Checkout failed:', err);
