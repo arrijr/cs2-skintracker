@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useAuth } from '@clerk/nextjs';
 import { loadStripe } from '@stripe/stripe-js';
+import { events } from '@/lib/analytics';
 
 interface Subscription {
   id: number;
@@ -80,6 +81,7 @@ export function useSubscription() {
 
   const checkout = async (tier: 'lite' | 'pro') => {
     try {
+      events.upgradeClicked(tier);
       const token = await getToken();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/checkout`, {
         method: 'POST',

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Sparkles, TrendingUp, TrendingDown, Wallet, BarChart3 } from "lucide-react";
+import { events } from "@/lib/analytics";
 
 export default function HeroSection() {
   return (
@@ -37,7 +38,7 @@ export default function HeroSection() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-10 justify-center items-center">
-            <Button size="lg" asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-lg px-8 py-6 gap-2">
+            <Button size="lg" asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-lg px-8 py-6 gap-2" onClick={() => events.ctaClicked('hero')}>
               <Link href="/sign-up">
                 Start Free
                 <ArrowRight className="h-5 w-5" />

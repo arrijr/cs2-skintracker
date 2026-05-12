@@ -1,6 +1,7 @@
 // /frontend/src/app/layout.tsx  (Frontend)
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import Script from "next/script";
 import Providers from "./providers";
 import AppHeader from "./components/AppHeader";
 import BuildInfo from "./components/BuildInfo";
@@ -60,6 +61,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <ClerkWrapper>
       <html lang="en" className="dark">
         <body className="bg-slate-950 text-white min-h-screen">
+          {process.env.NODE_ENV === 'production' && (
+            <Script
+              defer
+              data-domain="skintrackr.com"
+              src="https://plausible.io/js/script.js"
+              strategy="afterInteractive"
+            />
+          )}
           <ErrorProvider>
             <Providers>
               {/* Global Error Banner */}
