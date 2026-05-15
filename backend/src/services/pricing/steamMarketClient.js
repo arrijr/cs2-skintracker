@@ -94,6 +94,13 @@ export async function fetchPrice(marketHashName, {
       const priceMedian = parsePrice(data.median_price);
       const volume24h = data.volume ? parseInt(String(data.volume).replace(/[^\d]/g, ''), 10) : null;
 
+      // Steam returns {success:true} with NO price/median/volume for some queries
+      // (notably skin names without a wear suffix). Treat that as not-found so we
+      // don't overwrite real prices with null on the next refresh.
+      if (priceLatest == null && priceMedian == null) {
+        return { found: false, status: 200, error: 'success:true but empty body' };
+      }
+
       return {
         found: true,
         status: 200,

@@ -65,13 +65,64 @@ export async function recordPriceResult(item, result, { prismaClient = defaultPr
   }
 }
 
+// Steam Market `priceoverview` returns no data for bare skin names like "AK-47 | Redline".
+// Every market listing is wear-specific. We probe common wears in liquidity order
+// (FT is by far the most traded, then MW, FN, WW, BS).
+// For non-skin items (cases, market_items) the marketHashName is already complete — skip the loop.
+const WEAR_VARIANTS = [
+  '(Field-Tested)',
+  '(Minimal Wear)',
+  '(Factory New)',
+  '(Well-Worn)',
+  '(Battle-Scarred)',
+];
+
+function hasWearSuffix(mhn) {
+  return /\([^)]+\)\s*$/.test(mhn);
+}
+
 /**
  * Refresh price for a single item.
+ *
+ * For skins without a wear suffix, probe up to 5 wear variants and use the first that returns data.
+ * Caller is responsible for the 3s spacing between top-level calls, but we add 1.5s between
+ * intra-skin probe attempts to stay polite.
  */
-export async function refreshItemPrice(item, { prismaClient = defaultPrisma, fetchImpl } = {}) {
-  const result = await fetchPrice(item.marketHashName, fetchImpl ? { fetchImpl } : {});
-  await recordPriceResult(item, result, { prismaClient });
-  return result;
+export async function refreshItemPrice(item, { prismaClient = defaultPrisma, fetchImpl, sleepImpl = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
+  const opts = fetchImpl ? { fetchImpl } : {};
+
+  // Cases + market_items: marketHashName is already complete (key/sticker/agent/etc.) — single shot.
+  // Skins with explicit wear suffix already (legacy or user-entered): single shot.
+  if (item.itemType !== 'skin' || hasWearSuffix(item.marketHashName)) {
+    const result = await fetchPrice(item.marketHashName, opts);
+    await recordPriceResult(item, result, { prismaClient });
+    return result;
+  }
+
+  // Skin without wear — probe variants until one returns data.
+  // Important: if Steam returns 429 (rate-limited), abort the probe loop immediately.
+  // Continuing to probe 5 wears just feeds the rate limit. Skip this skin so the next
+  // skin in the outer loop gets a chance.
+  let lastResult = null;
+  for (let i = 0; i < WEAR_VARIANTS.length; i++) {
+    const wear = WEAR_VARIANTS[i];
+    const probe = `${item.marketHashName} ${wear}`;
+    const result = await fetchPrice(probe, opts);
+    lastResult = result;
+    if (result.found) {
+      await recordPriceResult(item, result, { prismaClient });
+      return { ...result, wearUsed: wear };
+    }
+    // Rate-limited → don't burn budget on 4 more wears, bail
+    if (result.status === 429) {
+      return { found: false, status: 429, error: 'rate-limited, aborted probe loop' };
+    }
+    if (i < WEAR_VARIANTS.length - 1) await sleepImpl(1500);
+  }
+
+  // True 404/empty across all wears — record so we don't keep retrying
+  await recordPriceResult(item, lastResult ?? { found: false, status: 404 }, { prismaClient });
+  return lastResult ?? { found: false, status: 404 };
 }
 
 /**
