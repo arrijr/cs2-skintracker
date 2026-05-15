@@ -8,7 +8,20 @@ import prisma from '../prisma/prismaClient.js';
 import { subscriptionService } from '../services/subscriptionService.js';
 import logger from '../utils/logger.js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Lazy-init Stripe client. Avoids crash at module load when STRIPE_SECRET_KEY
+// is unset (e.g. dev/staging envs that don't need real Stripe). Throws at
+// first actual API call instead — error surfaces in the request, not on boot.
+let _stripeInstance = null;
+const stripe = new Proxy({}, {
+  get(_t, prop) {
+    if (!_stripeInstance) {
+      const key = process.env.STRIPE_SECRET_KEY;
+      if (!key) throw new Error('STRIPE_SECRET_KEY is not configured');
+      _stripeInstance = new Stripe(key);
+    }
+    return _stripeInstance[prop];
+  },
+});
 
 /**
  * POST /subscriptions/checkout
