@@ -17,7 +17,7 @@ export default function SocialProofSection() {
         <div className="container mx-auto px-4 text-center">
           <p className="text-slate-400">
             Join the early users tracking{" "}
-            <span className="text-white font-semibold">over 10,000 skins</span> on skintrackr.com
+            <span className="text-white font-semibold">over 10,000 skins</span> on skintrackr.io
           </p>
         </div>
       </section>

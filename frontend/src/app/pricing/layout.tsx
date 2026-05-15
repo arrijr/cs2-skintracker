@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pricing — skintrackr.com",
+  title: "Pricing — skintrackr.io",
   description: "Free, Lite (€4.99/mo), and Pro (€19.99/mo) plans for CS2 portfolio tracking. Start free, upgrade anytime, cancel whenever.",
 };
 
