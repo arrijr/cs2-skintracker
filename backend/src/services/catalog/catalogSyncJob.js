@@ -1,6 +1,7 @@
 import defaultPrisma from '../../prisma/prismaClient.js';
 import logger from '../../utils/logger.js';
-import { CATEGORIES, fetchCategory, normalizeItem } from './bymykelClient.js';
+import { CATEGORIES, fetchCategory, normalizeItem, makeStatTrakVariant } from './bymykelClient.js';
+import { extractWeaponType, categorizeWeapon } from './weaponClassifier.js';
 
 const MARKET_ITEM_CATEGORIES = new Set([
   'stickers', 'agents', 'patches', 'graffiti', 'music_kits', 'collectibles', 'keys',
@@ -27,6 +28,8 @@ export async function syncCategoryToDb(category, items, { prismaClient = default
   for (const item of items) {
     try {
       if (category === 'skins') {
+        const weaponType = extractWeaponType(item.name);
+        const itemType = categorizeWeapon(weaponType);
         await prismaClient.skin.upsert({
           where: { marketHashName: item.marketHashName },
           create: {
@@ -35,12 +38,20 @@ export async function syncCategoryToDb(category, items, { prismaClient = default
             imageUrl: item.imageUrl,
             rarity: item.rarity,
             collection: item.collection,
+            weaponType,
+            itemType,
+            isStattrak: item.isStattrak ?? false,
+            isStar: item.isStar ?? false,
           },
           update: {
             name: item.name,
             imageUrl: item.imageUrl,
             rarity: item.rarity,
             collection: item.collection,
+            weaponType,
+            itemType,
+            isStattrak: item.isStattrak ?? false,
+            isStar: item.isStar ?? false,
           },
         });
       } else if (category === 'crates') {
@@ -98,6 +109,13 @@ export async function runCatalogSync({ prismaClient = defaultPrisma } = {}) {
       logger.info('Catalog sync starting', { category });
       const raw = await fetchCategory(category);
       const items = raw.map((r) => normalizeItem(r, category));
+      // For skins, also fan out StatTrak™ derivative rows (bymykel marks stattrak: true on base skin).
+      if (category === 'skins') {
+        for (const r of raw) {
+          const st = makeStatTrakVariant(r);
+          if (st) items.push(st);
+        }
+      }
       const result = await syncCategoryToDb(category, items, { prismaClient });
       summary[category] = { fetched: items.length, ...result };
       logger.info('Catalog sync complete', { category, ...summary[category] });
