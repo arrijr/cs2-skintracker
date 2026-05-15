@@ -37,7 +37,7 @@ model User {
 
 model Skin {
   id           Int      @id @default(autoincrement())
-  name         String
+  name         String   @unique   // ADR-001 (2026-05-11): every skin has a globally-unique display name
   marketHashName String @unique
   imageUrl     String?
   weaponType   String?
