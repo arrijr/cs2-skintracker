@@ -18,6 +18,41 @@ const router = express.Router();
 const skinsCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+/**
+ * Frontend sends rarity/wear values as lowercase short IDs (e.g. "covert", "mil-spec", "fn").
+ * The DB stores them in their canonical Steam labels ("Covert", "Mil-Spec Grade", "Factory New").
+ * Normalize before querying.
+ */
+const RARITY_MAP = {
+  'consumer': 'Consumer Grade',
+  'industrial': 'Industrial Grade',
+  'mil-spec': 'Mil-Spec Grade',
+  'milspec': 'Mil-Spec Grade',
+  'restricted': 'Restricted',
+  'classified': 'Classified',
+  'covert': 'Covert',
+  'extraordinary': 'Extraordinary',
+  'contraband': 'Contraband',
+};
+const WEAR_MAP = {
+  'fn': 'Factory New',
+  'mw': 'Minimal Wear',
+  'ft': 'Field-Tested',
+  'ww': 'Well-Worn',
+  'bs': 'Battle-Scarred',
+};
+function normalizeRarity(v) {
+  if (!v) return null;
+  const key = v.toLowerCase().trim();
+  // If frontend already sent the full label (e.g. "Covert"), accept it as-is
+  return RARITY_MAP[key] ?? v;
+}
+function normalizeWear(v) {
+  if (!v) return null;
+  const key = v.toLowerCase().trim();
+  return WEAR_MAP[key] ?? v;
+}
+
 // Get skins with enhanced filters, sort & pagination
 router.get("/", optionalClerkAuth, async (req, res) => {
   try {
@@ -57,8 +92,8 @@ router.get("/", optionalClerkAuth, async (req, res) => {
       } : {}),
       ...(min ? { priceMedian: { gte: parseFloat(min) } } : {}),
       ...(max ? { priceMedian: { lte: parseFloat(max) } } : {}),
-      ...(rarity ? { rarity: { in: rarity.split(',') } } : {}),
-      ...(wear ? { wear: { in: wear.split(',') } } : {}),
+      ...(rarity ? { rarity: { in: rarity.split(',').map(normalizeRarity).filter(Boolean) } } : {}),
+      ...(wear ? { wear: { in: wear.split(',').map(normalizeWear).filter(Boolean) } } : {}),
       ...(quality ? { quality: { in: quality.split(',') } } : {}),
       ...(stattrak ? { isStattrak: stattrak === 'true' } : {}),
       ...(special ? { isStar: special === 'true' } : {}),
