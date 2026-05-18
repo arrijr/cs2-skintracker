@@ -9,6 +9,7 @@ import { Toaster as HotToaster } from "react-hot-toast";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import ErrorBanner from "@/components/ErrorBanner";
 import { ErrorProvider } from "@/context/ErrorContext";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
 // {/* Debug logging for ENV variables */}
 if (typeof window !== 'undefined') {
@@ -62,15 +63,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body className="bg-slate-950 text-white min-h-screen">
           <ErrorProvider>
             <Providers>
-              {/* Global Error Banner */}
-              <ErrorBanner />
-              
-              {/* App Shell */}
-              <AppHeader />
-              
-              <main className="min-h-screen">
-                {children}
-              </main>
+              <CurrencyProvider>
+                {/* Global Error Banner */}
+                <ErrorBanner />
+
+                {/* App Shell */}
+                <AppHeader />
+
+                <main className="min-h-screen">
+                  {children}
+                </main>
+              </CurrencyProvider>
 
               {/* Build Info - dev only */}
               <BuildInfo className="max-w-md" />
