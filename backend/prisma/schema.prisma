@@ -21,6 +21,13 @@ model User {
   discordWebhook String?  // Discord webhook URL for alert delivery
   steamId           String?   @unique
   steamConnectedAt  DateTime?
+  tier                    String?   // free | lite | pro (mirrors isPremium for billing)
+  stripeCustomerId        String?   @unique
+  stripeSubscriptionId    String?   @unique
+  subscriptionStatus      String?   // active | canceled | past_due | trialing | null
+  currentPeriodStart      DateTime?
+  currentPeriodEnd        DateTime?
+  cancelAtPeriodEnd       Boolean   @default(false)
   isPremium    Boolean    @default(false)
   role         String     @default("user") // user, admin
   preferredCurrency String  @default("USD")  // USD | EUR | GBP

@@ -1,4 +1,5 @@
 import prisma from "../prisma/prismaClient.js";
+import { isValidCurrency, isValidTheme } from "../config/currency.js";
 // Note: bcrypt and jwt removed - authentication now handled by Clerk
 
 // CLERK USER SYNC - Called when user signs up/logs in via Clerk
@@ -153,6 +154,9 @@ export const getProfile = async (req, res) => {
         timezone: true,
         emailAlerts: true,
         pushAlerts: true,
+        discordWebhook: true,
+        preferredCurrency: true,
+        themePreference: true,
         createdAt: true,
         role: true,        // <-- hinzugefügt
         isPremium: true    // <-- optional hilfreich fürs FE
@@ -173,13 +177,21 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.userId; // From Clerk middleware
-    const { displayName, timezone, emailAlerts, pushAlerts } = req.body;
-    
+    const {
+      displayName,
+      timezone,
+      emailAlerts,
+      pushAlerts,
+      discordWebhook,
+      preferredCurrency,
+      themePreference,
+    } = req.body;
+
     // Validate timezone if provided
     if (timezone && !Intl.supportedValuesOf('timeZone').includes(timezone)) {
       return res.status(400).json({ error: "Invalid timezone" });
     }
-    
+
     // Validate boolean flags
     if (emailAlerts !== undefined && typeof emailAlerts !== 'boolean') {
       return res.status(400).json({ error: "emailAlerts must be boolean" });
@@ -187,13 +199,29 @@ export const updateProfile = async (req, res) => {
     if (pushAlerts !== undefined && typeof pushAlerts !== 'boolean') {
       return res.status(400).json({ error: "pushAlerts must be boolean" });
     }
-    
+
+    // Validate discordWebhook (string or empty)
+    if (discordWebhook !== undefined && discordWebhook !== null && typeof discordWebhook !== 'string') {
+      return res.status(400).json({ error: "discordWebhook must be string" });
+    }
+
+    // Validate currency + theme against allowlists
+    if (preferredCurrency !== undefined && !isValidCurrency(preferredCurrency)) {
+      return res.status(400).json({ error: "Invalid currency" });
+    }
+    if (themePreference !== undefined && !isValidTheme(themePreference)) {
+      return res.status(400).json({ error: "Invalid theme" });
+    }
+
     const updateData = {};
     if (displayName !== undefined) updateData.displayName = displayName;
     if (timezone !== undefined) updateData.timezone = timezone;
     if (emailAlerts !== undefined) updateData.emailAlerts = emailAlerts;
     if (pushAlerts !== undefined) updateData.pushAlerts = pushAlerts;
-    
+    if (discordWebhook !== undefined) updateData.discordWebhook = discordWebhook || null;
+    if (preferredCurrency !== undefined) updateData.preferredCurrency = preferredCurrency;
+    if (themePreference !== undefined) updateData.themePreference = themePreference;
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: updateData,
@@ -203,12 +231,16 @@ export const updateProfile = async (req, res) => {
         displayName: true,
         timezone: true,
         emailAlerts: true,
-        pushAlerts: true
+        pushAlerts: true,
+        discordWebhook: true,
+        preferredCurrency: true,
+        themePreference: true,
       }
     });
-    
+
     res.json(updatedUser);
   } catch (err) {
+    console.error('updateProfile error:', err);
     res.status(500).json({ error: "Failed to update profile" });
   }
 };
