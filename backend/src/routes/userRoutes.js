@@ -14,28 +14,17 @@ router.post('/login', login);
 router.post('/sync', verifyClerkJwt, syncUser);
 
 // Profile endpoints (auth required)
-router.get("/me", clerkAuth, (req, res, next) => {
-  console.log('🔍 [DEBUG] GET /me called - req.userId:', req.userId, 'req.auth:', !!req.auth);
-  next();
-}, getProfile);
-
-router.patch("/me", clerkAuth, (req, res, next) => {
-  console.log('🔍 [DEBUG] PATCH /me called - req.userId:', req.userId, 'req.auth:', !!req.auth);
-  next();
-}, updateProfile);
-
-router.patch("/me/password", clerkAuth, (req, res, next) => {
-  console.log('🔍 [DEBUG] PATCH /me/password called - req.userId:', req.userId, 'req.auth:', !!req.auth);
-  next();
-}, changePassword);
-
-router.delete("/me", clerkAuth, (req, res, next) => {
-  console.log('🔍 [DEBUG] DELETE /me called - req.userId:', req.userId, 'req.auth:', !!req.auth);
-  next();
-}, deleteAccount);
+// Use verifyClerkJwt for consistency with /sync and the rest of the API
+// (portfolio, watchlist, subscriptions, alerts all use verifyClerkJwt).
+// Production: full JWT validation when CLERK_* env vars are set.
+// Dev: mock fallback (req.userId=1) when env vars are missing.
+router.get("/me", verifyClerkJwt, getProfile);
+router.patch("/me", verifyClerkJwt, updateProfile);
+router.patch("/me/password", verifyClerkJwt, changePassword);
+router.delete("/me", verifyClerkJwt, deleteAccount);
 
 // Role endpoint for frontend role checks
-router.get("/me/role", clerkAuth, async (req, res) => {
+router.get("/me/role", verifyClerkJwt, async (req, res) => {
   try {
     // Debug: Log request types and auth info
     console.log('🔍 [DEBUG] Role endpoint called');
