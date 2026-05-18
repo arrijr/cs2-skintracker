@@ -299,24 +299,34 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
       select: { price: true },
     });
     
+    let priceInherited = false;
     if (latest?.price != null) {
       marketPrice = latest.price;
+    } else if (skin.priceLatest || skin.priceMedian || skin.priceAvg) {
+      marketPrice = skin.priceLatest || skin.priceMedian || skin.priceAvg;
+    } else if (skin.variantOf) {
+      // Wear variant has no own price yet — inherit from parent skin as estimate.
+      // Price refresh job will fetch wear-specific price eventually.
+      const parent = await prisma.skin.findUnique({
+        where: { id: skin.variantOf },
+        select: { priceLatest: true, priceMedian: true, priceAvg: true },
+      });
+      const inherited = parent?.priceLatest || parent?.priceMedian || parent?.priceAvg;
+      if (inherited != null) {
+        marketPrice = inherited;
+        priceInherited = true;
+      }
     } else {
-      // Try to use existing price fields from skin object
-      if (skin.priceMedian || skin.priceAvg) {
-        marketPrice = skin.priceMedian || skin.priceAvg;
-      } else {
-        // Fallback: live fetch from Steam
-        try {
-          const priceData = await fetchSkinPrice(skin.marketHashName);
-          const raw = priceData?.lowest_price || priceData?.median_price || null;
-          if (raw) {
-            const numeric = parseFloat(String(raw).replace(/[^\d.,-]/g, "").replace(",", "."));
-            marketPrice = Number.isFinite(numeric) ? numeric : null;
-          }
-        } catch (e) {
-          console.error(`[DEBUG] Steam fetch error:`, e.message);
+      // Last resort: live Steam fetch
+      try {
+        const priceData = await fetchSkinPrice(skin.marketHashName);
+        const raw = priceData?.lowest_price || priceData?.median_price || null;
+        if (raw) {
+          const numeric = parseFloat(String(raw).replace(/[^\d.,-]/g, "").replace(",", "."));
+          marketPrice = Number.isFinite(numeric) ? numeric : null;
         }
+      } catch (e) {
+        console.error(`[DEBUG] Steam fetch error:`, e.message);
       }
     }
 
@@ -391,6 +401,7 @@ router.get("/:skinId", optionalClerkAuth, async (req, res) => {
       data: {
         ...skinWithoutCaseSkins,
         marketPrice,
+        priceInherited, // true if marketPrice came from parent variant (no wear-specific price yet)
         caseInfo,
         variants: variantsWithPrice,
         history: priceHistory
