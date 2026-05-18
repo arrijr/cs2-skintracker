@@ -4,17 +4,19 @@ import { createContext, useContext, useEffect, useState, ReactNode, useCallback 
 import { useAuth, useUser } from '@clerk/nextjs';
 import { setActiveCurrency } from '@/lib/num';
 
-type CurrencyCode = 'USD' | 'EUR' | 'GBP';
+type CurrencyCode = 'EUR' | 'USD' | 'GBP';
 
-const FX_RATES: Record<CurrencyCode, number> = { USD: 1.0, EUR: 0.92, GBP: 0.79 };
-const SYMBOLS: Record<CurrencyCode, string> = { USD: '$', EUR: '€', GBP: '£' };
-const LOCALES: Record<CurrencyCode, string> = { USD: 'en-US', EUR: 'de-DE', GBP: 'en-GB' };
+// Base currency is EUR (Steam Market scrape currency for our European audience).
+// Rates convert FROM EUR to target currency.
+const FX_RATES: Record<CurrencyCode, number> = { EUR: 1.0, USD: 1.087, GBP: 0.86 };
+const SYMBOLS: Record<CurrencyCode, string> = { EUR: '€', USD: '$', GBP: '£' };
+const LOCALES: Record<CurrencyCode, string> = { EUR: 'de-DE', USD: 'en-US', GBP: 'en-GB' };
 
 type CurrencyContextValue = {
   currency: CurrencyCode;
   symbol: string;
   rate: number;
-  format: (usdAmount: number | null | undefined, opts?: { decimals?: number }) => string;
+  format: (eurAmount: number | null | undefined, opts?: { decimals?: number }) => string;
   refresh: () => Promise<void>;
   isLoading: boolean;
 };
@@ -24,12 +26,12 @@ const CurrencyContext = createContext<CurrencyContextValue | null>(null);
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const { isSignedIn } = useUser();
   const { getToken } = useAuth();
-  const [currency, setCurrency] = useState<CurrencyCode>('USD');
+  const [currency, setCurrency] = useState<CurrencyCode>('EUR');
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCurrency = useCallback(async () => {
     if (!isSignedIn) {
-      setCurrency('USD');
+      setCurrency('EUR');
       setIsLoading(false);
       return;
     }
@@ -57,16 +59,16 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   }, [fetchCurrency]);
 
   // Push current currency settings into the lib/num module-level state so the
-  // legacy formatUSD() helper (used by ~29 components) renders in the user's
-  // preferred currency without touching every call site.
+  // legacy formatUSD()/formatEUR() helpers (used across the app) render in the
+  // user's preferred currency without touching every call site.
   useEffect(() => {
     setActiveCurrency(currency, FX_RATES[currency], LOCALES[currency]);
   }, [currency]);
 
   const format = useCallback(
-    (usdAmount: number | null | undefined, opts?: { decimals?: number }) => {
+    (eurAmount: number | null | undefined, opts?: { decimals?: number }) => {
       const decimals = opts?.decimals ?? 2;
-      const amount = typeof usdAmount === 'number' && Number.isFinite(usdAmount) ? usdAmount : 0;
+      const amount = typeof eurAmount === 'number' && Number.isFinite(eurAmount) ? eurAmount : 0;
       const converted = amount * FX_RATES[currency];
       try {
         return new Intl.NumberFormat(LOCALES[currency], {

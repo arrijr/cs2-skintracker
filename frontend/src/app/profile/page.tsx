@@ -22,7 +22,12 @@ function ProfilePageInner() {
   const active: TabId = (VALID_TABS as string[]).includes(raw) ? (raw as TabId) : 'account';
 
   if (!isLoaded || !user) {
-    return <div className="text-white p-6">Loading…</div>;
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-4">
+        <div className="h-32 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+        <div className="h-48 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+      </div>
+    );
   }
 
   return (
@@ -55,7 +60,14 @@ function ProfilePageInner() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<div className="text-white p-6">Loading…</div>}>
+    <Suspense
+      fallback={
+        <div className="max-w-4xl mx-auto px-4 py-8 space-y-4">
+          <div className="h-32 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+          <div className="h-48 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+        </div>
+      }
+    >
       <ProfilePageInner />
     </Suspense>
   );

@@ -97,7 +97,8 @@ export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
 
     // Build URL for this page
     const queryString = buildQueryString(config.filters, pageIndex + 1);
-    return config.enabled ? apiUrl(`/api/v1/skins?${queryString}`) : null;
+    const url = config.enabled ? apiUrl(`/api/v1/skins?${queryString}`) : null;
+    return url;
   }, [config.filters, config.enabled, config.pageSize]);
 
   // SWR Infinite hook
@@ -129,10 +130,20 @@ export function useInfiniteSkins(options: UseInfiniteSkinsOptions = {}) {
     }
   }, [size, setSize]);
 
-  // Flatten all loaded pages into a single array
+  // Flatten all loaded pages into a single array, deduplicating by id.
+  // (Backend sometimes returns same skin across pages — e.g. duplicate marketHashName entries.)
   const allSkins = useMemo(() => {
     if (!data) return [];
-    return data.flatMap(page => page.items);
+    const flat = data.flatMap(page => page.items);
+    const seen = new Set<number>();
+    const out = [];
+    for (const s of flat) {
+      if (s && s.id != null && !seen.has(s.id)) {
+        seen.add(s.id);
+        out.push(s);
+      }
+    }
+    return out;
   }, [data]);
 
   // Get pagination info from the first page

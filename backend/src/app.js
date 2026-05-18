@@ -25,6 +25,7 @@ import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import researchRoutes from "./routes/researchRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
 import steamRoutes from "./routes/steamRoutes.js";
+import notificationsRoutes from "./routes/notificationsRoutes.js";
 
 // Inngest — background job orchestration (ADR-004)
 import { serve as inngestServe } from "inngest/express";
@@ -105,6 +106,7 @@ app.use("/api/v1/subscriptions", subscriptionRoutes);
 app.use("/api/v1/research", researchRoutes);
 app.use("/api/v1/alerts", alertRoutes);
 app.use("/api/v1/steam", steamRoutes);
+app.use("/api/v1/notifications", notificationsRoutes);
 
 // Inngest webhook endpoint — receives cron triggers + manual events. (ADR-004)
 // In dev (no signing key) Inngest CLI handles auth via local dev server (http://127.0.0.1:8288).

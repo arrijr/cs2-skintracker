@@ -1,18 +1,21 @@
 // backend/src/config/currency.js
 // Static FX table — update by editing this file and redeploying.
-// Rates are USD → target. Multiply USD amounts by rate to get target.
+// Base currency is EUR (Steam Market scrape currency for our European audience).
+// Rates are EUR → target. Multiply EUR amounts by rate to get target.
 
-export const SUPPORTED_CURRENCIES = ['USD', 'EUR', 'GBP'];
+export const BASE_CURRENCY = 'EUR';
+
+export const SUPPORTED_CURRENCIES = ['EUR', 'USD', 'GBP'];
 
 export const FX_RATES = {
-  USD: 1.0,
-  EUR: 0.92,
-  GBP: 0.79,
+  EUR: 1.0,
+  USD: 1.087,
+  GBP: 0.86,
 };
 
 export const CURRENCY_SYMBOLS = {
-  USD: '$',
   EUR: '€',
+  USD: '$',
   GBP: '£',
 };
 

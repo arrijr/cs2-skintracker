@@ -88,7 +88,7 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
 
   if (!chartData) {
     return (
-      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
         <h3 className="text-xl font-semibold mb-4 text-white">Advanced Charts</h3>
         <div className="text-center text-slate-400 py-8">
           Not enough data to generate advanced charts
@@ -226,7 +226,7 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
 
   if (!ADVANCED_CHARTS_ENABLED) {
     return (
-      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
         <h3 className="text-xl font-semibold mb-4 text-white">Advanced Charts</h3>
         <div className="text-center py-8">
           <div className="text-2xl mb-4">🔒</div>
@@ -240,7 +240,7 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
   }
 
   return (
-    <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+    <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-bold text-white">Advanced Charts</h3>
         {!isPremium && (

@@ -29,8 +29,8 @@ interface AlertCardProps {
 export function AlertCard({ alert, onToggle, onDelete }: AlertCardProps) {
   const target = alert.skin?.name || alert.case?.name || 'Portfolio';
   return (
-    <Card className="bg-slate-900/60 backdrop-blur border border-slate-700/50 hover:border-slate-600 transition-colors">
-      <CardContent className="p-4 flex items-center justify-between gap-4">
+    <Card className="bg-slate-900/70 backdrop-blur border border-slate-700/30 hover:border-slate-600/60 transition-colors rounded-2xl">
+      <CardContent className="p-5 flex items-center justify-between gap-4">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
             <Bell className="h-5 w-5 text-purple-400" />

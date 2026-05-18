@@ -3,25 +3,20 @@
 "use client";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, X, Save, Share2, Trash2, Clock, CheckSquare, Square, Plus, Heart, HelpCircle } from "lucide-react";
+import { Search, X, Share2, Trash2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { EnhancedSkinGrid } from "./EnhancedSkinGrid";
 import { EnhancedFilterSidebar } from "./EnhancedFilterSidebar";
 import { apiUrl, fetchJson } from "@/lib/api";
-import { saveFiltersToSession, loadFiltersFromSession, clearFiltersFromSession } from "@/lib/storage";
-import { useInfiniteSkins } from "@/hooks/useInfiniteSkins";
+import { saveFiltersToSession, clearFiltersFromSession } from "@/lib/storage";
+import { cn } from "@/lib/utils";
+import { AppShell } from "@/components/layout/AppShell";
+import { useAuth } from "@clerk/nextjs";
 
 // Feature flag for enhanced filters
 const SKINS_FILTERS_ENHANCED = process.env.NEXT_PUBLIC_SKINS_FILTERS_ENHANCED === 'true';
@@ -67,146 +62,37 @@ type Skin = {
 };
 
 // Standard CS2 categories like skinbid.com - Updated with new palette
+// Skin-only categories. Backend `itemType` IN clause uses these values directly.
+// "machine_guns" matches the backfill in scripts/backfill-weapon-types.js + weaponClassifier.js.
 const CS2_CATEGORIES = {
-  all: { name: "All", color: "bg-brand-slate-500" },
-  knives: { name: "Knives", color: "bg-red-500" },
-  gloves: { name: "Gloves", color: "bg-orange-500" },
-  pistols: { name: "Pistols", color: "bg-brand-celadon-500" },
-  smgs: { name: "SMGs", color: "bg-cyan-500" },
-  rifles: { name: "Rifles", color: "bg-brand-slate-500" },
-  shotguns: { name: "Shotguns", color: "bg-brand-purple-600" },
-  machineGuns: { name: "Machine Guns", color: "bg-pink-500" },
-  stickers: { name: "Stickers", color: "bg-brand-midnight" },
-  agents: { name: "Agents", color: "bg-teal-500" },
-  cases: { name: "Cases", color: "bg-brand-slate-400" },
-  charms: { name: "Charms", color: "bg-yellow-500" }
+  all:          { name: "All" },
+  knives:       { name: "Knives" },
+  gloves:       { name: "Gloves" },
+  pistols:      { name: "Pistols" },
+  smgs:         { name: "SMGs" },
+  rifles:       { name: "Rifles" },
+  shotguns:     { name: "Shotguns" },
+  machine_guns: { name: "Machine Guns" },
 };
 
-// P3: Advanced Filter Options
-const WEAPON_TYPES = [
-  "AK-47", "M4A1-S", "M4A4", "AWP", "AUG", "SG 553", "Galil AR", "FAMAS",
-  "Glock-18", "USP-S", "P250", "Tec-9", "Five-SeveN", "CZ75-Auto", "Desert Eagle", "R8 Revolver",
-  "P2000", "Dual Berettas", "P90", "PP-Bizon", "MP7", "MP9", "UMP-45", "MAC-10", "MP5-SD",
-  "Nova", "XM1014", "Sawed-Off", "MAG-7", "M249", "Negev", "MAG-7", "Sawed-Off"
-];
-
-const COLLECTIONS = [
-  "The Dust 2 Collection", "The Mirage Collection", "The Cache Collection", "The Cobblestone Collection",
-  "The Overpass Collection", "The Train Collection", "The Inferno Collection", "The Nuke Collection",
-  "The Vertigo Collection", "The Ancient Collection", "The Anubis Collection", "The Office Collection",
-  "The Italy Collection", "The Militia Collection", "The Assault Collection", "The Office Collection",
-  "The Militia Collection", "The Assault Collection", "The Office Collection", "The Militia Collection"
-];
-
-const FINISHES = [
-  "Doppler", "Case Hardened", "Crimson Web", "Fade", "Slaughter", "Tiger Tooth", "Marble Fade",
-  "Dragon Lore", "Howl", "Fire Serpent", "Vulcan", "Asiimov", "Redline", "Vulcan", "Asiimov",
-  "Redline", "Vulcan", "Asiimov", "Redline", "Vulcan", "Asiimov", "Redline", "Vulcan", "Asiimov"
-];
-
-// Filter presets for enhanced UX
-const FILTER_PRESETS = [
-  { name: "Under $10", params: { min: "", max: "10" } },
-  { name: "Under $50", params: { min: "", max: "50" } },
-  { name: "High Liquidity", params: { sort: "popularity_desc" } },
-  { name: "Newest", params: { sort: "newest" } },
-  { name: "Clear All", params: {} }
-];
-
-// Enhanced filter presets based on user requirements
-interface PresetParams {
-  min?: string;
-  max?: string;
-  sort?: string;
-  wear?: string;
-  rarity?: string;
-  stattrak?: string;
-  special?: string;
-  q?: string;
-}
-
-interface Preset {
-  name: string;
-  params: PresetParams;
-}
-
-const ENHANCED_FILTER_PRESETS: Record<string, Preset[]> = {
-  // Budget Presets
-  budget: [
-    { name: "Under $5", params: { max: "5", sort: "price_asc" } },
-    { name: "Under $10", params: { max: "10", sort: "price_asc" } },
-    { name: "$10–$50", params: { min: "10", max: "50", sort: "price_asc" } },
-    { name: "$50–$100", params: { min: "50", max: "100" } },
-    { name: "$100–$500", params: { min: "100", max: "500" } },
-    { name: "$500+", params: { min: "500", sort: "price_desc" } }
-  ],
-  
-  // Wear Presets (will be populated from DB)
-  wear: [],
-  
-  // Rarity Presets (will be populated from DB)
-  rarity: [],
-  
-  // StatTrak & Star
-  special: [
-    { name: "StatTrak only", params: { stattrak: "true" } },
-    { name: "Non-StatTrak", params: { stattrak: "false" } },
-    { name: "★ Star items", params: { special: "true" } }
-  ],
-  
-  // Category Presets via Search
-  category: [
-    { name: "Knives", params: { q: "★" } },
-    { name: "Gloves", params: { q: "Gloves" } },
-    { name: "Stickers", params: { q: "Sticker |" } },
-    { name: "Souvenir", params: { q: "Souvenir " } },
-    { name: "AK-47", params: { q: "AK-47" } },
-    { name: "M4A1-S", params: { q: "M4A1-S" } },
-    { name: "AWP", params: { q: "AWP" } }
-  ],
-  
-  // Finish/Theme Presets
-  finish: [
-    { name: "Doppler", params: { q: "Doppler" } },
-    { name: "Case Hardened", params: { q: "Case Hardened" } },
-    { name: "Crimson Web", params: { q: "Crimson Web" } },
-    { name: "Gold Stickers", params: { q: "(Gold)" } }
-  ],
-  
-  // Combined Presets
-  combined: [
-    { name: "Budget Play Skins", params: { max: "10", wear: "Field-Tested", sort: "price_asc" } },
-    { name: "Covert FN", params: { rarity: "Covert", wear: "Factory New", sort: "price_desc" } },
-    { name: "★ Premium Knives", params: { special: "true", min: "200", sort: "price_desc" } },
-    { name: "Souvenir FN", params: { q: "Souvenir ", wear: "Factory New", sort: "price_desc" } },
-    { name: "Stickers <$5", params: { q: "Sticker |", max: "5", sort: "price_asc" } }
-  ],
-  
-  // Sort Presets
-  sort: [
-    { name: "Price ↑", params: { sort: "price_asc" } },
-    { name: "Price ↓", params: { sort: "price_desc" } },
-    { name: "Newest", params: { sort: "newest" } },
-    { name: "A→Z", params: { sort: "name_asc" } },
-    { name: "Z→A", params: { sort: "name_desc" } }
-  ]
-};
+// Non-skin tabs that should redirect to the relevant catalog page.
+// We still render them as tabs so the user has one mental model for "browse CS2 catalog".
+const EXTERNAL_TABS = [
+  { name: "Stickers", href: "/items?category=sticker" },
+  { name: "Agents",   href: "/items?category=agent"   },
+  { name: "Patches",  href: "/items?category=patch"   },
+  { name: "Cases",    href: "/cases"                  },
+] as const;
 
 const PAGE_SIZE = 24;
 
 export function SkinsPageContent() {
   const router = useRouter();
   const sp = useSearchParams();
+  const { getToken } = useAuth();
   
   // Filter states
-  const [searchQuery, setSearchQuery] = useState(sp.get("q") || "");
-  const [priceRange, setPriceRange] = useState([0, 5000]);
-  const [selectedWear, setSelectedWear] = useState<string[]>([]);
-  const [selectedRarity, setSelectedRarity] = useState<string[]>([]);
-  const [stattrakEnabled, setStattrakEnabled] = useState(false);
-  const [specialEnabled, setSpecialEnabled] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [sortBy, setSortBy] = useState("price_asc");
+  // (Removed: 8 unused state vars that were set but never read. — cleanup pass)
 
   // URL-synced state
   const [q, setQ] = useState(sp.get("q") ?? "");
@@ -227,40 +113,11 @@ export function SkinsPageContent() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [enableInfiniteScroll, setEnableInfiniteScroll] = useState(true);
 
-  // Data state - page is now handled by useInfiniteSkins hook
-
   // Enhanced features state
   const [debouncedQ, setDebouncedQ] = useState(q);
 
-  // Get skins data with infinite scroll
-  const { 
-    skins, 
-    total, 
-    pagination, 
-    error, 
-    isLoading, 
-    isLoadingMore,
-    isEmpty,
-    hasError,
-    setSize
-  } = useInfiniteSkins({
-    filters: {
-      q: debouncedQ,
-      min: min ? Number(min) : undefined,
-      max: max ? Number(max) : undefined,
-      rarity,
-      wear,
-      quality,
-      stattrak: stattrak || undefined,
-      special: special || undefined,
-      sort,
-      category,
-      weaponType,
-      collection,
-      finish,
-    },
-    enabled: true
-  });
+  // Total result count comes from EnhancedSkinGrid via callback (it owns the data hook now).
+  const [total, setTotal] = useState<number | null>(null);
 
   // Preset values from backend
   const [presetValues, setPresetValues] = useState<{
@@ -473,14 +330,15 @@ export function SkinsPageContent() {
 
   const addSelectedToWatchlist = async () => {
     if (selectedSkins.size === 0) return;
-    
+
     setBatchLoading(true);
     try {
+      const token = await getToken({ template: "backend" });
       const promises = Array.from(selectedSkins).map(skinId =>
         fetchJson(apiUrl('/api/v1/watchlist'), {
           method: "POST",
-          headers: { 
-            "Authorization": `Bearer ${localStorage.getItem("token")}` 
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
           },
           body: JSON.stringify({ skinId }),
         })
@@ -499,24 +357,32 @@ export function SkinsPageContent() {
 
   const addSelectedToPortfolio = async () => {
     if (selectedSkins.size === 0) return;
-    
+
     setBatchLoading(true);
     try {
-      const promises = Array.from(selectedSkins).map(skinId =>
-        fetchJson(apiUrl('/api/v1/portfolio'), {
+      const token = await getToken({ template: "backend" });
+      // Fetch each skin to get current price (batch endpoint not available yet)
+      const promises = Array.from(selectedSkins).map(async (skinId) => {
+        const skinRes = await fetchJson<any>(apiUrl(`/api/v1/skins/${skinId}`));
+        const skin = skinRes?.success ? skinRes.data : skinRes;
+        const buyPrice = skin?.priceMedian ?? skin?.priceLatest ?? null;
+        if (buyPrice == null || buyPrice <= 0) {
+          throw new Error(`Skin ${skinId} has no price data`);
+        }
+        return fetchJson(apiUrl('/api/v1/portfolio'), {
           method: "POST",
-          headers: { 
-            "Authorization": `Bearer ${localStorage.getItem("token")}` 
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
           },
           body: JSON.stringify({
             skinId,
             amount: 1,
-            buyPrice: 0, // Would need actual price data
-            buyDate: new Date().toISOString().slice(0, 10),
+            buyPrice,
+            buyDate: new Date().toISOString(),
           }),
-        })
-      );
-      
+        });
+      });
+
       await Promise.all(promises);
       toast.success(`${selectedSkins.size} skins added to portfolio!`);
       clearSelection();
@@ -594,8 +460,7 @@ export function SkinsPageContent() {
     if (weaponType) p.set("weaponType", weaponType);
     if (collection) p.set("collection", collection);
     if (finish) p.set("finish", finish);
-    
-    console.log("🔄 Updating URL with params:", p.toString());
+
     router.replace(`/skins?${p.toString()}`, { scroll: false });
   }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, weaponType, collection, finish, router]);
 
@@ -619,13 +484,7 @@ export function SkinsPageContent() {
 
 
 
-  // Initial load & when filters change → reset to page 1
-  useEffect(() => { 
-    // Reset to page 1 when filters change
-    if (setSize) {
-      setSize(1);
-    }
-  }, [q, min, max, rarity, wear, quality, stattrak, special, sort, category, setSize]);
+  // (Pagination reset on filter change is now handled internally by useInfiniteSkins via SWRInfinite key change.)
   
   // Load preset values from backend
   useEffect(() => {
@@ -633,17 +492,6 @@ export function SkinsPageContent() {
       try {
         const data = await fetchJson<{wears: string[], rarities: string[]}>(apiUrl('/api/v1/skins/presets'));
         setPresetValues(data);
-        
-        // Populate wear and rarity presets with DB values
-        ENHANCED_FILTER_PRESETS.wear = data.wears.map((wear: string) => ({
-          name: wear,
-          params: { wear }
-        }));
-        
-        ENHANCED_FILTER_PRESETS.rarity = data.rarities.map((rarity: string) => ({
-          name: rarity,
-          params: { rarity }
-        }));
       } catch (error) {
         console.error("Failed to load preset values:", error);
         // Set fallback values to prevent UI crashes
@@ -658,26 +506,17 @@ export function SkinsPageContent() {
   }, []);
 
   function updateCategory(newCategory: string | undefined) {
-    console.log("🔄 updateCategory called with:", newCategory);
-    console.log("🔄 Current category state:", category);
-    
     if (newCategory === 'all') {
-      console.log("🔄 Setting category to undefined (All)");
       setCategory(undefined);
     } else if (category === newCategory) {
       // Toggle off if same category clicked
-      console.log("🔄 Toggling off category:", newCategory);
       setCategory(undefined);
     } else {
-      console.log("🔄 Setting new category:", newCategory);
       setCategory(newCategory);
     }
-    
-    console.log("🔄 Category state after update:", category);
   }
 
   function clearFilters() {
-    console.log("🔄 Clearing all filters");
     setQ("");
     setMin("");
     setMax("");
@@ -694,34 +533,11 @@ export function SkinsPageContent() {
     clearFiltersFromSession();
   }
 
-  // Enhanced filter preset handler
-  const applyFilterPreset = useCallback((preset: any) => {
-    console.log("🔄 Applying filter preset:", preset.name);
-    
-    if (preset.name === "Clear All") {
-      clearFilters();
-      return;
-    }
-    
-    // Apply preset parameters
-    if (preset.params.min !== undefined) setMin(preset.params.min);
-    if (preset.params.max !== undefined) setMax(preset.params.max);
-    if (preset.params.sort !== undefined) setSort(preset.params.sort);
-    if (preset.params.wear !== undefined) setWear(preset.params.wear);
-    if (preset.params.rarity !== undefined) setRarity(preset.params.rarity);
-    if (preset.params.stattrak !== undefined) setStattrak(preset.params.stattrak === "true");
-    if (preset.params.special !== undefined) setSpecial(preset.params.special === "true");
-    if (preset.params.q !== undefined) setQ(preset.params.q);
-    
-    // Page is automatically reset by useInfiniteSkins hook when filters change
-  }, []);
-
   // P3: Export/Import Filter URLs
   const copyCurrentLink = useCallback(async () => {
     try {
       const currentUrl = window.location.href;
       await navigator.clipboard.writeText(currentUrl);
-      console.log("🔗 Link copied to clipboard:", currentUrl);
       // Could add a toast notification here
     } catch (error) {
       console.error("💥 Failed to copy link:", error);
@@ -764,7 +580,6 @@ export function SkinsPageContent() {
         if (filters.weaponType !== undefined) setWeaponType(filters.weaponType);
         if (filters.collection !== undefined) setCollection(filters.collection);
         if (filters.finish !== undefined) setFinish(filters.finish);
-        console.log("📥 Filters imported successfully");
       } catch (error) {
         console.error("💥 Failed to import filters:", error);
       }
@@ -790,8 +605,13 @@ export function SkinsPageContent() {
   };
 
   return (
-    <div className="dashboard-bg">
-      <div className="container mx-auto px-4 py-8 relative z-10">
+    <AppShell
+      eyebrow="Catalog"
+      title="Skins"
+      description="Browse, filter, and add CS2 skins to your watchlist or portfolio."
+      maxWidth="7xl"
+    >
+      <div className="relative z-10">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Sidebar - Enhanced Filters */}
           <div className="w-full lg:w-80">
@@ -835,17 +655,17 @@ export function SkinsPageContent() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 space-y-6">
-            {/* Header */}
-            <div>
-              <h1 className="text-3xl font-bold">Browse Skins</h1>
-            </div>
-
+          <div className="flex-1 space-y-5">
             {/* Active filter chips & result count */}
             <div className="space-y-4">
-              {/* Result Count */}
-              <div className="text-sm text-muted-foreground">
-                {total ? `${total} results` : "Loading..."}
+              {/* Result Count — mono tabular numbers */}
+              <div className="flex items-baseline gap-2">
+                <span className="font-mono text-2xl font-semibold text-white tabular-nums">
+                  {total != null ? total.toLocaleString("en-GB") : "—"}
+                </span>
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                  results
+                </span>
               </div>
               
               {/* Active Filter Chips */}
@@ -905,11 +725,11 @@ export function SkinsPageContent() {
                   )}
                   
                   {wear && (
-                    <Badge 
-                      variant="secondary" 
+                    <Badge
+                      variant="secondary"
                       className="flex items-center gap-1 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
                     >
-                      {wear.toUpperCase()}
+                      Wear: {wear.split(',').map(w => w.trim().toUpperCase()).filter(Boolean).join(' + ')}
                       <button
                         className="h-3 w-3 cursor-pointer hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         onClick={() => setWear("")}
@@ -1038,114 +858,77 @@ export function SkinsPageContent() {
               )}
             </div>
 
-            {/* Category Tabs */}
-            <div className="flex gap-2">
+            {/* Category Tabs — skin sub-categories live here; non-skin tabs link out */}
+            <div className="flex gap-2 flex-wrap items-center">
               {Object.entries(CS2_CATEGORIES).map(([key, cat]) => {
                 const isActive = key === 'all' ? !category : category === key;
                 return (
-                  <Button
+                  <button
                     key={key}
-                    variant={isActive ? "default" : "outline"}
                     onClick={() => updateCategory(key === 'all' ? undefined : key)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                      isActive
+                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-[0_8px_20px_-8px_rgba(168,85,247,0.55)]"
+                        : "bg-slate-900/70 border border-slate-700/30 text-slate-300 hover:text-white hover:border-slate-600/60"
+                    )}
                   >
                     {cat.name}
-                  </Button>
+                  </button>
                 );
               })}
+              {/* Visual divider between skin-internal categories and external catalog links */}
+              <span className="h-6 w-px bg-slate-700/40 mx-1" aria-hidden="true" />
+              {EXTERNAL_TABS.map((tab) => (
+                <a
+                  key={tab.href}
+                  href={tab.href}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-slate-900/40 border border-dashed border-slate-700/40 text-slate-400 hover:text-white hover:border-slate-600/60 transition-all inline-flex items-center gap-1.5"
+                >
+                  {tab.name}
+                  <span className="text-[10px] text-slate-600" aria-hidden="true">↗</span>
+                </a>
+              ))}
             </div>
 
             {/* Price-based Quick Filters */}
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <Label className="text-sm font-medium">Quick Filters:</Label>
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      // Smart toggle: if already set to this range, clear it
-                      if (min === "" && max === "5") {
-                        setMin("");
-                        setMax("");
-                      } else {
-                        setMin("");
-                        setMax("5");
-                        setSort("price_asc");
-                      }
-                    }}
-                    className={min === "" && max === "5" ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    Under $5
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (min === "" && max === "25") {
-                        setMin("");
-                        setMax("");
-                      } else {
-                        setMin("");
-                        setMax("25");
-                        setSort("price_asc");
-                      }
-                    }}
-                    className={min === "" && max === "25" ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    Under $25
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (min === "100" && max === "500") {
-                        setMin("");
-                        setMax("");
-                      } else {
-                        setMin("100");
-                        setMax("500");
-                        setSort("price_desc");
-                      }
-                    }}
-                    className={min === "100" && max === "500" ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    $100-$500
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (min === "500" && max === "") {
-                        setMin("");
-                        setMax("");
-                      } else {
-                        setMin("500");
-                        setMax("");
-                        setSort("price_desc");
-                      }
-                    }}
-                    className={min === "500" && max === "" ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    $500+
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (min === "1000" && max === "") {
-                        setMin("");
-                        setMax("");
-                      } else {
-                        setMin("1000");
-                        setMax("");
-                        setSort("price_desc");
-                      }
-                    }}
-                    className={min === "1000" && max === "" ? "bg-primary text-primary-foreground" : ""}
-                  >
-                    High Value ($1000+)
-                  </Button>
-                </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                Quick filters
+              </span>
+              <div className="flex gap-2 flex-wrap">
+                {([
+                  { label: "Under €5", lo: "", hi: "5", srt: "price_asc" },
+                  { label: "Under €25", lo: "", hi: "25", srt: "price_asc" },
+                  { label: "€100–€500", lo: "100", hi: "500", srt: "price_desc" },
+                  { label: "€500+", lo: "500", hi: "", srt: "price_desc" },
+                  { label: "High value (€1000+)", lo: "1000", hi: "", srt: "price_desc" },
+                ] as const).map((q) => {
+                  const active = min === q.lo && max === q.hi;
+                  return (
+                    <button
+                      key={q.label}
+                      onClick={() => {
+                        if (active) {
+                          setMin("");
+                          setMax("");
+                        } else {
+                          setMin(q.lo);
+                          setMax(q.hi);
+                          setSort(q.srt);
+                        }
+                      }}
+                      className={cn(
+                        "px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                        active
+                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-[0_8px_20px_-8px_rgba(168,85,247,0.55)]"
+                          : "bg-slate-900/70 border border-slate-700/30 text-slate-300 hover:text-white hover:border-slate-600/60"
+                      )}
+                    >
+                      {q.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -1195,7 +978,7 @@ export function SkinsPageContent() {
             </div>
 
             {/* Enhanced Skin Grid with Better Empty State */}
-            <EnhancedSkinGrid 
+            <EnhancedSkinGrid
               filters={{
                 q: debouncedQ,
                 min: min ? Number(min) : undefined,
@@ -1212,9 +995,9 @@ export function SkinsPageContent() {
                 finish,
               }}
               showSkeleton={true}
-              skeletonCount={6}
+              skeletonCount={10}
               enableInfiniteScroll={enableInfiniteScroll}
-              // P3: Batch selection props
+              onTotalChange={setTotal}
               batchMode={batchMode}
               selectedSkins={selectedSkins}
               onToggleSelection={toggleSkinSelection}
@@ -1233,6 +1016,6 @@ export function SkinsPageContent() {
           </div>
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }

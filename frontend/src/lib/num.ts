@@ -1,4 +1,13 @@
-// {/* Number helpers: safe parsing + formatting */}
+// Number helpers: safe parsing + formatting.
+//
+// Currency convention:
+//   - Steam Market prices are scraped in EUR for our European user base.
+//   - All numeric values flowing through the app are EUR-denominated.
+//   - `formatUSD` / `formatEUR` are now aliases that format the EUR value in the
+//     user's currently-selected display currency (set by CurrencyContext).
+//   - Default display currency is EUR. If a user picks USD or GBP in their
+//     profile, the same EUR value is multiplied by the FX rate and rendered with
+//     the right symbol and locale.
 
 export function numberOrNull(v: unknown): number | null {
   if (v === null || v === undefined) return null;
@@ -14,17 +23,15 @@ export function safeToFixed(v: unknown, digits = 2): string {
 // -----------------------------------------------------------------------------
 // Runtime currency config (set by CurrencyContext on mount/change).
 //
-// `formatUSD` keeps its name for backward compatibility, but now formats the
-// amount in the user's preferred currency using a static FX rate. The function
-// still treats its input as a USD-denominated value (which is how every
-// existing consumer passes data).
+// Base currency is EUR (1.0). Rates are EUR → target. Multiply an EUR amount
+// by `activeRate` to get the amount in `activeCurrency`.
 // -----------------------------------------------------------------------------
 
-type CurrencyCode = "USD" | "EUR" | "GBP";
+type CurrencyCode = "EUR" | "USD" | "GBP";
 
-let activeCurrency: CurrencyCode = "USD";
+let activeCurrency: CurrencyCode = "EUR";
 let activeRate = 1.0;
-let activeLocale = "en-US";
+let activeLocale = "de-DE";
 
 export function setActiveCurrency(
   code: CurrencyCode,
@@ -41,10 +48,10 @@ export function getActiveCurrency(): CurrencyCode {
 }
 
 /**
- * Format a USD-denominated number in the user's preferred currency.
- * Kept as `formatUSD` for backward compatibility across ~29 call sites.
+ * Format an EUR-denominated number in the user's preferred display currency.
+ * Called from ~29 sites across the app via the legacy `formatUSD` alias.
  */
-export function formatUSD(v: unknown, digits = 2): string {
+export function formatEUR(v: unknown, digits = 2): string {
   const n = numberOrNull(v);
   if (n === null) return "—";
   const converted = n * activeRate;
@@ -60,4 +67,20 @@ export function formatUSD(v: unknown, digits = 2): string {
       activeCurrency === "EUR" ? "€" : activeCurrency === "GBP" ? "£" : "$";
     return `${symbol}${converted.toFixed(digits)}`;
   }
+}
+
+/** @deprecated Alias for formatEUR. Kept so existing imports keep working. */
+export const formatUSD = formatEUR;
+
+/**
+ * Cap absurd percentage display. Cost-basis-against-tiny-buy-price can produce
+ * 5000%+ values which look like bugs. Returns "{value}%" or ">999%" / "<-999%"
+ * for outliers.
+ */
+export function formatPctSafe(pct: number, digits = 2): string {
+  if (!Number.isFinite(pct)) return "—";
+  if (pct > 999) return ">999%";
+  if (pct < -999) return "<-999%";
+  const sign = pct > 0 ? "+" : "";
+  return `${sign}${pct.toFixed(digits)}%`;
 }

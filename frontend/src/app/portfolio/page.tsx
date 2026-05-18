@@ -23,6 +23,10 @@ import PortfolioHealthScore from "./PortfolioHealthScore";
 import MarketIntelligence from "./MarketIntelligence";
 import { KPICard } from "@/components/ui/kpi-card";
 import { tokens } from "@/lib/design-tokens";
+import { AppShell } from "@/components/layout/AppShell";
+import { PortfolioSummaryStrip } from "./_components/PortfolioSummaryStrip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Link2, Plus } from "lucide-react";
 
 
 // {/* Authentifizierte Hooks */}
@@ -92,18 +96,39 @@ export default function PortfolioPage() {
     }
   }
 
-  // While loading auth state or data, show a loading message.
+  // While loading auth state or data, show skeleton.
   if (!isLoaded || isLoading) {
-    return <div className="text-white p-6">Loading portfolio…</div>;
+    return (
+      <AppShell eyebrow="Portfolio" title="Your Portfolio" description="Loading…">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-28 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+            ))}
+          </div>
+          <div className="h-72 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+          <div className="h-96 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+        </div>
+      </AppShell>
+    );
   }
 
   // Redirect if not signed in
   if (!isSignedIn) {
-    return <div className="text-white p-6">Please sign in to view your portfolio.</div>;
+    return (
+      <AppShell eyebrow="Portfolio" title="Your Portfolio">
+        <p className="text-slate-300">Please sign in to view your portfolio.</p>
+      </AppShell>
+    );
   }
 
   return (
-    <div className={`${tokens.bg.base} text-white p-2 sm:p-4 min-h-screen`}>
+    <AppShell
+      eyebrow="Portfolio"
+      title="Your Portfolio"
+      description="Overview of your skins, value history & watchlist"
+      maxWidth="7xl"
+    >
       {/* Error Banner */}
       {error && (
         <Card className="mb-6 border-destructive">
@@ -113,93 +138,70 @@ export default function PortfolioPage() {
         </Card>
       )}
 
-      {/* Premium Status Banner - Temporary with X button */}
+      {/* Premium Status Banner — compact, dismissible */}
       {isPremium && showPremiumBanner && (
-        <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-4 mb-6 relative animate-slide-in-down">
+        <div className="flex items-center gap-3 bg-emerald-500/8 border border-emerald-500/25 rounded-2xl px-4 py-3 mb-5">
+          <div className="w-7 h-7 rounded-md bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center flex-shrink-0">
+            <Crown className="w-3.5 h-3.5 text-emerald-300" aria-hidden="true" />
+          </div>
+          <p className="flex-1 text-sm text-slate-300">
+            <span className="text-emerald-300 font-semibold">Pro active</span> — advanced charts, smart alerts, and research tools unlocked.
+          </p>
           <button
             onClick={() => setShowPremiumBanner(false)}
-            className="absolute top-2 right-2 text-green-300 hover:text-white transition-colors"
-            aria-label="Close banner"
+            className="text-slate-500 hover:text-white transition-colors"
+            aria-label="Dismiss"
           >
             <X className="w-4 h-4" />
           </button>
-          <div className="flex items-center gap-3 pr-6">
-            <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
-              <Crown className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white">Premium Active</h3>
-              <p className="text-sm text-green-300">You have access to all premium features including advanced charts, smart alerts, and market intelligence.</p>
-            </div>
-          </div>
         </div>
       )}
 
       {/* Main */}
-      <main className="max-w-6xl mx-auto section-container relative z-10">
-        {/* Header KPIs Section */}
-        <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
-          <CardHeader className="pb-8">
-            <CardTitle className="text-h1 animate-slide-in-left mb-4">Your Portfolio</CardTitle>
-            <CardDescription className="text-body animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
-              Overview of your skins, value history & watchlist
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-          
-          {/* Hero KPIs */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <KPICard
-              label="Total Value"
-              value={`$${kpiData?.portfolioValue?.toFixed(2) || "0.00"}`}
-              delta={kpiData?.portfolioChange24h !== 0 ? kpiData?.portfolioChange24h : undefined}
-              deltaLabel="24h"
-            />
-            <KPICard
-              label="Unrealized P/L"
-              value={`$${kpiData?.unrealizedPL?.toFixed(2) || "0.00"}`}
-              delta={kpiData?.portfolioChange7d !== 0 ? kpiData?.portfolioChange7d : undefined}
-              deltaLabel="7d"
-            />
-            <KPICard
-              label="Portfolio Skins"
-              value={String(kpiData?.portfolioCount || portfolioSkins.length)}
-            />
-          </div>
-
-          {/* Secondary Info */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <KPICard
-              label="Total Invested"
-              value={`$${kpiData?.totalInvested?.toFixed(2) || "0.00"}`}
-            />
-            <KPICard
-              label="Watchlist"
-              value={String(kpiData?.watchlistCount || watchlist.length)}
-            />
-            <KPICard
-              label="Active Alerts"
-              value={String(kpiData?.activeAlerts || 0)}
-            />
-            <KPICard
-              label="24h Change"
-              value={`${kpiData?.portfolioChange24h?.toFixed(1) || "0.0"}%`}
-              delta={kpiData?.portfolioChange24h !== 0 ? kpiData?.portfolioChange24h : undefined}
-            />
-          </div>
-
-          {/* Last Updated */}
-          <div className="text-center mb-4">
-            <LastUpdatedChip onRefresh={() => mutate()} />
-          </div>
-          </CardContent>
-        </Card>
+      <main className="space-y-5 relative z-10">
+        {/* Summary strip — adapted from portfolio-hifi.html */}
+        <PortfolioSummaryStrip
+          cards={[
+            {
+              label: "Total value",
+              value: `€${(kpiData?.portfolioValue ?? 0).toFixed(2)}`,
+              sub:
+                kpiData?.portfolioChange24h && kpiData.portfolioChange24h !== 0
+                  ? `${kpiData.portfolioChange24h >= 0 ? "↗ +" : "↘ "}€${Math.abs((kpiData.portfolioValue ?? 0) * kpiData.portfolioChange24h / 100).toFixed(2)} (${kpiData.portfolioChange24h >= 0 ? "+" : ""}${kpiData.portfolioChange24h.toFixed(2)}%) today`
+                  : undefined,
+              subTone: (kpiData?.portfolioChange24h ?? 0) >= 0 ? "pos" : "neg",
+              big: true,
+            },
+            {
+              label: "Cost basis",
+              value: `€${(kpiData?.totalInvested ?? 0).toFixed(2)}`,
+              sub: kpiData?.portfolioCount ? `avg over ${kpiData.portfolioCount} lots` : undefined,
+            },
+            {
+              label: "Unrealized P/L",
+              value: `€${(kpiData?.unrealizedPL ?? 0).toFixed(2)}`,
+              sub:
+                kpiData?.unrealizedPL && kpiData.totalInvested
+                  ? `${((kpiData.unrealizedPL / kpiData.totalInvested) * 100).toFixed(2)}% all-time`
+                  : undefined,
+              subTone: (kpiData?.unrealizedPL ?? 0) >= 0 ? "pos" : "neg",
+            },
+            {
+              label: "Watchlist · Alerts",
+              value: `${kpiData?.watchlistCount ?? watchlist.length} · ${kpiData?.activeAlerts ?? 0}`,
+              sub: kpiData?.lastUpdated ? `last sync ${new Date(kpiData.lastUpdated).toLocaleTimeString("en-GB", { hour12: false, hour: "2-digit", minute: "2-digit" })}` : undefined,
+            },
+          ]}
+        />
+        <div className="flex justify-end mb-4">
+          <LastUpdatedChip onRefresh={() => mutate()} />
+        </div>
 
       {/* Portfolio Chart Section */}
-      <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
-        <CardHeader className="pb-8">
-          <CardTitle className="text-2xl font-bold text-white mb-3">Portfolio Value History</CardTitle>
-          <CardDescription className="text-lg text-slate-400">
+      <Card className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl">
+        <CardHeader className="pb-4">
+          <CardTitle className="font-display text-lg font-semibold text-white">Value history</CardTitle>
+          <CardDescription className="text-sm text-slate-400">
             Track your portfolio performance over time
           </CardDescription>
         </CardHeader>
@@ -208,47 +210,57 @@ export default function PortfolioPage() {
         </CardContent>
       </Card>
 
-        {/* Portfolio and Watchlist Tabs - Moved directly under chart */}
-        <Tabs defaultValue="portfolio" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-slate-800/50 border-slate-700/50">
-            <TabsTrigger 
-              value="portfolio" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
+        {/* Portfolio and Watchlist Tabs */}
+        <Tabs defaultValue="portfolio" className="space-y-5">
+          <TabsList className="grid w-full grid-cols-2 bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl p-1 h-auto">
+            <TabsTrigger
+              value="portfolio"
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all py-2"
             >
               Portfolio
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="watchlist"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all duration-200"
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:text-white transition-all py-2"
             >
               Watchlist
             </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="portfolio" className="space-y-6">
-            <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
+
+          <TabsContent value="portfolio" className="space-y-5 mt-0">
+            <Card className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-white animate-slide-in-left">Portfolio</CardTitle>
-                <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+                <CardTitle className="font-display text-lg font-semibold text-white">Holdings</CardTitle>
+                <CardDescription className="text-sm text-slate-400">
                   Your current skin holdings
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <PortfolioTable
-                  skins={portfolioSkins}
-                  watchlist={[]}
-                  onDataChange={() => mutate()}
-                  activeFilter={null}
-                />
+                {portfolioSkins.length === 0 ? (
+                  <EmptyState
+                    icon={Link2}
+                    title="Your portfolio is empty"
+                    description="Connect Steam to import your CS2 inventory in seconds, or add skins manually."
+                    primaryCta={{ label: 'Connect Steam', href: '/account', icon: Link2 }}
+                    secondaryCta={{ label: 'Add manually', href: '/skins' }}
+                  />
+                ) : (
+                  <PortfolioTable
+                    skins={portfolioSkins}
+                    watchlist={[]}
+                    onDataChange={() => mutate()}
+                    activeFilter={null}
+                  />
+                )}
               </CardContent>
             </Card>
           </TabsContent>
           
-          <TabsContent value="watchlist" className="space-y-6">
-            <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
+          <TabsContent value="watchlist" className="space-y-5 mt-0">
+            <Card className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-white animate-slide-in-left">Watchlist</CardTitle>
-                <CardDescription className="text-slate-300 animate-slide-in-left" style={{ animationDelay: '0.1s' }}>
+                <CardTitle className="font-display text-lg font-semibold text-white">Watchlist</CardTitle>
+                <CardDescription className="text-sm text-slate-400">
                   Track skins you're interested in
                 </CardDescription>
               </CardHeader>
@@ -264,17 +276,13 @@ export default function PortfolioPage() {
         </Tabs>
 
       {/* Premium Features Section */}
-      <div className="space-y-20">
-        {/* Section Divider */}
-        <div className="relative my-16">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-700/30"></div>
-          </div>
-          <div className="relative flex justify-center">
-            <span className="bg-slate-900 px-8 py-2 text-lg font-semibold text-slate-300 border border-slate-700/50 rounded-full">
-              Premium Features
-            </span>
-          </div>
+      <div className="space-y-5">
+        <div className="flex items-center gap-3 pt-8">
+          <div className="flex-1 h-px bg-slate-700/30" />
+          <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-purple-300/80">
+            Pro features
+          </span>
+          <div className="flex-1 h-px bg-slate-700/30" />
         </div>
 
           {/* Performance Dashboard */}
@@ -289,9 +297,9 @@ export default function PortfolioPage() {
         {/* Advanced Charts */}
         <PremiumFeatureFlag feature="advanced-charts">
           <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
-            <CardHeader className="pb-8">
-              <CardTitle className="text-2xl font-bold text-white mb-3">Advanced Charts</CardTitle>
-              <CardDescription className="text-lg text-slate-400">
+            <CardHeader className="pb-4">
+              <CardTitle className="font-display text-lg font-semibold text-white">Advanced Charts</CardTitle>
+              <CardDescription className="text-sm text-slate-400">
                 Professional-grade charting and analysis tools
               </CardDescription>
             </CardHeader>
@@ -308,9 +316,9 @@ export default function PortfolioPage() {
           {/* Smart Alerts */}
           <PremiumFeatureFlag feature="smart-alerts">
             <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
-              <CardHeader className="pb-8">
-                <CardTitle className="text-2xl font-bold text-white mb-3">Smart Alerts</CardTitle>
-                <CardDescription className="text-lg text-slate-400">
+              <CardHeader className="pb-4">
+                <CardTitle className="font-display text-lg font-semibold text-white">Smart Alerts</CardTitle>
+                <CardDescription className="text-sm text-slate-400">
                   Intelligent price alerts and notifications
                 </CardDescription>
               </CardHeader>
@@ -327,9 +335,9 @@ export default function PortfolioPage() {
           {/* Transaction Analytics */}
           <PremiumFeatureFlag feature="transaction-analytics">
             <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
-              <CardHeader className="pb-8">
-                <CardTitle className="text-2xl font-bold text-white mb-3">Transaction Analytics</CardTitle>
-                <CardDescription className="text-lg text-slate-400">
+              <CardHeader className="pb-4">
+                <CardTitle className="font-display text-lg font-semibold text-white">Transaction Analytics</CardTitle>
+                <CardDescription className="text-sm text-slate-400">
                   Detailed analysis of your trading activity
                 </CardDescription>
               </CardHeader>
@@ -346,9 +354,9 @@ export default function PortfolioPage() {
           {/* Portfolio Health Score */}
           <PremiumFeatureFlag feature="portfolio-health-score">
             <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
-              <CardHeader className="pb-8">
-                <CardTitle className="text-2xl font-bold text-white mb-3">Portfolio Health Score</CardTitle>
-                <CardDescription className="text-lg text-slate-400">
+              <CardHeader className="pb-4">
+                <CardTitle className="font-display text-lg font-semibold text-white">Portfolio Health Score</CardTitle>
+                <CardDescription className="text-sm text-slate-400">
                   Assess the health and risk of your portfolio
                 </CardDescription>
               </CardHeader>
@@ -365,9 +373,9 @@ export default function PortfolioPage() {
           {/* Market Intelligence */}
           <PremiumFeatureFlag feature="market-intelligence">
             <Card className={`${tokens.bg.surface} ${tokens.border.default}`}>
-              <CardHeader className="pb-8">
-                <CardTitle className="text-2xl font-bold text-white mb-3">Market Intelligence</CardTitle>
-                <CardDescription className="text-lg text-slate-400">
+              <CardHeader className="pb-4">
+                <CardTitle className="font-display text-lg font-semibold text-white">Market Intelligence</CardTitle>
+                <CardDescription className="text-sm text-slate-400">
                   Market insights and trends analysis
                 </CardDescription>
               </CardHeader>
@@ -383,6 +391,6 @@ export default function PortfolioPage() {
         </div>
 
       </main>
-    </div>
+    </AppShell>
   );
 }

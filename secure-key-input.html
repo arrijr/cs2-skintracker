@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS2 Skin Tracker - Secure Production Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #1a202c;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .warning {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #c53030;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .label-info {
+            font-size: 12px;
+            color: #718096;
+            display: block;
+            margin-top: 2px;
+            font-weight: normal;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            transition: border-color 0.2s;
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-submit {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background: #5568d3;
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-submit:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-cancel {
+            background: #f7fafc;
+            color: #2d3748;
+            border: 1px solid #cbd5e0;
+        }
+
+        .btn-cancel:hover {
+            background: #edf2f7;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .status.success {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+            display: block;
+        }
+
+        .status.error {
+            background: #fff5f5;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+            display: block;
+        }
+
+        .status.info {
+            background: #eff6ff;
+            color: #1e3a8a;
+            border: 1px solid #bfdbfe;
+            display: block;
+        }
+
+        .instructions {
+            background: #f7fafc;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .instructions li {
+            margin-bottom: 6px;
+        }
+
+        .step-indicator {
+            display: inline-block;
+            background: #edf2f7;
+            color: #2d3748;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CS2 Skin Tracker</h1>
+        <p class="subtitle">Secure Production Setup - Collect API Keys</p>
+
+        <div class="warning">
+            ⚠️ <strong>Security Notice:</strong> Keys are encrypted in transit and stored securely. They will NOT be logged or displayed in plaintext.
+        </div>
+
+        <div class="instructions">
+            <strong>Before you begin:</strong>
+            <ol>
+                <li>Open <strong>Clerk Dashboard</strong> → API Keys → copy Secret Key (sk_live_...)</li>
+                <li>Open <strong>Stripe Dashboard</strong> → Developers → API Keys → copy Secret Key (sk_live_...)</li>
+                <li>Paste both keys below (they appear as dots for security)</li>
+            </ol>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <form id="keyForm">
+            <div class="form-group">
+                <span class="step-indicator">STEP 1 / 2</span>
+                <label for="clerkKey">
+                    CLERK_SECRET_KEY
+                    <span class="label-info">From: Clerk Dashboard → API Keys</span>
+                </label>
+                <input
+                    type="password"
+                    id="clerkKey"
+                    placeholder="sk_live_..."
+                    required
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="form-group">
+                <span class="step-indicator">STEP 2 / 2</span>
+                <label for="stripeKey">
+                    STRIPE_SECRET_KEY
+                    <span class="label-info">From: Stripe Dashboard → Developers → API Keys</span>
+                </label>
+                <input
+                    type="password"
+                    id="stripeKey"
+                    placeholder="sk_live_..."
+                    required
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-cancel" onclick="window.close()">Cancel</button>
+                <button type="submit" class="btn-submit" id="submitBtn">Continue to Deployment</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('keyForm');
+        const statusEl = document.getElementById('status');
+        const submitBtn = document.getElementById('submitBtn');
+        const clerkInput = document.getElementById('clerkKey');
+        const stripeInput = document.getElementById('stripeKey');
+
+        function showStatus(message, type) {
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        function validateKeys() {
+            const clerkKey = clerkInput.value.trim();
+            const stripeKey = stripeInput.value.trim();
+
+            if (!clerkKey) {
+                showStatus('❌ CLERK_SECRET_KEY is required', 'error');
+                return false;
+            }
+
+            if (!clerkKey.startsWith('sk_live_')) {
+                showStatus('❌ CLERK_SECRET_KEY must start with sk_live_', 'error');
+                return false;
+            }
+
+            if (!stripeKey) {
+                showStatus('❌ STRIPE_SECRET_KEY is required', 'error');
+                return false;
+            }
+
+            if (!stripeKey.startsWith('sk_live_')) {
+                showStatus('❌ STRIPE_SECRET_KEY must start with sk_live_', 'error');
+                return false;
+            }
+
+            return { clerkKey, stripeKey };
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const validation = validateKeys();
+            if (!validation) return;
+
+            submitBtn.disabled = true;
+            showStatus('⏳ Processing keys securely...', 'info');
+
+            try {
+                // Send keys to backend securely
+                const response = await fetch('/api/v1/setup/production-keys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        clerkSecretKey: validation.clerkKey,
+                        stripeSecretKey: validation.stripeKey,
+                    }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    showStatus(`❌ ${error.message || 'Failed to save keys'}`, 'error');
+                    submitBtn.disabled = false;
+                    return;
+                }
+
+                showStatus('✅ Keys saved successfully! Proceeding to deployment...', 'success');
+
+                // Redirect to deployment status page
+                setTimeout(() => {
+                    window.location.href = '/setup-deployment-status.html';
+                }, 2000);
+
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Auto-focus first input
+        clerkInput.focus();
+    </script>
+</body>
+</html>

@@ -1,10 +1,13 @@
+// /frontend/src/app/items/[id]/page.tsx — Market item detail (sticker / agent / patch / etc.)
+// Hi-fi treatment to match /skins/[skinId] visual language — adapted for items that don't have wear/float/stickers.
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
+import { AppShell } from "@/components/layout/AppShell";
+import { steamImageSrc } from "@/lib/image-proxy";
 
 interface DetailItem {
   id: number;
@@ -31,12 +34,20 @@ const CATEGORY_LABELS: Record<DetailItem['category'], string> = {
   key: 'Key',
 };
 
+const CATEGORY_TINT: Record<DetailItem['category'], string> = {
+  sticker: 'rgba(168,85,247,0.20)',
+  agent: 'rgba(75,105,255,0.18)',
+  patch: 'rgba(245,185,72,0.16)',
+  graffiti: 'rgba(236,72,153,0.18)',
+  music_kit: 'rgba(34,197,94,0.16)',
+  collectible: 'rgba(245,185,72,0.20)',
+  key: 'rgba(120,130,170,0.15)',
+};
+
 async function fetchItem(id: string): Promise<DetailItem | null> {
   const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
   try {
-    const res = await fetch(`${base}/api/v1/market-items/${encodeURIComponent(id)}`, {
-      cache: 'no-store',
-    });
+    const res = await fetch(`${base}/api/v1/market-items/${encodeURIComponent(id)}`, { cache: 'no-store' });
     if (res.status === 404) return null;
     if (!res.ok) return null;
     return (await res.json()) as DetailItem;
@@ -50,14 +61,15 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { id } = await params;
   const item = await fetchItem(id);
-  if (!item) {
-    return { title: "Item not found — skintrackr.com" };
-  }
+  if (!item) return { title: "Item not found — skintrackr.com" };
   return {
     title: `${item.name} — skintrackr.com`,
     description: `${CATEGORY_LABELS[item.category]} ${item.priceLatest != null ? `· €${item.priceLatest.toFixed(2)}` : ''}`.trim(),
   };
 }
+
+const fmtEUR = (n: number) =>
+  new Intl.NumberFormat("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
 export default async function ItemDetailPage(
   { params }: { params: Promise<{ id: string }> }
@@ -67,85 +79,152 @@ export default async function ItemDetailPage(
   if (!item) notFound();
 
   const backHref = `/items?category=${item.category}`;
+  const tint = CATEGORY_TINT[item.category];
+  const deltaPct = item.priceLatest != null && item.priceMedian != null && item.priceMedian > 0
+    ? ((item.priceLatest - item.priceMedian) / item.priceMedian) * 100
+    : null;
+  const isPos = (deltaPct ?? 0) >= 0;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white py-8">
-      <div className="container mx-auto px-4 max-w-5xl">
-        <Button variant="ghost" asChild className="mb-6 text-slate-300 hover:text-white hover:bg-slate-900/50">
-          <Link href={backHref} className="inline-flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to {CATEGORY_LABELS[item.category]}s
-          </Link>
-        </Button>
+    <AppShell eyebrow="Catalog" title={item.name} description={CATEGORY_LABELS[item.category]} maxWidth="7xl">
+      <Button variant="ghost" asChild className="mb-5 text-slate-400 hover:text-white -ml-3">
+        <Link href={backHref} className="inline-flex items-center gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          Back to {CATEGORY_LABELS[item.category]}s
+        </Link>
+      </Button>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <Card className="bg-slate-900/60 backdrop-blur border border-slate-700/50">
-            <CardContent className="p-6">
-              <div className="aspect-square bg-slate-800/40 rounded-md flex items-center justify-center overflow-hidden">
-                {item.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain" />
-                ) : (
-                  <span className="text-slate-500">No image</span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="border-purple-500/30 text-purple-300 bg-purple-500/10">
+      <div className="grid lg:grid-cols-[1.15fr_1fr] gap-5">
+        {/* ART CARD */}
+        <Card className="relative overflow-hidden bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl p-7">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `radial-gradient(ellipse 70% 50% at 30% 30%, ${tint}, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 80%, rgba(168,85,247,0.10), transparent 70%)`,
+            }}
+          />
+          <div className="relative z-10 flex flex-col gap-5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className="inline-flex items-center px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-[0.18em] border"
+                style={{
+                  background: tint.replace("0.2", "0.14").replace("0.18", "0.14").replace("0.16", "0.14"),
+                  borderColor: tint,
+                  color: "#e2e8f0",
+                }}
+              >
                 {CATEGORY_LABELS[item.category]}
-              </Badge>
+              </span>
               {item.rarity && (
-                <Badge variant="outline" className="border-amber-500/30 text-amber-300 bg-amber-500/10">
+                <span
+                  className="inline-flex items-center px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-[0.18em] border border-amber-500/40 bg-amber-500/[0.12] text-amber-300"
+                >
                   {item.rarity}
-                </Badge>
+                </span>
+              )}
+              {item.collection && (
+                <span className="ml-auto text-xs text-slate-500">{item.collection}</span>
               )}
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold">{item.name}</h1>
-            {item.collection && <p className="text-slate-400">From: {item.collection}</p>}
-
-            <div className="grid grid-cols-2 gap-3 pt-4">
-              <Card className="bg-slate-900/60 border-slate-700/50">
-                <CardContent className="p-4">
-                  <div className="text-slate-400 text-xs mb-1">Current price</div>
-                  <div className="text-2xl font-bold text-white">
-                    {item.priceLatest != null ? `€${item.priceLatest.toFixed(2)}` : '—'}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-slate-900/60 border-slate-700/50">
-                <CardContent className="p-4">
-                  <div className="text-slate-400 text-xs mb-1">Median price</div>
-                  <div className="text-2xl font-bold text-white">
-                    {item.priceMedian != null ? `€${item.priceMedian.toFixed(2)}` : '—'}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-slate-900/60 border-slate-700/50">
-                <CardContent className="p-4">
-                  <div className="text-slate-400 text-xs mb-1">24h volume</div>
-                  <div className="text-2xl font-bold text-white">{item.volume24h ?? '—'}</div>
-                </CardContent>
-              </Card>
-              <Card className="bg-slate-900/60 border-slate-700/50">
-                <CardContent className="p-4">
-                  <div className="text-slate-400 text-xs mb-1">Last updated</div>
-                  <div className="text-sm font-medium text-white">
-                    {item.priceUpdatedAt ? new Date(item.priceUpdatedAt).toLocaleString() : '—'}
-                  </div>
-                </CardContent>
-              </Card>
+            <div
+              className="aspect-[16/9] rounded-2xl flex items-center justify-center p-6 relative overflow-hidden border border-slate-700/40"
+              style={{
+                background: `radial-gradient(ellipse 60% 50% at 50% 60%, ${tint}, transparent 70%), linear-gradient(180deg, #1a0b1a 0%, #0a0508 100%)`,
+              }}
+            >
+              {item.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={steamImageSrc(item.imageUrl) ?? item.imageUrl}
+                  alt={item.name}
+                  className="max-h-full max-w-full object-contain"
+                  style={{ filter: `drop-shadow(0 12px 28px ${tint})` }}
+                />
+              ) : (
+                <span className="font-mono text-slate-600 text-sm tracking-widest">NO IMAGE</span>
+              )}
             </div>
-
-            <p className="text-xs text-slate-500 pt-2">
-              Market hash name: <code className="bg-slate-900/60 px-2 py-1 rounded">{item.marketHashName}</code>
-            </p>
           </div>
-        </div>
+        </Card>
+
+        {/* META CARD */}
+        <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl p-7 flex flex-col gap-5">
+          <div>
+            <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight tracking-tight text-white">
+              {item.name}
+            </h1>
+            <div className="flex flex-wrap items-center gap-3 mt-2 text-[13.5px] text-slate-400">
+              <span>{CATEGORY_LABELS[item.category]}</span>
+              {item.collection && (
+                <>
+                  <span className="w-0.5 h-0.5 rounded-full bg-slate-600" aria-hidden="true" />
+                  <span>{item.collection}</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-baseline gap-4 py-4 border-y border-slate-700/40">
+            <span className="font-display text-[3.5rem] font-bold leading-none tracking-tight tabular-nums">
+              {item.priceLatest != null ? <>€{fmtEUR(item.priceLatest)}</> : "—"}
+            </span>
+            {deltaPct != null && deltaPct !== 0 && (
+              <div className="flex flex-col gap-1">
+                <span
+                  className={
+                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-md font-mono font-bold text-sm border " +
+                    (isPos
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                      : "bg-rose-500/10 text-rose-400 border-rose-500/30")
+                  }
+                >
+                  {isPos ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                  {isPos ? "+" : ""}{deltaPct.toFixed(2)}% vs median
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3.5">
+            <StatTile label="Median price" value={item.priceMedian != null ? `€${fmtEUR(item.priceMedian)}` : "—"} />
+            <StatTile label="Volume 24h" value={item.volume24h != null ? String(item.volume24h) : "—"} sub="trades" />
+            <StatTile label="Last update" value={item.priceUpdatedAt ? new Date(item.priceUpdatedAt).toLocaleTimeString("en-GB", { hour12: false, hour: "2-digit", minute: "2-digit" }) : "—"} sub={item.priceUpdatedAt ? new Date(item.priceUpdatedAt).toLocaleDateString("en-GB") : undefined} />
+            <StatTile label="Category" value={CATEGORY_LABELS[item.category]} />
+          </div>
+
+          {item.marketHashName && (
+            <Button asChild variant="outline" className="border-slate-700/50 text-slate-300 hover:text-white gap-2 mt-2">
+              <a
+                href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(item.marketHashName)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Open on Steam Market
+              </a>
+            </Button>
+          )}
+
+          <p className="text-xs text-slate-500 pt-2 border-t border-slate-700/40">
+            Market hash name:{" "}
+            <code className="bg-slate-900/70 border border-slate-700/30 px-2 py-1 rounded font-mono">
+              {item.marketHashName}
+            </code>
+          </p>
+        </Card>
       </div>
+    </AppShell>
+  );
+}
+
+function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700/40">
+      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1.5">{label}</div>
+      <div className="font-mono font-bold text-sm text-white tabular-nums">{value}</div>
+      {sub && <div className="text-[11px] text-slate-500 mt-0.5">{sub}</div>}
     </div>
   );
 }

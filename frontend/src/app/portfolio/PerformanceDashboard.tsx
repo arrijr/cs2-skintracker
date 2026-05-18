@@ -110,7 +110,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
 
   if (!metrics) {
     return (
-      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
         <h3 className="text-xl font-semibold mb-4 text-white">Portfolio Performance</h3>
         <div className="text-center text-slate-400 py-8">
           Not enough data to calculate performance metrics

@@ -37,7 +37,7 @@ export default function PremiumFeatureFlag({
   // If feature is disabled via environment variable, show fallback
   if (!isFeatureEnabled) {
     return fallback || (
-      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md" data-testid="premium-feature">
+      <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md" data-testid="premium-feature">
         <div className="text-center py-8">
           <div className="text-2xl mb-4">🔒</div>
           <h4 className="text-lg font-medium mb-2 text-white">Feature Disabled</h4>
@@ -64,7 +64,7 @@ export default function PremiumFeatureFlag({
   // If loading, show skeleton
   if (loading) {
     return (
-      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md animate-pulse">
+      <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md animate-pulse">
         <div className="h-6 bg-slate-800/60 rounded mb-4"></div>
         <div className="space-y-3">
           <div className="h-4 bg-slate-800/60 rounded"></div>
@@ -92,7 +92,7 @@ export default function PremiumFeatureFlag({
 
   // If not premium, show upgrade prompt
   return (
-    <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md" data-testid="premium-feature-flag">
+    <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md" data-testid="premium-feature-flag">
       <div className="text-center py-8">
         <Lock className="w-16 h-16 mx-auto mb-4 text-purple-400" />
         <h4 className="text-xl font-medium mb-2 text-white">Premium Feature</h4>

@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "vercel-local": {
+      "command": "node",
+      "args": ["backend/outputs/vercel-mcp.js"],
+      "env": {
+        "VERCEL_TOKEN": "vca_8lqghCqLEr6QtdbmstDxuGOQC9oE1FGyLS6i3DAalekCg2vh571p5fhy",
+        "VERCEL_TEAM_ID": "team_cJKTUGiSBkCVJcgaUlkwOnh1"
+      }
+    },
+    "github": {
+      "command": "node",
+      "args": ["${workspaceFolder}/backend/github-mcp.cjs"],
+      "env": {
+        "GITHUB_TOKEN": "process.env.GITHUB_TOKEN"
+      }
+    }
+  }
+}

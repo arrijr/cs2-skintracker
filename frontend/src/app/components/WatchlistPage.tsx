@@ -11,6 +11,11 @@ import {
   fetchJson,
   apiUrl,
 } from "@/lib/api";
+import { AppShell } from "@/components/layout/AppShell";
+import { EmptyState } from "@/components/ui/empty-state";
+import { EmptyTarget } from "@/components/ui/empty-illustrations";
+import { Eye } from "lucide-react";
+import { WatchlistCard, WatchlistEmptySlot } from "@/app/watchlist/_components/WatchlistCard";
 
 type WatchlistItem = {
   id: number;
@@ -126,22 +131,32 @@ export default function WatchlistPage() {
   // {/* UI */}
   // Show loading state until Clerk auth is loaded and data is loaded
   if (!isLoaded || loading) {
-    return <div className="text-center text-zinc-400 py-10">Loading…</div>;
+    return (
+      <AppShell eyebrow="Tracking" title="Watchlist" maxWidth="5xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[0,1,2,3].map(i => <div key={i} className="h-40 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />)}
+        </div>
+      </AppShell>
+    );
   }
 
   // If not authenticated, the redirect will happen in useEffect
   if (!user) {
-    return <div className="text-center text-zinc-400 py-10">Redirecting…</div>;
+    return (
+      <AppShell eyebrow="Tracking" title="Watchlist" maxWidth="5xl">
+        <p className="text-slate-300">Redirecting…</p>
+      </AppShell>
+    );
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Watchlist</h1>
-        <span className="text-sm text-zinc-400">Max. 5 items on free plan</span>
-      </div>
-
+    <AppShell
+      eyebrow="Tracking"
+      title="Watchlist"
+      description="Skins you're keeping an eye on."
+      maxWidth="5xl"
+      actions={<span className="text-sm text-slate-400">Max. 5 items on free plan</span>}
+    >
       {/* Error Alert */}
       {error && (
         <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
@@ -149,94 +164,54 @@ export default function WatchlistPage() {
         </div>
       )}
 
-      {/* Loading State */}
-      {loading && <div className="text-center text-zinc-400 py-10">Loading…</div>}
-
       {/* Empty State */}
       {!loading && items.length === 0 && (
-        <div className="text-center text-zinc-400 py-10">
-          No skins in your watchlist yet.
-        </div>
+        <EmptyState
+          illustration={<EmptyTarget size={120} />}
+          title="No skins in your watchlist yet"
+          description="Add skins to track price movements and get alerts when targets are hit."
+          primaryCta={{ label: 'Browse skins', href: '/skins' }}
+        />
       )}
 
       {/* Watchlist Items Grid */}
       {!loading && items.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((it) => {
-            // Bildfelder priorisieren: itemimage -> itemImage -> image_url -> imageUrl -> placeholder
             const img =
               it.skin.itemimage ||
               it.skin.itemImage ||
               it.skin.image_url ||
               it.skin.imageUrl ||
-              "/images/placeholder-skin.png";
-
-            const mhn =
-              it.skin.market_hash_name ||
-              it.skin.marketHashName ||
-              it.skin.name;
-
+              null;
+            const rar = (it.skin as any).rarity ?? null;
+            const wear = (it.skin as any).wear ?? null;
+            const cur = (it.skin as any).marketPrice ?? (it.skin as any).priceLatest ?? null;
+            const target = typeof it.priceAlert === "number" ? it.priceAlert : null;
+            const type = target && cur ? (cur < target ? "sell" : "buy") : "watch";
+            const delta = (it.skin as any).priceChange24h ?? 0;
             return (
-              <div
+              <WatchlistCard
                 key={`${it.id}-${it.skinId}`}
-                className="flex gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4"
-              >
-                {/* Skin Image */}
-                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-zinc-800">
-                  <Image src={img} alt={it.skin.name} fill className="object-cover" />
-                </div>
-
-                {/* Skin Info */}
-                <div className="flex-1">
-                  {/* Skin Title */}
-                  <div className="font-medium">{it.skin.name}</div>
-                  <div className="text-xs text-zinc-400">{mhn}</div>
-
-                  {/* Price Alert Editor */}
-                  {/* Price Alert Editor */}
-                  <div className="mt-3 flex items-center gap-2">
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      step={0.01}
-                      min={0}
-                      placeholder="Price Alert ($)"
-                      defaultValue={
-                        typeof it.priceAlert === "number" ? it.priceAlert : ""
-                      }
-                      onBlur={(e) =>
-                        handleUpdateAlert(it.skinId, e.currentTarget.value)
-                      }
-                      className="input-main w-36 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-600"
-                    />
-                    <button
-                      onClick={() => handleUpdateAlert(it.skinId, "")}
-                      className="text-xs rounded-lg border border-zinc-800 px-3 py-2 hover:bg-zinc-800/60 transition"
-                      disabled={updatingId === it.skinId}
-                      title="Clear alert"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                {/* Remove from Watchlist */}
-                <div className="flex items-start">
-                  <button
-                    onClick={() => handleRemove(it.skinId)}
-                    className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300 hover:bg-red-500/20 transition"
-                    disabled={updatingId === it.skinId}
-                    title="Remove"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
+                skinId={it.skinId}
+                name={it.skin.name}
+                imageUrl={img}
+                rarity={rar}
+                wear={wear}
+                currentPrice={cur}
+                delta={delta}
+                targetPrice={target}
+                type={type as "buy" | "sell" | "watch"}
+                onSetAlert={() => {
+                  const next = prompt("Set target price (€)", target?.toString() ?? "");
+                  if (next !== null) handleUpdateAlert(it.skinId, next);
+                }}
+              />
             );
           })}
+          <WatchlistEmptySlot />
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }

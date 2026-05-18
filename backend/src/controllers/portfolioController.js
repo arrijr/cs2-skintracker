@@ -103,11 +103,20 @@ export const getPortfolio = async (req, res) => {
     }
 
     // 5) Antwort normalisieren (camelCase in der API) + marketPrice ergänzen
+    // NOTE: Skin model has no priceChange24h/priceChange7d columns. Derive % change
+    // from priceLatest vs priceAvg24h/priceAvg7d so the frontend movers panel works.
+    const pctChange = (latest, prior) => {
+      if (typeof latest !== "number" || typeof prior !== "number" || prior === 0) return null;
+      return ((latest - prior) / prior) * 100;
+    };
+
     const portfolio = aggregated.map((item) => {
       const s = item.skin;
       const marketHashName = s.market_hash_name || s.marketHashName || s.name;
       const imageUrl = s.imageUrl || s.image_url || s.itemimage || null;
       const marketPrice = priceMap[marketHashName] ?? null;
+      const priceChange24h = pctChange(s.priceLatest, s.priceAvg24h);
+      const priceChange7d = pctChange(s.priceLatest, s.priceAvg7d);
 
       return {
         skin: {
@@ -119,6 +128,8 @@ export const getPortfolio = async (req, res) => {
           rarity: s.rarity,
           weaponType: s.weaponType,
           exterior: s.wear,
+          priceChange24h,
+          priceChange7d,
         },
         purchases: item.purchases,
         amount: item.amount,
@@ -136,7 +147,7 @@ export const getPortfolio = async (req, res) => {
 export const addToPortfolio = async (req, res) => {
   try {
     const userId = req.userId || req.auth?.userId; // From Clerk middleware (optional)
-    
+
     if (!userId) {
       return res.status(401).json({ error: "Authentication required to add to portfolio" });
     }
@@ -218,26 +229,28 @@ export const addToPortfolio = async (req, res) => {
         unrealizedPL: totalValue - totalInvested
       });
       
-      await prisma.portfolioHistory.upsert({
-        where: {
-          userId_date: {
-            userId,
-            date: today
-          }
-        },
-        update: {
-          value: totalValue,
-          invested: totalInvested,
-          unrealizedPL: totalValue - totalInvested
-        },
-        create: {
-          userId,
-          date: today,
-          value: totalValue,
-          invested: totalInvested,
-          unrealizedPL: totalValue - totalInvested
-        }
+      // Note: PortfolioHistory has no @@unique([userId, date]) yet, so upsert with
+      // compound key fails. Manual find+update/create instead.
+      // TODO: add @@unique constraint + use proper upsert (also avoids race condition).
+      const existing = await prisma.portfolioHistory.findFirst({
+        where: { userId, date: today },
+        select: { id: true },
       });
+      const historyData = {
+        value: totalValue,
+        invested: totalInvested,
+        unrealizedPL: totalValue - totalInvested,
+      };
+      if (existing) {
+        await prisma.portfolioHistory.update({
+          where: { id: existing.id },
+          data: historyData,
+        });
+      } else {
+        await prisma.portfolioHistory.create({
+          data: { userId, date: today, ...historyData },
+        });
+      }
       
       console.log("[PORTFOLIO-HISTORY] History entry created/updated successfully");
     } catch (historyErr) {
@@ -245,7 +258,7 @@ export const addToPortfolio = async (req, res) => {
       // Don't fail the main operation if history update fails
     }
 
-    return res.status(201).json({ id: entry.id, skinId: entry.skinId, amount: entry.amount, buyPrice: entry.buyPrice, buyDate: entry.buyDate });
+    return res.status(201).json({ success: true, id: entry.id, skinId: entry.skinId, amount: entry.amount, buyPrice: entry.buyPrice, buyDate: entry.buyDate });
   } catch (err) {
     console.error(err);
     if (!res.headersSent) {

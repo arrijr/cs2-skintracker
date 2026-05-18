@@ -116,7 +116,7 @@ export default function ResearchPanel() {
   // Loading state
   if (isLoading) {
     return (
-      <Card className="bg-slate-900/60 backdrop-blur border-slate-700/50">
+      <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
             <BarChart3 className="w-5 h-5" />
@@ -148,7 +148,7 @@ export default function ResearchPanel() {
   // No data
   if (!research || research.research.length === 0) {
     return (
-      <Card className="bg-slate-900/60 backdrop-blur border-slate-700/50">
+      <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30">
         <CardContent className="pt-6 text-center text-slate-400">
           Keine Research-Daten verfügbar. Fügen Sie Positionen zu Ihrem Portfolio hinzu.
         </CardContent>
@@ -157,7 +157,7 @@ export default function ResearchPanel() {
   }
 
   return (
-    <Card className="bg-slate-900/60 backdrop-blur border-slate-700/50">
+    <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-white">
           <BarChart3 className="w-5 h-5" />

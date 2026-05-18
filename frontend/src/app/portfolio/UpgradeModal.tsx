@@ -10,9 +10,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Crown, Zap, Check } from 'lucide-react';
+import { Crown, Check } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 
 interface UpgradeModalProps {
@@ -35,38 +33,38 @@ export default function UpgradeModal({
   const tiers = {
     lite: {
       name: 'Lite',
-      price: '4,99',
+      price: '4.99',
       currency: '€',
-      period: '/Monat',
-      description: 'Perfect für Content Creator und Sammler',
+      period: '/month',
+      description: 'For collectors and content creators',
       features: [
-        'Portfolio mit bis zu 100 Skins',
-        'Preisgeschichte (90 Tage)',
-        'Basis-Analysen',
-        'Echtzeit-Preisupdates',
-        'Email-Benachrichtigungen'
+        'Track up to 100 skins',
+        '90-day price history',
+        'Core analytics',
+        'Live price updates',
+        'Email notifications',
       ],
-      cta: 'Lite wählen',
-      color: 'from-amber-400 to-orange-400'
+      cta: 'Upgrade to Lite',
+      color: 'from-amber-500 to-orange-500',
     },
     pro: {
       name: 'Pro',
-      price: '19,99',
+      price: '19.99',
       currency: '€',
-      period: '/Monat',
-      description: 'Für professionelle Trader und Analysten',
+      period: '/month',
+      description: 'For professional traders and analysts',
       features: [
-        'Alles aus Lite-Plan',
-        'Volatilitätsanalyse (30/90 Tage)',
-        'Rarity-Scoring Heuristiken',
-        'Preisgeschichte (180 Tage)',
-        'CSV-Export',
-        'Priority Support',
-        'Erweiterte Research-Tools'
+        'Everything in Lite',
+        'Volatility analysis (30/90 day)',
+        'Rarity scoring',
+        '180-day price history',
+        'CSV export',
+        'Priority support',
+        'Advanced research tools',
       ],
-      cta: 'Pro wählen',
-      color: 'from-purple-400 to-pink-400'
-    }
+      cta: 'Upgrade to Pro',
+      color: 'from-purple-500 to-pink-500',
+    },
   };
 
   const plan = tiers[tier];
@@ -77,7 +75,7 @@ export default function UpgradeModal({
     try {
       await checkout(tier);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Checkout failed');
+      setError(err instanceof Error ? err.message : 'Checkout failed. Please try again.');
       setIsLoading(false);
     }
   };
@@ -91,13 +89,13 @@ export default function UpgradeModal({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md bg-slate-900 border-slate-700/50 text-white">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-amber-500" />
-            Upgrade zu {plan.name}
+            <Crown className="w-5 h-5 text-amber-400" />
+            Upgrade to {plan.name}
           </DialogTitle>
-          <DialogDescription>{plan.description}</DialogDescription>
+          <DialogDescription className="text-slate-400">{plan.description}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -108,16 +106,16 @@ export default function UpgradeModal({
               <span className="text-sm opacity-90">{plan.currency}</span>
               <span className="text-sm opacity-90">{plan.period}</span>
             </div>
-            <p className="text-sm mt-2 opacity-90">Kündigung jederzeit möglich</p>
+            <p className="text-sm mt-2 opacity-90">Cancel anytime</p>
           </div>
 
           {/* Features */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold">Was ist enthalten:</h3>
+            <h3 className="text-sm font-semibold text-slate-200">What's included</h3>
             <ul className="space-y-2">
               {plan.features.map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-sm">
-                  <Check className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600" />
+                <li key={idx} className="flex items-start gap-2 text-sm text-slate-300">
+                  <Check className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-400" />
                   <span>{feature}</span>
                 </li>
               ))}
@@ -126,7 +124,7 @@ export default function UpgradeModal({
 
           {/* Error */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-300">
               {error}
             </div>
           )}
@@ -135,14 +133,14 @@ export default function UpgradeModal({
           <Button
             onClick={handleCheckout}
             disabled={isLoading || subLoading}
-            className="w-full"
+            className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white`}
             size="lg"
           >
-            {isLoading ? 'Wird weitergeleitet...' : plan.cta}
+            {isLoading ? 'Redirecting…' : plan.cta}
           </Button>
 
-          <p className="text-xs text-center text-gray-500">
-            Sichere Zahlung durch Stripe. Keine versteckten Gebühren.
+          <p className="text-xs text-center text-slate-500">
+            Secure payment via Stripe. No hidden fees.
           </p>
         </div>
       </DialogContent>

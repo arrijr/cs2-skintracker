@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import { formatUSD, safeToFixed } from "@/lib/num";
+import { AppShell } from "@/components/layout/AppShell";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CaseSupplyChart from "@/components/charts/CaseSupplyChart";
 import CasePriceChart from "@/components/charts/CasePriceChart";
@@ -181,45 +182,43 @@ export default function CaseDetailPage() {
 
   if (loading) {
     return (
-      <div className="dashboard-bg text-white p-2 sm:p-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-700 rounded w-1/4 mb-6"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-700 rounded"></div>
-              ))}
-            </div>
-          </div>
+      <AppShell eyebrow="Catalog" title="Case" description="Loading…" maxWidth="7xl">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-pulse">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-32 rounded-2xl bg-slate-800/40 border border-slate-700/30" />
+          ))}
         </div>
-      </div>
+      </AppShell>
     );
   }
 
   if (error || !caseData) {
     return (
-      <div className="dashboard-bg text-white p-2 sm:p-4">
-        <div className="max-w-7xl mx-auto">
-          <Card className="border-red-500/50">
-            <CardContent className="p-6 text-center">
-              <div className="text-red-400 mb-2">Error loading case</div>
-              <div className="text-gray-400">{error || 'Case not found'}</div>
-              <Button asChild className="mt-4">
-                <Link href="/cases">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Cases
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <AppShell eyebrow="Catalog" title="Case not found" maxWidth="7xl">
+        <Card className="border-red-500/40 bg-red-500/5 rounded-2xl">
+          <CardContent className="p-6 text-center">
+            <div className="text-red-300 mb-2">Error loading case</div>
+            <div className="text-slate-400">{error || 'Case not found'}</div>
+            <Button asChild className="mt-4">
+              <Link href="/cases">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Cases
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </AppShell>
     );
   }
 
   return (
-    <div className="dashboard-bg text-white p-2 sm:p-4">
-      <div className="max-w-7xl mx-auto">
+    <AppShell
+      eyebrow="Catalog"
+      title={caseData.name}
+      description="Case statistics and skin pool"
+      maxWidth="7xl"
+    >
+      <div>
         {/* Breadcrumbs */}
         <Breadcrumbs 
           items={[
@@ -604,6 +603,6 @@ export default function CaseDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </AppShell>
   );
 }

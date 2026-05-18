@@ -6,71 +6,71 @@ import { Bell } from "lucide-react";
 import { useAlerts } from "@/hooks/useAlerts";
 import { AlertCard } from "./AlertCard";
 import { CreateAlertModal } from "./CreateAlertModal";
+import { AppShell } from "@/components/layout/AppShell";
+import { EmptyState } from "@/components/ui/empty-state";
+import { EmptyBell } from "@/components/ui/empty-illustrations";
 
 export default function AlertsPage() {
   const { isSignedIn, isLoaded } = useUser();
   const { alerts, isLoading, error, createAlert, updateAlert, deleteAlert } = useAlerts();
 
-  if (!isLoaded) return null;
+  if (!isLoaded) {
+    return (
+      <AppShell eyebrow="Notifications" title="Alerts" maxWidth="5xl">
+        <div className="space-y-3">
+          {[0, 1, 2].map(i => <Skeleton key={i} className="h-20 rounded-lg bg-slate-800/40" />)}
+        </div>
+      </AppShell>
+    );
+  }
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <AppShell eyebrow="Notifications" title="Alerts" maxWidth="5xl">
         <p className="text-slate-300">Please sign in to manage alerts.</p>
-      </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Bell className="h-7 w-7 text-purple-400" />
-              Alerts
-            </h1>
-            <p className="text-slate-400 mt-1">Get notified when your conditions trigger.</p>
-          </div>
-          <CreateAlertModal onCreate={createAlert} />
+    <AppShell
+      eyebrow="Notifications"
+      title="Alerts"
+      description="Get notified when your conditions trigger."
+      maxWidth="5xl"
+      actions={<CreateAlertModal onCreate={createAlert} />}
+    >
+      {isLoading && (
+        <div className="space-y-3">
+          {[0, 1, 2].map(i => <Skeleton key={i} className="h-20 rounded-lg bg-slate-800/40" />)}
         </div>
+      )}
 
-        {isLoading && (
-          <div className="space-y-3">
-            {[0, 1, 2].map(i => <Skeleton key={i} className="h-20 rounded-lg" />)}
-          </div>
-        )}
+      {error && (
+        <Card className="bg-red-500/10 border-red-500/30">
+          <CardContent className="p-4 text-red-400">{error}</CardContent>
+        </Card>
+      )}
 
-        {error && (
-          <Card className="bg-red-500/10 border-red-500/30">
-            <CardContent className="p-4 text-red-400">{error}</CardContent>
-          </Card>
-        )}
+      {!isLoading && !error && alerts.length === 0 && (
+        <EmptyState
+          illustration={<EmptyBell size={120} />}
+          title="No alerts yet"
+          description="Create your first alert to get notified about price changes, volatility, or case-EV inversions."
+        />
+      )}
 
-        {!isLoading && !error && alerts.length === 0 && (
-          <Card className="bg-slate-900/60 border-slate-700/50">
-            <CardContent className="p-8 text-center">
-              <Bell className="h-12 w-12 text-slate-600 mx-auto mb-3" />
-              <p className="text-slate-300 font-medium">No alerts yet</p>
-              <p className="text-slate-500 text-sm mt-1">
-                Create your first alert to get notified about price changes, volatility, or case-EV inversions.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {!isLoading && alerts.length > 0 && (
-          <div className="space-y-3">
-            {alerts.map(alert => (
-              <AlertCard
-                key={alert.id}
-                alert={alert}
-                onToggle={(id, isActive) => updateAlert(id, { isActive } as Partial<typeof alert>)}
-                onDelete={deleteAlert}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+      {!isLoading && alerts.length > 0 && (
+        <div className="space-y-3">
+          {alerts.map(alert => (
+            <AlertCard
+              key={alert.id}
+              alert={alert}
+              onToggle={(id, isActive) => updateAlert(id, { isActive } as Partial<typeof alert>)}
+              onDelete={deleteAlert}
+            />
+          ))}
+        </div>
+      )}
+    </AppShell>
   );
 }

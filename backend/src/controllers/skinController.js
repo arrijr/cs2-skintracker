@@ -4,33 +4,40 @@ import { fetchSkinPrice } from "../services/steamService.js";
 // {/* Get price history for a skin */}
 export const getPriceHistory = async (req, res) => {
   const { skinId } = req.params;
-  const { range = '90d' } = req.query; // Support for different time ranges
-  
+  const { range = '90d', days: daysParam } = req.query; // Support for different time ranges
+
   try {
-    console.log(`[DEBUG] Fetching price history for skin ID: ${skinId}, range: ${range}`);
-    
+    console.log(`[DEBUG] Fetching price history for skin ID: ${skinId}, range: ${range}, days: ${daysParam}`);
+
     // Calculate date range based on query parameter
     const now = new Date();
     let startDate = new Date();
-    
-    switch (range) {
-      case '7d':
-        startDate.setDate(now.getDate() - 7);
-        break;
-      case '30d':
-        startDate.setDate(now.getDate() - 30);
-        break;
-      case '90d':
-        startDate.setDate(now.getDate() - 90);
-        break;
-      case '1y':
-        startDate.setDate(now.getDate() - 365);
-        break;
-      case 'all':
-        startDate = new Date('2020-01-01'); // Far back enough
-        break;
-      default:
-        startDate.setDate(now.getDate() - 90);
+
+    // Prefer explicit `days` query param when provided (1..365). Falls back to legacy `range`.
+    const daysNum = daysParam != null ? parseInt(daysParam, 10) : NaN;
+    if (Number.isFinite(daysNum)) {
+      const clamped = Math.min(365, Math.max(1, daysNum));
+      startDate.setDate(now.getDate() - clamped);
+    } else {
+      switch (range) {
+        case '7d':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(now.getDate() - 30);
+          break;
+        case '90d':
+          startDate.setDate(now.getDate() - 90);
+          break;
+        case '1y':
+          startDate.setDate(now.getDate() - 365);
+          break;
+        case 'all':
+          startDate = new Date('2020-01-01'); // Far back enough
+          break;
+        default:
+          startDate.setDate(now.getDate() - 90);
+      }
     }
     
     const history = await prisma.priceHistory.findMany({
@@ -119,6 +126,7 @@ export const getPriceHistory = async (req, res) => {
           return res.json({
             success: true,
             data: sampleHistory,
+            history: sampleHistory,
             range,
             source: 'generated',
             totalDays: days
@@ -129,6 +137,7 @@ export const getPriceHistory = async (req, res) => {
       return res.json({
         success: true,
         data: [],
+        history: [],
         range,
         source: 'none'
       });
@@ -143,6 +152,7 @@ export const getPriceHistory = async (req, res) => {
     res.json({
       success: true,
       data: formattedHistory,
+      history: formattedHistory,
       range,
       source: 'database',
       totalDays: history.length

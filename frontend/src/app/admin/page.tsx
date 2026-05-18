@@ -6,15 +6,16 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle, RefreshCw, BarChart3, Settings, FileText, Search, TrendingUp, BookOpen, Edit } from "lucide-react";
 import BuildInfo from "../components/BuildInfo";
 import AdminMiniMetrics from "../components/AdminMiniMetrics";
-import { safeLower } from "@/lib/strings";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { formatUSD, safeToFixed } from "@/lib/num";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { safeToFixed } from "@/lib/num";
 import AdminControls from "../components/AdminControls";
+import { AppShell } from "@/components/layout/AppShell";
 
 type AdminTab = "overview" | "jobs" | "logs" | "controls" | "coverage";
 
@@ -184,40 +185,36 @@ export default function AdminPage() {
 
   // Show loading state while auth is being checked
   if (!isLoaded) {
-    return <div className="text-white p-6">Loading...</div>;
+    return (
+      <AppShell eyebrow="Admin" title="Admin Panel">
+        <div className="h-32 rounded-2xl bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+      </AppShell>
+    );
   }
 
   // Redirect if not signed in or not admin
   if (!isSignedIn || !isAdmin) {
     return (
-      <div className="dashboard-bg text-white flex items-center justify-center">
-        <div className="text-center relative z-10">
-          <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+      <AppShell eyebrow="Admin" title="Access Denied">
+        <div className="flex flex-col items-center justify-center py-24 gap-4">
+          <Shield className="w-16 h-16 text-red-400" />
           <p className="text-slate-400">You need admin privileges to access this page.</p>
         </div>
-      </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="dashboard-bg text-white">
-      <div className="container-cs2 section-cs2 relative z-10">
-        <div className="max-w-6xl mx-auto animate-fade-in">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <Shield className="w-8 h-8 text-brand-orange" />
-              <h1 className="text-3xl font-bold">Admin Panel</h1>
-            </div>
-            <p className="text-gray-400">
-              System monitoring and administration (read-only)
-            </p>
-          </div>
-
+    <AppShell
+      eyebrow="System"
+      title="Admin Panel"
+      description="System monitoring and administration"
+      maxWidth="7xl"
+    >
+      <div className="animate-fade-in">
           {/* Error Banner */}
           {error && (
-            <div className="mb-6 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-300">
+            <div className="mb-6 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-300">
               {error}
             </div>
           )}
@@ -645,26 +642,28 @@ export default function AdminPage() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>Coverage by Segment</CardTitle>
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={coverageSegmentType}
-                        onChange={(e) => {
-                          setCoverageSegmentType(e.target.value as 'weaponType' | 'rarity' | 'wear');
-                          setCoveragePage(1);
-                        }}
-                        className="px-3 py-1 border rounded-md text-sm"
-                      >
-                        <option value="weaponType">Weapon Type</option>
-                        <option value="rarity">Rarity</option>
-                        <option value="wear">Wear</option>
-                      </select>
-                    </div>
+                    <Select
+                      value={coverageSegmentType}
+                      onValueChange={(v) => {
+                        setCoverageSegmentType(v as 'weaponType' | 'rarity' | 'wear');
+                        setCoveragePage(1);
+                      }}
+                    >
+                      <SelectTrigger className="w-36 h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="weaponType">Weapon Type</SelectItem>
+                        <SelectItem value="rarity">Rarity</SelectItem>
+                        <SelectItem value="wear">Wear</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {segmentCoverage.map((segment, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div key={index} className="flex items-center justify-between p-3 border border-slate-700/50 rounded-xl bg-slate-800/30">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{segment.segment}</span>
@@ -677,11 +676,11 @@ export default function AdminPage() {
                           </div>
                         </div>
                         <div className="w-32">
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
+                          <div className="w-full bg-slate-700 rounded-full h-2">
+                            <div
                               className={`h-2 rounded-full ${
-                                segment.coveragePercentage >= 95 ? 'bg-green-500' :
-                                segment.coveragePercentage >= 80 ? 'bg-yellow-500' : 'bg-red-500'
+                                segment.coveragePercentage >= 95 ? 'bg-brand-green' :
+                                segment.coveragePercentage >= 80 ? 'bg-yellow-400' : 'bg-red-500'
                               }`}
                               style={{ width: `${Math.min(segment.coveragePercentage, 100)}%` }}
                             />
@@ -704,7 +703,7 @@ export default function AdminPage() {
                 <CardContent>
                   <div className="space-y-2">
                     {missingSkins.slice(0, 20).map((skin) => (
-                      <div key={skin.id} className="flex items-center justify-between p-2 border rounded">
+                      <div key={skin.id} className="flex items-center justify-between p-3 border border-slate-700/50 rounded-xl bg-slate-800/30">
                         <div className="flex-1">
                           <div className="font-medium">{skin.name}</div>
                           <div className="text-sm text-muted-foreground">
@@ -733,8 +732,7 @@ export default function AdminPage() {
               <AdminControls />
             </TabsContent>
           </Tabs>
-        </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
