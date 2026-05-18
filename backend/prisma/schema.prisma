@@ -23,6 +23,8 @@ model User {
   steamConnectedAt  DateTime?
   isPremium    Boolean    @default(false)
   role         String     @default("user") // user, admin
+  preferredCurrency String  @default("USD")  // USD | EUR | GBP
+  themePreference   String  @default("DARK") // DARK | LIGHT | SYSTEM
   createdAt    DateTime   @default(now())
   watchlist    Watchlist[]
   portfolio    Portfolio[]
