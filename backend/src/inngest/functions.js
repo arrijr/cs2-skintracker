@@ -74,10 +74,9 @@ export const priceRefresh = inngest.createFunction(
       });
       const all = skins.map((s) => ({ ...s, itemType: 'skin' }));
       if (!skinsOnly) {
+        // Case.lastUpdated is NOT NULL (has @default(now())), so null branch is invalid.
         const cases = await prisma.case.findMany({
-          where: {
-            OR: [{ lastUpdated: null }, { lastUpdated: { lt: fourHoursAgo } }],
-          },
+          where: { lastUpdated: { lt: fourHoursAgo } },
           select: { id: true, name: true },
         });
         const marketItems = await prisma.marketItem.findMany({
