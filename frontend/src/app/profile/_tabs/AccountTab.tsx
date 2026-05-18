@@ -2,13 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@clerk/nextjs';
-import { Settings, Save, RefreshCw, AlertTriangle, Calendar, Globe } from 'lucide-react';
+import { Settings, Save, RefreshCw, AlertTriangle, Globe } from 'lucide-react';
 import { apiUrl, fetchJson } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { CurrencySelect } from '../_components/CurrencySelect';
 import { ThemeSelect } from '../_components/ThemeSelect';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -18,7 +24,7 @@ type ProfileData = {
   email: string;
   displayName?: string;
   timezone?: string;
-  preferredCurrency: 'USD' | 'EUR' | 'GBP';
+  preferredCurrency: 'EUR' | 'USD' | 'GBP';
   themePreference: 'DARK' | 'LIGHT' | 'SYSTEM';
   createdAt: string;
 };
@@ -36,21 +42,25 @@ export function AccountTab() {
     (async () => {
       try {
         const token = await getToken({ template: 'backend' });
+        if (!token) return;
         const profile = await fetchJson(apiUrl('/api/v1/users/me'), {
-          headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setData({
           id: profile.id,
           email: profile.email,
           displayName: profile.displayName || '',
           timezone: profile.timezone || '',
-          preferredCurrency: (profile.preferredCurrency as 'USD' | 'EUR' | 'GBP') ?? 'USD',
+          preferredCurrency: (profile.preferredCurrency as 'EUR' | 'USD' | 'GBP') ?? 'EUR',
           themePreference: (profile.themePreference as 'DARK' | 'LIGHT' | 'SYSTEM') ?? 'DARK',
           createdAt: profile.createdAt,
         });
-      } catch (err) {
-        console.error('Failed to load profile:', err);
-        setMsg({ type: 'error', text: 'Failed to load profile' });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : '';
+        if (!msg.includes('401')) {
+          console.error('Failed to load profile:', err);
+          setMsg({ type: 'error', text: "Couldn't load your profile. Refresh the page." });
+        }
       } finally {
         setLoading(false);
       }
@@ -73,39 +83,56 @@ export function AccountTab() {
       });
       setData((prev) => (prev ? { ...prev, ...updated } : prev));
       await refreshCurrency();
-      setMsg({ type: 'success', text: 'Saved' });
+      setMsg({ type: 'success', text: 'Saved.' });
       setTimeout(() => setMsg(null), 3000);
     } catch (err: unknown) {
-      const text = err instanceof Error ? err.message : 'Failed to save';
-      setMsg({ type: 'error', text });
+      const text = err instanceof Error ? err.message : '';
+      setMsg({
+        type: 'error',
+        text: text || "Couldn't save. Check your connection and try again.",
+      });
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div className="text-zinc-400 p-4">Loading…</div>;
-  if (!data) return <div className="text-red-400 p-4">Could not load profile.</div>;
+  if (loading) {
+    return (
+      <div className="text-slate-400 p-4" role="status" aria-busy="true">
+        Loading account…
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="text-red-400 p-4" role="alert">
+        Couldn&apos;t load profile. Refresh the page.
+      </div>
+    );
+  }
 
   return (
-    <Card className="card-enhanced">
+    <Card className="bg-slate-900/60 border-slate-700/40">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="w-5 h-5" />
+        <CardTitle className="flex items-center gap-2 text-white">
+          <Settings className="w-5 h-5" aria-hidden="true" />
           Account
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Email</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
+              id="email"
               value={user?.primaryEmailAddress?.emailAddress ?? data.email ?? ''}
               disabled
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="displayName">Display Name</Label>
+            <Label htmlFor="displayName">Display name</Label>
             <Input
               id="displayName"
               value={data.displayName ?? ''}
@@ -117,20 +144,20 @@ export function AccountTab() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Globe className="w-4 h-4" />
+            <Label htmlFor="timezone" className="flex items-center gap-2">
+              <Globe className="w-4 h-4" aria-hidden="true" />
               Timezone
             </Label>
             <Select
               value={data.timezone || ''}
               onValueChange={(v) => setData({ ...data, timezone: v })}
             >
-              <SelectTrigger>
+              <SelectTrigger id="timezone" className="truncate">
                 <SelectValue placeholder="Select timezone" />
               </SelectTrigger>
               <SelectContent className="max-h-72">
                 {Intl.supportedValuesOf('timeZone').map((tz) => (
-                  <SelectItem key={tz} value={tz}>
+                  <SelectItem key={tz} value={tz} className="text-sm">
                     {tz}
                   </SelectItem>
                 ))}
@@ -139,66 +166,62 @@ export function AccountTab() {
           </div>
 
           <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Member since
-            </Label>
-            <Input
-              value={data.createdAt ? new Date(data.createdAt).toLocaleDateString() : ''}
-              disabled
+            <Label htmlFor="preferredCurrency">Preferred currency</Label>
+            <CurrencySelect
+              id="preferredCurrency"
+              value={data.preferredCurrency}
+              onChange={(v) => setData({ ...data, preferredCurrency: v })}
             />
+            <p className="text-xs text-slate-400">
+              Portfolio values render in this currency app-wide.
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Preferred currency</Label>
-            <CurrencySelect
-              value={data.preferredCurrency}
-              onChange={(v) => setData({ ...data, preferredCurrency: v })}
-            />
-            <p className="text-xs text-zinc-500">
-              Portfolio values across the app will display in this currency.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Theme</Label>
+            <Label htmlFor="themePreference">Theme</Label>
             <ThemeSelect
+              id="themePreference"
               value={data.themePreference}
               onChange={(v) => setData({ ...data, themePreference: v })}
             />
-            <p className="text-xs text-zinc-500">
-              Light mode visuals coming soon — preference is stored.
-            </p>
+            <p className="text-xs text-slate-400">Saved now. Light mode lands soon.</p>
           </div>
         </div>
 
-        {msg && (
-          <div
-            className={
-              'p-3 rounded-md flex items-center gap-2 ' +
-              (msg.type === 'success'
-                ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                : 'bg-red-500/10 text-red-400 border border-red-500/20')
-            }
-          >
-            {msg.type === 'success' ? <Save className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
-            {msg.text}
-          </div>
-        )}
+        <div aria-live="polite" className="min-h-[0]">
+          {msg && (
+            <div
+              role={msg.type === 'error' ? 'alert' : 'status'}
+              className={
+                'p-3 rounded-md flex items-center gap-2 text-sm ' +
+                (msg.type === 'success'
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  : 'bg-red-500/10 text-red-400 border border-red-500/20')
+              }
+            >
+              {msg.type === 'success' ? (
+                <Save className="w-4 h-4 shrink-0" aria-hidden="true" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+              )}
+              {msg.text}
+            </div>
+          )}
+        </div>
 
-        <div>
-          <Button onClick={save} disabled={saving} className="btn-enhanced">
+        <div className="flex justify-end pt-2 border-t border-slate-700/40">
+          <Button onClick={save} disabled={saving}>
             {saving ? (
               <>
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
                 Saving…
               </>
             ) : (
               <>
-                <Save className="w-4 h-4 mr-2" />
-                Save changes
+                <Save className="w-4 h-4 mr-2" aria-hidden="true" />
+                Save
               </>
             )}
           </Button>

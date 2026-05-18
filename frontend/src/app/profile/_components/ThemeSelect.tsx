@@ -1,6 +1,12 @@
 'use client';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type ThemeCode = 'DARK' | 'LIGHT' | 'SYSTEM';
 
@@ -11,15 +17,16 @@ const OPTIONS: { value: ThemeCode; label: string }[] = [
 ];
 
 type Props = {
+  id?: string;
   value: ThemeCode;
   onChange: (v: ThemeCode) => void;
   disabled?: boolean;
 };
 
-export function ThemeSelect({ value, onChange, disabled }: Props) {
+export function ThemeSelect({ id, value, onChange, disabled }: Props) {
   return (
     <Select value={value} onValueChange={(v) => onChange(v as ThemeCode)} disabled={disabled}>
-      <SelectTrigger>
+      <SelectTrigger id={id} aria-label="Theme">
         <SelectValue placeholder="Select theme" />
       </SelectTrigger>
       <SelectContent>
