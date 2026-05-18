@@ -9,6 +9,8 @@ import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMarketItems, type MarketItemCategory, type SortKey, type SortOrder } from '@/hooks/useMarketItems';
 import { ItemCard } from './ItemCard';
 import { CategoryFilter } from './CategoryFilter';
+import { AppShell } from '@/components/layout/AppShell';
+import { EmptyState } from '@/components/ui/empty-state';
 
 function parseCategory(v: string | null): MarketItemCategory | null {
   const valid: MarketItemCategory[] = ['sticker', 'agent', 'patch', 'graffiti', 'music_kit', 'collectible', 'key'];
@@ -67,15 +69,12 @@ export function ItemsBrowse() {
   }, [debouncedQ, searchParams, updateUrl]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Browse Items</h1>
-          <p className="text-slate-400">
-            Stickers, agents, patches, music kits, and more — {pagination?.total ?? '…'} items.
-          </p>
-        </div>
-
+    <AppShell
+      eyebrow="Catalog"
+      title="Browse Items"
+      description={`Stickers, agents, patches, music kits, and more — ${pagination?.total ?? '…'} items.`}
+    >
+      <div>
         <div className="space-y-4 mb-6">
           <CategoryFilter
             active={category}
@@ -89,14 +88,14 @@ export function ItemsBrowse() {
                 placeholder="Search by name…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                className="pl-9 bg-slate-900/60 border-slate-700/50 text-white"
+                className="pl-9 bg-slate-900/70 border-slate-700/30 text-white"
               />
             </div>
             <Select value={`${sort}:${order}`} onValueChange={(v) => {
               const [s, o] = v.split(':');
               updateUrl({ sort: s, order: o, page: null });
             }}>
-              <SelectTrigger className="w-full md:w-48 bg-slate-900/60 border-slate-700/50 text-white">
+              <SelectTrigger className="w-full md:w-48 bg-slate-900/70 border-slate-700/30 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-900 border-slate-700">
@@ -125,9 +124,12 @@ export function ItemsBrowse() {
         )}
 
         {!isLoading && items.length === 0 && (
-          <div className="text-center py-16 text-slate-400">
-            No items match these filters.
-          </div>
+          <EmptyState
+            icon={Search}
+            title="No items match these filters"
+            description="Try a different category, search term, or sort order."
+            primaryCta={{ label: 'Reset filters', onClick: () => updateUrl({ category: null, q: null, sort: null, order: null, page: null }) }}
+          />
         )}
 
         {!isLoading && items.length > 0 && (
@@ -160,6 +162,6 @@ export function ItemsBrowse() {
           </div>
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }

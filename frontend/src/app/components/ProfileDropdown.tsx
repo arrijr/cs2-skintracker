@@ -1,14 +1,11 @@
 // /frontend/src/app/components/ProfileDropdown.tsx — [Frontend]
-// {/* Profile Dropdown with Icon and Notification Bell */}
 "use client";
-import { useState } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
-  User, 
-  Settings, 
-  Shield, 
+import {
+  Settings,
+  Shield,
   LogOut,
   User2,
   BarChart3,
@@ -25,7 +22,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUserRole } from "@/hooks/useUserRole";
-import NotificationBell from "./NotificationBell";
 
 interface ProfileDropdownProps {
   className?: string;
@@ -78,18 +74,15 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
   };
 
   return (
-    <div className={`flex items-center space-x-3 ${className}`}>
-      {/* Notification Bell */}
-      <NotificationBell />
-
+    <div className={`flex items-center ${className}`}>
       {/* Profile Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
-            className="relative h-10 w-10 p-0 hover:bg-muted/50 transition-all duration-200 hover-scale group"
+          <Button
+            variant="ghost"
+            className="relative h-10 w-10 p-0 rounded-full hover:bg-transparent transition-all duration-200 group"
           >
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-brand-blue to-brand-green flex items-center justify-center text-white font-semibold text-sm group-hover:shadow-lg group-hover:shadow-brand-blue/25 transition-all duration-200">
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-brand-blue to-brand-green flex items-center justify-center text-white font-semibold text-sm ring-2 ring-brand-green/30 group-hover:ring-brand-green/70 group-hover:shadow-lg group-hover:shadow-brand-green/20 transition-all duration-200">
               {getInitials()}
             </div>
           </Button>
@@ -97,7 +90,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
         <DropdownMenuContent align="end" className="w-64">
           {/* User Info */}
           <DropdownMenuLabel className="flex items-center gap-3 p-3">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-brand-blue to-brand-green flex items-center justify-center text-white font-semibold">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-blue to-brand-green flex items-center justify-center text-white font-semibold ring-2 ring-brand-green/30">
               {getInitials()}
             </div>
             <div className="flex-1 min-w-0">
@@ -150,7 +143,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
 
           {/* Settings */}
           <DropdownMenuItem asChild>
-            <Link href="/profile" className="flex items-center gap-3 p-3 cursor-pointer">
+            <Link href="/settings" className="flex items-center gap-3 p-3 cursor-pointer">
               <Settings className="h-4 w-4" />
               <div>
                 <p className="font-medium">Settings</p>
@@ -178,7 +171,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
           <DropdownMenuSeparator />
 
           {/* Sign Out */}
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={handleSignOut}
             className="flex items-center gap-3 p-3 cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10"
           >

@@ -77,7 +77,7 @@ export function usePortfolioData() {
   };
 
   // Fetch portfolio data
-  const { data: portfolioData, error: portfolioError, isLoading: portfolioLoading } = useSWR(
+  const { data: portfolioData, error: portfolioError, isLoading: portfolioLoading, mutate: mutatePortfolio } = useSWR(
     apiUrl('/api/v1/portfolio'),
     portfolioFetcher,
     {
@@ -88,7 +88,7 @@ export function usePortfolioData() {
   );
 
   // Fetch portfolio history
-  const { data: historyData, error: historyError, isLoading: historyLoading } = useSWR(
+  const { data: historyData, error: historyError, isLoading: historyLoading, mutate: mutateHistory } = useSWR(
     apiUrl('/api/v1/portfolio/history'),
     historyFetcher,
     {
@@ -99,7 +99,7 @@ export function usePortfolioData() {
   );
 
   // Fetch portfolio KPIs
-  const { data: kpisData, error: kpisError, isLoading: kpisLoading } = useSWR(
+  const { data: kpisData, error: kpisError, isLoading: kpisLoading, mutate: mutateKpis } = useSWR(
     apiUrl('/api/v1/portfolio/kpis'),
     kpisFetcher,
     {
@@ -123,11 +123,9 @@ export function usePortfolioData() {
     portfolioLoading,
     historyLoading,
     kpisLoading,
-    mutate: () => {
-      // Revalidate all data
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      }
+    mutate: async () => {
+      // Revalidate all three SWR keys in parallel — no full page reload.
+      await Promise.all([mutatePortfolio(), mutateHistory(), mutateKpis()]);
     },
     // Derived data for easier access
     portfolio: portfolioData || [],

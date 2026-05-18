@@ -1,40 +1,107 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { tokens } from "@/lib/design-tokens";
+import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
 interface KPICardProps {
   label: string;
   value: string;
   delta?: number;
   deltaLabel?: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
+  /** "pos" | "acc" | "gold" | "neutral" — colors the icon badge */
+  tone?: "pos" | "acc" | "gold" | "neutral";
+  /** Optional secondary text below value (e.g. "across 9 weapons") */
+  sub?: string;
+  /** Optional inline sparkline points */
+  spark?: number[];
 }
 
-export function KPICard({ label, value, delta, deltaLabel, icon }: KPICardProps) {
-  const isPositive = (delta ?? 0) >= 0;
-  const accentBorder = delta !== undefined
-    ? isPositive ? "border-l-2 border-l-green-500/50" : "border-l-2 border-l-red-500/50"
-    : "";
-  const bgTint = delta !== undefined
-    ? isPositive ? "bg-green-500/5" : "bg-red-500/5"
-    : "";
+const toneClass = {
+  pos: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
+  acc: "text-purple-300 bg-purple-500/10 border-purple-500/30",
+  gold: "text-amber-300 bg-amber-500/10 border-amber-500/30",
+  neutral: "text-slate-300 bg-slate-500/[0.04] border-slate-700/40",
+} as const;
+
+export function KPICard({ label, value, delta, deltaLabel, icon, tone = "neutral", sub, spark }: KPICardProps) {
+  const isPos = (delta ?? 0) >= 0;
   return (
-    <Card className={`${tokens.bg.surface} ${tokens.border.default} ${tokens.border.hover} ${accentBorder} ${bgTint} transition-colors`}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <span className={`text-sm font-medium ${tokens.text.muted}`}>{label}</span>
-          {icon}
+    <Card className="relative overflow-hidden bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl">
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</span>
+          {icon && (
+            <span
+              className={cn(
+                "w-8 h-8 rounded-[9px] inline-flex items-center justify-center border",
+                toneClass[tone]
+              )}
+              aria-hidden="true"
+            >
+              {icon}
+            </span>
+          )}
         </div>
-        <div className={`text-2xl font-bold ${tokens.text.primary} mb-1`}>{value}</div>
-        {delta !== undefined && (
-          <div className={`flex items-center gap-1 text-sm ${isPositive ? tokens.text.success : tokens.text.danger}`}>
-            {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-            <span>{isPositive ? '+' : ''}{delta.toFixed(2)}%</span>
-            {deltaLabel && <span className={tokens.text.muted}>{deltaLabel}</span>}
+        <div className="font-display text-[28px] font-semibold tracking-[-0.02em] text-white tabular-nums leading-tight">
+          {value}
+        </div>
+        {(delta !== undefined || sub) && (
+          <div
+            className={cn(
+              "font-mono text-xs mt-1.5 flex items-center gap-1.5",
+              delta !== undefined
+                ? isPos ? "text-emerald-400" : "text-rose-400"
+                : "text-slate-500"
+            )}
+          >
+            {delta !== undefined && (
+              <>
+                {isPos ? <TrendingUp className="h-3 w-3" aria-hidden="true" /> : <TrendingDown className="h-3 w-3" aria-hidden="true" />}
+                <span className="tabular-nums">
+                  {isPos ? "+" : ""}{delta.toFixed(2)}%
+                </span>
+                {deltaLabel && <span className="text-slate-500 font-sans ml-0.5">{deltaLabel}</span>}
+              </>
+            )}
+            {!delta && sub && <span className="font-sans">{sub}</span>}
           </div>
+        )}
+        {spark && spark.length > 1 && (
+          <Sparkline points={spark} positive={isPos} />
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function Sparkline({ points, positive }: { points: number[]; positive: boolean }) {
+  const w = 80;
+  const h = 24;
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const r = Math.max(max - min, 1);
+  const path = points
+    .map((p, i) => `${i === 0 ? "M" : "L"}${(i / (points.length - 1)) * w},${h - ((p - min) / r) * h}`)
+    .join(" ");
+  return (
+    <svg
+      className="absolute right-3 bottom-3 opacity-60"
+      width={w}
+      height={h}
+      viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <path
+        d={path}
+        fill="none"
+        stroke={positive ? "#34d399" : "#fb7185"}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

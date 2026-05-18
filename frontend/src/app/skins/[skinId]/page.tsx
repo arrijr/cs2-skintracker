@@ -1,42 +1,43 @@
 // frontend/src/app/skins/[skinId]/page.tsx — [Frontend]
-// {/* Enhanced Skin Detail Page with P1, P2, P3 Features */}
+// Hi-Fi item detail page — adapted from claude.ai/design item-detail-hifi.html.
+// Trader view: hero (art + meta), price chart with patch markers, wear/float, order book + sidebar.
 "use client";
-import { useEffect, useState, useMemo, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useMemo, useCallback, use } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import SkinImage from "@/components/SkinImage";
-import { SimplePriceChart } from "@/components/charts/simple-price-chart";
 import { useUser, useAuth } from "@clerk/nextjs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Separator } from "@/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
-import { Heart, Plus, ExternalLink, ArrowLeft, Share2, Download, TrendingUp, TrendingDown, Info, Check, Loader2, Copy, BarChart3, Users, Clock, DollarSign, Home, RefreshCw, HelpCircle, Eye, Shield, Settings, Star, Wallet } from "lucide-react";
-// {/* Central API helpers */}
+import { TrendingUp, TrendingDown, Bell, Plus, Heart, ExternalLink, Star, ArrowLeft, Clock } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { apiUrl, fetchJson, getPortfolio, getWatchlist } from "@/lib/api";
+import { rarityToken } from "@/lib/design-tokens";
+import { cn } from "@/lib/utils";
+import { steamImageSrc } from "@/lib/image-proxy";
+import { SkinPriceChart } from "./_components/SkinPriceChart";
+import { WearFloatBar } from "./_components/WearFloatBar";
+import { OrderBook } from "./_components/OrderBook";
 import {
-  getPortfolio,
-  getWatchlist,
-  apiUrl,
-  fetchJson,
-} from "@/lib/api";
-import { formatUSD, safeToFixed, numberOrNull } from "@/lib/num";
-import { useAnalytics } from "@/lib/analytics";
-import { CaseSection } from "@/components/CaseSection";
-import { ChartContainer, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as ChartTooltip } from "@/components/ui/chart";
+  RecentActivity,
+  Stickers,
+  PatternIndex,
+  AlertBanner,
+} from "./_components/SidebarWidgets";
+import { CreateAlertModal } from "@/app/alerts/CreateAlertModal";
+import { useAlerts } from "@/hooks/useAlerts";
 
-// Chart components are now handled by Shadcn UI Charts
+// Wear label -> short code, used by the wear-thumb selector below.
+const WEAR_SHORT: Record<string, string> = {
+  "Factory New": "FN",
+  "Minimal Wear": "MW",
+  "Field-Tested": "FT",
+  "Well-Worn": "WW",
+  "Battle-Scarred": "BS",
+};
 
 type Skin = {
   id: number;
@@ -50,1067 +51,651 @@ type Skin = {
   weaponType?: string;
   wear?: string;
   rarity?: string;
+  collection?: string;
   isStattrak?: boolean;
   isStar?: boolean;
-  // Current prices
+  float?: number;
   priceLatest?: number;
-  priceLatestSell?: number;
   priceMedian?: number;
   priceAvg?: number;
-  priceSafe?: number;
   priceMin?: number;
   priceMax?: number;
-  // Historical prices
   priceMedian24h?: number;
   priceMedian7d?: number;
   priceMedian30d?: number;
-  priceMedian90d?: number;
-  priceAvg24h?: number;
-  priceAvg7d?: number;
-  priceAvg30d?: number;
-  priceAvg90d?: number;
-  // Sales statistics
-  soldToday?: number;
   sold24h?: number;
   sold7d?: number;
-  sold30d?: number;
-  sold90d?: number;
-  soldTotal?: number;
-  hoursToSold?: number;
-  // Steam market data
   buyOrderPrice?: number;
-  buyOrderMedian?: number;
-  buyOrderAvg?: number;
   buyOrderVolume?: number;
   offerVolume?: number;
-  // Legacy market activity fields
-  marketStats?: {
-    medianPrice?: number;
-    volume24h?: number;
-    priceChange24h?: number;
-    priceChangePercent24h?: number;
-  };
-  caseInfo?: {
-    name: string;
-    id: number;
-  };
-  variants?: Array<{
-    id: number;
-    name: string;
-    marketPrice?: number;
-    imageUrl?: string;
-    rarity?: string;
-  }>;
-  history?: Array<{
-  date: string;
-  price: number;
-    quantity?: number;
-  }>;
+  hoursToSold?: number;
+  history?: Array<{ date: string; price: number; quantity?: number }>;
+  caseInfo?: { name: string; id: number };
 };
 
-export default function SkinDetailPage({ params }: { params: { skinId: string } }) {
+type Range = "24h" | "7d" | "30d" | "90d" | "1y" | "all";
+
+const fmtEUR = (n: number) =>
+  new Intl.NumberFormat("en-GB", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(n);
+
+const fmtEURSigned = (n: number) =>
+  new Intl.NumberFormat("en-GB", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    signDisplay: "always",
+  }).format(n);
+
+function getRarityChipClasses(rarity?: string | null) {
+  const t = rarityToken(rarity);
+  return cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-[0.18em] border", t.text, t.bg, t.border);
+}
+
+export default function SkinDetailPage({ params }: { params: Promise<{ skinId: string }> }) {
+  // Next.js 15 requires `use(params)` for async params in client components.
+  const { skinId } = use(params);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { user } = useUser();
   const { isSignedIn, getToken } = useAuth();
-  const analytics = useAnalytics();
+  const { user: _user } = useUser();
 
   const [skin, setSkin] = useState<Skin | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [caseInfo, setCaseInfo] = useState<{cases: Array<{id: number, name: string, imageUrl?: string}>} | null>(null);
-  const [watchlist, setWatchlist] = useState<number[]>([]);
-  const [portfolioSkins, setPortfolioSkins] = useState<number[]>([]);
-  const [priceAlert, setPriceAlert] = useState({ enabled: false, targetPrice: 0 });
-  const [chartType, setChartType] = useState<'price' | 'quantity' | 'overlay'>('price');
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
-  const [showPriceHistory, setShowPriceHistory] = useState(true);
-  const [showQuantityHistory, setShowQuantityHistory] = useState(true);
-  const [showOverlayChart, setShowOverlayChart] = useState(false);
-  const [activeQuantityIndex, setActiveQuantityIndex] = useState<number | null>(null);
+  const [range, setRange] = useState<Range>("30d");
+  const [watchlistIds, setWatchlistIds] = useState<number[]>([]);
+  const [portfolioIds, setPortfolioIds] = useState<number[]>([]);
+  const [alertModalOpen, setAlertModalOpen] = useState(false);
+  const { createAlert } = useAlerts();
 
-  // Load skin data
+  // Load skin
   useEffect(() => {
-    const loadSkin = async () => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      setError(null);
       try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await fetchJson(apiUrl(`/skins/${params.skinId}`));
-        
-        if (response.success) {
-          setSkin(response.data);
-        } else if (response.id) {
-          // Fallback for old API format
-          setSkin(response);
-        } else {
-          setError(response.error || 'Skin not found');
-        }
-        
-        // Fetch case information for breadcrumbs
-        try {
-          const caseResponse = await fetchJson(apiUrl(`/skins/${params.skinId}/case-breadcrumb`));
-          if (caseResponse.success) {
-            setCaseInfo(caseResponse.data);
-          }
-        } catch (caseErr) {
-          console.log('No case information available for this skin');
-        }
+        const res = await fetchJson(apiUrl(`/skins/${skinId}`));
+        if (cancelled) return;
+        const data = res.success ? res.data : res.id ? res : null;
+        if (!data) setError(res.error || "Skin not found");
+        else setSkin(data);
       } catch (err: any) {
-        console.error('Error loading skin:', err);
-        if (err.message?.includes('404')) {
-          setError('Skin not found. Please check the URL or try a different skin.');
-        } else {
-          setError('Failed to load skin data');
-        }
+        if (cancelled) return;
+        setError(err?.message?.includes("404") ? "Skin not found." : "Failed to load skin.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
-    };
-
-    if (params.skinId) {
-      loadSkin();
     }
-  }, [params.skinId]);
+    load();
+    return () => { cancelled = true; };
+  }, [skinId]);
 
-  // Load user data
+  // Load user lists
   useEffect(() => {
-    const loadUserData = async () => {
-      if (!isSignedIn) return;
-
+    if (!isSignedIn) return;
+    let cancelled = false;
+    (async () => {
       try {
         const token = await getToken({ template: "backend" });
-        const [watchlistData, portfolioData] = await Promise.all([
-          getWatchlist(token),
-          getPortfolio(token)
-        ]);
+        const [w, p] = await Promise.all([getWatchlist(token), getPortfolio(token)]);
+        if (cancelled) return;
+        if (w.success) setWatchlistIds(w.data.map((it: any) => it.skinId));
+        if (p.success) setPortfolioIds(p.data.map((it: any) => it.skinId));
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
+  }, [isSignedIn, getToken]);
 
-        if (watchlistData.success) {
-          setWatchlist(watchlistData.data.map((item: any) => item.skinId));
-        }
-
-        if (portfolioData.success) {
-          setPortfolioSkins(portfolioData.data.map((item: any) => item.skinId));
-        }
-      } catch (err) {
-        console.error('Error loading user data:', err);
-      }
-    };
-
-    loadUserData();
-  }, [isSignedIn]);
-
-  // Analytics tracking
-  useEffect(() => {
-    if (skin && analytics) {
-      try {
-        analytics.trackPageView('skin-detail', {
-          skinId: skin.id,
-          skinName: skin.name,
-          marketPrice: skin.marketPrice
-        });
-      } catch (err) {
-        console.error('Analytics error:', err);
-      }
-    }
-  }, [skin, analytics]);
-
-  // Computed values
   const skinImageUrl = useMemo(() => {
-    if (!skin) return '/images/placeholder-skin.png';
-    return skin.imageUrl || skin.image_url || skin.itemImage || skin.itemimage || '/images/placeholder-skin.png';
+    if (!skin) return null;
+    return skin.imageUrl || skin.image_url || skin.itemImage || skin.itemimage || null;
   }, [skin]);
 
-  const isInWatchlist = useMemo(() => {
-    return skin ? watchlist.includes(skin.id) : false;
-  }, [skin, watchlist]);
+  const inWatchlist = skin && watchlistIds.includes(skin.id);
+  const inPortfolio = skin && portfolioIds.includes(skin.id);
 
-  const isInPortfolio = useMemo(() => {
-    return skin ? portfolioSkins.includes(skin.id) : false;
-  }, [skin, portfolioSkins]);
+  // Derived price metrics
+  const price = skin?.marketPrice ?? skin?.priceLatest ?? null;
+  const prevPrice = skin?.priceMedian24h ?? null;
+  const delta24h = price != null && prevPrice != null ? price - prevPrice : null;
+  const deltaPct24h = delta24h != null && prevPrice ? (delta24h / prevPrice) * 100 : null;
 
-  // Market statistics are now directly in the skin object
-  const skinCaseInfo = skin?.caseInfo;
-  const variants = skin?.variants || [];
-  const history = skin?.history || [];
-  
-  // Load REAL quantity data from API - NO sample data generation
-  const [quantityData, setQuantityData] = useState<Array<{date: string, quantity: number}>>([]);
-  const [quantityLoading, setQuantityLoading] = useState(false);
+  const high30 = skin?.priceMax ?? null;
+  const low30 = skin?.priceMin ?? null;
+  const change30 =
+    skin?.priceMedian30d != null && price != null ? ((price - skin.priceMedian30d) / skin.priceMedian30d) * 100 : null;
 
-  // Fetch real quantity history from backend
-  useEffect(() => {
-    const loadQuantityHistory = async () => {
-      if (!params.skinId) return;
-      
-      setQuantityLoading(true);
-      try {
-        const response = await fetchJson(apiUrl(`/skins/${params.skinId}/history/quantity?range=${timeRange}`));
-        
-        if (response.success && response.data && response.data.length > 0) {
-          setQuantityData(response.data);
-          console.log(`[QuantityData] Loaded ${response.data.length} real entries from ${response.source}`);
-        } else {
-          setQuantityData([]);
-          console.log('[QuantityData] No real data available yet');
-        }
-      } catch (err) {
-        console.error('Error loading quantity history:', err);
-        setQuantityData([]);
-      } finally {
-        setQuantityLoading(false);
-      }
-    };
+  // Filter history by range
+  const filteredHistory = useMemo(() => {
+    if (!skin?.history) return [];
+    const days = range === "24h" ? 1 : range === "7d" ? 7 : range === "30d" ? 30 : range === "90d" ? 90 : range === "1y" ? 365 : 9999;
+    const cutoff = Date.now() - days * 86400000;
+    return skin.history.filter((h) => new Date(h.date).getTime() >= cutoff);
+  }, [skin?.history, range]);
 
-    loadQuantityHistory();
-  }, [params.skinId, timeRange]);
+  // Synthetic order book from buy/offer data (until backend exposes real book)
+  const synthOrderBook = useMemo(() => {
+    if (!price) return { buys: [], sells: [] };
+    const spread = price * 0.012; // 1.2% baseline spread
+    const buys = Array.from({ length: 6 }).map((_, i) => ({
+      price: +(price - spread - i * price * 0.008).toFixed(2),
+      qty: Math.round((skin?.buyOrderVolume ? skin.buyOrderVolume / 10 : 12) * (1 + i * 0.35)),
+    }));
+    const sells = Array.from({ length: 6 }).map((_, i) => ({
+      price: +(price + i * price * 0.008).toFixed(2),
+      qty: Math.round((skin?.offerVolume ? skin.offerVolume / 10 : 6) * (1 + i * 0.4)),
+    }));
+    return { buys, sells };
+  }, [price, skin?.buyOrderVolume, skin?.offerVolume]);
 
-  // Edge-sensitive hover handler for quantity chart
-  const handleQuantityMouseMove = useCallback((event: any) => {
-    if (!quantityData || !quantityData.length) return;
-    
-    const chartX = event.chartX;
-    const chartWidth = event.chartWidth;
-    const dataLength = quantityData.length;
-    
-    // Calculate bandwidth and range
-    const bandwidth = chartWidth / dataLength;
-    const rangeStart = 0;
-    
-    // Calculate index based on left edge of bars
-    const index = Math.floor((chartX - rangeStart) / bandwidth);
-    const clampedIndex = Math.max(0, Math.min(index, dataLength - 1));
-    
-    setActiveQuantityIndex(clampedIndex);
-  }, [quantityData]);
-
-  const handleQuantityMouseLeave = useCallback(() => {
-    setActiveQuantityIndex(null);
-  }, []);
-
-  // Event handlers
-  const handleAddToWatchlist = useCallback(async () => {
-    if (!skin || !isSignedIn) return;
-
-    try {
-      const response = await fetchJson('/api/watchlist', {
-        method: 'POST',
-        body: JSON.stringify({ skinId: skin.id })
-      });
-
-      if (response.success) {
-        setWatchlist(prev => [...prev, skin.id]);
-        toast.success('Added to watchlist');
-        
-        if (analytics) {
-          try {
-            analytics.trackWatchlistAdd(skin.id, skin.name);
-          } catch (err) {
-            console.error('Analytics error:', err);
-          }
-        }
-      } else {
-        toast.error(response.error || 'Failed to add to watchlist');
-      }
-    } catch (err) {
-      console.error('Error adding to watchlist:', err);
-      toast.error('Failed to add to watchlist');
+  const handleAddWatchlist = useCallback(async () => {
+    if (!skin || !isSignedIn) {
+      router.push("/sign-in");
+      return;
     }
-  }, [skin, isSignedIn, analytics]);
-
-  const handleRemoveFromWatchlist = useCallback(async () => {
-    if (!skin || !isSignedIn) return;
-
     try {
-      const response = await fetchJson(apiUrl(`/watchlist/${skin.id}`), {
-        method: 'DELETE'
+      const token = await getToken({ template: "backend" });
+      const r = await fetchJson(apiUrl("/watchlist"), {
+        method: "POST",
+        body: JSON.stringify({ skinId: skin.id }),
+        headers: { ...(token && { Authorization: `Bearer ${token}` }) },
       });
-
-      if (response.success) {
-        setWatchlist(prev => prev.filter(id => id !== skin.id));
-        toast.success('Removed from watchlist');
-      } else {
-        toast.error(response.error || 'Failed to remove from watchlist');
-      }
-    } catch (err) {
-      console.error('Error removing from watchlist:', err);
-      toast.error('Failed to remove from watchlist');
+      if (r.success) {
+        setWatchlistIds((p) => [...p, skin.id]);
+        toast.success("Added to watchlist");
+      } else toast.error(r.error || "Failed");
+    } catch {
+      toast.error("Failed to add");
     }
-  }, [skin, isSignedIn]);
+  }, [skin, isSignedIn, router, getToken]);
 
-  const handleAddToPortfolio = useCallback(async () => {
-    if (!skin || !isSignedIn) return;
-
-    try {
-      const response = await fetchJson('/api/portfolio', {
-        method: 'POST',
-        body: JSON.stringify({ skinId: skin.id })
-      });
-
-      if (response.success) {
-        setPortfolioSkins(prev => [...prev, skin.id]);
-        toast.success('Added to portfolio');
-        
-        if (analytics) {
-          try {
-            analytics.trackPortfolioAdd(skin.id, skin.name);
-          } catch (err) {
-            console.error('Analytics error:', err);
-          }
-        }
-      } else {
-        toast.error(response.error || 'Failed to add to portfolio');
-      }
-    } catch (err) {
-      console.error('Error adding to portfolio:', err);
-      toast.error('Failed to add to portfolio');
+  const handleAddPortfolio = useCallback(async () => {
+    if (!skin || !isSignedIn) {
+      router.push("/sign-in");
+      return;
     }
-  }, [skin, isSignedIn, analytics]);
-
-  const handleRemoveFromPortfolio = useCallback(async () => {
-    if (!skin || !isSignedIn) return;
-
-    try {
-      const response = await fetchJson(apiUrl(`/portfolio/${skin.id}`), {
-        method: 'DELETE'
-      });
-
-      if (response.success) {
-        setPortfolioSkins(prev => prev.filter(id => id !== skin.id));
-        toast.success('Removed from portfolio');
-      } else {
-        toast.error(response.error || 'Failed to remove from portfolio');
-      }
-    } catch (err) {
-      console.error('Error removing from portfolio:', err);
-      toast.error('Failed to remove from portfolio');
+    const buyPrice = skin.priceMedian ?? skin.priceLatest ?? null;
+    if (buyPrice == null || buyPrice <= 0) {
+      toast.error("Cannot add — this skin has no price data yet");
+      return;
     }
-  }, [skin, isSignedIn]);
-
-  const handleCreatePriceAlert = useCallback(async () => {
-    if (!skin || !isSignedIn || !priceAlert.enabled) return;
-
     try {
-      const response = await fetchJson('/api/alerts', {
-        method: 'POST',
+      const token = await getToken({ template: "backend" });
+      const r = await fetchJson(apiUrl("/portfolio"), {
+        method: "POST",
         body: JSON.stringify({
           skinId: skin.id,
-          targetPrice: priceAlert.targetPrice,
-          type: 'price_alert'
-        })
+          amount: 1,
+          buyPrice,
+          buyDate: new Date().toISOString(),
+        }),
+        headers: { ...(token && { Authorization: `Bearer ${token}` }) },
       });
-
-      if (response.success) {
-        toast.success('Price alert created');
-        
-        if (analytics) {
-          try {
-            analytics.trackAlertCreate(skin.id, skin.name, priceAlert.targetPrice);
-          } catch (err) {
-            console.error('Analytics error:', err);
-          }
-        }
-    } else {
-        toast.error(response.error || 'Failed to create price alert');
-      }
-    } catch (err) {
-      console.error('Error creating price alert:', err);
-      toast.error('Failed to create price alert');
+      if (r.success) {
+        setPortfolioIds((p) => [...p, skin.id]);
+        toast.success("Added to portfolio");
+      } else toast.error(r.error || "Failed");
+    } catch {
+      toast.error("Failed to add");
     }
-  }, [skin, isSignedIn, priceAlert, analytics]);
-
-  const handleCopyLink = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success('Link copied to clipboard');
-      
-      if (analytics) {
-        try {
-          analytics.trackCopyLink(skin?.id, skin?.name);
-        } catch (err) {
-          console.error('Analytics error:', err);
-        }
-      }
-    }
-  }, [skin, analytics]);
-
-  const handleRelatedSkinClick = useCallback((relatedSkin: any) => {
-    if (analytics) {
-      try {
-        analytics.trackRelatedClick(relatedSkin.id, relatedSkin.name);
-      } catch (err) {
-        console.error('Analytics error:', err);
-      }
-    }
-    router.push(`/skins/${relatedSkin.id}`);
-  }, [router, analytics]);
+  }, [skin, isSignedIn, router, getToken]);
 
   if (loading) {
-  return (
-      <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row gap-8">
-              <Skeleton className="w-64 h-64 mx-auto md:mx-0" />
-              <div className="flex-1 space-y-4">
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-6 w-1/4" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-10 w-32" />
-                  <Skeleton className="h-10 w-32" />
-                  <Skeleton className="h-10 w-32" />
-                </div>
-              </div>
-            </div>
+    return (
+      <div className="min-h-screen bg-slate-950 text-white">
+        <div className="container mx-auto px-4 max-w-7xl py-10 space-y-6">
+          <Skeleton className="h-4 w-64 bg-slate-800/60" />
+          <div className="grid md:grid-cols-2 gap-6">
+            <Skeleton className="h-80 bg-slate-800/40 rounded-2xl" />
+            <Skeleton className="h-80 bg-slate-800/40 rounded-2xl" />
+          </div>
+          <Skeleton className="h-72 bg-slate-800/40 rounded-2xl" />
+        </div>
       </div>
     );
   }
 
   if (error || !skin) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Skin not found</h1>
-          <p className="text-muted-foreground mb-4">{error || 'The requested skin could not be found.'}</p>
-          <Button onClick={() => router.push('/skins')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Skins
+          <h1 className="text-2xl font-bold mb-2 font-display">Skin not found</h1>
+          <p className="text-slate-400 mb-4">{error}</p>
+          <Button asChild variant="outline" className="border-slate-700/50">
+            <Link href="/skins">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to skins
+            </Link>
           </Button>
         </div>
       </div>
     );
   }
 
-  return (
-    <TooltipProvider>
-      <div className="min-h-screen bg-background" data-testid="skin-detail">
-        <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 py-6 space-y-6">
-        {/* Back Button */}
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to results
-          </Button>
-        </div>
+  const rarityClassName = getRarityChipClasses(skin.rarity);
+  const rarityHex = rarityToken(skin.rarity).hex;
 
-        {/* Hero Section - Compact */}
-        <Card className="rounded-2xl shadow-sm">
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Skin Image */}
-              <div className="md:col-span-1">
-                <div className="aspect-square relative rounded-xl overflow-hidden bg-muted">
-                  {skinImageUrl && skinImageUrl !== "/images/placeholder-skin.png" ? (
-                    <SkinImage
-                      src={skinImageUrl}
-                      alt={skin.name}
-                      fill
-                      priority
-                      quality={95}
-                      className="object-contain"
-                    />
-                  ) : (
-                      <Image
-                        src={skinImageUrl}
-                        alt={skin.name}
-                        fill
-                      className="object-contain"
-                        priority
-                      quality={95}
-                      />
+  return (
+    <div className="min-h-screen bg-slate-950 text-white">
+      {/* Atmospheric backdrop */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-0 opacity-100"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 40% at 15% 8%, rgba(168,85,247,0.18), transparent 60%), radial-gradient(ellipse 70% 50% at 92% 100%, rgba(236,72,153,0.10), transparent 65%), radial-gradient(ellipse 50% 40% at 70% 30%, rgba(76,86,140,0.15), transparent 70%)",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-0 opacity-30"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(120,130,170,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(120,130,170,0.05) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+          maskImage: "radial-gradient(ellipse 80% 60% at 50% 30%, #000 30%, transparent 80%)",
+        }}
+      />
+
+      <div className="relative z-10 container mx-auto px-4 max-w-7xl py-6">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center gap-2 text-[12.5px] text-slate-500 mb-3" aria-label="Breadcrumb">
+          <Link href="/skins" className="hover:text-white transition-colors">Skins</Link>
+          <span className="text-slate-700">/</span>
+          {skin.weaponType && (
+            <>
+              <Link href={`/skins?weapon=${encodeURIComponent(skin.weaponType)}`} className="hover:text-white transition-colors">
+                {skin.weaponType}
+              </Link>
+              <span className="text-slate-700">/</span>
+            </>
+          )}
+          <span className="text-white">
+            {skin.name}
+            {skin.wear && <span className="text-slate-500"> ({skin.wear})</span>}
+          </span>
+        </nav>
+
+        {/* HERO */}
+        <div className="grid lg:grid-cols-[1.15fr_1fr] gap-5 mt-3">
+          {/* ART CARD */}
+          <Card className="relative overflow-hidden bg-slate-900/70 backdrop-blur border-slate-700/40 p-7">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `radial-gradient(ellipse 70% 50% at 30% 30%, ${rarityHex}30, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 80%, rgba(168,85,247,0.10), transparent 70%)`,
+              }}
+            />
+            <div className="relative z-10 flex flex-col gap-5">
+              {/* Tag strip */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {skin.rarity && <span className={rarityClassName}>▲ {skin.rarity}</span>}
+                {skin.isStattrak && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-[0.18em] border border-amber-500/40 bg-amber-500/12 text-amber-300">
+                    <Star className="h-3 w-3" /> StatTrak™
+                  </span>
+                )}
+                {skin.isStar && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-[0.18em] border border-amber-400/40 bg-amber-400/12 text-amber-300">
+                    ★ Special
+                  </span>
+                )}
+                {skin.collection && (
+                  <span className="ml-auto text-xs text-slate-500">{skin.collection}</span>
+                )}
+              </div>
+
+              {/* Art stage */}
+              <div
+                className="aspect-[16/9] rounded-2xl flex items-center justify-center p-6 relative overflow-hidden border"
+                style={{
+                  background: `radial-gradient(ellipse 60% 50% at 50% 60%, ${rarityHex}30, transparent 70%), linear-gradient(180deg, #1a0b0b 0%, #0a0508 100%)`,
+                  borderColor: `${rarityHex}40`,
+                }}
+              >
+                {skinImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={steamImageSrc(skinImageUrl) ?? skinImageUrl}
+                    alt={skin.name}
+                    className="max-h-full max-w-full object-contain"
+                    style={{ filter: `drop-shadow(0 12px 28px ${rarityHex}50)` }}
+                  />
+                ) : (
+                  <span className="font-mono text-slate-600 text-sm tracking-widest">NO IMAGE</span>
+                )}
+              </div>
+
+              {/* Wear thumbnails (when wear info available) */}
+              {skin.wear && (
+                <div className="flex gap-2">
+                  {["FN", "MW", "FT", "WW", "BS"].map((w) => {
+                    const active = WEAR_SHORT[skin.wear ?? ""] === w;
+                    return (
+                      <div
+                        key={w}
+                        className={cn(
+                          "w-16 h-12 rounded-lg border flex items-center justify-center text-[10px] font-bold text-slate-400 cursor-default transition-colors",
+                          active
+                            ? "border-purple-500/50 text-white"
+                            : "border-slate-700/50 hover:border-slate-600"
+                        )}
+                        style={active ? { boxShadow: "0 0 0 1px rgba(168,85,247,0.4)" } : undefined}
+                      >
+                        {w}
+                      </div>
+                    );
+                  })}
+                  <div className="flex-1" />
+                  {skin.isStattrak && (
+                    <div
+                      className="w-16 h-12 rounded-lg border border-amber-400/30 bg-amber-400/[0.06] text-amber-300 flex items-center justify-center text-[10px] font-bold"
+                    >
+                      ★ ST
+                    </div>
                   )}
                 </div>
+              )}
+            </div>
+          </Card>
+
+          {/* META CARD */}
+          <Card className="bg-slate-900/70 backdrop-blur border-slate-700/40 p-7 flex flex-col gap-5">
+            <div>
+              <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight tracking-tight text-white">
+                {skin.isStattrak && <span className="text-amber-400">StatTrak™ </span>}
+                {skin.name}
+              </h1>
+              <div className="flex flex-wrap items-center gap-3 mt-2 text-[13.5px] text-slate-400">
+                {skin.wear && <span>{skin.wear}</span>}
+                {skin.float != null && (
+                  <>
+                    <span className="w-0.5 h-0.5 rounded-full bg-slate-600" />
+                    <span className="font-mono">Float {skin.float.toFixed(4)}</span>
+                  </>
+                )}
+                {skin.collection && (
+                  <>
+                    <span className="w-0.5 h-0.5 rounded-full bg-slate-600" />
+                    <span>{skin.collection}</span>
+                  </>
+                )}
               </div>
-           
-              {/* Skin Info */}
-              <div className="md:col-span-2 space-y-4">
-                {/* Breadcrumb */}
-                <Breadcrumb>
-                    <BreadcrumbList>
-                      <BreadcrumbItem>
-                      <BreadcrumbLink href="/">Home</BreadcrumbLink>
-                      </BreadcrumbItem>
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                        <BreadcrumbLink href="/cases">Cases</BreadcrumbLink>
-                      </BreadcrumbItem>
-                      {caseInfo && caseInfo.cases.length > 0 && (
-                        <>
-                          <BreadcrumbSeparator />
-                          <BreadcrumbItem>
-                            <BreadcrumbLink href={`/cases/${caseInfo.cases[0].id}`}>
-                              {caseInfo.cases[0].name}
-                            </BreadcrumbLink>
-                          </BreadcrumbItem>
-                        </>
-                      )}
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                        <BreadcrumbLink href="/skins">Skins</BreadcrumbLink>
-                      </BreadcrumbItem>
-                          <BreadcrumbSeparator />
-                          <BreadcrumbItem>
-                      <BreadcrumbPage>{skin.name}</BreadcrumbPage>
-                      </BreadcrumbItem>
-                    </BreadcrumbList>
-                  </Breadcrumb>
-                  
-                {/* Skin Title */}
+            </div>
+
+            <div className="flex items-baseline gap-4 py-4 border-y border-slate-700/40">
+              <span className="font-display text-[3.5rem] font-bold leading-none tracking-tight tabular-nums">
+                {price != null ? <>€{fmtEUR(price)}</> : "—"}
+              </span>
+              {deltaPct24h != null && (
+                <div className="flex flex-col gap-1">
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1 px-2.5 py-1 rounded-md font-mono font-bold text-sm border",
+                      deltaPct24h >= 0
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                        : "bg-rose-500/10 text-rose-400 border-rose-500/30"
+                    )}
+                  >
+                    {deltaPct24h >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                    {deltaPct24h >= 0 ? "+" : ""}{deltaPct24h.toFixed(2)}% 24h
+                  </span>
+                  {delta24h != null && (
+                    <span className="font-mono text-[11.5px] text-slate-500 tabular-nums">
+                      {fmtEURSigned(delta24h)}€ since yesterday
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Stat tiles */}
+            <div className="grid grid-cols-4 gap-3.5">
+              <StatTile label="Median" value={skin.priceMedian != null ? `€${fmtEUR(skin.priceMedian)}` : "—"} />
+              <StatTile label="30D high" value={high30 != null ? `€${fmtEUR(high30)}` : "—"} sub="all-time tracked" />
+              <StatTile label="Vol 24h" value={skin.sold24h != null ? `${skin.sold24h}` : "—"} sub="trades" />
+              <StatTile
+                label="Liquidity"
+                value={skin.hoursToSold != null ? (skin.hoursToSold < 12 ? "High" : skin.hoursToSold < 36 ? "Medium" : "Low") : "—"}
+                sub={skin.hoursToSold != null ? `${skin.hoursToSold.toFixed(1)}h median sell` : undefined}
+              />
+            </div>
+
+            {/* CTA row */}
+            <div className="flex gap-2">
+              <Button
+                onClick={handleAddPortfolio}
+                disabled={inPortfolio === true}
+                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white gap-2 min-h-[44px]"
+              >
+                <Plus className="h-4 w-4" /> {inPortfolio ? "In portfolio" : "Add to portfolio"}
+              </Button>
+              <Button
+                onClick={handleAddWatchlist}
+                variant="outline"
+                disabled={inWatchlist === true}
+                className="flex-1 border-slate-700/50 text-slate-300 hover:text-white gap-2 min-h-[44px]"
+              >
+                <Heart className={cn("h-4 w-4", inWatchlist && "fill-rose-400 text-rose-400")} />
+                {inWatchlist ? "Watching" : "Watchlist"}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!isSignedIn) { router.push("/sign-in"); return; }
+                  setAlertModalOpen(true);
+                }}
+                variant="outline"
+                className="border-slate-700/50 text-slate-300 hover:text-white gap-2 min-h-[44px]"
+              >
+                <Bell className="h-4 w-4" /> Alert
+              </Button>
+            </div>
+
+            <CreateAlertModal
+              onCreate={async (data) => {
+                await createAlert(data);
+                toast.success("Alert created");
+              }}
+              defaultSkinId={skin.id}
+              defaultSkinName={skin.name}
+              defaultPrice={skin.priceMedian ?? skin.priceLatest ?? 0}
+              defaultPriceMin={skin.priceMin ?? null}
+              open={alertModalOpen}
+              onOpenChange={setAlertModalOpen}
+              showTrigger={false}
+            />
+
+            {skin.marketHashName && (
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="text-slate-500 hover:text-slate-300 self-start gap-2 -mt-2"
+              >
+                <a
+                  href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Open on Steam Market
+                </a>
+              </Button>
+            )}
+          </Card>
+        </div>
+
+        {/* BODY */}
+        <div className="grid lg:grid-cols-[1.6fr_1fr] gap-5 mt-5">
+          {/* LEFT: chart + wear + order book */}
+          <div className="flex flex-col gap-5">
+            {/* Chart card */}
+            <Card className="bg-slate-900/70 backdrop-blur border-slate-700/40 p-5">
+              <div className="flex justify-between items-end gap-4 mb-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-foreground mb-1">
-                    {skin.name}
-                  </h1>
-                  <p className="text-muted-foreground">
-                    {skin.marketHashName}
+                  <h3 className="font-display text-base font-semibold text-white">Price history</h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {skin.wear ?? ""}{skin.wear && skin.isStattrak ? " · " : ""}{skin.isStattrak ? "StatTrak™ " : ""}· Steam Market median
                   </p>
                 </div>
-                
-                {/* Price & Stats */}
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="text-2xl font-bold text-foreground">
-                    {skin.marketPrice ? formatUSD(skin.marketPrice) : 'N/A'}
-                  </div>
-                  {skin.priceMedian24h && skin.priceLatest && (
-                    <Badge 
-                      variant={((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100) >= 0 ? "default" : "destructive"}
-                      className="text-sm"
-                    >
-                      {((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100) >= 0 ? (
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                      ) : (
-                        <TrendingDown className="h-3 w-3 mr-1" />
-                      )}
-                      {((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100) >= 0 ? '+' : ''}{safeToFixed(((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100), 2)}%
-                      </Badge>
-                    )}
-             </div>
-                
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2">
-                  {skin.weaponType && (
-                    <Badge variant="secondary" className="text-xs">
-                      {skin.weaponType}
-                    </Badge>
-                  )}
-                  {skin.wear && (
-                    <Badge variant="outline" className="text-xs">
-                      {skin.wear.toUpperCase()}
-                    </Badge>
-                  )}
-                  {skin.rarity && (
-                    <Badge variant="outline" className="text-xs">
-                      {skin.rarity}
-                    </Badge>
-                  )}
-                  {skin.isStattrak && (
-                    <Badge variant="default" className="text-xs">
-                      <Star className="h-3 w-3 mr-1" />
-                      StatTrak™
-                    </Badge>
-                  )}
-                  {skin.isStar && (
-                    <Badge variant="default" className="text-xs">
-                      <Star className="h-3 w-3 mr-1" />
-                      Special
-                    </Badge>
-                  )}
-             </div>
-                  
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3">
-              {isSignedIn ? (
-                <>
-                  {isInWatchlist ? (
-                    <Button
-                          variant="destructive"
-                      onClick={handleRemoveFromWatchlist}
-                      className="flex items-center gap-2"
-                    >
-                          <Heart className="h-4 w-4 fill-white" />
-                      Remove from Watchlist
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleAddToWatchlist}
-                      className="flex items-center gap-2"
-                    >
-                        <Heart className="h-4 w-4" />
-                      Add to Watchlist
-                    </Button>
-                  )}
-                  {isInPortfolio ? (
-                  <Button
-                      variant="outline"
-                      onClick={handleRemoveFromPortfolio}
-                      className="flex items-center gap-2"
-                    >
-                          <Wallet className="h-4 w-4" />
-                      Remove from Portfolio
-                  </Button>
-                  ) : (
-                    <Button
-                          variant="outline"
-                      onClick={handleAddToPortfolio}
-                      className="flex items-center gap-2"
-                    >
-                          <Wallet className="h-4 w-4" />
-                      Add to Portfolio
-                  </Button>
-                  )}
-                </>
-              ) : (
-                <Button
-                  onClick={() => router.push('/sign-in')}
-                  className="flex items-center gap-2"
+                <ToggleGroup
+                  type="single"
+                  value={range}
+                  onValueChange={(v) => v && setRange(v as Range)}
+                  className="bg-slate-800/50 border border-slate-700/40 rounded-lg p-1"
                 >
-                  <Heart className="h-4 w-4" />
-                      Sign in to Track
-                </Button>
-              )}
-              <Button
-                    variant="secondary"
-                onClick={() => window.open(`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName || skin.name)}`, '_blank')}
-                className="flex items-center gap-2"
-              >
-                <ExternalLink className="h-4 w-4" />
-                    Buy on Steam Market
-                  </Button>
-                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-
-        {/* Full-Width Charts - Stacked Layout */}
-        <div className="space-y-6">
-          {/* Price History Chart - Full Width */}
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader className="p-5">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-base font-semibold">
-              <TrendingUp className="h-5 w-5" />
-              Price History
-            </CardTitle>
-                <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
-                  <ToggleGroupItem value="7d" size="sm">7D</ToggleGroupItem>
-                  <ToggleGroupItem value="30d" size="sm">30D</ToggleGroupItem>
-                  <ToggleGroupItem value="90d" size="sm">90D</ToggleGroupItem>
-                  <ToggleGroupItem value="1y" size="sm">1Y</ToggleGroupItem>
+                  {(["24h", "7d", "30d", "90d", "1y", "all"] as Range[]).map((r) => (
+                    <ToggleGroupItem
+                      key={r}
+                      value={r}
+                      className="text-xs px-2.5 py-1 rounded-md min-h-[28px] data-[state=on]:bg-gradient-to-r data-[state=on]:from-purple-500 data-[state=on]:to-pink-500 data-[state=on]:text-white text-slate-400"
+                    >
+                      {r === "all" ? "All" : r.toUpperCase()}
+                    </ToggleGroupItem>
+                  ))}
                 </ToggleGroup>
               </div>
-          </CardHeader>
-            <CardContent className="p-5 pt-0">
-            {history && history.length > 0 ? (
-                <div className="h-[260px] md:h-[200px] sm:h-[160px]">
-                <SimplePriceChart 
-                  data={history} 
-                  range={timeRange}
-                  scale="linear"
-                    movingAverage="none"
+
+              <div className="flex flex-wrap gap-5 mb-3">
+                <ChartMeta label={`${range.toUpperCase()} high`} value={high30 != null ? `€${fmtEUR(high30)}` : "—"} />
+                <ChartMeta label={`${range.toUpperCase()} low`} value={low30 != null ? `€${fmtEUR(low30)}` : "—"} />
+                <ChartMeta
+                  label={`${range.toUpperCase()} change`}
+                  value={change30 != null ? `${change30 >= 0 ? "+" : ""}${change30.toFixed(1)}%` : "—"}
+                  tone={change30 != null ? (change30 >= 0 ? "pos" : "neg") : undefined}
                 />
-                </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                  No price history available
+                {/* TODO: re-enable when backend supplies real volatility metric */}
+                {/* <ChartMeta label="Volatility" value={"Medium"} /> */}
+                <ChartMeta
+                  label="All-time high"
+                  value={high30 != null ? `€${fmtEUR(high30)}` : "—"}
+                />
               </div>
-            )}
-                            </CardContent>
-                          </Card>
 
-          {/* Available Listings Chart - Full Width */}
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader className="p-5">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-base font-semibold">
-              <BarChart3 className="h-5 w-5" />
-              Available Listings
-            </CardTitle>
-                <ToggleGroup type="single" value={timeRange} onValueChange={(value) => value && setTimeRange(value as any)}>
-                  <ToggleGroupItem value="7d" size="sm">7D</ToggleGroupItem>
-                  <ToggleGroupItem value="30d" size="sm">30D</ToggleGroupItem>
-                  <ToggleGroupItem value="90d" size="sm">90D</ToggleGroupItem>
-                  <ToggleGroupItem value="1y" size="sm">1Y</ToggleGroupItem>
-                </ToggleGroup>
+              <div className="mt-4 pb-6">
+                {filteredHistory.length > 0 ? (
+                  <SkinPriceChart data={filteredHistory.map((h) => ({ date: h.date, price: h.price }))} />
+                ) : (
+                  <EmptyState
+                    icon={Clock}
+                    title="Price not yet tracked"
+                    description="We're fetching prices from Steam Market in waves. Check back in a few hours — your skin will appear here once a refresh completes."
+                    className="border-slate-800/60 bg-slate-950/40"
+                  />
+                )}
               </div>
-          </CardHeader>
-            <CardContent className="p-5 pt-0">
-            {quantityLoading ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-                Loading quantity data...
-              </div>
-            ) : quantityData && quantityData.length > 0 ? (
-              <ChartContainer
-                config={{
-                  quantity: {
-                    label: "Quantity",
-                    color: "hsl(45 20% 95%)", // Cream white for modern look
-                  },
-                }}
-                className="w-full h-[240px] md:h-[200px] sm:h-[180px]"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={quantityData}
-                    barCategoryGap="0%"
-                    barGap={0}
-                    margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
-                    onMouseMove={handleQuantityMouseMove}
-                    onMouseLeave={handleQuantityMouseLeave}
-                  >
-                    <XAxis 
-                      dataKey="date" 
-                      tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      tickCount={6}
-                      type="category"
-                      scale="band"
-                      padding={{ left: 0, right: 0 }}
-                    />
-                    <YAxis 
-                      tickFormatter={(value) => value.toLocaleString()}
-                      tickCount={5}
-                      domain={[0, 'dataMax']}
-                    />
-                    <ChartTooltip 
-                      content={() => {
-                        if (activeQuantityIndex === null || !quantityData[activeQuantityIndex]) {
-                          return null;
-                        }
-                        
-                        const data = quantityData[activeQuantityIndex];
-                        return (
-                          <div className="rounded-lg border bg-background p-2 shadow-sm">
-                            <div className="grid gap-2">
-                              <div className="flex flex-col">
-                                <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                  {new Date(data.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                </span>
-                                <span className="font-bold text-foreground">
-                                  {data.quantity?.toLocaleString()} units
-                                </span>
-                              </div>
-                            </div>
-                </div>
-                        );
-                      }}
-                      cursor={false}
-                      isAnimationActive={false}
-                      animationDuration={0}
-                      active={activeQuantityIndex !== null}
-                    />
-                    <Bar 
-                      dataKey="quantity" 
-                      fill="hsl(45 20% 95%)" 
-                      radius={[6, 6, 0, 0]}
-                      className="hover:opacity-80 transition-opacity duration-200"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                No quantity history available yet. Data will be collected daily.
-              </div>
-            )}
-            </CardContent>
-          </Card>
+            </Card>
 
-          {/* Market Statistics KPI Grid */}
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader className="p-5">
-              <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <BarChart3 className="h-5 w-5" />
-                Market Statistics
-            </CardTitle>
-          </CardHeader>
-            <CardContent className="p-5 pt-0">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {/* Price Statistics */}
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Latest Price</div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {skin.priceLatest ? formatUSD(skin.priceLatest) : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Median Price</div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {skin.priceMedian ? formatUSD(skin.priceMedian) : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Average Price</div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {skin.priceAvg ? formatUSD(skin.priceAvg) : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Min Price (90d)</div>
-                  <div className="text-xl font-semibold text-green-600">
-                    {skin.priceMin ? formatUSD(skin.priceMin) : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Max Price (90d)</div>
-                  <div className="text-xl font-semibold text-red-600">
-                    {skin.priceMax ? formatUSD(skin.priceMax) : 'N/A'}
-                  </div>
-                </div>
-                
-                {/* Market Activity */}
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Offer Volume</div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {skin.offerVolume ? skin.offerVolume.toLocaleString() : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Sold (7d)</div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {skin.sold7d ? skin.sold7d.toLocaleString() : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Sold (30d)</div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {skin.sold30d ? skin.sold30d.toLocaleString() : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Sold (90d)</div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {skin.sold90d ? skin.sold90d.toLocaleString() : 'N/A'}
-                  </div>
-                </div>
-                
-                {/* Buy Orders */}
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Buy Orders</div>
-                  <div className="text-xl font-semibold text-blue-600">
-                    {skin.buyOrderVolume ? skin.buyOrderVolume.toLocaleString() : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Buy Order Price</div>
-                  <div className="text-xl font-semibold text-blue-600">
-                    {skin.buyOrderPrice ? formatUSD(skin.buyOrderPrice) : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Buy Order Median</div>
-                  <div className="text-xl font-semibold text-blue-600">
-                    {skin.buyOrderMedian ? formatUSD(skin.buyOrderMedian) : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Buy Order Avg</div>
-                  <div className="text-xl font-semibold text-blue-600">
-                    {skin.buyOrderAvg ? formatUSD(skin.buyOrderAvg) : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Hours to Sold</div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {skin.hoursToSold ? `${skin.hoursToSold.toFixed(1)}h` : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Sold (24h)</div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {skin.sold24h ? skin.sold24h.toLocaleString() : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Sold (Today)</div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {skin.soldToday ? skin.soldToday.toLocaleString() : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">Sold (Total)</div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {skin.soldTotal ? skin.soldTotal.toLocaleString() : 'N/A'}
-                  </div>
-                </div>
-                </div>
-              
-              {/* Price Changes */}
-              <div className="mt-4 pt-4 border-t border-border">
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">24h Change:</span>
-                    <Badge variant={skin.priceMedian24h && skin.priceLatest && ((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100) >= 0 ? "default" : "destructive"}>
-                      {skin.priceMedian24h && skin.priceLatest && ((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100) >= 0 ? (
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                      ) : (
-                        <TrendingDown className="h-3 w-3 mr-1" />
-                      )}
-                      {skin.priceMedian24h && skin.priceLatest ? `${((skin.priceLatest - skin.priceMedian24h) / skin.priceMedian24h * 100).toFixed(2)}%` : 'N/A'}
-                    </Badge>
-              </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">7d Change:</span>
-                    <Badge variant={skin.priceMedian7d && skin.priceLatest && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? "default" : "destructive"}>
-                      {skin.priceMedian7d && skin.priceLatest && ((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100) >= 0 ? (
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                      ) : (
-                        <TrendingDown className="h-3 w-3 mr-1" />
-                      )}
-                      {skin.priceMedian7d && skin.priceLatest ? `${((skin.priceLatest - skin.priceMedian7d) / skin.priceMedian7d * 100).toFixed(2)}%` : 'N/A'}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-                              </CardContent>
-                            </Card>
+            {/* Wear + float */}
+            <Card className="bg-slate-900/70 backdrop-blur border-slate-700/40 p-5">
+              <h3 className="font-display text-base font-semibold text-white mb-3">Wear & float</h3>
+              <WearFloatBar float={skin.float} wear={skin.wear} />
+            </Card>
+
+            {/* Order book */}
+            <Card className="bg-slate-900/70 backdrop-blur border-slate-700/40 p-5">
+              <h3 className="font-display text-base font-semibold text-white mb-3 flex items-center gap-2">
+                Order book
+                <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-amber-400/80">
+                  (demo data)
+                </span>
+              </h3>
+              <OrderBook
+                buys={synthOrderBook.buys}
+                sells={synthOrderBook.sells}
+                last={price}
+              />
+            </Card>
+          </div>
+
+          {/* RIGHT: sidebar */}
+          <div className="flex flex-col gap-5">
+            {/* TODO: re-enable when backend supplies real recent activity events */}
+            {/*
+            <Card className="bg-slate-900/70 backdrop-blur border-slate-700/40 p-5">
+              <h3 className="font-display text-base font-semibold text-white mb-2">Recent activity</h3>
+              <RecentActivity events={[]} />
+            </Card>
+            */}
+
+            {/* TODO: re-enable when backend supplies real sticker data */}
+            {/*
+            <Card className="bg-slate-900/70 backdrop-blur border-slate-700/40 p-5">
+              <Stickers stickers={[]} />
+            </Card>
+            */}
+
+            {/* TODO: re-enable when backend supplies real pattern-index data */}
+            {/*
+            <Card className="bg-slate-900/70 backdrop-blur border-slate-700/40 p-5">
+              <PatternIndex
+                primary={{ num: 447, label: "Common" }}
+                note="Standard pattern · no notable rare seeds"
+                examples={[
+                  { num: 447, label: "Common" },
+                  { num: 179, label: "Rare", rare: true },
+                  { num: 231, label: "Common" },
+                ]}
+              />
+            </Card>
+            */}
+
+            {/* TODO: re-enable when backend supplies real alert counts */}
+            {/* <AlertBanner count={0} /> */}
+          </div>
         </div>
 
-
-
-        {/* Related Skins - Compact */}
-        {variants.length > 0 && (
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Eye className="h-5 w-5" />
-                Related Skins
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {variants.map((variant, index) => {
-                  // Determine if this is a popular, rare, or discounted skin
-                  const isPopular = variant.marketPrice && variant.marketPrice > 50;
-                  const isRare = variant.rarity === 'Covert' || variant.rarity === 'Classified';
-                  const isDiscounted = variant.marketPrice && variant.marketPrice < 10;
-                  
-                  return (
-                  <Card
-                    key={variant.id}
-                    className="group border border-border bg-card hover:border-primary/50 cursor-pointer transition-all duration-200 hover:shadow-sm rounded-xl"
-                    onClick={() => handleRelatedSkinClick(variant)}
-                  >
-                    <CardContent className="p-3">
-                      {/* Image Container */}
-                      <div className="aspect-square relative mb-2 rounded-lg overflow-hidden bg-muted">
-                        {variant.imageUrl ? (
-                          <Image
-                            src={variant.imageUrl}
-                            alt={variant.name}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-200"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <div className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                            )}
-                        
-                        {/* Optional Labels */}
-                        <div className="absolute top-1 left-1">
-                          {isPopular && (
-                            <Badge variant="secondary" className="text-xs px-1 py-0">
-                              Popular
-                            </Badge>
-                          )}
-                          {isRare && (
-                            <Badge variant="secondary" className="text-xs px-1 py-0">
-                              Rare
-                            </Badge>
-                          )}
-                          {isDiscounted && (
-                            <Badge variant="secondary" className="text-xs px-1 py-0">
-                              Discounted
-                            </Badge>
-                          )}
-                        </div>
-                          </div>
-                      
-                      {/* Content */}
-                      <div className="space-y-1">
-                        <h3 className="font-medium text-sm line-clamp-2 text-foreground">
-                          {variant.name}
-                        </h3>
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-bold text-foreground">
-                        {variant.marketPrice ? formatUSD(variant.marketPrice) : 'N/A'}
-                      </p>
-                          {variant.rarity && (
-                            <Badge variant="outline" className="text-xs px-1 py-0">
-                              {variant.rarity}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-        {/* Source Section - nur bei echter Case-Beziehung */}
-        {skin?.caseInfo && skin.caseInfo.id && skin.caseInfo.name && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ExternalLink className="h-5 w-5" />
-                Source Case
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">
-                      {skin.caseInfo.name.charAt(0)}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{skin.caseInfo.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      This skin can be obtained from this case
-                    </p>
-                  </div>
+        {/* Case link footer */}
+        {skin.caseInfo && (
+          <div className="mt-6">
+            <Link
+              href={`/cases/${skin.caseInfo.id}`}
+              className="flex items-center justify-between p-4 rounded-xl bg-slate-900/70 backdrop-blur border border-slate-700/40 hover:border-slate-600/60 transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                  {skin.caseInfo.name.charAt(0)}
                 </div>
-                <Link href={`/cases/${skin.caseInfo.id}`}>
-                  <Button variant="outline" className="gap-2">
-                    <ExternalLink className="h-4 w-4" />
-                    View Case
-                  </Button>
-                </Link>
+                <div>
+                  <div className="text-sm font-semibold text-white">{skin.caseInfo.name}</div>
+                  <div className="text-xs text-slate-500">Source case for this skin</div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+              <ExternalLink className="h-4 w-4 text-slate-500 group-hover:text-white transition-colors" />
+            </Link>
+          </div>
         )}
-
-        {/* Case Information - Related Skins */}
-          {caseInfo && caseInfo.cases.length > 0 && (
-            <CaseSection skinId={caseInfo.cases[0].id} />
-          )}
-        </div>
-        </div>
-      </TooltipProvider>
+      </div>
+    </div>
   );
 }
 
+/* Small helpers */
+function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700/40">
+      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1.5">{label}</div>
+      <div className="font-mono font-bold text-sm text-white tabular-nums">{value}</div>
+      {sub && <div className="text-[11px] text-slate-500 mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
+function ChartMeta({ label, value, tone }: { label: string; value: string; tone?: "pos" | "neg" }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-600">{label}</span>
+      <span
+        className={cn(
+          "font-mono text-[13px] font-semibold tabular-nums",
+          tone === "pos" ? "text-emerald-400" : tone === "neg" ? "text-rose-400" : "text-slate-300"
+        )}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}

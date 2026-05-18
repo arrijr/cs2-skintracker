@@ -1,6 +1,26 @@
 // /frontend/src/app/layout.tsx  (Frontend)
 import "./globals.css";
+import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+
+const fontSans = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const fontDisplay = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
 import Providers from "./providers";
 import AppHeader from "./components/AppHeader";
 import BuildInfo from "./components/BuildInfo";
@@ -58,8 +78,8 @@ function ClerkWrapper({ children }: { children: React.ReactNode }) {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkWrapper>
-      <html lang="en" className="dark">
-        <body className="bg-slate-950 text-white min-h-screen">
+      <html lang="en" className={`dark ${fontSans.variable} ${fontDisplay.variable} ${fontMono.variable}`}>
+        <body className="bg-slate-950 text-white min-h-screen font-sans antialiased">
           <ErrorProvider>
             <Providers>
               {/* Global Error Banner */}

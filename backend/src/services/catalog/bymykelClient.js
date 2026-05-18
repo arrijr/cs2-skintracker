@@ -93,3 +93,63 @@ export function makeStatTrakVariant(raw) {
     isStar: isKnife,
   };
 }
+
+/**
+ * For skins where bymykel provides a `wears` array, generate one variant per wear.
+ * Variant marketHashName = "<base mhn> (Field-Tested)" etc.
+ * Sets `wear` to the canonical Steam label so the /skins Wear filter can match.
+ * Skips items without a `wears` array (agents/stickers/cases handled elsewhere).
+ */
+export function makeWearVariants(raw) {
+  if (!Array.isArray(raw.wears) || raw.wears.length === 0) return [];
+  const baseName = raw.name;
+  const baseMhn = raw.market_hash_name ?? raw.name;
+  return raw.wears.map((wear) => ({
+    category: 'skins',
+    externalId: `${raw.id}-${wear.id}`,
+    name: `${baseName} (${wear.name})`,
+    marketHashName: `${baseMhn} (${wear.name})`,
+    imageUrl: raw.image ?? null,
+    rarity: raw.rarity?.name ?? null,
+    collection: raw.collections?.[0]?.name ?? raw.crates?.[0]?.name ?? null,
+    wear: wear.name,
+    metadata: { type: raw.type ?? null, variantOf: raw.id, wear: wear.id },
+    isStattrak: false,
+    isStar: !!raw.name?.startsWith('★ '),
+    _variantOfExternalId: raw.id, // resolved to numeric Skin.id during sync
+  }));
+}
+
+/**
+ * Same as makeWearVariants but for StatTrak™. One row per wear, with ST prefix.
+ * Mirrors makeStatTrakVariant's glove skip + knife ordering rules.
+ */
+export function makeStatTrakWearVariants(raw) {
+  if (!raw.stattrak) return [];
+  if (raw.name?.includes('Gloves') || raw.name?.includes('Hand Wraps')) return [];
+  if (!Array.isArray(raw.wears) || raw.wears.length === 0) return [];
+
+  const isKnife = raw.name?.startsWith('★ ');
+  const baseMhn = raw.market_hash_name ?? raw.name;
+  const stName = isKnife
+    ? `★ StatTrak™ ${raw.name.slice(2)}`
+    : `StatTrak™ ${raw.name}`;
+  const stMhn = isKnife
+    ? `★ StatTrak™ ${baseMhn.slice(2)}`
+    : `StatTrak™ ${baseMhn}`;
+
+  return raw.wears.map((wear) => ({
+    category: 'skins',
+    externalId: `${raw.id}-st-${wear.id}`,
+    name: `${stName} (${wear.name})`,
+    marketHashName: `${stMhn} (${wear.name})`,
+    imageUrl: raw.image ?? null,
+    rarity: raw.rarity?.name ?? null,
+    collection: raw.collections?.[0]?.name ?? raw.crates?.[0]?.name ?? null,
+    wear: wear.name,
+    metadata: { type: raw.type ?? null, variantOf: raw.id, wear: wear.id, variant: 'stattrak' },
+    isStattrak: true,
+    isStar: isKnife,
+    _variantOfExternalId: raw.id,
+  }));
+}

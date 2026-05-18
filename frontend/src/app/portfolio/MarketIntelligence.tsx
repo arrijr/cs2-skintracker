@@ -313,7 +313,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
 
   if (!MARKET_INTELLIGENCE_ENABLED) {
     return (
-      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
         <h3 className="text-xl font-semibold mb-4 text-white">Market Intelligence</h3>
         <div className="text-center py-8">
           <div className="text-2xl mb-4">🔒</div>
@@ -328,7 +328,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
 
   if (!isPremium) {
     return (
-      <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
         <div className="text-center py-8">
           <Brain className="w-16 h-16 mx-auto mb-4 text-purple-400" />
           <h4 className="text-xl font-medium mb-2 text-white">Unlock Market Intelligence</h4>
@@ -344,7 +344,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
   }
 
   return (
-    <div className="bg-slate-900/60 backdrop-blur border border-slate-700/50 rounded-xl p-6 shadow-md">
+    <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-bold text-white">Market Intelligence</h3>
         <div className="flex items-center gap-2">

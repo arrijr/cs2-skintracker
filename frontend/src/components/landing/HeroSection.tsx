@@ -18,7 +18,7 @@ export default function HeroSection() {
         <div className="max-w-6xl mx-auto text-center">
           <Badge variant="outline" className="mb-6 border-purple-500/30 text-purple-300 bg-purple-500/10 gap-1">
             <Sparkles className="h-3 w-3" />
-            Now in beta — Free forever for casual collectors
+            Beta — free forever for casual collectors
           </Badge>
 
           <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight mb-6">
@@ -39,7 +39,7 @@ export default function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-4 mt-10 justify-center items-center">
             <Button size="lg" asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-lg px-8 py-6 gap-2">
               <Link href="/sign-up">
-                Start Free
+                Start free
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>

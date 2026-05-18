@@ -10,7 +10,9 @@ module.exports = {
   theme: {
   	extend: {
   		fontFamily: {
-  			sans: ['Inter', 'system-ui', 'sans-serif'],
+  			sans: ['var(--font-sans)', 'Inter', 'system-ui', 'sans-serif'],
+  			display: ['var(--font-display)', 'Space Grotesk', 'system-ui', 'sans-serif'],
+  			mono: ['var(--font-mono)', 'JetBrains Mono', 'Menlo', 'monospace'],
   		},
   		fontSize: {
   			'xs': ['0.75rem', { lineHeight: '1rem' }],

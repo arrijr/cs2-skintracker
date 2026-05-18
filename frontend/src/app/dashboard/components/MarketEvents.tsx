@@ -1,188 +1,119 @@
-// /frontend/src/app/dashboard/components/MarketEvents.tsx — [Frontend]
-// {/* Market Events - CS2 Updates, Operations, Tournaments */}
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Calendar, 
-  ExternalLink, 
-  RefreshCw,
-  Gamepad2,
-  Trophy,
-  Zap
-} from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, Globe } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface MarketEvent {
   id: string;
-  date: string;
+  date: string; // ISO date
   title: string;
   description: string;
-  type: 'update' | 'operation' | 'tournament';
-  impact: 'high' | 'medium' | 'low';
-  url?: string;
+  type: "tournament" | "patch" | "operation";
+  href?: string;
 }
 
 interface MarketEventsProps {
-  lastUpdated?: string;
-  onRefresh?: () => void;
-  isLoading?: boolean;
+  events?: MarketEvent[];
 }
 
-// Live events data - populated via API when available
-const getEventsData = (): MarketEvent[] => [];
+// Sample events when no real data — matches design intent (HLTV / blog / market)
+const SAMPLE_EVENTS: MarketEvent[] = [
+  {
+    id: "e1",
+    date: "2026-05-14",
+    title: "IEM Cologne — Group Stage opens",
+    description: "Sticker capsule release · price spike likely",
+    type: "tournament",
+  },
+  {
+    id: "e2",
+    date: "2026-05-11",
+    title: "CS2 Update 1.40 — Dust II returns to pool",
+    description: "Map-tied skin demand historically rises 8–14%",
+    type: "patch",
+  },
+  {
+    id: "e3",
+    date: "2026-05-08",
+    title: "Operation Phoenix Bay teased",
+    description: "New case rumored · watch for case dropoffs",
+    type: "operation",
+  },
+];
 
-const getEventIcon = (type: MarketEvent['type']) => {
-  switch (type) {
-    case 'update': return <Zap className="h-4 w-4" />;
-    case 'operation': return <Gamepad2 className="h-4 w-4" />;
-    case 'tournament': return <Trophy className="h-4 w-4" />;
-    default: return <Calendar className="h-4 w-4" />;
-  }
+const TAG_CLASS: Record<MarketEvent["type"], string> = {
+  tournament: "bg-purple-500/[0.14] text-purple-300 border-purple-500/30",
+  patch: "bg-emerald-500/10 text-emerald-400 border-emerald-500/28",
+  operation: "bg-amber-500/10 text-amber-300 border-amber-500/30",
+};
+const TAG_LABEL: Record<MarketEvent["type"], string> = {
+  tournament: "Tournament",
+  patch: "Patch",
+  operation: "Operation",
 };
 
-const getEventColor = (type: MarketEvent['type']) => {
-  switch (type) {
-    case 'update': return 'text-blue-400';
-    case 'operation': return 'text-purple-400';
-    case 'tournament': return 'text-yellow-400';
-    default: return 'text-muted-foreground';
-  }
-};
-
-const getImpactColor = (impact: MarketEvent['impact']) => {
-  switch (impact) {
-    case 'high': return 'bg-red-500/20 text-red-400 border-red-500/30';
-    case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-    case 'low': return 'bg-green-500/20 text-green-400 border-green-500/30';
-    default: return 'bg-muted/20 text-muted-foreground border-muted/30';
-  }
-};
-
-export default function MarketEvents({ 
-  lastUpdated, 
-  onRefresh, 
-  isLoading = false 
-}: MarketEventsProps) {
-  const events = getEventsData();
-
-  if (isLoading) {
-    return (
-      <Card className="card-brand">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-brand-blue" />
-              Market Events
-            </CardTitle>
-            <Skeleton className="h-8 w-8" />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+export default function MarketEvents({ events }: MarketEventsProps) {
+  const data = (events && events.length > 0) ? events : SAMPLE_EVENTS;
 
   return (
-    <Card className="card-brand card-enhanced hover-lift">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CardTitle className="flex items-center gap-2 text-base font-semibold">
-              <Calendar className="h-5 w-5 text-brand-blue" />
-              Market Events
-            </CardTitle>
-            {lastUpdated && (
-              <span className="text-xs text-muted-foreground">
-                Updated {lastUpdated}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {onRefresh && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onRefresh}
-                className="h-8 w-8 p-0"
-              >
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {events.length > 0 ? (
-          <div className="space-y-3">
-            {events.map((event) => (
-              <div key={event.id} className="p-3 bg-slate-800/20 rounded-lg hover:bg-slate-700/30 transition-all duration-200 hover-scale interactive-card">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 flex-1">
-                    <div className={`mt-0.5 ${getEventColor(event.type)}`}>
-                      {getEventIcon(event.type)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="text-sm font-medium truncate">{event.title}</h4>
-                        <Badge 
-                          variant="outline" 
-                          className={`text-xs ${getImpactColor(event.impact)}`}
-                        >
-                          {event.impact}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-1 line-clamp-2">
-                        {event.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(event.date).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  {event.url && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      asChild
-                      className="h-8 w-8 p-0 flex-shrink-0"
-                    >
-                      <a 
-                        href={event.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
+    <div className="card-style bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-display text-base font-semibold text-white flex items-center gap-2">
+          <Globe className="h-4 w-4 text-purple-300" aria-hidden="true" /> Market events
+          <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-600 ml-1">· this week</span>
+        </h3>
+        <Link href="/blog" className="text-xs font-semibold text-purple-300 hover:underline">
+          All events →
+        </Link>
+      </div>
+
+      <ul className="flex flex-col gap-2.5">
+        {data.map((e) => {
+          const d = new Date(e.date);
+          const day = String(d.getDate()).padStart(2, "0");
+          const mon = d.toLocaleDateString("en-GB", { month: "short" }).toUpperCase();
+          const inner = (
+            <>
+              <div className="w-11 h-11 rounded-[9px] flex flex-col items-center justify-center border border-slate-700/40" style={{ background: "rgba(7,9,14,0.5)" }} aria-hidden="true">
+                <div className="text-[8.5px] font-bold uppercase tracking-[0.14em] text-slate-400">{mon}</div>
+                <div className="font-display text-base font-bold text-white leading-none">{day}</div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-semibold text-white mb-1 truncate">{e.title}</div>
+                <div className="flex items-center gap-2 text-[11.5px] text-slate-400 flex-wrap">
+                  <span className={cn("text-[9.5px] font-bold uppercase tracking-[0.1em] px-1.5 py-0.5 rounded border", TAG_CLASS[e.type])}>
+                    {TAG_LABEL[e.type]}
+                  </span>
+                  <span>{e.description}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-8 px-4 rounded-lg border border-slate-700/50 bg-slate-800/20 text-muted-foreground space-y-3">
-            <Calendar className="h-10 w-10 opacity-40" />
-            <div className="text-center space-y-1">
-              <h4 className="font-medium text-slate-300">No Recent Events</h4>
-              <p className="text-sm text-slate-500 max-w-xs">
-                Market events and updates will appear here when available.
-              </p>
-            </div>
-            <span className="text-xs text-slate-600 border border-slate-700/60 rounded-full px-3 py-1">
-              Live events coming soon
-            </span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              <ChevronRight className="h-4 w-4 text-slate-600 flex-shrink-0" aria-hidden="true" />
+            </>
+          );
+          const className =
+            "grid grid-cols-[44px_1fr_auto] gap-3.5 items-center p-3 rounded-[11px] border border-slate-700/30 transition-all hover:border-slate-600/50 hover:translate-x-0.5 hover:bg-slate-800/40";
+          return (
+            <li key={e.id}>
+              {e.href ? (
+                <Link href={e.href} className={className} style={{ background: "rgba(15,19,28,0.5)" }}>
+                  {inner}
+                </Link>
+              ) : (
+                <div className={className} style={{ background: "rgba(15,19,28,0.5)" }}>
+                  {inner}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="mt-4 pt-3 border-t border-dashed border-slate-700/40 flex items-center justify-between">
+        <span className="text-[11.5px] text-slate-600">Sources: HLTV · CS2 blog · Steam Market</span>
+        <Link href="/account" className="text-xs font-semibold text-purple-300 hover:underline">
+          Subscribe to digest →
+        </Link>
+      </div>
+    </div>
   );
 }

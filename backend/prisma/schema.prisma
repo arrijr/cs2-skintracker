@@ -50,6 +50,7 @@ model Skin {
   itemType     String?     // aus itemtype
   itemName     String?     // aus itemname
   itemGroup    String?     // aus itemgroup (rifle, pistol, etc.)
+  variantOf    Int?        // Loose self-reference: points at base Skin.id for wear/ST variant rows
   
   // Current prices
   priceLatest  Float?      // aus pricelatest
@@ -104,6 +105,7 @@ model Skin {
   @@index([rarity])
   @@index([wear])
   @@index([priceAvg])
+  @@index([variantOf])
 }
 
 model AuditLog {

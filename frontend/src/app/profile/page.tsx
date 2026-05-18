@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatUSD, safeToFixed } from "@/lib/num";
+import { AppShell } from "@/components/layout/AppShell";
 
 interface ProfileData {
   id: number;
@@ -90,10 +91,13 @@ export default function ProfilePage() {
   const loadProfileData = async () => {
     try {
       const token = await getToken({ template: "backend" });
+      if (!token) {
+        // Clerk session not ready yet (transient during sign-in) — bail silently;
+        // useEffect will refire when user/isLoaded change.
+        return;
+      }
       const data = await fetchJson(apiUrl("/api/v1/users/me"), {
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setProfileData(data);
       setSettings({
@@ -102,8 +106,11 @@ export default function ProfilePage() {
         emailAlerts: data.emailAlerts,
         pushAlerts: data.pushAlerts
       });
-    } catch (error) {
-      console.error("Failed to load profile:", error);
+    } catch (error: any) {
+      // Don't log 401s from transient unauth state — useRequireAuth handles the redirect
+      if (!String(error?.message ?? '').includes('401')) {
+        console.error("Failed to load profile:", error);
+      }
     } finally {
       setLoadingProfile(false);
     }
@@ -111,12 +118,10 @@ export default function ProfilePage() {
 
   const loadKPIData = async () => {
     try {
-      // Use new KPI endpoint for better performance
       const token = await getToken({ template: "backend" });
+      if (!token) return;
       const kpiResponse = await fetchJson(apiUrl("/api/v1/portfolio/kpis"), {
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       
       setKpiData({
@@ -130,8 +135,10 @@ export default function ProfilePage() {
         activeAlerts: kpiResponse.activeAlerts || 0,
         lastUpdated: kpiResponse.lastUpdated
       });
-    } catch (error) {
-      console.error("Failed to load KPI data:", error);
+    } catch (error: any) {
+      if (!String(error?.message ?? '').includes('401')) {
+        console.error("Failed to load KPI data:", error);
+      }
       // Set fallback data
       setKpiData({
         portfolioCount: 0,
@@ -228,41 +235,55 @@ export default function ProfilePage() {
 
   // Show loading state while auth is being checked
   if (!isLoaded || !user) {
-    return <div className="text-white p-6">Loading...</div>;
+    return (
+      <AppShell eyebrow="Settings" title="Profile" maxWidth="5xl">
+        <div className="space-y-4">
+          <div className="h-32 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+          <div className="h-48 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+        </div>
+      </AppShell>
+    );
   }
 
   if (loadingProfile || loadingKPI) {
-    return <div className="text-white p-6">Loading profile...</div>;
+    return (
+      <AppShell eyebrow="Settings" title="Profile" description="Loading profile…" maxWidth="5xl">
+        <div className="space-y-4">
+          <div className="h-32 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+          <div className="h-48 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />
+        </div>
+      </AppShell>
+    );
   }
 
   return (
-    <div className="dashboard-bg text-white">
-      <div className="container-cs2 section-cs2 relative z-10">
-        <div className="max-w-4xl mx-auto animate-fade-in">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Profile</h1>
-        <p className="text-zinc-400">Manage your account settings and preferences</p>
-      </div>
-
+    <AppShell
+      eyebrow="Settings"
+      title="Profile"
+      description="Manage your account settings and preferences."
+      maxWidth="5xl"
+    >
+      <div className="animate-fade-in">
           {/* Overview Section */}
-          <div className="card-brand card-enhanced hover-lift mb-8 animate-slide-up">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <User2 className="w-5 h-5" />
-          Overview
-        </h2>
-        
+          <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl mb-8 animate-slide-up">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User2 className="w-5 h-5" />
+                Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
         {/* Avatar & Basic Info */}
         <div className="flex items-center gap-4 mb-6">
-          <span className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white shadow-lg text-2xl">
-            <User2 className="w-8 h-8" />
-          </span>
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-blue to-brand-green flex items-center justify-center text-white shadow-lg text-2xl font-bold ring-2 ring-brand-green/30">
+            {(profileData?.displayName || user.firstName || user.emailAddresses?.[0]?.emailAddress || "U")[0].toUpperCase()}
+          </div>
           <div>
             <div className="text-xl font-bold">
               {profileData?.displayName || user.firstName || "User"}
             </div>
-            <div className="text-zinc-400">{profileData?.email || user.primaryEmailAddress?.emailAddress}</div>
-            <div className="text-sm text-zinc-500 flex items-center gap-1">
+            <div className="text-slate-400">{profileData?.email || user.primaryEmailAddress?.emailAddress}</div>
+            <div className="text-sm text-slate-500 flex items-center gap-1">
               <Calendar className="w-3 h-3" />
               Member since {profileData?.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "Recently"}
             </div>
@@ -270,8 +291,8 @@ export default function ProfilePage() {
         </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              <Card className="card-enhanced hover-lift">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+              <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl">
                 <CardContent className="p-4 text-center">
                   <Star className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
                   <div className="text-lg font-bold">{kpiData?.portfolioCount || 0}</div>
@@ -279,7 +300,7 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
           
-              <Card className="card-enhanced hover-lift">
+              <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl">
                 <CardContent className="p-4 text-center">
                   <div className="text-lg font-bold text-green-400">
                     {formatUSD(kpiData?.portfolioValue || 0)}
@@ -300,16 +321,16 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
           
-              <Card className="card-enhanced hover-lift">
+              <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl">
                 <CardContent className="p-4 text-center">
-                  <div className="text-lg font-bold text-blue-400">
+                  <div className="text-lg font-bold text-brand-celadon">
                     {formatUSD(kpiData?.totalInvested || 0)}
                   </div>
                   <div className="text-xs text-muted-foreground">Total Invested</div>
                 </CardContent>
               </Card>
           
-              <Card className="card-enhanced hover-lift">
+              <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl">
                 <CardContent className="p-4 text-center">
                   <div className="text-lg font-bold text-purple-400">
                     {formatUSD(kpiData?.unrealizedPL || 0)}
@@ -330,7 +351,7 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
           
-              <Card className="card-enhanced hover-lift">
+              <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl">
                 <CardContent className="p-4 text-center">
                   <Eye className="w-6 h-6 text-blue-400 mx-auto mb-2" />
                   <div className="text-lg font-bold">{kpiData?.watchlistCount || 0}</div>
@@ -338,7 +359,7 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
           
-              <Card className="card-enhanced hover-lift">
+              <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl">
                 <CardContent className="p-4 text-center">
                   <AlertTriangle className="w-6 h-6 text-amber-400 mx-auto mb-2" />
                   <div className="text-lg font-bold">{kpiData?.activeAlerts || 0}</div>
@@ -357,30 +378,31 @@ export default function ProfilePage() {
         {/* Risk Metrics */}
         {kpiData?.hasEnoughRiskData && (
           <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-3 text-zinc-300">Risk Metrics</h3>
+            <h3 className="text-lg font-semibold mb-3 text-slate-300">Risk Metrics</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-zinc-800 rounded-lg p-4">
-                <div className="text-sm text-zinc-400 mb-1">30-Day Volatility</div>
+              <div className="bg-slate-800/50 border border-slate-700/30 rounded-xl p-4">
+                <div className="text-sm text-slate-400 mb-1">30-Day Volatility</div>
                 <div className="text-xl font-bold text-orange-400">
                   {kpiData.volatility?.toFixed(2)}%
                 </div>
-                <div className="text-xs text-zinc-500">Daily return volatility</div>
+                <div className="text-xs text-slate-500">Daily return volatility</div>
               </div>
-              
-              <div className="bg-zinc-800 rounded-lg p-4">
-                <div className="text-sm text-zinc-400 mb-1">Max Drawdown (90d)</div>
+
+              <div className="bg-slate-800/50 border border-slate-700/30 rounded-xl p-4">
+                <div className="text-sm text-slate-400 mb-1">Max Drawdown (90d)</div>
                 <div className="text-xl font-bold text-red-400">
                   {kpiData.maxDrawdown?.toFixed(2)}%
                 </div>
-                <div className="text-xs text-zinc-500">Peak to trough decline</div>
+                <div className="text-xs text-slate-500">Peak to trough decline</div>
               </div>
             </div>
           </div>
         )}
-      </div>
+            </CardContent>
+          </Card>
 
           {/* Settings Section */}
-          <Card className="card-enhanced hover-lift mb-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl mb-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="w-5 h-5" />
@@ -467,7 +489,7 @@ export default function ProfilePage() {
               <Button
                 onClick={saveSettings}
                 disabled={savingSettings}
-                className="btn-enhanced w-full sm:w-auto"
+                className=" w-full sm:w-auto"
               >
                 {savingSettings ? (
                   <>
@@ -485,7 +507,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Actions */}
-          <Card className="card-enhanced hover-lift mb-8 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+          <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl mb-8 animate-slide-up" style={{ animationDelay: '0.4s' }}>
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
@@ -494,20 +516,20 @@ export default function ProfilePage() {
                 <Button
                   onClick={() => setShowPwModal(true)}
                   variant="outline"
-                  className="btn-enhanced hover-lift flex items-center gap-2"
+                  className="  flex items-center gap-2"
                 >
                   <Shield className="w-4 h-4" />
                   Change Password
                 </Button>
                 
-                <Button asChild variant="outline" className="btn-enhanced hover-lift flex items-center gap-2">
+                <Button asChild variant="outline" className="  flex items-center gap-2">
                   <Link href="/portfolio">
                     <Star className="w-4 h-4" />
                     My Portfolio
                   </Link>
                 </Button>
                 
-                <Button asChild variant="destructive" className="btn-enhanced hover-lift flex items-center gap-2">
+                <Button asChild variant="destructive" className="  flex items-center gap-2">
                   <Link href="/sign-in">
                     <LogOut className="w-4 h-4" />
                     Sign Out
@@ -518,7 +540,7 @@ export default function ProfilePage() {
           </Card>
 
       {/* Danger Zone */}
-      <Card className="border-red-500/20 bg-red-500/5 hover-lift animate-slide-up" style={{ animationDelay: '0.6s' }}>
+      <Card className="border-red-500/20 bg-red-500/5  animate-slide-up" style={{ animationDelay: '0.6s' }}>
         <CardHeader>
           <CardTitle className="text-red-400 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" />
@@ -533,7 +555,7 @@ export default function ProfilePage() {
           <Button
             onClick={() => setShowDelete(true)}
             variant="destructive"
-            className="btn-enhanced hover-lift flex items-center gap-2"
+            className="  flex items-center gap-2"
           >
             <Trash2 className="w-4 h-4" />
             Delete Account
@@ -606,7 +628,7 @@ export default function ProfilePage() {
                 <Button
                   onClick={changePassword}
                   disabled={pwLoading}
-                  className="btn-enhanced min-w-[120px]"
+                  className=" min-w-[120px]"
                 >
                   {pwLoading ? (
                     <>
@@ -629,7 +651,7 @@ export default function ProfilePage() {
                   }}
                   disabled={pwLoading}
                   variant="outline"
-                  className="btn-enhanced"
+                  className=""
                 >
                   Cancel
                 </Button>
@@ -680,7 +702,7 @@ export default function ProfilePage() {
                   onClick={deleteAccount}
                   disabled={isDeleting || deleteConfirmation !== "DELETE"}
                   variant="destructive"
-                  className="btn-enhanced min-w-[120px]"
+                  className=" min-w-[120px]"
                 >
                   {isDeleting ? (
                     <>
@@ -702,7 +724,7 @@ export default function ProfilePage() {
                   }}
                   disabled={isDeleting}
                   variant="outline"
-                  className="btn-enhanced"
+                  className=""
                 >
                   Cancel
                 </Button>
@@ -711,8 +733,7 @@ export default function ProfilePage() {
           </Card>
         </div>
       )}
-        </div>
       </div>
-    </div>
+    </AppShell>
   );
 }

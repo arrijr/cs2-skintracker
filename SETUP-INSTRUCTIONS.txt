@@ -1,0 +1,286 @@
+================================================================================
+CS2 SKIN TRACKER - PRODUCTION DEPLOYMENT SETUP
+================================================================================
+
+This document guides you through deploying Sprint 1 to production on Vercel.
+
+PREREQUISITES CHECKLIST:
+- [ ] Code review completed (8 issues fixed)
+- [ ] All tests passing (57 tests, 2.0s runtime)
+- [ ] Database seeded (56 skins, 5040 price records)
+- [ ] Local environment working (npm run dev + tests pass)
+
+================================================================================
+PHASE 1: COLLECT AND SAVE PRODUCTION KEYS
+================================================================================
+
+STEP 1.1: Gather Production Keys
+-----------------------------------
+
+You need to collect two LIVE production keys (not TEST keys).
+
+CLERK_SECRET_KEY:
+1. Open: https://dashboard.clerk.com
+2. Go to: Project Settings → API Keys
+3. Find the SECRET KEY (live mode, starts with "sk_live_")
+4. Copy it to clipboard
+5. KEEP IT SAFE - you'll paste it in the next step
+
+STRIPE_SECRET_KEY:
+1. Open: https://dashboard.stripe.com
+2. Go to: Developers → API Keys
+3. Find the SECRET KEY under "Live keys" section
+4. Copy it to clipboard (starts with "sk_live_")
+5. KEEP IT SAFE - you'll paste it in the next step
+
+STEP 1.2: Run Setup Script
+-----------------------------------
+
+This script will:
+- Prompt you to paste CLERK_SECRET_KEY (appears as dots for security)
+- Prompt you to paste STRIPE_SECRET_KEY (appears as dots for security)
+- Validate both keys match the sk_live_ pattern
+- Update .env file locally
+- Commit to git
+- Push to main branch
+- Log all operations (NO keys in log)
+
+TO RUN:
+1. Open PowerShell (press Win+X, then "Windows PowerShell")
+2. Run these commands:
+
+   cd "C:\Users\Arthur\Documents\Coding\CS2 Skin Tracker"
+   .\setup-production-secrets.ps1
+
+WHAT TO EXPECT:
+- Prompt 1: "Paste CLERK_SECRET_KEY" - paste the key, press Enter
+  (key appears as dots, this is normal)
+- Prompt 2: "Paste STRIPE_SECRET_KEY" - paste the key, press Enter
+  (key appears as dots, this is normal)
+- Script will show progress for each step
+- Look for "✅" signs indicating success
+- Script will push to git automatically
+
+TROUBLESHOOTING PHASE 1:
+- Key validation fails: Make sure you copied LIVE keys (sk_live_), not TEST (sk_test_)
+- Git push fails: Run "git config user.email" and "git config user.name" first
+- File not found: Make sure you're in the correct directory
+
+LOG LOCATION:
+File: C:\Users\Arthur\AppData\Roaming\Claude\local-agent-mode-sessions\...\outputs\production-setup-log.txt
+(Shows all operations, no key values)
+
+================================================================================
+PHASE 2: VERIFY VERCEL DEPLOYMENT
+================================================================================
+
+After Phase 1 completes:
+
+1. CHECK VERCEL AUTO-DEPLOY:
+   - Go to: https://vercel.com/arrijrs-projects/cs2-skin-tracker/deployments
+   - Look for the latest deployment
+   - Wait for status to change from "Building" to "Ready"
+   - Click on deployment to see build logs
+   - Look for any errors (they'll be clearly marked)
+
+2. VERIFY ENVIRONMENT VARIABLES IN VERCEL:
+   - Go to: https://vercel.com/arrijrs-projects/cs2-skin-tracker/settings/environment-variables
+   - Check that you see:
+     ✅ CLERK_SECRET_KEY (production scope)
+     ✅ STRIPE_SECRET_KEY (production scope)
+     ✅ DATABASE_URL (should already be there)
+     ✅ Other variables from Phase 1
+
+3. GET LIVE DEPLOYMENT URL:
+   - From the Vercel deployment page, copy the domain
+   - Example: "cs2-skin-tracker-abc123.vercel.app"
+   - You'll use this in Phase 3
+
+TROUBLESHOOTING PHASE 2:
+- Deployment still building: Wait a few more minutes
+- Build failed: Check the build logs for errors
+- Can't see environment variables: Refresh the page and verify again
+
+================================================================================
+PHASE 3: REGISTER STRIPE WEBHOOK (Claude will handle this)
+================================================================================
+
+Claude Code will:
+1. Get your live Vercel URL from the deployment
+2. Register webhook endpoint in Stripe Dashboard:
+   - URL: https://<live-url>/api/v1/webhooks/stripe
+   - Events: customer.subscription.updated, customer.subscription.deleted, charge.succeeded
+3. Copy webhook signing secret (whsec_...)
+4. Add to .env: STRIPE_WEBHOOK_SECRET=whsec_...
+5. Commit and push to git
+
+WHAT TO EXPECT:
+- Claude will create a webhook automatically
+- You'll see confirmation in the setup log
+- Stripe Dashboard will show the webhook registered
+
+================================================================================
+PHASE 4: FINAL VERIFICATION
+================================================================================
+
+Claude Code will test:
+
+1. API ENDPOINT TEST (GET /api/v1/skins):
+   - Expected: HTTP 200
+   - Response: Array of 56 skin objects
+   - Example: [{ id: 1, name: "Awp Dragon Lore", ... }, ...]
+
+2. API ENDPOINT TEST (GET /api/v1/keys):
+   - Expected: HTTP 200
+   - Response: Your API keys (if authenticated)
+
+3. WEBHOOK ENDPOINT TEST:
+   - Send test event to /api/v1/webhooks/stripe
+   - Expected: HTTP 200 (webhook accepted)
+
+If all tests pass:
+✅ PRODUCTION DEPLOYMENT COMPLETE
+✅ Ready for users
+
+If any test fails:
+❌ Check the production-setup-log.txt
+❌ Review Vercel build logs for errors
+❌ Check environment variables are set correctly
+
+================================================================================
+PHASE 5: POST-DEPLOYMENT MONITORING
+================================================================================
+
+After successful deployment:
+
+1. MONITOR VERCEL LOGS:
+   - https://vercel.com/arrijrs-projects/cs2-skin-tracker/logs
+   - Look for any runtime errors
+
+2. MONITOR STRIPE WEBHOOKS:
+   - https://dashboard.stripe.com/webhooks
+   - Check webhook deliveries are successful
+   - Look for any failures or retries
+
+3. TEST WITH REAL REQUESTS:
+   Using curl or Postman:
+
+   GET https://<live-url>/api/v1/skins
+   -> Should return 200 with skin data
+
+   GET https://<live-url>/api/v1/keys?tier=pro
+   -> Should return key information
+
+4. REMOVE DEV TEST TOKENS:
+   - In Phase 6, we'll remove DEV_TEST_TOKEN and DEV_FREE_TOKEN from code
+   - These should not be in production
+
+================================================================================
+SUMMARY OF FILES CREATED
+================================================================================
+
+1. setup-production-secrets.ps1
+   - Main setup script (collects and saves keys)
+   - Runs git operations
+   - Logs operations without exposing keys
+
+2. run-secure-setup.bat
+   - Launcher batch file (runs PowerShell script)
+   - Can double-click to run
+
+3. PRODUCTION-SETUP.md
+   - Quick reference guide
+
+4. SETUP-INSTRUCTIONS.txt
+   - This file (detailed walkthrough)
+
+5. production-setup-log.txt
+   - Created after running setup script
+   - Contains timestamps and status for each step
+   - NO KEY VALUES in log
+
+================================================================================
+TIMELINE ESTIMATE
+================================================================================
+
+Phase 1 (Collect keys):     5-10 minutes
+  - Copy Clerk key:          1 min
+  - Copy Stripe key:         1 min
+  - Run PowerShell script:    3-5 min
+  - Check log:               1 min
+
+Phase 2 (Verify Vercel):    5-15 minutes
+  - Wait for auto-deploy:    3-10 min
+  - Check environment vars:  2 min
+  - Note live URL:           1 min
+
+Phase 3 (Webhook):          3-5 minutes
+  - Claude registers:        2-3 min
+  - Verify in Stripe:        1-2 min
+
+Phase 4 (Testing):          2-3 minutes
+  - Run endpoint tests:      1 min
+  - Check results:           1-2 min
+
+TOTAL: 15-40 minutes (mostly waiting for Vercel)
+
+================================================================================
+NEXT STEPS AFTER PRODUCTION DEPLOYMENT
+================================================================================
+
+1. Monitor for 24 hours
+2. Run Sprint 2 planning
+3. Implement price update service
+4. Remove dev tokens from code
+5. Add monitoring (Sentry?)
+
+================================================================================
+SECURITY REMINDERS
+================================================================================
+
+✅ DO:
+- Use LIVE keys (sk_live_), not TEST keys (sk_test_)
+- Keep keys in .env (git-ignored)
+- Store keys in Vercel Dashboard (encrypted)
+- Log operations without exposing keys
+- Review build logs for errors
+
+❌ DON'T:
+- Share keys in chat or logs
+- Put keys in code comments
+- Put keys in git commits
+- Share your .env file with anyone
+- Use the same keys in multiple environments
+
+================================================================================
+QUESTIONS OR ISSUES?
+================================================================================
+
+If something goes wrong:
+
+1. CHECK THE LOG:
+   File: production-setup-log.txt
+   (Location shown after Phase 1)
+
+2. REVIEW ERROR MESSAGES:
+   - Script will show ✅ or ❌ for each step
+   - Look for the first ❌ (that's where it failed)
+
+3. CHECK VERCEL LOGS:
+   - https://vercel.com/arrijrs-projects/cs2-skin-tracker/logs
+   - Look for "Error" messages
+
+4. VERIFY ENVIRONMENT VARIABLES:
+   - https://vercel.com/arrijrs-projects/cs2-skin-tracker/settings/environment-variables
+   - Make sure both CLERK_SECRET_KEY and STRIPE_SECRET_KEY are set
+
+5. CHECK KEYS ARE CORRECT:
+   - Did you copy LIVE keys (sk_live_)?
+   - Did you copy the full key (should be ~60 characters)?
+   - Are there any extra spaces or special characters?
+
+================================================================================
+END OF SETUP INSTRUCTIONS
+================================================================================
+
+You're ready to begin! Start with Phase 1 when you have both API keys.

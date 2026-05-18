@@ -43,15 +43,27 @@ export const addToWatchlist = async (req, res) => {
     // (Optional) Check for limits (e.g. max 5 skins)
     // (Optional) Check if skin already in list
 
-    const entry = await prisma.watchlist.create({
-      data: {
-        userId,
-        skinId,
-        priceAlert: priceAlert ?? null,
-      }
-    });
+    try {
+      const entry = await prisma.watchlist.create({
+        data: {
+          userId,
+          skinId,
+          priceAlert: priceAlert ?? null,
+        }
+      });
 
-    return res.json({ message: "Added to watchlist", id: entry.id });
+      return res.json({ success: true, message: "Added to watchlist", id: entry.id });
+    } catch (innerErr) {
+      // P2002 = unique constraint violation (userId + skinId already in watchlist)
+      if (innerErr?.code === "P2002") {
+        return res.status(200).json({
+          success: true,
+          already: true,
+          message: "Already in watchlist"
+        });
+      }
+      throw innerErr;
+    }
   } catch (err) {
     console.error(err);
     if (!res.headersSent) {

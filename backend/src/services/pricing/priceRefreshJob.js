@@ -62,6 +62,28 @@ export async function recordPriceResult(item, result, { prismaClient = defaultPr
         source: 'steam_market',
       },
     });
+
+    // Bridge to PriceHistory so /skins/:id chart endpoint has data.
+    // PriceHistory schema: { skinId, date, price } with @@unique([skinId, date]).
+    // Use date-only (midnight UTC) so multiple refreshes per day upsert the same row.
+    if (item.itemType === 'skin') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      try {
+        await prismaClient.priceHistory.upsert({
+          where: { skinId_date: { skinId: item.id, date: today } },
+          update: { price: result.priceLatest },
+          create: { skinId: item.id, date: today, price: result.priceLatest },
+        });
+      } catch (err) {
+        // Don't fail the whole refresh on a transient PriceHistory write error
+        // (e.g. unique-constraint race or DB hiccup). Snapshot already persisted above.
+        logger.warn('PriceHistory upsert failed', {
+          skinId: item.id,
+          error: err?.message,
+        });
+      }
+    }
   }
 }
 

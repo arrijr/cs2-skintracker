@@ -40,8 +40,10 @@ export const catalogSync = inngest.createFunction(
 // Strategy: load full id list once, then for each chunk run refreshItemPrice with
 // 3s spacing (still polite to Steam). Inngest persists state between steps; if a step
 // fails (rate-limit, network), it retries automatically.
-const PRICE_CHUNK_SIZE = 50; // ~50 items × 3s = ~2.5 min per step (fits 60s? No — use 15)
-const PRICE_ITEMS_PER_STEP = 15; // ~15 × 3s = 45s per step (under 60s Vercel limit)
+const PRICE_CHUNK_SIZE = 50; // ~50 items × 3s = ~2.5 min per step (fits 60s? No — use 8)
+// Render free plan ~100s request timeout. Worst case per item ≈ 5s (3s spacing + fetch + retry).
+// 8 × 5s = 40s per step, comfortably under 100s even with a 429 Retry-After mid-chunk.
+const PRICE_ITEMS_PER_STEP = 8;
 const PRICE_SPACING_MS = 3000;
 
 export const priceRefresh = inngest.createFunction(
@@ -60,13 +62,29 @@ export const priceRefresh = inngest.createFunction(
     const maxItems = event?.data?.maxItems ?? null;
 
     // Step 1: load id list (durable — re-runs of later steps reuse this snapshot)
+    // Skip items refreshed in the last 4h so retries / overlapping crons don't redo fresh work.
+    // Skin + MarketItem use `priceUpdatedAt`; Case uses `lastUpdated`.
     const items = await step.run('load-item-list', async () => {
-      const skins = await prisma.skin.findMany({ select: { id: true, marketHashName: true } });
+      const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
+      const skins = await prisma.skin.findMany({
+        where: {
+          OR: [{ priceUpdatedAt: null }, { priceUpdatedAt: { lt: fourHoursAgo } }],
+        },
+        select: { id: true, marketHashName: true },
+      });
       const all = skins.map((s) => ({ ...s, itemType: 'skin' }));
       if (!skinsOnly) {
-        const cases = await prisma.case.findMany({ select: { id: true, name: true } });
+        const cases = await prisma.case.findMany({
+          where: {
+            OR: [{ lastUpdated: null }, { lastUpdated: { lt: fourHoursAgo } }],
+          },
+          select: { id: true, name: true },
+        });
         const marketItems = await prisma.marketItem.findMany({
-          where: { isActive: true },
+          where: {
+            isActive: true,
+            OR: [{ priceUpdatedAt: null }, { priceUpdatedAt: { lt: fourHoursAgo } }],
+          },
           select: { id: true, marketHashName: true, consecutive404: true },
         });
         all.push(

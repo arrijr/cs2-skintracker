@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprint 1: Database & Payment Setup</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: white;
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: var(--gray-900);
+        }
+
+        .subtitle {
+            color: var(--gray-700);
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-badge.complete {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.in-progress {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.pending {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .sections {
+            display: grid;
+            gap: 20px;
+        }
+
+        .section {
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--gray-50);
+            padding: 16px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .section-progress {
+            font-size: 12px;
+            color: var(--gray-700);
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .section-content {
+            padding: 16px;
+        }
+
+        .checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .checklist-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 6px;
+            background: var(--gray-50);
+            transition: all 0.2s ease;
+        }
+
+        .checklist-item:hover {
+            background: var(--gray-100);
+        }
+
+        .checklist-item.complete {
+            background: #d1fae5;
+        }
+
+        .checkbox {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray-300);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-top: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .checklist-item.complete .checkbox {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .checkbox:hover:not(.complete .checkbox) {
+            border-color: var(--primary);
+        }
+
+        .item-content {
+            flex: 1;
+        }
+
+        .item-title {
+            font-weight: 500;
+            color: var(--gray-900);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .item-description {
+            font-size: 13px;
+            color: var(--gray-700);
+        }
+
+        .item-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .status-complete {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .time-estimate {
+            font-size: 12px;
+            color: var(--gray-700);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .summary {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+
+        .summary-text {
+            color: #1e3a8a;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .timer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 12px;
+            background: var(--gray-100);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .timer-icon {
+            font-size: 16px;
+        }
+
+        .timer-text {
+            color: var(--gray-700);
+        }
+
+        .resources {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .resources-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--gray-900);
+        }
+
+        .resources-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .resources-list li {
+            font-size: 14px;
+        }
+
+        .resources-list a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .resources-list a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Sprint 1: Database & Payment Setup</h1>
+        <div class="subtitle">Duration: 25 hours | Status: Code generation complete, implementation in progress</div>
+
+        <div class="summary">
+            <div class="summary-title">✨ What's Ready</div>
+            <div class="summary-text">
+                All Sprint 1 code has been generated! You now have:
+                <ul style="margin-top: 8px; margin-left: 20px;">
+                    <li>Updated Prisma schema with payment fields</li>
+                    <li>Database migration SQL (ready to apply)</li>
+                    <li>Stripe payment service integration</li>
+                    <li>Tier-based feature gating middleware</li>
+                    <li>API key management routes (B2B)</li>
+                    <li>Public API endpoints requiring authentication</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sections" id="checklist">
+            <!-- Setup Phase -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-title">1️⃣ Environment Setup (15 min)</span>
+                    <span class="section-progress" id="setup-progress">0/2</span>
+                </div>
+                <div class="section-content">
+                    <div class="checklist">
+                        <div class="checklist-item" data-item="env-vars">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">
+                                    Add Stripe environment variables to backend/.env
+                                    <span class="item-status status-pending">TODO</span>
+                                </div>
+                                <div class="item-description">
+                                    STRIPE_PUBLIC_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_PRO_ID, STRIPE_PRICE_ENTERPRISE_ID
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="stripe-keys">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">
+                                    Configure Stripe Dashboard (API keys, prices, webhooks)
+                                    <span class="item-status status-pending">TODO</span>
+                                </div>
+                                <div class="item-description">
+                                    Create Pro €4.99/month and Enterprise €99/month products, set up webhook endpoint
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-estimate">⏱️ Estimated: 15 minutes</div>
+                </div>
+            </div>
+
+            <!-- Database Phase -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-title">2️⃣ Database Migration (10 min)</span>
+                    <span class="section-progress" id="db-progress">0/2</span>
+                </div>
+                <div class="section-content">
+                    <div class="checklist">
+                        <div class="checklist-item" data-item="schema-update">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">
+                                    Prisma schema updated with tier fields, APIKey, APILog models
+                                    <span class="item-status status-complete">✅ DONE</span>
+                                </div>
+                                <div class="item-description">
+                                    File: backend/prisma/schema.prisma - All new models generated
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="migration-apply">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">
+                                    Apply database migration with: npx prisma migrate dev
+                                    <span class="item-status status-pending">TODO</span>
+                                </div>
+                                <div class="item-description">
+                                    File: backend/prisma/migrations/20260505_add_payment_and_api_models/migration.sql
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-estimate">⏱️ Estimated: 10 minutes</div>
+                </div>
+            </div>
+
+            <!-- Backend Integration Phase -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-title">3️⃣ Backend Integration (15 min)</span>
+                    <span class="section-progress" id="backend-progress">0/3</span>
+                </div>
+                <div class="section-content">
+                    <div class="checklist">
+                        <div class="checklist-item" data-item="routes-import">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">
+                                    Import route handlers in backend/src/server.js
+                                    <span class="item-status status-pending">TODO</span>
+                                </div>
+                                <div class="item-description">
+                                    Add: stripeWebhookRouter, apiKeysRouter, publicAPIRouter (4 lines of code)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="routes-mount">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">
+                                    Mount routes on Express app
+                                    <span class="item-status status-pending">TODO</span>
+                                </div>
+                                <div class="item-description">
+                                    app.use('/api/v1/webhooks', stripeWebhookRouter) - BEFORE json() middleware
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="test-routes">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">
+                                    Test routes with curl/Postman
+                                    <span class="item-status status-pending">TODO</span>
+                                </div>
+                                <div class="item-description">
+                                    Test: /api/v1/api-keys (list), /api/public/skins (public API)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-estimate">⏱️ Estimated: 15 minutes</div>
+                </div>
+            </div>
+
+            <!-- Testing Phase -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-title">4️⃣ Testing & Validation (15 min)</span>
+                    <span class="section-progress" id="testing-progress">0/3</span>
+                </div>
+                <div class="section-content">
+                    <div class="checklist">
+                        <div class="checklist-item" data-item="create-api-key">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">
+                                    Create API key via /api/v1/api-keys endpoint
+                                    <span class="item-status status-pending">TODO</span>
+                                </div>
+                                <div class="item-description">
+                                    Verify key is returned and stored securely in database
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="test-public-api">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">
+                                    Test public API with Bearer token
+                                    <span class="item-status status-pending">TODO</span>
+                                </div>
+                                <div class="item-description">
+                                    GET /api/public/skins with Authorization: Bearer &lt;key&gt; header
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="test-stripe-webhook">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">
+                                    Test Stripe webhook locally with stripe-cli
+                                    <span class="item-status status-pending">TODO</span>
+                                </div>
+                                <div class="item-description">
+                                    stripe listen + stripe trigger to test checkout.session.completed
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-estimate">⏱️ Estimated: 15 minutes</div>
+                </div>
+            </div>
+
+            <!-- Success Criteria -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-title">✅ Success Criteria</span>
+                    <span class="section-progress" id="success-progress">0/7</span>
+                </div>
+                <div class="section-content">
+                    <div class="checklist">
+                        <div class="checklist-item" data-item="success-migration">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">Prisma migration runs without errors</div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="success-routes">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">All API routes (api-keys, public-api) are accessible</div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="success-auth">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">API key authentication working (Bearer token required)</div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="success-logging">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">API usage logged to APILog table after each request</div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="success-limits">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">Daily call limit enforced for API keys</div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="success-webhook">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">Stripe webhook processes events and updates User tier</div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item" data-item="success-tier">
+                            <div class="checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-title">Feature gating middleware prevents Free tier from accessing Pro features</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources -->
+        <div class="resources">
+            <div class="resources-title">📚 Resources & Documentation</div>
+            <ul class="resources-list">
+                <li><strong>Setup Guide:</strong> See SPRINT1_SETUP_GUIDE.md for detailed instructions</li>
+                <li><strong>Stripe Docs:</strong> <a href="https://stripe.com/docs/payments/accept-a-payment" target="_blank">Accept a Payment</a></li>
+                <li><strong>Prisma Migration:</strong> <a href="https://www.prisma.io/docs/orm/prisma-migrate/getting-started" target="_blank">Prisma Migrate Guide</a></li>
+                <li><strong>Stripe CLI:</strong> For local webhook testing - <a href="https://stripe.com/docs/stripe-cli" target="_blank">Stripe CLI Docs</a></li>
+            </ul>
+        </div>
+
+        <div class="timer">
+            <div class="timer-icon">⏱️</div>
+            <div class="timer-text">Total estimated time: <strong>25 hours (3-4 days)</strong></div>
+        </div>
+    </div>
+
+    <script>
+        const items = document.querySelectorAll('[data-item]');
+
+        items.forEach(item => {
+            const checkbox = item.querySelector('.checkbox');
+            checkbox.addEventListener('click', () => {
+                item.classList.toggle('complete');
+                updateProgress();
+                saveProgress();
+            });
+        });
+
+        function updateProgress() {
+            const sections = {
+                'setup': ['env-vars', 'stripe-keys'],
+                'db': ['schema-update', 'migration-apply'],
+                'backend': ['routes-import', 'routes-mount', 'test-routes'],
+                'testing': ['create-api-key', 'test-public-api', 'test-stripe-webhook'],
+                'success': ['success-migration', 'success-routes', 'success-auth', 'success-logging', 'success-limits', 'success-webhook', 'success-tier']
+            };
+
+            Object.entries(sections).forEach(([key, items]) => {
+                const completed = items.filter(id => document.querySelector(`[data-item="${id}"]`)?.classList.contains('complete')).length;
+                const total = items.length;
+                document.getElementById(`${key}-progress`).textContent = `${completed}/${total}`;
+            });
+        }
+
+        function saveProgress() {
+            const progress = {};
+            items.forEach(item => {
+                const itemId = item.getAttribute('data-item');
+                progress[itemId] = item.classList.contains('complete');
+            });
+            localStorage.setItem('sprint1-progress', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('sprint1-progress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                Object.entries(progress).forEach(([itemId, completed]) => {
+                    if (completed) {
+                        document.querySelector(`[data-item="${itemId}"]`)?.classList.add('complete');
+                    }
+                });
+                updateProgress();
+            }
+        }
+
+        loadProgress();
+    </script>
+</body>
+</html>

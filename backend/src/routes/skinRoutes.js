@@ -41,6 +41,14 @@ const WEAR_MAP = {
   'ww': 'Well-Worn',
   'bs': 'Battle-Scarred',
 };
+// Wear data lives only in marketHashName as "(Factory New)" etc. — wear column mostly NULL.
+const WEAR_MHN = {
+  'fn': '(Factory New)',
+  'mw': '(Minimal Wear)',
+  'ft': '(Field-Tested)',
+  'ww': '(Well-Worn)',
+  'bs': '(Battle-Scarred)',
+};
 function normalizeRarity(v) {
   if (!v) return null;
   const key = v.toLowerCase().trim();
@@ -82,18 +90,33 @@ router.get("/", optionalClerkAuth, async (req, res) => {
     const take = Math.min(Math.max(Number(pageSize) || 24, 1), 60);
     const skip = (Math.max(Number(page) || 1, 1) - 1) * take;
 
-    const where = {
-      ...(q ? { 
+    // Build composite WHERE. `q` and `wear` both need OR groups, so collect them
+    // under AND[] to avoid clobbering each other.
+    const andClauses = [];
+    if (q) {
+      andClauses.push({
         OR: [
           { name: { contains: q, mode: 'insensitive' } },
           { marketHashName: { contains: q, mode: 'insensitive' } },
-          { itemName: { contains: q, mode: 'insensitive' } }
-        ]
-      } : {}),
+          { itemName: { contains: q, mode: 'insensitive' } },
+        ],
+      });
+    }
+    if (wear) {
+      const wearOr = wear
+        .split(',')
+        .map((w) => {
+          const mhn = WEAR_MHN[w.toLowerCase().trim()];
+          return mhn ? { marketHashName: { contains: mhn, mode: 'insensitive' } } : null;
+        })
+        .filter(Boolean);
+      if (wearOr.length) andClauses.push({ OR: wearOr });
+    }
+
+    const where = {
       ...(min ? { priceMedian: { gte: parseFloat(min) } } : {}),
       ...(max ? { priceMedian: { lte: parseFloat(max) } } : {}),
       ...(rarity ? { rarity: { in: rarity.split(',').map(normalizeRarity).filter(Boolean) } } : {}),
-      ...(wear ? { wear: { in: wear.split(',').map(normalizeWear).filter(Boolean) } } : {}),
       ...(quality ? { quality: { in: quality.split(',') } } : {}),
       ...(stattrak ? { isStattrak: stattrak === 'true' } : {}),
       ...(special ? { isStar: special === 'true' } : {}),
@@ -101,6 +124,7 @@ router.get("/", optionalClerkAuth, async (req, res) => {
       ...(weaponType ? { weaponType: { in: weaponType.split(',') } } : {}),
       ...(collection ? { collection: { in: collection.split(',') } } : {}),
       ...(finish ? { itemGroup: { in: finish.split(',') } } : {}),
+      ...(andClauses.length ? { AND: andClauses } : {}),
     };
 
     const orderBy = (() => {
@@ -185,7 +209,6 @@ router.get("/presets", async (_req, res) => {
   try {
     const [
       rarities,
-      wears,
       qualities,
       weaponTypes,
       collections,
@@ -196,12 +219,6 @@ router.get("/presets", async (_req, res) => {
         distinct: ['rarity'],
         where: { rarity: { not: null } },
         orderBy: { rarity: 'asc' }
-      }),
-      prisma.skin.findMany({
-        select: { wear: true },
-        distinct: ['wear'],
-        where: { wear: { not: null } },
-        orderBy: { wear: 'asc' }
       }),
       prisma.skin.findMany({
         select: { quality: true },
@@ -229,9 +246,12 @@ router.get("/presets", async (_req, res) => {
       })
     ]);
 
+    // Wear column mostly NULL — wear lives in marketHashName. Hardcode canonical set.
+    const wears = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred'];
+
     res.json({
       rarities: rarities.map(r => r.rarity).filter(Boolean),
-      wears: wears.map(w => w.wear).filter(Boolean),
+      wears,
       qualities: qualities.map(q => q.quality).filter(Boolean),
       weaponTypes: weaponTypes.map(w => w.weaponType).filter(Boolean),
       collections: collections.map(c => c.collection).filter(Boolean),

@@ -1,38 +1,10 @@
 // /frontend/src/app/skins/_components/EnhancedFilterSidebar.tsx — [Frontend]
-// {/* Enhanced Filter Sidebar with modern visual effects */}
+// Hi-fi filter sidebar. One rounded-2xl card with sections separated by hairline dividers.
+// All chips/toggles use design-system tokens. Wear + Rarity are multi-select (comma-separated).
 "use client";
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Search, X, Save, Share2, Star, Sparkles, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { 
-  Search, 
-  X, 
-  Save, 
-  Share2, 
-  Trash2, 
-  Clock, 
-  CheckSquare, 
-  Square, 
-  Plus, 
-  Heart, 
-  HelpCircle,
-  Filter,
-  Zap,
-  Star,
-  TrendingUp,
-  DollarSign,
-  Shield,
-  Sparkles
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface EnhancedFilterSidebarProps {
@@ -58,29 +30,40 @@ interface EnhancedFilterSidebarProps {
   className?: string;
 }
 
-const WEAR_OPTIONS = [
-  { id: "fn", name: "FN", fullName: "Factory New", color: "text-green-400 bg-green-400/10 border-green-400/30" },
-  { id: "mw", name: "MW", fullName: "Minimal Wear", color: "text-lime-400 bg-lime-400/10 border-lime-400/30" },
-  { id: "ft", name: "FT", fullName: "Field-Tested", color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/30" },
-  { id: "ww", name: "WW", fullName: "Well-Worn", color: "text-orange-400 bg-orange-400/10 border-orange-400/30" },
-  { id: "bs", name: "BS", fullName: "Battle-Scarred", color: "text-red-400 bg-red-400/10 border-red-400/30" }
+const WEAR_OPTIONS: Array<{ id: string; name: string; full: string; hex: string }> = [
+  { id: "fn", name: "FN", full: "Factory New", hex: "#34d399" },
+  { id: "mw", name: "MW", full: "Minimal Wear", hex: "#c8e64c" },
+  { id: "ft", name: "FT", full: "Field-Tested", hex: "#f5b948" },
+  { id: "ww", name: "WW", full: "Well-Worn", hex: "#ec8c0e" },
+  { id: "bs", name: "BS", full: "Battle-Scarred", hex: "#eb4b4b" },
 ];
 
-const RARITY_OPTIONS = [
-  { name: "Covert", color: "text-red-400 bg-red-400/10 border-red-400/30" },
-  { name: "Classified", color: "text-pink-400 bg-pink-400/10 border-pink-400/30" },
-  { name: "Restricted", color: "text-purple-400 bg-purple-400/10 border-purple-400/30" },
-  { name: "Mil-Spec", color: "text-blue-400 bg-blue-400/10 border-blue-400/30" }
+const RARITY_OPTIONS: Array<{ id: string; label: string; hex: string }> = [
+  { id: "consumer", label: "Consumer", hex: "#b0c3d9" },
+  { id: "industrial", label: "Industrial", hex: "#5e98d9" },
+  { id: "mil-spec", label: "Mil-Spec", hex: "#4b69ff" },
+  { id: "restricted", label: "Restricted", hex: "#8847ff" },
+  { id: "classified", label: "Classified", hex: "#d32ce6" },
+  { id: "covert", label: "Covert", hex: "#eb4b4b" },
+  { id: "extraordinary", label: "★ Extraordinary", hex: "#ffd700" },
 ];
 
-const QUICK_FILTERS = [
-  { name: "Under $5", min: "", max: "5", sort: "price_asc", icon: DollarSign, color: "text-green-400" },
-  { name: "Under $25", min: "", max: "25", sort: "price_asc", icon: DollarSign, color: "text-green-400" },
-  { name: "$100-$500", min: "100", max: "500", sort: "price_desc", icon: TrendingUp, color: "text-blue-400" },
-  { name: "High Value", min: "500", max: "", sort: "price_desc", icon: Star, color: "text-yellow-400" },
-  { name: "StatTrak™", stattrak: true, icon: Shield, color: "text-orange-400" },
-  { name: "Special Items", special: true, icon: Sparkles, color: "text-purple-400" }
-];
+const PRESETS = [
+  { label: "Under €5", min: "", max: "5", sort: "price_asc" },
+  { label: "€25–€100", min: "25", max: "100", sort: "price_asc" },
+  { label: "€100–€500", min: "100", max: "500", sort: "price_desc" },
+  { label: "High value €500+", min: "500", max: "", sort: "price_desc" },
+] as const;
+
+/** Helper — parse comma-separated multi-select value into Set. */
+function parseMulti(v: string): Set<string> {
+  if (!v) return new Set();
+  return new Set(v.split(",").map((s) => s.trim()).filter(Boolean));
+}
+/** Helper — serialize Set back to comma-separated value. */
+function serializeMulti(s: Set<string>): string {
+  return Array.from(s).join(",");
+}
 
 export function EnhancedFilterSidebar({
   filters,
@@ -88,354 +71,294 @@ export function EnhancedFilterSidebar({
   onClearFilters,
   onSavePreset,
   onShareFilters,
-  className = ""
+  className = "",
 }: EnhancedFilterSidebarProps) {
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [activeQuickFilters, setActiveQuickFilters] = useState<Set<string>>(new Set());
+  const wears = parseMulti(filters.wear);
+  const rarities = parseMulti(filters.rarity);
 
-  // Apply quick filter
-  const applyQuickFilter = (filter: any) => {
-    if (filter.min !== undefined) onFilterChange('min', filter.min);
-    if (filter.max !== undefined) onFilterChange('max', filter.max);
-    if (filter.sort) onFilterChange('sort', filter.sort);
-    if (filter.stattrak !== undefined) onFilterChange('stattrak', filter.stattrak);
-    if (filter.special !== undefined) onFilterChange('special', filter.special);
-    
-    // Update active state
-    const filterKey = filter.name;
-    setActiveQuickFilters(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(filterKey)) {
-        newSet.delete(filterKey);
-        // Clear the filter
-        if (filter.min !== undefined) onFilterChange('min', '');
-        if (filter.max !== undefined) onFilterChange('max', '');
-        if (filter.stattrak !== undefined) onFilterChange('stattrak', false);
-        if (filter.special !== undefined) onFilterChange('special', false);
-      } else {
-        newSet.add(filterKey);
-      }
-      return newSet;
-    });
+  const toggleWear = (id: string) => {
+    const next = new Set(wears);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onFilterChange("wear", serializeMulti(next));
+  };
+  const toggleRarity = (id: string) => {
+    const next = new Set(rarities);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onFilterChange("rarity", serializeMulti(next));
   };
 
-  // Check if quick filter is active
-  const isQuickFilterActive = (filter: any) => {
-    if (filter.min !== undefined && filters.min !== filter.min) return false;
-    if (filter.max !== undefined && filters.max !== filter.max) return false;
-    if (filter.stattrak !== undefined && filters.stattrak !== filter.stattrak) return false;
-    if (filter.special !== undefined && filters.special !== filter.special) return false;
-    return true;
+  const applyPreset = (p: (typeof PRESETS)[number]) => {
+    const isActive = filters.min === p.min && filters.max === p.max;
+    if (isActive) {
+      onFilterChange("min", "");
+      onFilterChange("max", "");
+    } else {
+      onFilterChange("min", p.min);
+      onFilterChange("max", p.max);
+      onFilterChange("sort", p.sort);
+    }
   };
+
+  const activeFilterCount =
+    (filters.q ? 1 : 0) +
+    (filters.min || filters.max ? 1 : 0) +
+    wears.size +
+    rarities.size +
+    (filters.stattrak ? 1 : 0) +
+    (filters.special ? 1 : 0);
 
   return (
-    <div className={cn("space-y-6", className)}>
-      {/* Search */}
-      <Card className="border-slate-700/50 bg-slate-800/30 backdrop-blur-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <Search className="h-5 w-5 text-brand-blue" />
-            Search
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="relative" data-testid="skin-search">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-            <Input
-              data-testid="skin-search-input"
-              placeholder="Search skins..."
-              value={filters.q}
-              onChange={(e) => onFilterChange('q', e.target.value)}
-              className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400 focus:ring-2 focus:ring-brand-blue/50"
-            />
-          </div>
-        </CardContent>
-      </Card>
+    <div
+      data-testid="enhanced-filter-sidebar"
+      className={cn(
+        "bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl divide-y divide-slate-700/30",
+        className
+      )}
+    >
+      {/* HEADER */}
+      <div className="px-5 py-4 flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-base font-semibold text-white">Filters</h2>
+          {activeFilterCount > 0 && (
+            <p className="text-xs text-slate-500 mt-0.5">
+              <span className="font-mono tabular-nums text-purple-300">{activeFilterCount}</span> active
+            </p>
+          )}
+        </div>
+        {activeFilterCount > 0 && (
+          <button
+            onClick={onClearFilters}
+            className="text-xs text-slate-400 hover:text-white inline-flex items-center gap-1.5 transition-colors"
+          >
+            <RotateCcw className="h-3 w-3" aria-hidden="true" />
+            Reset
+          </button>
+        )}
+      </div>
 
-      {/* Quick Filters */}
-      <Card className="border-slate-700/50 bg-slate-800/30 backdrop-blur-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <Zap className="h-5 w-5 text-brand-orange" />
-            Quick Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-2 gap-2">
-            {QUICK_FILTERS.map((filter) => {
-              const Icon = filter.icon;
-              const isActive = isQuickFilterActive(filter);
-              
-              return (
-                <Button
-                  key={filter.name}
-                  variant={isActive ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => applyQuickFilter(filter)}
-                  className={cn(
-                    "h-8 text-xs justify-start",
-                    isActive 
-                      ? "bg-brand-blue text-white" 
-                      : "border-slate-600/50 text-slate-300 hover:bg-slate-700/50"
-                  )}
-                >
-                  <Icon className={cn("h-3 w-3 mr-1", filter.color)} />
-                  {filter.name}
-                </Button>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      {/* SEARCH */}
+      <Section eyebrow="Search">
+        <div className="relative">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500"
+            aria-hidden="true"
+          />
+          <Input
+            data-testid="skin-search-input"
+            placeholder="Search by name…"
+            value={filters.q}
+            onChange={(e) => onFilterChange("q", e.target.value)}
+            className="pl-9 bg-slate-900/70 border-slate-700/40 text-white placeholder:text-slate-600 focus-visible:ring-purple-400/40"
+          />
+          {filters.q && (
+            <button
+              onClick={() => onFilterChange("q", "")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white p-1"
+              aria-label="Clear search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      </Section>
 
-      {/* Price Range */}
-      <Card className="border-slate-700/50 bg-slate-800/30 backdrop-blur-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-brand-green" />
-            Price Range
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-4">
-            <Slider
-              value={[Number(filters.min) || 0, Number(filters.max) || 5000]}
-              onValueChange={([minVal, maxVal]) => {
-                onFilterChange('min', minVal.toString());
-                onFilterChange('max', maxVal.toString());
-              }}
-              max={5000}
-              step={10}
-              className="w-full"
-            />
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <Label className="text-xs text-slate-400">Min</Label>
-                <Input
-                  placeholder="0"
-                  value={filters.min}
-                  onChange={(e) => onFilterChange('min', e.target.value)}
-                  className="bg-slate-700/50 border-slate-600/50 text-white"
-                />
-              </div>
-              <div className="flex-1">
-                <Label className="text-xs text-slate-400">Max</Label>
-                <Input
-                  placeholder="5000"
-                  value={filters.max}
-                  onChange={(e) => onFilterChange('max', e.target.value)}
-                  className="bg-slate-700/50 border-slate-600/50 text-white"
-                />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Wear */}
-      <Card className="border-slate-700/50 bg-slate-800/30 backdrop-blur-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <Shield className="h-5 w-5 text-brand-purple" />
-            Wear
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <HelpCircle className="h-4 w-4 text-slate-400 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs">
-                    <strong>Wear</strong> indicates the condition of the skin.
-                    <br />• <strong>FN</strong>: Perfect condition
-                    <br />• <strong>MW</strong>: Slight scratches
-                    <br />• <strong>FT</strong>: Visible wear
-                    <br />• <strong>WW</strong>: Heavy wear
-                    <br />• <strong>BS</strong>: Maximum wear
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-2 gap-2">
-            {WEAR_OPTIONS.map((wear) => (
-              <Button
-                key={wear.id}
-                variant={filters.wear === wear.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => onFilterChange('wear', filters.wear === wear.id ? '' : wear.id)}
+      {/* PRICE PRESETS */}
+      <Section eyebrow="Quick presets">
+        <div className="grid grid-cols-2 gap-1.5">
+          {PRESETS.map((p) => {
+            const active = filters.min === p.min && filters.max === p.max;
+            return (
+              <button
+                key={p.label}
+                onClick={() => applyPreset(p)}
+                aria-pressed={active}
                 className={cn(
-                  "h-8 text-xs justify-start",
-                  filters.wear === wear.id 
-                    ? "bg-brand-blue text-white" 
-                    : "border-slate-600/50 text-slate-300 hover:bg-slate-700/50"
+                  "px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all border",
+                  active
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-transparent shadow-[0_8px_20px_-8px_rgba(168,85,247,0.55)]"
+                    : "bg-slate-900/40 border-slate-700/40 text-slate-300 hover:text-white hover:border-slate-600/60"
                 )}
               >
-                <span className={cn("w-2 h-2 rounded-full mr-2", wear.color.split(' ')[0])} />
-                {wear.name}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+      </Section>
 
-      {/* Rarity */}
-      <Card className="border-slate-700/50 bg-slate-800/30 backdrop-blur-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <Star className="h-5 w-5 text-brand-yellow" />
-            Rarity
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <HelpCircle className="h-4 w-4 text-slate-400 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs">
-                    <strong>Rarity</strong> determines how rare and valuable a skin is.
-                    <br />• <strong>Covert</strong>: Extremely rare, highest value
-                    <br />• <strong>Classified</strong>: Very rare, high value
-                    <br />• <strong>Restricted</strong>: Rare, medium-high value
-                    <br />• <strong>Mil-Spec</strong>: Uncommon, medium value
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-2">
-            {RARITY_OPTIONS.map((rarity) => (
-              <div key={rarity.name} className="flex items-center space-x-3">
-                <Checkbox
-                  id={rarity.name}
-                  checked={filters.rarity === rarity.name}
-                  onCheckedChange={(checked) => {
-                    onFilterChange('rarity', checked ? rarity.name : '');
-                  }}
-                  className="border-slate-600 data-[state=checked]:bg-brand-blue data-[state=checked]:border-brand-blue"
+      {/* PRICE RANGE */}
+      <Section eyebrow="Price range (€)">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1 block">Min</label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="0"
+              value={filters.min}
+              onChange={(e) => onFilterChange("min", e.target.value)}
+              className="bg-slate-900/70 border-slate-700/40 text-white font-mono tabular-nums focus-visible:ring-purple-400/40"
+            />
+          </div>
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1 block">Max</label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="5000"
+              value={filters.max}
+              onChange={(e) => onFilterChange("max", e.target.value)}
+              className="bg-slate-900/70 border-slate-700/40 text-white font-mono tabular-nums focus-visible:ring-purple-400/40"
+            />
+          </div>
+        </div>
+      </Section>
+
+      {/* WEAR (multi-select) */}
+      <Section eyebrow="Wear">
+        <p className="text-[10px] text-slate-500 mb-2 leading-relaxed">
+          Wear filter currently limited to skins with wear-specific variants in our catalog.
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {WEAR_OPTIONS.map((w) => {
+            const active = wears.has(w.id);
+            return (
+              <button
+                key={w.id}
+                onClick={() => toggleWear(w.id)}
+                aria-pressed={active}
+                aria-label={w.full}
+                title={w.full}
+                className={cn(
+                  "px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all border inline-flex items-center gap-1.5",
+                  active
+                    ? "text-white"
+                    : "bg-slate-900/40 border-slate-700/40 text-slate-300 hover:text-white hover:border-slate-600/60"
+                )}
+                style={
+                  active
+                    ? { background: `${w.hex}1c`, borderColor: `${w.hex}70`, color: w.hex }
+                    : undefined
+                }
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: w.hex }}
+                  aria-hidden="true"
                 />
-                <Label 
-                  htmlFor={rarity.name} 
-                  className={cn(
-                    "text-sm cursor-pointer flex items-center gap-2",
-                    rarity.color
-                  )}
-                >
-                  <span className={cn("w-2 h-2 rounded-full", rarity.color.split(' ')[0])} />
-                  {rarity.name}
-                </Label>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                {w.name}
+              </button>
+            );
+          })}
+        </div>
+      </Section>
 
-      {/* Special Properties */}
-      <Card className="border-slate-700/50 bg-slate-800/30 backdrop-blur-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-brand-purple" />
-            Special Properties
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="stattrak" className="text-sm text-slate-300">
-                StatTrak™
-              </Label>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <HelpCircle className="h-4 w-4 text-slate-400 cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="max-w-xs">
-                      <strong>StatTrak™</strong> skins track your kills with that weapon.
-                      <br />• Shows kill counter on the weapon
-                      <br />• More expensive than regular skins
-                      <br />• Orange StatTrak™ logo on the skin
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <Switch
-              id="stattrak"
-              checked={filters.stattrak}
-              onCheckedChange={(checked) => onFilterChange('stattrak', checked)}
-              className="data-[state=checked]:bg-brand-orange"
-            />
-          </div>
+      {/* RARITY (multi-select) */}
+      <Section eyebrow="Rarity">
+        <div className="flex flex-wrap gap-1.5">
+          {RARITY_OPTIONS.map((r) => {
+            const active = rarities.has(r.id);
+            return (
+              <button
+                key={r.id}
+                onClick={() => toggleRarity(r.id)}
+                aria-pressed={active}
+                className={cn(
+                  "px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all border inline-flex items-center gap-1.5",
+                  active
+                    ? "text-white"
+                    : "bg-slate-900/40 border-slate-700/40 text-slate-300 hover:text-white hover:border-slate-600/60"
+                )}
+                style={
+                  active
+                    ? { background: `${r.hex}1c`, borderColor: `${r.hex}70`, color: r.hex }
+                    : undefined
+                }
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: r.hex }}
+                  aria-hidden="true"
+                />
+                {r.label}
+              </button>
+            );
+          })}
+        </div>
+      </Section>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="special" className="text-sm text-slate-300">
-                Special Items
-              </Label>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <HelpCircle className="h-4 w-4 text-slate-400 cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="max-w-xs">
-                      <strong>Special Items</strong> are unique collectibles.
-                      <br />• <strong>Knives</strong>: ★ Karambit, ★ Butterfly, etc.
-                      <br />• <strong>Gloves</strong>: Special hand coverings
-                      <br />• Usually very expensive and rare
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <Switch
-              id="special"
-              checked={filters.special}
-              onCheckedChange={(checked) => onFilterChange('special', checked)}
-              className="data-[state=checked]:bg-brand-purple"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Actions */}
-      <Card className="border-slate-700/50 bg-slate-800/30 backdrop-blur-sm">
-        <CardContent className="p-4 space-y-3">
-          <Button 
-            onClick={onClearFilters} 
-            variant="outline" 
-            className="w-full border-slate-600/50 text-slate-300 hover:bg-slate-700/50"
+      {/* SPECIAL TOGGLES */}
+      <Section eyebrow="Variant">
+        <div className="grid grid-cols-2 gap-1.5">
+          <button
+            onClick={() => onFilterChange("stattrak", !filters.stattrak)}
+            aria-pressed={filters.stattrak}
+            className={cn(
+              "px-2.5 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-[0.1em] transition-all border inline-flex items-center justify-center gap-1.5",
+              filters.stattrak
+                ? "bg-amber-500/15 border-amber-500/50 text-amber-300"
+                : "bg-slate-900/40 border-slate-700/40 text-slate-400 hover:text-white hover:border-slate-600/60"
+            )}
           >
-            <X className="h-4 w-4 mr-2" />
-            Clear All Filters
-          </Button>
-          
+            <Star className={cn("h-3 w-3", filters.stattrak && "fill-current")} aria-hidden="true" />
+            StatTrak™
+          </button>
+          <button
+            onClick={() => onFilterChange("special", !filters.special)}
+            aria-pressed={filters.special}
+            className={cn(
+              "px-2.5 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-[0.1em] transition-all border inline-flex items-center justify-center gap-1.5",
+              filters.special
+                ? "bg-purple-500/15 border-purple-500/50 text-purple-300"
+                : "bg-slate-900/40 border-slate-700/40 text-slate-400 hover:text-white hover:border-slate-600/60"
+            )}
+          >
+            <Sparkles className="h-3 w-3" aria-hidden="true" />
+            Special
+          </button>
+        </div>
+      </Section>
+
+      {/* FOOTER ACTIONS */}
+      {(onSavePreset || onShareFilters) && (
+        <div className="px-5 py-3 flex gap-2">
           {onSavePreset && (
-            <Button 
-              onClick={onSavePreset} 
-              variant="outline" 
-              className="w-full border-slate-600/50 text-slate-300 hover:bg-slate-700/50"
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onSavePreset}
+              className="flex-1 border-slate-700/40 text-slate-300 hover:text-white gap-1.5 text-xs"
             >
-              <Save className="h-4 w-4 mr-2" />
-              Save Preset
+              <Save className="h-3 w-3" aria-hidden="true" />
+              Save
             </Button>
           )}
-          
           {onShareFilters && (
-            <Button 
-              onClick={onShareFilters} 
-              variant="outline" 
-              className="w-full border-slate-600/50 text-slate-300 hover:bg-slate-700/50"
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShareFilters}
+              className="flex-1 border-slate-700/40 text-slate-300 hover:text-white gap-1.5 text-xs"
             >
-              <Share2 className="h-4 w-4 mr-2" />
-              Share Filters
+              <Share2 className="h-3 w-3" aria-hidden="true" />
+              Share
             </Button>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Section({ eyebrow, children }: { eyebrow: string; children: React.ReactNode }) {
+  return (
+    <div className="px-5 py-4">
+      <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-2.5">
+        {eyebrow}
+      </h3>
+      {children}
     </div>
   );
 }

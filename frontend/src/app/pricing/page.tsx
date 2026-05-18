@@ -54,8 +54,8 @@ const plans: Plan[] = [
       'Portfolio overview with KPIs',
     ],
     highlight: false,
-    ctaLabel: 'Choose Lite',
-    gradient: 'from-purple-400 to-pink-400',
+    ctaLabel: 'Upgrade to Lite',
+    gradient: 'from-amber-500 to-orange-500',
   },
   {
     id: 'pro',
@@ -74,7 +74,7 @@ const plans: Plan[] = [
       'API access (coming soon)',
     ],
     highlight: true,
-    ctaLabel: 'Choose Pro',
+    ctaLabel: 'Upgrade to Pro',
     gradient: 'from-purple-500 to-pink-500',
   },
 ];
@@ -185,7 +185,7 @@ export default function PricingPage() {
                       plan.id === 'free'
                         ? 'bg-slate-700 hover:bg-slate-600 text-white'
                         : plan.id === 'lite'
-                        ? 'bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white'
                         : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
                     }`}
                   >
