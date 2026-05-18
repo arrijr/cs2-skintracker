@@ -19,20 +19,22 @@ export const subscriptionService = {
       if (!user) {
         throw new Error(`User ${userId} not found`);
       }
-      const tier = user.isPremium ? 'pro' : 'free';
+      const tier = user.tier || (user.isPremium ? 'pro' : 'free');
+      const isPaid = tier === 'pro' || tier === 'lite';
       return {
         id: user.id,
         userId: user.id,
         tier,
-        status: 'active',
-        stripeCustomerId: null,
-        stripeSubId: null,
-        currentPeriodStart: null,
-        currentPeriodEnd: null,
+        status: user.subscriptionStatus || (isPaid ? 'active' : 'inactive'),
+        stripeCustomerId: user.stripeCustomerId ?? null,
+        stripeSubId: user.stripeSubscriptionId ?? null,
+        currentPeriodStart: user.currentPeriodStart ?? null,
+        currentPeriodEnd: user.currentPeriodEnd ?? null,
+        cancelAtPeriodEnd: user.cancelAtPeriodEnd ?? false,
         canceledAt: null,
         canCreatePortfolio: true,
-        canAccessResearch: user.isPremium,
-        canExportCSV: user.isPremium
+        canAccessResearch: isPaid,
+        canExportCSV: isPaid
       };
     } catch (error) {
       logger.error('Failed to get/create subscription', { userId, error: error.message });
@@ -56,15 +58,29 @@ export const subscriptionService = {
         throw new Error('Missing userId in Stripe metadata');
       }
 
+      const isPaid = tier === 'pro' || tier === 'lite';
       const sub = await prisma.user.update({
         where: { id: userId },
-        data: { isPremium: tier === 'pro' || tier === 'lite' }
+        data: {
+          isPremium: isPaid,
+          tier,
+          stripeCustomerId: stripeSubscription.customer ?? undefined,
+          stripeSubscriptionId: stripeSubscription.id ?? undefined,
+          subscriptionStatus: stripeSubscription.status ?? null,
+          currentPeriodStart: stripeSubscription.current_period_start
+            ? new Date(stripeSubscription.current_period_start * 1000)
+            : null,
+          currentPeriodEnd: stripeSubscription.current_period_end
+            ? new Date(stripeSubscription.current_period_end * 1000)
+            : null,
+          cancelAtPeriodEnd: !!stripeSubscription.cancel_at_period_end,
+        }
       });
 
       logger.info('Subscription updated from Stripe', {
         userId,
         tier,
-        status: sub.status,
+        status: sub.subscriptionStatus,
         stripeSubId: stripeSubscription.id
       });
 
@@ -96,7 +112,13 @@ export const subscriptionService = {
 
       const sub = await prisma.user.update({
         where: { id: userId },
-        data: { isPremium: false }
+        data: {
+          isPremium: false,
+          tier: 'free',
+          subscriptionStatus: 'canceled',
+          cancelAtPeriodEnd: false,
+          stripeSubscriptionId: null,
+        }
       });
 
       logger.info('Subscription canceled', {

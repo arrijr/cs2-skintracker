@@ -3,23 +3,41 @@
  * Manages subscription status and tier gating
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useAuth } from '@clerk/nextjs';
-import { loadStripe } from '@stripe/stripe-js';
 
-interface Subscription {
+export interface Subscription {
   id: number;
   tier: 'free' | 'lite' | 'pro';
   status: 'active' | 'inactive' | 'canceled' | 'pending';
-  stripeSubId?: string;
-  currentPeriodStart?: string;
-  currentPeriodEnd?: string;
-  canceledAt?: string;
+  stripeSubId?: string | null;
+  stripeCustomerId?: string | null;
+  currentPeriodStart?: string | null;
+  currentPeriodEnd?: string | null;
+  renewalDate?: string | null;
+  cancelAtPeriodEnd?: boolean;
+  canceledAt?: string | null;
   canCreatePortfolio: boolean;
   canAccessResearch: boolean;
   canExportCSV: boolean;
 }
+
+const FREE_FALLBACK: Subscription = {
+  id: 0,
+  tier: 'free',
+  status: 'inactive',
+  stripeSubId: null,
+  stripeCustomerId: null,
+  currentPeriodStart: null,
+  currentPeriodEnd: null,
+  renewalDate: null,
+  cancelAtPeriodEnd: false,
+  canceledAt: null,
+  canCreatePortfolio: true,
+  canAccessResearch: false,
+  canExportCSV: false,
+};
 
 export function useSubscription() {
   const { isSignedIn } = useUser();
@@ -28,102 +46,75 @@ export function useSubscription() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchSubscription = useCallback(async () => {
     if (!isSignedIn) {
-      setSubscription({
-        id: 0,
-        tier: 'free',
-        status: 'inactive',
-        canCreatePortfolio: true,
-        canAccessResearch: false,
-        canExportCSV: false
-      });
+      setSubscription(FREE_FALLBACK);
       setIsLoading(false);
       return;
     }
-
-    const fetchSubscription = async () => {
-      try {
-        const token = await getToken();
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/status`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
-
-        const data = await res.json();
-        setSubscription(data);
-        setError(null);
-      } catch (err) {
-        console.error('Failed to fetch subscription:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load subscription');
-        // Fallback to free tier
-        setSubscription({
-          id: 0,
-          tier: 'free',
-          status: 'inactive',
-          canCreatePortfolio: true,
-          canAccessResearch: false,
-          canExportCSV: false
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSubscription();
-  }, [isSignedIn, getToken]);
-
-  const checkout = async (tier: 'lite' | 'pro') => {
+    setIsLoading(true);
     try {
       const token = await getToken();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/checkout`, {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/status`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setSubscription(data);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch subscription:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load subscription');
+      setSubscription(FREE_FALLBACK);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isSignedIn, getToken]);
+
+  useEffect(() => {
+    fetchSubscription();
+  }, [fetchSubscription]);
+
+  const checkout = async (tier: 'lite' | 'pro') => {
+    const token = await getToken();
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/checkout`,
+      {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ tier })
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+        body: JSON.stringify({ tier }),
       }
-
-      const { url } = await res.json();
-      if (!url) throw new Error('No checkout URL returned');
-      window.location.href = url;
-    } catch (err) {
-      console.error('Checkout failed:', err);
-      throw err;
-    }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { url } = await res.json();
+    if (!url) throw new Error('No checkout URL returned');
+    window.location.href = url;
   };
 
   const cancel = async () => {
-    try {
-      const token = await getToken();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/cancel`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+    const token = await getToken();
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/cancel`,
+      { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    await fetchSubscription();
+  };
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-
-      // Refetch subscription
-      setSubscription(null);
-      setIsLoading(true);
-    } catch (err) {
-      console.error('Cancellation failed:', err);
-      throw err;
-    }
+  const openPortal = async () => {
+    const token = await getToken();
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/portal`,
+      { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { url } = await res.json();
+    if (!url) throw new Error('No portal URL returned');
+    window.location.href = url;
   };
 
   return {
@@ -133,7 +124,12 @@ export function useSubscription() {
     tier: subscription?.tier || 'free',
     isActive: subscription?.status === 'active',
     canAccessResearch: subscription?.canAccessResearch || false,
+    renewalDate: subscription?.renewalDate ?? subscription?.currentPeriodEnd ?? null,
+    cancelAtPeriodEnd: subscription?.cancelAtPeriodEnd ?? false,
+    hasStripeCustomer: !!subscription?.stripeCustomerId,
+    refresh: fetchSubscription,
     checkout,
-    cancel
+    cancel,
+    openPortal,
   };
 }

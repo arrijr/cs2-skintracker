@@ -118,8 +118,11 @@ export const getSubscription = async (req, res) => {
       tier: sub.tier,
       status: sub.status,
       stripeSubId: sub.stripeSubId,
+      stripeCustomerId: sub.stripeCustomerId,
       currentPeriodStart: sub.currentPeriodStart,
       currentPeriodEnd: sub.currentPeriodEnd,
+      renewalDate: sub.currentPeriodEnd,
+      cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
       canceledAt: sub.canceledAt,
       canCreatePortfolio: sub.canCreatePortfolio,
       canAccessResearch: sub.canAccessResearch,
@@ -173,6 +176,44 @@ export const cancelSubscription = async (req, res) => {
     return res.status(500).json({
       error: 'Failed to cancel subscription'
     });
+  }
+};
+
+/**
+ * POST /subscriptions/portal
+ * Create a Stripe Customer Portal session for the authenticated user
+ */
+export const createCustomerPortalSession = async (req, res) => {
+  try {
+    const userId = req.auth?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (!user.stripeCustomerId) {
+      return res.status(404).json({ error: 'No Stripe customer for user' });
+    }
+
+    const returnUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile?tab=billing`;
+    const session = await stripe.billingPortal.sessions.create({
+      customer: user.stripeCustomerId,
+      return_url: returnUrl,
+    });
+
+    logger.info('Customer Portal session created', { userId });
+    return res.json({ url: session.url });
+  } catch (error) {
+    logger.error('Failed to create customer portal session', {
+      userId: req.auth?.userId,
+      error: error.message,
+    });
+    return res.status(500).json({ error: 'Failed to create portal session' });
   }
 };
 

@@ -71,11 +71,22 @@ const adminLimiter = rateLimit({
 // CORS whitelist from ALLOWED_ORIGINS env (comma-separated)
 const ALLOWED = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',').map(s => s.trim()).filter(Boolean);
 
+// Vercel preview deployments for this project. Matches any branch / sha preview
+// URL like `cs2-skintracker-<hash>-arrijrs-projects.vercel.app` or
+// `cs2-skintracker-git-<branch>-arrijrs-projects.vercel.app`. Production
+// domains (skintrackr.io / api.skintrackr.io / etc.) still come from
+// ALLOWED_ORIGINS — preview URLs are matched here so we don't have to add a
+// new env var entry for every PR.
+const VERCEL_PREVIEW_PATTERNS = [
+  /^https:\/\/cs2-skintracker(-[a-z0-9-]+)?-arrijrs-projects\.vercel\.app$/,
+];
+
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (curl, server-to-server, mobile apps)
     if (!origin) return callback(null, true);
     if (ALLOWED.includes(origin)) return callback(null, true);
+    if (VERCEL_PREVIEW_PATTERNS.some((p) => p.test(origin))) return callback(null, true);
     return callback(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
