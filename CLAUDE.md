@@ -172,7 +172,7 @@ See **[[guides/Development-Workflow]]** for details.
 **Tech Debt (before scale)**:
 - [ ] 31 Playwright tests skipped — localStorage mock ≠ Clerk SDK. Needs real Playwright fixtures with Clerk test accounts. File: `frontend/tests/helpers/auth.ts`
 - [ ] `test:watch` script hat kein path filter (kann node_modules treffen)
-- [ ] `getPortfolioSummary` aggregiert nicht nach skinId (mehrfachkäufe = doppelte Einträge)
+- [x] `getPortfolioSummary` aggregiert nicht nach skinId (mehrfachkäufe = doppelte Einträge) — fixed 2026-05-20 in `backend/src/controllers/portfolioController.js` (skinMap pattern, weighted avg buy price, `purchases[]` retained)
 - [ ] Auth field inconsistency: `req.auth?.userId` vs `req.userId` zwischen Controllern
 
 **Before Production Deploy (MUST FIX)**:
@@ -180,6 +180,48 @@ See **[[guides/Development-Workflow]]** for details.
 - [ ] Stripe Price IDs: replace `prod_...` with actual `price_...` IDs from Stripe Dashboard
 - [ ] Swap Clerk test keys → live keys in Vercel env vars
 - [ ] Remove DEV_TEST_TOKEN + DEV_FREE_TOKEN from .env
+
+**Profile/Settings Production-Readiness** (plan: `docs/superpowers/plans/2026-05-18-profile-settings-production-ready.md`):
+- [x] Phase 1 — 7 critical security + auth fixes shipped (2026-05-18):
+  - [x] Authorization headers attached to every PATCH/DELETE `/users/me` callsite (settings page, AccountTab, NotificationsTab, SecurityTab)
+  - [x] Fake `changePassword` endpoint removed (controller + route); UI replaced with link to Clerk user portal in both `/settings` and `/profile?tab=security`
+  - [x] User-delete cascades applied (migration `20260518120000_user_delete_cascade`) — Watchlist, Portfolio, CasePortfolio, PortfolioHistory, Transaction, AuditLog now `ON DELETE CASCADE`. Alert/APIKey/APILog already cascaded. BlogPost left as RESTRICT (TODO).
+  - [x] Clerk-side deletion wired (`@clerk/backend` already installed) — best-effort, logs on failure
+  - [x] Steam JWT moved out of URL — new `POST /api/v1/steam/connect/start` returns `{ url }` JSON; legacy GET `/connect/redirect` kept for back-compat
+  - [x] Discord webhook URL validated against `https://discord(app).com/api/webhooks/` regex (feature later removed — see below)
+- [x] Discord integration removed (2026-05-20): `discordWebhook` column dropped via migration `20260520010000_drop_discord_webhook`, `deliverDiscord` branch + `discordDelivery.js` deleted from alertEngine, `VALID_CHANNELS` in alertController narrowed to `['email', 'in_app']`, Discord references stripped from userController + AlertCard + FeaturesSection + Footer. 0 Alert rows had `'discord'` in channels at migration time.
+  - [x] Per-route `accountChangeLimiter` (5/hour) mounted on `DELETE /users/me`
+  - [x] Design consistency pass (2026-05-18): `/profile`, `/settings`, `/account` and the `ProfileDropdown` header menu re-skinned to match the dashboard + landing system (slate-950 base, `rounded-2xl border border-slate-800 bg-slate-900/50` cards, fuchsia/pink gradient CTAs, amber Lite / pink Pro tier pills, consistent eyebrow + AppShell headers). Tabs restyled with portfolio-page gradient indicator. Discord webhook UI removed from NotificationsTab (feature deprecated). This is the visual layer only — Phase 2 UX gaps (duplication, MFA/sessions/avatar/data-export, cancel-subscription button) are still open.
+- [x] Phase 2 — UX consolidation pass shipped (2026-05-18):
+  - [x] Steam Connect relocated from Security → Account tab (identity, not security). Anchor `#steam` added so dropdown deep-links work. Connections card removed from SecurityTab.
+  - [x] ProfileDropdown shows live Steam status row (green `Gamepad2` + "Steam connected" / slate "Connect Steam") via `useSteamConnection`.
+  - [x] B1 `/settings` deprecated → redirects to `/profile?tab=account` via Next.js `redirect()`. Dropdown "Settings" item repointed.
+  - [x] B2 Cancel-subscription button wired in BillingTab — confirmation dialog → `cancel()` from `useSubscription` → success toast. Disabled "Reactivate (coming soon)" stub shown while `cancelAtPeriodEnd === true` (real button blocked on backend endpoint).
+  - [x] B3 NotificationsTab now optimistic — toggle flips immediately, PATCH in background, rolls back on error. Save button removed.
+  - [x] B4 Pro CSV export card added — Pro users see disabled "Coming soon" button (backend `/api/v1/portfolio/export?format=csv` not implemented), Free/Lite see Upgrade CTA with "Available on Pro" badge.
+  - [x] B5 Theme toggle removed from AccountTab until light mode ships (Phase 3). `ThemeSelect` import commented with TODO.
+  - [x] B6 Inline `<UserProfile />` from `@clerk/nextjs` in SecurityTab (2026-05-20) — covers MFA, active sessions, password change, email management, profile picture/avatar, connected accounts. Replaces external `accounts.clerk.dev` link. Styled with slate-900/50 card + fuchsia/pink gradient primary buttons via `appearance.variables` + `appearance.elements` overrides. Removed orphan imports (`Link`, `LogOut`, `ExternalLink`, `KeyRound`) from SecurityTab. Caveat: Clerk's internal modals (MFA setup wizard, password change dialog) may still render with default light styling.
+- [x] Phase 2 backend follow-ups shipped (2026-05-20):
+  - [x] `POST /api/v1/subscriptions/reactivate` — flips Stripe `cancel_at_period_end:false`, syncs DB, returns updated subscription. Wired into BillingTab.
+  - [x] `POST /api/v1/subscriptions/cancel` — fixed (was calling `stripe.subscriptions.cancel` which immediate-deletes; now `update({cancel_at_period_end:true})` so users keep access until renewal, matches UI copy and enables reactivate flow).
+  - [x] `GET /api/v1/portfolio/export?format=csv` — Pro-gated, manual CSV with UTF-8 BOM + RFC 4180 escape + Excel formula injection guard (`escText` defuses leading `=`, `+`, `@`, tab, CR on Steam-sourced fields). `canExportCSV` in subscriptionService corrected to Pro-only (was Lite+Pro, mismatched controller gate).
+- [x] Autonomous polish session 2026-05-20 — Wave 3 (mobile responsive audit) + Wave 4 (review agent) ran. Mobile-only Dialog overflow fixed in `frontend/src/components/ui/dialog.tsx` (covers every modal in the app). PortfolioHero, PortfolioTable, items detail, hero h1, smart-alerts card got responsive Tailwind prefixes. Review agent caught 2 critical (cancel-subscription Stripe call + CSV formula injection) + 4 important (canExportCSV mismatch, in_app channel handler missing, accountChangeLimiter order, OnboardingGate silent catch) — all fixed.
+- [x] `alertEngine` now handles `in_app` channel — no-op deliverer (AlertEvent row IS the notification). Previously was marking every in_app delivery as failed.
+- [x] `accountChangeLimiter` reordered behind `verifyClerkJwt` with `keyGenerator: user:${req.userId}` — shared NAT no longer hits collective limit.
+- [x] `backend/logs/error.log` untracked via `git rm --cached` — `*.log` was already in `.gitignore` but the file was committed before the rule.
+- [ ] Total Phase 3+4: 16 (polish + long-tail)
+- [ ] TODO: BlogPost cascade — make `authorId` nullable + `ON DELETE SET NULL`, so user-delete preserves posts.
+- [ ] TODO: prune `req.auth?.userId` vs `req.userId` inconsistency across controllers — `subscriptionController` uses `req.auth?.userId`, most others use `req.userId`. Both resolve to the same DB id via `verifyClerkJwt`, but the duplication is brittle.
+
+**Local-only `.env` vars — NEVER in Render env groups or Vercel prod:**
+- `NODE_TLS_REJECT_UNAUTHORIZED=0` — disables TLS cert verification (only for Arthur's corp-MITM dev network). Catastrophic in prod (allows any TLS cert).
+- `DEV_TEST_TOKEN` / `DEV_TEST_CLERK_ID` — auth bypass mapping to test user (id=1). Skips Clerk JWT verify.
+- `DEV_FREE_TOKEN` / `DEV_FREE_CLERK_ID` — same for free-tier test user (id=2).
+- `JWT_SECRET="sdfjh234wksdfnsf"` — weak secret, only acceptable locally since Clerk handles real auth.
+- Local `DATABASE_URL` (direct connection at port 5432) — prod uses pooler URL via env group.
+- `CLERK_AUDIENCE=cs2-skintracker-api-dev` — dev audience, prod uses `cs2-skintracker-api`.
+
+Before deploying, audit `backend/.env.example` to confirm it only contains placeholders for prod-safe vars.
 
 ---
 
