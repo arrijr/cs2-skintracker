@@ -18,7 +18,6 @@ model User {
   timezone     String?    // IANA timezone string
   emailAlerts  Boolean    @default(true)  // Email notification preference
   pushAlerts   Boolean    @default(false) // Push notification preference
-  discordWebhook String?  // Discord webhook URL for alert delivery
   steamId           String?   @unique
   steamConnectedAt  DateTime?
   tier                    String?   // free | lite | pro (mirrors isPremium for billing)
@@ -32,6 +31,7 @@ model User {
   role         String     @default("user") // user, admin
   preferredCurrency String  @default("EUR")  // EUR | USD | GBP
   themePreference   String  @default("DARK") // DARK | LIGHT | SYSTEM
+  onboardingCompletedAt DateTime? // First-sign-in onboarding flow completion timestamp (null = still pending)
   createdAt    DateTime   @default(now())
   watchlist    Watchlist[]
   portfolio    Portfolio[]
@@ -119,7 +119,7 @@ model Skin {
 
 model AuditLog {
   id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
   action    String   // view, create, update, delete
   resource  String   // admin, portfolio, watchlist, etc.
@@ -137,7 +137,7 @@ model AuditLog {
 
 model Watchlist {
   id         Int     @id @default(autoincrement())
-  user       User    @relation(fields: [userId], references: [id])
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     Int
   skin       Skin    @relation(fields: [skinId], references: [id])
   skinId     Int
@@ -157,7 +157,7 @@ model Alert {
   case            Case?     @relation(fields: [caseId], references: [id], onDelete: Cascade)
   type            String    // "price_threshold" | "volatility" | "float_tier" | "case_ev"
   config          Json      // type-specific config
-  channels        String[]  // ["email", "discord"]
+  channels        String[]  // ["email", "in_app"]
   isActive        Boolean   @default(true)
   cooldownMinutes Int       @default(60)
   lastTriggeredAt DateTime?
@@ -184,7 +184,7 @@ model AlertEvent {
 
 model Portfolio {
   id       Int      @id @default(autoincrement())
-  user     User     @relation(fields: [userId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   Int
   skin     Skin     @relation(fields: [skinId], references: [id])
   skinId   Int
@@ -199,7 +199,7 @@ model Portfolio {
 
 model CasePortfolio {
   id       Int      @id @default(autoincrement())
-  user     User     @relation(fields: [userId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   Int
   case     Case     @relation(fields: [caseId], references: [id])
   caseId   Int
@@ -225,7 +225,7 @@ model PriceHistory {
 
 model PortfolioHistory {
   id          Int      @id @default(autoincrement())
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
   date        DateTime
   value       Float
@@ -240,7 +240,7 @@ model PortfolioHistory {
 
 model Transaction {
   id        Int       @id @default(autoincrement())
-  user      User      @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
   skin      Skin      @relation(fields: [skinId], references: [id])
   skinId    Int
