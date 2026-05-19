@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link2, Link2Off, RefreshCw, Zap, ShieldCheck, Sparkles } from "lucide-react";
@@ -24,7 +23,7 @@ export function SteamConnectSection() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-slate-700/50 bg-slate-900/40 backdrop-blur h-48 animate-pulse" />
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/50 h-48 animate-pulse" />
     );
   }
 
@@ -33,27 +32,26 @@ export function SteamConnectSection() {
     return (
       <>
         {notice && (
-          <div className={`text-sm p-3 rounded border mb-4 ${
+          <div className={`text-sm p-3 rounded-md border mb-4 ${
             notice.kind === 'success'
-              ? 'bg-green-500/10 border-green-500/30 text-green-300'
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
               : 'bg-red-500/10 border-red-500/30 text-red-300'
           }`}>{notice.text}</div>
         )}
         <div className="relative group">
-          {/* Gradient glow */}
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl opacity-40 group-hover:opacity-60 blur transition" />
-          <Card className="relative bg-slate-900/90 backdrop-blur border border-purple-500/30 overflow-hidden">
-            {/* Background gradient wash */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5 pointer-events-none" />
-            <CardContent className="relative p-6 md:p-8">
+          {/* Subtle gradient glow */}
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-fuchsia-500 to-pink-500 rounded-2xl opacity-30 group-hover:opacity-50 blur transition" />
+          <div className="relative overflow-hidden rounded-2xl border border-pink-500/30 bg-slate-900/90 backdrop-blur p-6 md:p-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/[0.06] via-transparent to-pink-500/[0.06] pointer-events-none" />
+            <div className="relative">
               <div className="flex items-start gap-4 mb-5">
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center shadow-lg shadow-pink-500/20">
                   <Sparkles className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h2 className="text-xl font-bold text-white">Connect your Steam account</h2>
-                    <Badge variant="outline" className="border-purple-500/40 text-purple-300 bg-purple-500/10 text-xs">New</Badge>
+                    <h3 className="text-xl font-display font-bold text-white">Connect your Steam account</h3>
+                    <Badge variant="outline" className="border-pink-500/40 text-pink-300 bg-pink-500/10 text-xs">New</Badge>
                   </div>
                   <p className="text-slate-300 text-sm">
                     One-click import your full CS2 inventory — no manual data entry. We auto-match every skin against our 15,000+ item catalog.
@@ -67,11 +65,11 @@ export function SteamConnectSection() {
                   <span className="text-slate-300">Import 50+ skins in 30 seconds</span>
                 </div>
                 <div className="flex items-start gap-2 text-sm">
-                  <ShieldCheck className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
+                  <ShieldCheck className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                   <span className="text-slate-300">Read-only — we never trade or move items</span>
                 </div>
                 <div className="flex items-start gap-2 text-sm">
-                  <RefreshCw className="h-4 w-4 text-purple-300 flex-shrink-0 mt-0.5" />
+                  <RefreshCw className="h-4 w-4 text-fuchsia-300 flex-shrink-0 mt-0.5" />
                   <span className="text-slate-300">Auto-fill cost basis from price history</span>
                 </div>
               </div>
@@ -81,13 +79,13 @@ export function SteamConnectSection() {
               <Button
                 onClick={connect}
                 size="lg"
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white gap-2 font-semibold"
+                className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white gap-2 font-semibold"
               >
                 <Link2 className="h-4 w-4" /> Connect Steam Account
               </Button>
               <p className="text-xs text-slate-500 mt-3">Your Steam profile must be set to public to import inventory.</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
         {showImport && <ImportPreviewModal onClose={() => setShowImport(false)} />}
       </>
@@ -98,40 +96,61 @@ export function SteamConnectSection() {
   return (
     <>
       {notice && (
-        <div className={`text-sm p-3 rounded border mb-4 ${
+        <div className={`text-sm p-3 rounded-md border mb-4 ${
           notice.kind === 'success'
-            ? 'bg-green-500/10 border-green-500/30 text-green-300'
+            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
             : 'bg-red-500/10 border-red-500/30 text-red-300'
         }`}>{notice.text}</div>
       )}
-      <Card className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Link2 className="h-4 w-4 text-purple-300" />
-            Steam Account
-            <Badge className="bg-green-500/20 text-green-300 border border-green-500/30 ml-1">Connected</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          <div className="text-sm text-slate-300 space-y-1.5">
-            <p><span className="text-slate-500">Steam ID:</span> <code className="bg-slate-900/80 px-2 py-0.5 rounded text-xs">{status.steamId}</code></p>
-            <p><span className="text-slate-500">Connected:</span> {status.steamConnectedAt && new Date(status.steamConnectedAt).toLocaleString()}</p>
-            <p><span className="text-slate-500">Last import:</span> {status.lastImportedAt ? new Date(status.lastImportedAt).toLocaleString() : '—'}</p>
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-800/60 border border-slate-800">
+            <Link2 className="h-5 w-5 text-fuchsia-300" />
           </div>
-          <div className="flex flex-wrap gap-2 pt-2">
-            <Button
-              onClick={() => setShowImport(true)}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white gap-2"
-            >
-              <RefreshCw className="h-4 w-4" /> Import Inventory
-            </Button>
-            <Button variant="outline" onClick={disconnect} className="border-slate-700/50 text-slate-300 hover:text-red-300 gap-2">
-              <Link2Off className="h-4 w-4" /> Disconnect
-            </Button>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-lg font-semibold text-white">Steam account</h3>
+              <Badge className="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">Connected</Badge>
+            </div>
+            <p className="mt-1 text-sm text-slate-400">Auto-import your CS2 inventory and refresh on demand.</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {error && <p className="mt-4 text-red-400 text-sm">{error}</p>}
+
+        <dl className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3">
+            <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Steam ID</dt>
+            <dd className="mt-1 text-sm text-slate-200">
+              <code className="bg-slate-900/80 px-1.5 py-0.5 rounded text-xs">{status.steamId}</code>
+            </dd>
+          </div>
+          <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3">
+            <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Connected</dt>
+            <dd className="mt-1 text-sm text-slate-200">{status.steamConnectedAt ? new Date(status.steamConnectedAt).toLocaleDateString() : '—'}</dd>
+          </div>
+          <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3">
+            <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Last import</dt>
+            <dd className="mt-1 text-sm text-slate-200">{status.lastImportedAt ? new Date(status.lastImportedAt).toLocaleDateString() : '—'}</dd>
+          </div>
+        </dl>
+
+        <div className="mt-5 flex flex-wrap gap-3 justify-end pt-4 border-t border-slate-800">
+          <Button
+            variant="outline"
+            onClick={disconnect}
+            className="border-slate-700 bg-slate-900/60 text-slate-300 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/40 gap-2"
+          >
+            <Link2Off className="h-4 w-4" /> Disconnect
+          </Button>
+          <Button
+            onClick={() => setShowImport(true)}
+            className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white gap-2"
+          >
+            <RefreshCw className="h-4 w-4" /> Import inventory
+          </Button>
+        </div>
+      </div>
 
       {showImport && <ImportPreviewModal onClose={() => setShowImport(false)} />}
     </>

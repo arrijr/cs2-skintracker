@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@clerk/nextjs';
-import { User2, Calendar } from 'lucide-react';
+import { Calendar, Crown, Zap } from 'lucide-react';
 import { apiUrl, fetchJson } from '@/lib/api';
-import { Badge } from '@/components/ui/badge';
-import { useSubscription } from '@/hooks/useSubscription';
 
 type ProfileLite = {
   displayName?: string | null;
   email?: string;
   createdAt?: string;
 };
+
+import { useSubscription } from '@/hooks/useSubscription';
 
 export function ProfileHeader() {
   const { user, isLoaded } = useUser();
@@ -54,21 +54,21 @@ export function ProfileHeader() {
         })
       : null;
 
-  const tierLabel = tier === 'pro' ? 'Pro' : tier === 'lite' ? 'Lite' : 'Free';
-  const tierTone =
-    tier === 'pro'
-      ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
-      : tier === 'lite'
-        ? 'bg-blue-500/15 text-blue-300 border-blue-500/30'
-        : 'bg-slate-500/15 text-slate-300 border-slate-500/30';
+  const initials = (() => {
+    const first = user?.firstName || displayName;
+    const last = user?.lastName || '';
+    if (first && last) return `${first[0]}${last[0]}`.toUpperCase();
+    if (first) return first[0]?.toUpperCase() ?? 'U';
+    return email[0]?.toUpperCase() ?? 'U';
+  })();
 
   return (
-    <div className="rounded-2xl border border-slate-700/40 bg-slate-900/60 backdrop-blur p-5 md:p-6 flex items-center gap-4">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 md:p-6 flex items-center gap-4">
       <span
-        className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white shadow-lg shrink-0"
+        className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center text-white font-display font-bold text-xl md:text-2xl shadow-lg shrink-0"
         aria-hidden="true"
       >
-        <User2 className="w-7 h-7 md:w-8 md:h-8" />
+        {initials}
       </span>
 
       <div className="min-w-0 flex-1">
@@ -76,9 +76,7 @@ export function ProfileHeader() {
           <h2 className="text-lg md:text-xl font-display font-semibold text-white truncate">
             {displayName}
           </h2>
-          <Badge variant="outline" className={tierTone}>
-            {tierLabel}
-          </Badge>
+          <TierPill tier={(tier as 'free' | 'lite' | 'pro') ?? 'free'} />
         </div>
         <div className="text-slate-400 text-sm truncate">{email}</div>
         {memberSince && (
@@ -89,5 +87,29 @@ export function ProfileHeader() {
         )}
       </div>
     </div>
+  );
+}
+
+function TierPill({ tier }: { tier: 'free' | 'lite' | 'pro' }) {
+  if (tier === 'pro') {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-pink-500/40 bg-gradient-to-r from-fuchsia-500/20 to-pink-500/20 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-pink-300">
+        <Crown className="h-3 w-3" />
+        Pro
+      </span>
+    );
+  }
+  if (tier === 'lite') {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-amber-300">
+        <Zap className="h-3 w-3" />
+        Lite
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-800 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+      Free
+    </span>
   );
 }

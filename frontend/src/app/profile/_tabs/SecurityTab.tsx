@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { Shield, Trash2, AlertTriangle, Save, RefreshCw, LogOut } from 'lucide-react';
+import { useAuth, UserProfile } from '@clerk/nextjs';
+import { Trash2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { apiUrl, fetchJson } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,69 +15,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { SteamConnectSection } from '@/app/account/_components/SteamConnectSection';
-
 export function SecurityTab() {
-  // Password modal state
-  const [showPwModal, setShowPwModal] = useState(false);
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
-  const [pwError, setPwError] = useState('');
-  const [pwSuccess, setPwSuccess] = useState('');
-  const [pwLoading, setPwLoading] = useState(false);
+  const { getToken } = useAuth();
 
-  // Delete modal state
   const [showDelete, setShowDelete] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const resetPwModal = () => {
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    setPwError('');
-    setPwSuccess('');
-  };
-
   const resetDeleteModal = () => {
     setDeleteConfirmation('');
     setDeleteError('');
-  };
-
-  const changePassword = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPwError("New passwords don't match");
-      return;
-    }
-    if (passwordData.newPassword.length < 6) {
-      setPwError('New password must be at least 6 characters');
-      return;
-    }
-    setPwLoading(true);
-    setPwError('');
-    setPwSuccess('');
-    try {
-      await fetchJson(apiUrl('/api/v1/users/me/password'), {
-        method: 'PATCH',
-        body: JSON.stringify({
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword,
-        }),
-      });
-      setPwSuccess('Password updated.');
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      setTimeout(() => {
-        setShowPwModal(false);
-        setPwSuccess('');
-      }, 1500);
-    } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : '';
-      setPwError(msg || "Couldn't change password. Check your current password and try again.");
-    } finally {
-      setPwLoading(false);
-    }
   };
 
   const deleteAccount = async () => {
@@ -89,7 +36,11 @@ export function SecurityTab() {
     setIsDeleting(true);
     setDeleteError('');
     try {
-      await fetchJson(apiUrl('/api/v1/users/me'), { method: 'DELETE' });
+      const token = await getToken({ template: 'backend' });
+      await fetchJson(apiUrl('/api/v1/users/me'), {
+        method: 'DELETE',
+        headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+      });
       window.location.href = '/';
     } catch {
       setDeleteError("Couldn't delete account. Contact support if this continues.");
@@ -99,153 +50,81 @@ export function SecurityTab() {
 
   return (
     <div className="space-y-6">
-      <SteamConnectSection />
-
-      {/* Password */}
-      <Card className="bg-slate-900/60 border-slate-700/40">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Shield className="w-5 h-5" aria-hidden="true" />
-            Password
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-slate-400">
-            Update the password used to sign in.
+      {/* Sign-in & Security (Clerk-managed, inline) */}
+      <section className="space-y-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Account
           </p>
-          <div className="flex flex-wrap gap-3 justify-end">
-            <Button asChild variant="ghost">
-              <Link href="/sign-in">
-                <LogOut className="w-4 h-4 mr-2" aria-hidden="true" />
-                Sign out
-              </Link>
-            </Button>
-            <Button onClick={() => setShowPwModal(true)} variant="outline">
-              <Shield className="w-4 h-4 mr-2" aria-hidden="true" />
-              Change password
-            </Button>
+          <h2 className="text-lg font-semibold text-white">Sign-in & Security</h2>
+          <p className="text-sm text-slate-400">
+            Manage your password, two-factor authentication, active sessions, email addresses, and profile picture.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 sm:p-6 overflow-hidden max-w-full">
+          <UserProfile
+            appearance={{
+              baseTheme: undefined,
+              variables: {
+                colorPrimary: '#ec4899', // pink-500
+                colorBackground: '#0f172a', // slate-900
+                colorText: '#f1f5f9', // slate-100
+                colorTextSecondary: '#94a3b8', // slate-400
+                colorInputBackground: '#020617', // slate-950
+                colorInputText: '#f1f5f9',
+                colorNeutral: '#64748b', // slate-500
+                borderRadius: '0.75rem',
+              },
+              elements: {
+                rootBox: 'w-full max-w-full',
+                card: 'bg-slate-900/50 border border-slate-800 rounded-2xl shadow-none',
+                navbar: 'bg-slate-950/40 border-r border-slate-800',
+                navbarButton: 'text-slate-300 hover:text-white hover:bg-slate-800',
+                navbarButtonActive: 'text-white bg-slate-800/70',
+                headerTitle: 'text-white',
+                headerSubtitle: 'text-slate-400',
+                formButtonPrimary:
+                  'bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white',
+                formFieldLabel: 'text-slate-300',
+                formFieldInput: 'bg-slate-950 border-slate-800 text-slate-100',
+                badge: 'bg-slate-800 text-slate-300',
+                // TODO: Clerk's internal modals (MFA setup, password change) may
+                // still render with default light styling — verify after deploy.
+              },
+            }}
+          />
+        </div>
+      </section>
+
+      {/* Danger zone */}
+      <section>
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-red-400/80">
+          Danger zone
+        </p>
+        <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-6">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-500/40 bg-red-500/10">
+              <AlertTriangle className="h-5 w-5 text-red-400" aria-hidden="true" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-white">Delete account</h3>
+              <p className="mt-1 text-sm text-slate-400">
+                Permanently delete your account. Your portfolio, watchlist,
+                alerts, and history will be erased and cannot be recovered.
+              </p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Danger Zone */}
-      <Card className="border-red-500/30 bg-red-500/5">
-        <CardHeader>
-          <CardTitle className="text-red-400 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" aria-hidden="true" />
-            Danger zone
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-slate-400">
-            Deleting your account is permanent. Your portfolio, watchlist, alerts, and history will be gone.
-          </p>
-          <div className="flex justify-end">
-            <Button onClick={() => setShowDelete(true)} variant="destructive">
+          <div className="mt-5 flex justify-end pt-4 border-t border-red-500/20">
+            <Button
+              onClick={() => setShowDelete(true)}
+              className="bg-red-500/10 border border-red-500/40 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+            >
               <Trash2 className="w-4 h-4 mr-2" aria-hidden="true" />
               Delete account
             </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Password Dialog */}
-      <Dialog
-        open={showPwModal}
-        onOpenChange={(open) => {
-          setShowPwModal(open);
-          if (!open) resetPwModal();
-        }}
-      >
-        <DialogContent className="bg-slate-900 border-slate-700/40 text-white">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-white">
-              <Shield className="w-5 h-5 text-blue-400" aria-hidden="true" />
-              Change password
-            </DialogTitle>
-            <DialogDescription className="text-slate-400">
-              Enter your current password and a new one.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current password</Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                value={passwordData.currentPassword}
-                onChange={(e) =>
-                  setPasswordData({ ...passwordData, currentPassword: e.target.value })
-                }
-                autoComplete="current-password"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New password</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                value={passwordData.newPassword}
-                onChange={(e) =>
-                  setPasswordData({ ...passwordData, newPassword: e.target.value })
-                }
-                minLength={6}
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm new password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={passwordData.confirmPassword}
-                onChange={(e) =>
-                  setPasswordData({ ...passwordData, confirmPassword: e.target.value })
-                }
-                minLength={6}
-                autoComplete="new-password"
-              />
-            </div>
-          </div>
-
-          {pwError && (
-            <div
-              role="alert"
-              className="p-3 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-2 text-sm"
-            >
-              <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
-              {pwError}
-            </div>
-          )}
-          {pwSuccess && (
-            <div
-              role="status"
-              aria-live="polite"
-              className="p-3 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-2 text-sm"
-            >
-              <Save className="w-4 h-4 shrink-0" aria-hidden="true" />
-              {pwSuccess}
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPwModal(false)} disabled={pwLoading}>
-              Cancel
-            </Button>
-            <Button onClick={changePassword} disabled={pwLoading}>
-              {pwLoading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
-                  Changing…
-                </>
-              ) : (
-                'Change password'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </section>
 
       {/* Delete Dialog */}
       <Dialog
@@ -255,7 +134,7 @@ export function SecurityTab() {
           if (!open) resetDeleteModal();
         }}
       >
-        <DialogContent className="bg-slate-900 border-red-500/30 text-white">
+        <DialogContent className="bg-slate-900 border border-red-500/40 text-white rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-red-400 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5" aria-hidden="true" />
@@ -267,7 +146,7 @@ export function SecurityTab() {
           </DialogHeader>
 
           <div className="space-y-2">
-            <Label htmlFor="deleteConfirmation" className="text-sm font-medium">
+            <Label htmlFor="deleteConfirmation" className="text-sm font-medium text-slate-200">
               Type <span className="text-red-400 font-mono">DELETE</span> to confirm:
             </Label>
             <Input
@@ -275,7 +154,7 @@ export function SecurityTab() {
               value={deleteConfirmation}
               onChange={(e) => setDeleteConfirmation(e.target.value)}
               placeholder="DELETE"
-              className="font-mono"
+              className="font-mono bg-slate-950 border-slate-800 text-white focus:border-red-500"
               autoComplete="off"
               spellCheck={false}
             />
@@ -284,7 +163,7 @@ export function SecurityTab() {
           {deleteError && (
             <div
               role="alert"
-              className="p-3 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-2 text-sm"
+              className="p-3 rounded-md bg-red-500/10 text-red-400 border border-red-500/30 flex items-center gap-2 text-sm"
             >
               <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
               {deleteError}
@@ -292,13 +171,18 @@ export function SecurityTab() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDelete(false)} disabled={isDeleting}>
+            <Button
+              variant="outline"
+              onClick={() => setShowDelete(false)}
+              disabled={isDeleting}
+              className="border-slate-700 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white"
+            >
               Cancel
             </Button>
             <Button
               onClick={deleteAccount}
               disabled={isDeleting || deleteConfirmation !== 'DELETE'}
-              variant="destructive"
+              className="bg-red-500/10 border border-red-500/40 text-red-400 hover:bg-red-500/20 hover:text-red-300"
             >
               {isDeleting ? (
                 <>

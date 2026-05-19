@@ -54,7 +54,7 @@ export function useSubscription() {
     }
     setIsLoading(true);
     try {
-      const token = await getToken();
+      const token = await getToken({ template: 'backend' });
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/status`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -77,7 +77,7 @@ export function useSubscription() {
   }, [fetchSubscription]);
 
   const checkout = async (tier: 'lite' | 'pro') => {
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/checkout`,
       {
@@ -96,7 +96,7 @@ export function useSubscription() {
   };
 
   const cancel = async () => {
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/cancel`,
       { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
@@ -105,8 +105,27 @@ export function useSubscription() {
     await fetchSubscription();
   };
 
+  const reactivate = async () => {
+    const token = await getToken({ template: 'backend' });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/reactivate`,
+      { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try {
+        const body = await res.json();
+        if (body?.error) msg = body.error;
+      } catch {
+        // ignore parse failures
+      }
+      throw new Error(msg);
+    }
+    await fetchSubscription();
+  };
+
   const openPortal = async () => {
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/portal`,
       { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
@@ -130,6 +149,7 @@ export function useSubscription() {
     refresh: fetchSubscription,
     checkout,
     cancel,
+    reactivate,
     openPortal,
   };
 }

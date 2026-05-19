@@ -2,25 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { Bell, Mail, Save, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Mail, Bell, AlertTriangle } from 'lucide-react';
 import { apiUrl, fetchJson } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 
 type State = {
   emailAlerts: boolean;
   pushAlerts: boolean;
-  discordWebhook: string;
 };
+
+type ToggleKey = keyof State;
 
 export function NotificationsTab() {
   const { getToken } = useAuth();
   const [data, setData] = useState<State | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [pending, setPending] = useState<Record<ToggleKey, boolean>>({
+    emailAlerts: false,
+    pushAlerts: false,
+  });
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -34,7 +35,6 @@ export function NotificationsTab() {
         setData({
           emailAlerts: !!u.emailAlerts,
           pushAlerts: !!u.pushAlerts,
-          discordWebhook: u.discordWebhook ?? '',
         });
       } catch (err: unknown) {
         const m = err instanceof Error ? err.message : '';
@@ -48,134 +48,139 @@ export function NotificationsTab() {
     })();
   }, [getToken]);
 
-  const save = async () => {
+  /**
+   * Optimistic toggle: flip immediately, send PATCH in background.
+   * On error: roll back + show toast.
+   * No re-fetch needed.
+   */
+  const onToggle = async (key: ToggleKey, next: boolean) => {
     if (!data) return;
-    setSaving(true);
+    const prev = data[key];
+    setData({ ...data, [key]: next });
+    setPending((p) => ({ ...p, [key]: true }));
     setMsg(null);
     try {
+      const token = await getToken({ template: 'backend' });
       await fetchJson(apiUrl('/api/v1/users/me'), {
         method: 'PATCH',
-        body: JSON.stringify({
-          emailAlerts: data.emailAlerts,
-          pushAlerts: data.pushAlerts,
-          discordWebhook: data.discordWebhook,
-        }),
+        body: JSON.stringify({ [key]: next }),
+        headers: { ...(token && { Authorization: `Bearer ${token}` }) },
       });
-      setMsg({ type: 'success', text: 'Saved.' });
-      setTimeout(() => setMsg(null), 3000);
     } catch (err: unknown) {
+      // rollback
+      setData((d) => (d ? { ...d, [key]: prev } : d));
       const text = err instanceof Error ? err.message : '';
       setMsg({
         type: 'error',
         text: text || "Couldn't save. Check your connection and try again.",
       });
     } finally {
-      setSaving(false);
+      setPending((p) => ({ ...p, [key]: false }));
     }
   };
 
   if (loading) {
     return (
-      <div className="text-slate-400 p-4" role="status" aria-busy="true">
-        Loading notifications…
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+        <div className="h-6 w-32 rounded bg-slate-800/60 animate-pulse mb-4" />
+        <div className="h-32 rounded bg-slate-800/40 animate-pulse" />
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="text-red-400 p-4" role="alert">
+      <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-6 text-red-400" role="alert">
         Couldn&apos;t load notifications. Refresh the page.
       </div>
     );
   }
 
   return (
-    <Card className="bg-slate-900/60 border-slate-700/40">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-white">
-          <Bell className="w-5 h-5" aria-hidden="true" />
-          Notifications
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="emailAlerts"
-              checked={data.emailAlerts}
-              onCheckedChange={(c) => setData({ ...data, emailAlerts: c === true })}
-            />
-            <Label htmlFor="emailAlerts" className="flex items-center gap-2 cursor-pointer">
-              <Mail className="w-4 h-4" aria-hidden="true" />
-              Email me when prices change
-            </Label>
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+      <h3 className="text-lg font-semibold text-white">Notifications</h3>
+      <p className="mt-1 text-sm text-slate-400">
+        Choose how skintrackr reaches you when prices and alerts change. Changes save instantly.
+      </p>
+
+      <div className="mt-6 space-y-3">
+        <ToggleRow
+          icon={<Mail className="w-4 h-4 text-slate-400" aria-hidden="true" />}
+          id="emailAlerts"
+          title="Email alerts"
+          description="Price moves, alert triggers, and weekly portfolio digests."
+          checked={data.emailAlerts}
+          pending={pending.emailAlerts}
+          onChange={(v) => onToggle('emailAlerts', v)}
+        />
+        <ToggleRow
+          icon={<Bell className="w-4 h-4 text-slate-400" aria-hidden="true" />}
+          id="pushAlerts"
+          title="Push notifications"
+          description="In-browser pings for live price events."
+          checked={data.pushAlerts}
+          pending={pending.pushAlerts}
+          onChange={(v) => onToggle('pushAlerts', v)}
+        />
+      </div>
+
+      <div aria-live="polite" className="mt-5 min-h-[0]">
+        {msg && (
+          <div
+            role={msg.type === 'error' ? 'alert' : 'status'}
+            className={
+              'p-3 rounded-md flex items-center gap-2 text-sm ' +
+              (msg.type === 'success'
+                ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
+                : 'bg-red-500/10 text-red-400 border border-red-500/30')
+            }
+          >
+            <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+            {msg.text}
           </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="pushAlerts"
-              checked={data.pushAlerts}
-              onCheckedChange={(c) => setData({ ...data, pushAlerts: c === true })}
-            />
-            <Label htmlFor="pushAlerts" className="flex items-center gap-2 cursor-pointer">
-              <Bell className="w-4 h-4" aria-hidden="true" />
-              Send push notifications
-            </Label>
-          </div>
+function ToggleRow({
+  icon,
+  id,
+  title,
+  description,
+  checked,
+  pending,
+  onChange,
+}: {
+  icon: React.ReactNode;
+  id: string;
+  title: string;
+  description: string;
+  checked: boolean;
+  pending: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+      <div className="flex items-start gap-3 min-w-0">
+        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-800/60 border border-slate-800">
+          {icon}
         </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="discordWebhook">Discord webhook URL</Label>
-          <Input
-            id="discordWebhook"
-            value={data.discordWebhook}
-            onChange={(e) => setData({ ...data, discordWebhook: e.target.value })}
-            placeholder="https://discord.com/api/webhooks/…"
-            autoComplete="off"
-          />
-          <p className="text-xs text-slate-400">
-            Alerts post to this webhook. Leave blank to disable.
-          </p>
+        <div className="min-w-0">
+          <Label htmlFor={id} className="text-sm font-medium text-white cursor-pointer">
+            {title}
+          </Label>
+          <p className="mt-0.5 text-xs text-slate-400">{description}</p>
         </div>
-
-        <div aria-live="polite" className="min-h-[0]">
-          {msg && (
-            <div
-              role={msg.type === 'error' ? 'alert' : 'status'}
-              className={
-                'p-3 rounded-md flex items-center gap-2 text-sm ' +
-                (msg.type === 'success'
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                  : 'bg-red-500/10 text-red-400 border border-red-500/20')
-              }
-            >
-              {msg.type === 'success' ? (
-                <Save className="w-4 h-4 shrink-0" aria-hidden="true" />
-              ) : (
-                <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
-              )}
-              {msg.text}
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-end pt-2 border-t border-slate-700/40">
-          <Button onClick={save} disabled={saving}>
-            {saving ? (
-              <>
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
-                Saving…
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" aria-hidden="true" />
-                Save
-              </>
-            )}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+      <Switch
+        id={id}
+        checked={checked}
+        disabled={pending}
+        onCheckedChange={(v) => onChange(v === true)}
+        className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-fuchsia-500 data-[state=checked]:to-pink-500 data-[state=unchecked]:bg-slate-800"
+      />
+    </div>
   );
 }

@@ -51,7 +51,7 @@ export function ImportPreviewModal({ onClose }: Props) {
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-slate-900 border border-slate-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
           <DialogTitle>Import Inventory</DialogTitle>
         </DialogHeader>
@@ -63,14 +63,14 @@ export function ImportPreviewModal({ onClose }: Props) {
           <div className="space-y-3">
             <p className="text-green-300">✓ Created <strong>{done.created}</strong> Portfolio entries.</p>
             <p className="text-slate-300 text-sm">{done.matched} matched · {done.skipped} skipped</p>
-            <Button onClick={onClose} className="bg-gradient-to-r from-purple-500 to-pink-500">Done</Button>
+            <Button onClick={onClose} className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600">Done</Button>
           </div>
         )}
 
         {!done && data && !showBulk && (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2 text-sm">
-              <Badge className="bg-slate-800/60 border border-slate-700/50">Fetched: {data.totals.fetched}</Badge>
+              <Badge className="bg-slate-800/60 border border-slate-700 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white">Fetched: {data.totals.fetched}</Badge>
               <Badge className="bg-green-500/10 text-green-300 border border-green-500/30">Matched: {data.totals.matched}</Badge>
               <Badge className="bg-amber-500/10 text-amber-300 border border-amber-500/30">Skipped: {data.totals.skipped}</Badge>
             </div>
@@ -96,11 +96,11 @@ export function ImportPreviewModal({ onClose }: Props) {
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={onClose} className="border-slate-700/50">Cancel</Button>
+              <Button variant="outline" onClick={onClose} className="border-slate-700 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white">Cancel</Button>
               {mode === 'custom' ? (
-                <Button onClick={() => setShowBulk(true)} className="bg-gradient-to-r from-purple-500 to-pink-500">Continue to bulk edit</Button>
+                <Button onClick={() => setShowBulk(true)} className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600">Continue to bulk edit</Button>
               ) : (
-                <Button onClick={handleImport} disabled={importing} className="bg-gradient-to-r from-purple-500 to-pink-500">
+                <Button onClick={handleImport} disabled={importing} className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600">
                   {importing ? 'Importing…' : 'Import'}
                 </Button>
               )}

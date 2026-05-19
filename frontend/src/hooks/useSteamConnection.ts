@@ -62,8 +62,19 @@ export function useSteamConnection() {
   useEffect(() => { refresh(); }, [refresh]);
 
   const connect = useCallback(async () => {
+    // Use POST /connect/start with Authorization header so the Clerk JWT
+    // never appears in the URL / referer / proxy access logs (Task 4).
     const token = await getToken();
-    window.location.href = `${apiUrl}/api/v1/steam/connect/redirect?token=${encodeURIComponent(token ?? '')}`;
+    const res = await fetch(`${apiUrl}/api/v1/steam/connect/start`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token ?? ''}` },
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `HTTP ${res.status}`);
+    }
+    const { url } = await res.json();
+    window.location.href = url;
   }, [apiUrl, getToken]);
 
   const disconnect = useCallback(async () => {

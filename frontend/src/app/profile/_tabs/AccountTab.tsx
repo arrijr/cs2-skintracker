@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@clerk/nextjs';
-import { Settings, Save, RefreshCw, AlertTriangle, Globe } from 'lucide-react';
+import { Save, RefreshCw, AlertTriangle, Globe } from 'lucide-react';
 import { apiUrl, fetchJson } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,8 +15,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CurrencySelect } from '../_components/CurrencySelect';
-import { ThemeSelect } from '../_components/ThemeSelect';
+// TODO: re-enable theme toggle in Phase 3 once light theme exists across globals.css.
+// import { ThemeSelect } from '../_components/ThemeSelect';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { SteamConnectSection } from '@/app/account/_components/SteamConnectSection';
 
 type ProfileData = {
   id: number;
@@ -56,8 +57,8 @@ export function AccountTab() {
           createdAt: profile.createdAt,
         });
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : '';
-        if (!msg.includes('401')) {
+        const m = err instanceof Error ? err.message : '';
+        if (!m.includes('401')) {
           console.error('Failed to load profile:', err);
           setMsg({ type: 'error', text: "Couldn't load your profile. Refresh the page." });
         }
@@ -72,6 +73,7 @@ export function AccountTab() {
     setSaving(true);
     setMsg(null);
     try {
+      const token = await getToken({ template: 'backend' });
       const updated = await fetchJson(apiUrl('/api/v1/users/me'), {
         method: 'PATCH',
         body: JSON.stringify({
@@ -80,6 +82,7 @@ export function AccountTab() {
           preferredCurrency: data.preferredCurrency,
           themePreference: data.themePreference,
         }),
+        headers: { ...(token && { Authorization: `Bearer ${token}` }) },
       });
       setData((prev) => (prev ? { ...prev, ...updated } : prev));
       await refreshCurrency();
@@ -98,53 +101,56 @@ export function AccountTab() {
 
   if (loading) {
     return (
-      <div className="text-slate-400 p-4" role="status" aria-busy="true">
-        Loading account…
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+        <div className="h-6 w-32 rounded bg-slate-800/60 animate-pulse mb-4" />
+        <div className="h-48 rounded bg-slate-800/40 animate-pulse" />
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="text-red-400 p-4" role="alert">
+      <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-6 text-red-400" role="alert">
         Couldn&apos;t load profile. Refresh the page.
       </div>
     );
   }
 
   return (
-    <Card className="bg-slate-900/60 border-slate-700/40">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-white">
-          <Settings className="w-5 h-5" aria-hidden="true" />
-          Account
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
+    <div className="space-y-6">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+      <h3 className="text-lg font-semibold text-white">Account details</h3>
+      <p className="mt-1 text-sm text-slate-400">
+        Your identity, locale and visual preferences across the app.
+      </p>
+
+      <div className="mt-6 space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-sm font-medium text-slate-200">Email</Label>
             <Input
               id="email"
               value={user?.primaryEmailAddress?.emailAddress ?? data.email ?? ''}
               disabled
+              className="bg-slate-950 border-slate-800 text-slate-300"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="displayName">Display name</Label>
+            <Label htmlFor="displayName" className="text-sm font-medium text-slate-200">Display name</Label>
             <Input
               id="displayName"
               value={data.displayName ?? ''}
               onChange={(e) => setData({ ...data, displayName: e.target.value })}
               placeholder="Your name"
+              className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500 focus:border-fuchsia-500"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="timezone" className="flex items-center gap-2">
+            <Label htmlFor="timezone" className="text-sm font-medium text-slate-200 flex items-center gap-2">
               <Globe className="w-4 h-4" aria-hidden="true" />
               Timezone
             </Label>
@@ -152,10 +158,10 @@ export function AccountTab() {
               value={data.timezone || ''}
               onValueChange={(v) => setData({ ...data, timezone: v })}
             >
-              <SelectTrigger id="timezone" className="truncate">
+              <SelectTrigger id="timezone" className="truncate bg-slate-950 border-slate-800 text-white">
                 <SelectValue placeholder="Select timezone" />
               </SelectTrigger>
-              <SelectContent className="max-h-72">
+              <SelectContent className="max-h-72 bg-slate-900 border-slate-800 text-slate-100">
                 {Intl.supportedValuesOf('timeZone').map((tz) => (
                   <SelectItem key={tz} value={tz} className="text-sm">
                     {tz}
@@ -166,29 +172,19 @@ export function AccountTab() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="preferredCurrency">Preferred currency</Label>
+            <Label htmlFor="preferredCurrency" className="text-sm font-medium text-slate-200">Preferred currency</Label>
             <CurrencySelect
               id="preferredCurrency"
               value={data.preferredCurrency}
               onChange={(v) => setData({ ...data, preferredCurrency: v })}
             />
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Portfolio values render in this currency app-wide.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="themePreference">Theme</Label>
-            <ThemeSelect
-              id="themePreference"
-              value={data.themePreference}
-              onChange={(v) => setData({ ...data, themePreference: v })}
-            />
-            <p className="text-xs text-slate-400">Saved now. Light mode lands soon.</p>
-          </div>
-        </div>
+        {/* Theme toggle removed until light mode ships (Phase 3) — only dark works today. */}
 
         <div aria-live="polite" className="min-h-[0]">
           {msg && (
@@ -197,8 +193,8 @@ export function AccountTab() {
               className={
                 'p-3 rounded-md flex items-center gap-2 text-sm ' +
                 (msg.type === 'success'
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                  : 'bg-red-500/10 text-red-400 border border-red-500/20')
+                  ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-red-500/10 text-red-400 border border-red-500/30')
               }
             >
               {msg.type === 'success' ? (
@@ -211,8 +207,12 @@ export function AccountTab() {
           )}
         </div>
 
-        <div className="flex justify-end pt-2 border-t border-slate-700/40">
-          <Button onClick={save} disabled={saving}>
+        <div className="flex justify-end pt-4 border-t border-slate-800">
+          <Button
+            onClick={save}
+            disabled={saving}
+            className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white"
+          >
             {saving ? (
               <>
                 <RefreshCw className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
@@ -221,12 +221,21 @@ export function AccountTab() {
             ) : (
               <>
                 <Save className="w-4 h-4 mr-2" aria-hidden="true" />
-                Save
+                Save changes
               </>
             )}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
+
+    {/* Steam connection — identity / profile, not security */}
+    <section id="steam">
+      <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+        Connections
+      </p>
+      <SteamConnectSection />
+    </section>
+    </div>
   );
 }
