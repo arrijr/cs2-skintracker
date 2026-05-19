@@ -116,8 +116,8 @@ export function PortfolioHero({
         }}
       />
 
-      <div className="relative p-8">
-        <div className="flex items-start justify-between gap-6 mb-7">
+      <div className="relative p-5 sm:p-8">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5 lg:gap-6 mb-6 sm:mb-7">
           <div>
             {/* Eyebrow with pulse dot */}
             <div
@@ -137,31 +137,27 @@ export function PortfolioHero({
               Portfolio value
             </div>
 
-            {/* Huge 76px value */}
+            {/* Huge value — responsive scaling so it fits a 320px viewport */}
             <FlashValue
               value={totalValue}
               className="font-display flex items-baseline gap-1 mb-3.5"
             >
               <span
-                className="font-display font-semibold text-white leading-[0.95] tracking-[-0.035em] flex items-baseline gap-1"
-                style={{ fontSize: "76px" }}
+                className="font-display font-semibold text-white leading-[0.95] tracking-[-0.035em] flex items-baseline gap-1 text-[44px] sm:text-[60px] md:text-[76px]"
                 aria-label={`Portfolio value: ${currency}${intPart}.${decPart}`}
               >
-                <span
-                  className="text-slate-500"
-                  style={{ fontSize: "44px", marginRight: "6px", transform: "translateY(-12px)", display: "inline-block" }}
-                >
+                <span className="text-slate-500 text-[26px] sm:text-[36px] md:text-[44px] mr-1 -translate-y-1 inline-block">
                   {currency}
                 </span>
                 <span>{intPart}</span>
-                <span className="text-slate-500" style={{ fontSize: "36px" }}>.{decPart}</span>
+                <span className="text-slate-500 text-[22px] sm:text-[30px] md:text-[36px]">.{decPart}</span>
               </span>
             </FlashValue>
 
             {/* Big delta chip */}
             <div
               className={cn(
-                "inline-flex items-center gap-2.5 px-3.5 py-2.5 rounded-[11px] text-[17px] font-semibold border",
+                "inline-flex flex-wrap items-center gap-2.5 px-3.5 py-2.5 rounded-[11px] text-[15px] sm:text-[17px] font-semibold border",
                 isPos && "bg-emerald-500/10 text-emerald-400 border-emerald-500/25",
                 isNeg && "bg-rose-500/10 text-rose-400 border-rose-500/25",
                 !isPos && !isNeg && "bg-slate-500/10 text-slate-400 border-slate-500/25"
@@ -180,9 +176,9 @@ export function PortfolioHero({
             </div>
           </div>
 
-          {/* Range toggle */}
+          {/* Range toggle — horizontally scrollable on narrow viewports so it never overflows */}
           <div
-            className="inline-flex gap-0.5 p-1 rounded-[11px] border border-slate-700/40"
+            className="inline-flex gap-0.5 p-1 rounded-[11px] border border-slate-700/40 self-start lg:self-auto max-w-full overflow-x-auto"
             style={{ background: "rgba(7,9,14,0.55)" }}
             role="group"
             aria-label="Time range"

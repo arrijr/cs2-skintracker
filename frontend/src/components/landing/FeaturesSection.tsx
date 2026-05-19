@@ -64,7 +64,7 @@ export default function FeaturesSection() {
             <CardContent className="relative p-8 md:p-10">
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div>
-                  <div className="flex items-center gap-3 mb-4">
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
                     <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
                       <Bell className="h-7 w-7 text-white" />
                     </div>
@@ -104,7 +104,7 @@ export default function FeaturesSection() {
               </div>
 
               <p className="text-sm text-slate-400 mt-6 pt-6 border-t border-slate-700/50">
-                Delivered via email, Discord bot, or Telegram. Pro tier unlocks all alert types.
+                Delivered via email or in-app notifications. Pro tier unlocks all alert types.
               </p>
             </CardContent>
           </Card>

@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Bell, Trash2, Mail, MessageSquare } from "lucide-react";
+import { Bell, Trash2, Mail } from "lucide-react";
 import { Alert } from "@/hooks/useAlerts";
 
 const TYPE_LABELS: Record<Alert['type'], string> = {
@@ -48,9 +48,6 @@ export function AlertCard({ alert, onToggle, onDelete }: AlertCardProps) {
             <div className="flex items-center gap-3 mt-2 text-xs text-slate-500 flex-wrap">
               {alert.channels.includes('email') && (
                 <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> email</span>
-              )}
-              {alert.channels.includes('discord') && (
-                <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> Discord</span>
               )}
               {alert.lastTriggeredAt && (
                 <span>last fired {new Date(alert.lastTriggeredAt).toLocaleString()}</span>

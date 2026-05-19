@@ -21,7 +21,7 @@ export default function HeroSection() {
             Beta — free forever for casual collectors
           </Badge>
 
-          <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight mb-6">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-white leading-tight mb-6">
             The{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
               Robinhood
@@ -32,7 +32,7 @@ export default function HeroSection() {
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-slate-300 mt-6 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-2xl text-slate-300 mt-6 max-w-2xl mx-auto leading-relaxed">
             Investor-grade portfolio tracking, smart alerts, and tax-ready reports for serious CS2 traders.
           </p>
 

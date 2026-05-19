@@ -96,7 +96,7 @@ export default async function ItemDetailPage(
 
       <div className="grid lg:grid-cols-[1.15fr_1fr] gap-5">
         {/* ART CARD */}
-        <Card className="relative overflow-hidden bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl p-7">
+        <Card className="relative overflow-hidden bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl p-5 sm:p-7">
           <div
             aria-hidden="true"
             className="absolute inset-0 pointer-events-none"
@@ -150,7 +150,7 @@ export default async function ItemDetailPage(
         </Card>
 
         {/* META CARD */}
-        <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl p-7 flex flex-col gap-5">
+        <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl p-5 sm:p-7 flex flex-col gap-5">
           <div>
             <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight tracking-tight text-white">
               {item.name}
@@ -166,8 +166,8 @@ export default async function ItemDetailPage(
             </div>
           </div>
 
-          <div className="flex items-baseline gap-4 py-4 border-y border-slate-700/40">
-            <span className="font-display text-[3.5rem] font-bold leading-none tracking-tight tabular-nums">
+          <div className="flex flex-wrap items-baseline gap-3 sm:gap-4 py-4 border-y border-slate-700/40">
+            <span className="font-display text-4xl sm:text-5xl md:text-[3.5rem] font-bold leading-none tracking-tight tabular-nums">
               {item.priceLatest != null ? <>€{fmtEUR(item.priceLatest)}</> : "—"}
             </span>
             {deltaPct != null && deltaPct !== 0 && (
@@ -207,9 +207,9 @@ export default async function ItemDetailPage(
             </Button>
           )}
 
-          <p className="text-xs text-slate-500 pt-2 border-t border-slate-700/40">
+          <p className="text-xs text-slate-500 pt-2 border-t border-slate-700/40 break-words">
             Market hash name:{" "}
-            <code className="bg-slate-900/70 border border-slate-700/30 px-2 py-1 rounded font-mono">
+            <code className="bg-slate-900/70 border border-slate-700/30 px-2 py-1 rounded font-mono break-all">
               {item.marketHashName}
             </code>
           </p>

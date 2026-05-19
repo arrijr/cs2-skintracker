@@ -4,11 +4,10 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowRight, 
-  Mail, 
-  MessageCircle, 
-  Twitter, 
+import {
+  ArrowRight,
+  Mail,
+  Twitter,
   Youtube,
   Github,
   Shield,
@@ -37,13 +36,11 @@ const footerLinks = {
   support: [
     { name: "Help Center", href: "/help" },
     { name: "FAQ", href: "/faq" },
-    { name: "Discord", href: "https://discord.gg/skintracker" },
     { name: "Status", href: "/status" }
   ]
 };
 
 const socialLinks = [
-  { name: "Discord", href: "https://discord.gg/skintracker", icon: MessageCircle, color: "text-indigo-400 hover:text-indigo-300" },
   { name: "Twitter", href: "https://twitter.com/skintracker", icon: Twitter, color: "text-blue-400 hover:text-blue-300" },
   { name: "YouTube", href: "https://youtube.com/@skintracker", icon: Youtube, color: "text-red-400 hover:text-red-300" },
   { name: "GitHub", href: "https://github.com/skintracker", icon: Github, color: "text-slate-400 hover:text-slate-300" }

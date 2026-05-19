@@ -267,10 +267,10 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
           >
             {/* Klickbarer Header */}
             <div
-              className="flex justify-between items-center cursor-pointer p-4"
+              className="flex flex-wrap sm:flex-nowrap justify-between items-center cursor-pointer p-4 gap-3"
               onClick={() => setOpenSkinId(isOpen ? null : entry.skin.id)}
             >
-              <div className="flex gap-4 items-center">
+              <div className="flex gap-4 items-center min-w-0 flex-1">
                 {/* Portfolio Row Image */}
                 <Image
                   src={img}
@@ -323,8 +323,8 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
                   )}
                 </div>
               </div>
-              {/* Stats-Block */}
-              <div className="flex gap-6 items-center">
+              {/* Stats-Block — wraps under the title on phones so nothing overflows */}
+              <div className="flex flex-wrap gap-3 sm:gap-6 items-center w-full sm:w-auto justify-end">
                 <div>
                   <span className="text-zinc-400 text-xs">Avg. Buy</span>
                   <div className="font-mono">
