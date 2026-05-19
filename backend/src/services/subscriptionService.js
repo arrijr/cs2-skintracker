@@ -21,6 +21,9 @@ export const subscriptionService = {
       }
       const tier = user.tier || (user.isPremium ? 'pro' : 'free');
       const isPaid = tier === 'pro' || tier === 'lite';
+      // CSV export is Pro-only — keep aligned with `exportPortfolio`
+      // controller gate (`backend/src/controllers/portfolioController.js`).
+      const isPro = tier === 'pro';
       return {
         id: user.id,
         userId: user.id,
@@ -34,7 +37,7 @@ export const subscriptionService = {
         canceledAt: null,
         canCreatePortfolio: true,
         canAccessResearch: isPaid,
-        canExportCSV: isPaid
+        canExportCSV: isPro
       };
     } catch (error) {
       logger.error('Failed to get/create subscription', { userId, error: error.message });

@@ -1,6 +1,17 @@
 import prisma from "../prisma/prismaClient.js";
 import { isValidCurrency, isValidTheme } from "../config/currency.js";
+import { createClerkClient } from "@clerk/backend";
 // Note: bcrypt and jwt removed - authentication now handled by Clerk
+
+// Lazy Clerk client (only used in deleteAccount). Avoids crashing the
+// process at import time if CLERK_SECRET_KEY happens to be unset locally.
+let _clerk = null;
+function getClerk() {
+  if (!_clerk && process.env.CLERK_SECRET_KEY) {
+    _clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+  }
+  return _clerk;
+}
 
 // CLERK USER SYNC - Called when user signs up/logs in via Clerk
 export const syncUser = async (req, res) => {
@@ -133,9 +144,35 @@ export const login = async (req, res) => {
 export const deleteAccount = async (req, res) => {
   try {
     const userId = req.userId; // From Clerk middleware
+
+    // Look up clerkId BEFORE deleting so we can clean up the Clerk side too.
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, clerkId: true },
+    });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // DB delete — cascades to Watchlist/Portfolio/Alert/etc.
+    // (Migration 20260518120000_user_delete_cascade added ON DELETE CASCADE.)
     await prisma.user.delete({ where: { id: userId } });
+
+    // Best-effort Clerk-side deletion. 404 (already gone) and any other error
+    // is logged but does not roll back the DB delete — the GDPR-relevant
+    // record is already removed locally.
+    const clerk = getClerk();
+    if (clerk && user.clerkId) {
+      try {
+        await clerk.users.deleteUser(user.clerkId);
+      } catch (err) {
+        console.warn("[deleteAccount] Clerk delete failed (DB already deleted):", err?.message);
+      }
+    }
+
     res.json({ message: "Account deleted" });
   } catch (err) {
+    console.error("[deleteAccount] error:", err);
     res.status(500).json({ error: "Account deletion failed" });
   }
 };
@@ -154,9 +191,9 @@ export const getProfile = async (req, res) => {
         timezone: true,
         emailAlerts: true,
         pushAlerts: true,
-        discordWebhook: true,
         preferredCurrency: true,
         themePreference: true,
+        onboardingCompletedAt: true, // null = onboarding not done yet
         createdAt: true,
         role: true,        // <-- hinzugefügt
         isPremium: true    // <-- optional hilfreich fürs FE
@@ -182,7 +219,6 @@ export const updateProfile = async (req, res) => {
       timezone,
       emailAlerts,
       pushAlerts,
-      discordWebhook,
       preferredCurrency,
       themePreference,
     } = req.body;
@@ -200,11 +236,6 @@ export const updateProfile = async (req, res) => {
       return res.status(400).json({ error: "pushAlerts must be boolean" });
     }
 
-    // Validate discordWebhook (string or empty)
-    if (discordWebhook !== undefined && discordWebhook !== null && typeof discordWebhook !== 'string') {
-      return res.status(400).json({ error: "discordWebhook must be string" });
-    }
-
     // Validate currency + theme against allowlists
     if (preferredCurrency !== undefined && !isValidCurrency(preferredCurrency)) {
       return res.status(400).json({ error: "Invalid currency" });
@@ -218,7 +249,6 @@ export const updateProfile = async (req, res) => {
     if (timezone !== undefined) updateData.timezone = timezone;
     if (emailAlerts !== undefined) updateData.emailAlerts = emailAlerts;
     if (pushAlerts !== undefined) updateData.pushAlerts = pushAlerts;
-    if (discordWebhook !== undefined) updateData.discordWebhook = discordWebhook || null;
     if (preferredCurrency !== undefined) updateData.preferredCurrency = preferredCurrency;
     if (themePreference !== undefined) updateData.themePreference = themePreference;
 
@@ -232,9 +262,9 @@ export const updateProfile = async (req, res) => {
         timezone: true,
         emailAlerts: true,
         pushAlerts: true,
-        discordWebhook: true,
         preferredCurrency: true,
         themePreference: true,
+        onboardingCompletedAt: true,
       }
     });
 
@@ -245,36 +275,35 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// CHANGE PASSWORD
-export const changePassword = async (req, res) => {
+// MARK ONBOARDING COMPLETE
+// Stamps `onboardingCompletedAt` with now(). Idempotent — re-calling is a no-op
+// (returns the existing timestamp). Used by `/onboarding` final step + skip-all.
+export const markOnboarded = async (req, res) => {
   try {
-    const userId = req.userId; // From Clerk middleware
-    const { currentPassword, newPassword } = req.body;
-    
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: "Current and new password required" });
-    }
-    
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: "New password too short" });
-    }
-    
-    // Note: Password validation removed - handled by Clerk
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    
-    // Clerk handles password validation and hashing
-    console.log('Password change requested - handled by Clerk');
-    const hash = 'clerk_handled'; // Placeholder
-    await prisma.user.update({ 
-      where: { id: userId }, 
-      data: { passwordHash: hash } 
+    const userId = req.userId;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { onboardingCompletedAt: true },
     });
-    
-    res.json({ message: "Password updated successfully" });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Idempotent: don't overwrite an existing completion timestamp.
+    if (user.onboardingCompletedAt) {
+      return res.json({ onboardingCompletedAt: user.onboardingCompletedAt });
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { onboardingCompletedAt: new Date() },
+      select: { onboardingCompletedAt: true },
+    });
+    res.json(updated);
   } catch (err) {
-    res.status(500).json({ error: "Password change failed" });
+    console.error('markOnboarded error:', err);
+    res.status(500).json({ error: "Failed to mark onboarding complete" });
   }
 };
+
+// CHANGE PASSWORD — removed. Passwords are managed entirely by Clerk.
+// The previous handler wrote a literal sentinel string into passwordHash
+// (insecure + non-functional). Use Clerk's user portal to change a password.

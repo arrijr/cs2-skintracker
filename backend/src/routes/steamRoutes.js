@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { verifyClerkJwt } from '../middleware/verifyClerkJwt.js';
 import {
   connectRedirect,
+  connectStart,
   connectCallback,
   disconnect,
   status,
@@ -11,7 +12,12 @@ import {
 
 const router = Router();
 
-// /connect/redirect requires Clerk auth (via ?token= in browser redirect)
+// /connect/start (preferred) — POST with Authorization header, returns { url }.
+// Frontend navigates client-side so the JWT never appears in URL/proxy logs.
+router.post('/connect/start', verifyClerkJwt, (req, res) => connectStart(req, res));
+
+// /connect/redirect (legacy) requires Clerk auth (via ?token= in browser redirect).
+// Kept for back-compat; new clients should use POST /connect/start.
 router.get('/connect/redirect', verifyClerkJwt, (req, res) => connectRedirect(req, res));
 
 // /connect/callback is PUBLIC — Steam redirects browser here; identity is in signed state param

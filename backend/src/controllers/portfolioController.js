@@ -2,6 +2,7 @@ import prisma from "../prisma/prismaClient.js";
 import axios from "axios";
 import { getPortfolioRiskMetrics } from "../services/riskService.js";
 import { getPortfolioContributionRanges } from "../services/contributionService.js";
+import { subscriptionService } from "../services/subscriptionService.js";
 
 async function getCurrentSteamPrice(marketHashName) {
   const url = `https://steamcommunity.com/market/priceoverview/?appid=730&market_hash_name=${encodeURIComponent(marketHashName)}&currency=3`;
@@ -517,7 +518,15 @@ export const getPortfolioKPIs = async (req, res) => {
   }
 };
 
-// GET PORTFOLIO SUMMARY (Sprint 2 - returns shape expected by tests)
+// GET PORTFOLIO SUMMARY (Sprint 2 - dashboard KPIs + positions)
+//
+// Aggregation rule (fix for tech-debt item "getPortfolioSummary aggregiert nicht
+// nach skinId"): multiple Portfolio rows for the SAME skinId are merged into a
+// single position. Per group we sum `amount`, compute the weighted average buy
+// price `sum(amount * buyPrice) / sum(amount)`, and include the underlying
+// `purchases[]` entries so callers can still drill into individual lots.
+// Mirrors the skinMap pattern already used in `getPortfolio`. `positionCount`
+// is therefore the number of UNIQUE skins, not the number of Portfolio rows.
 export const getPortfolioSummary = async (req, res) => {
   try {
     const userId = req.userId || req.auth?.userId;
@@ -531,38 +540,233 @@ export const getPortfolioSummary = async (req, res) => {
       orderBy: { buyDate: 'asc' }
     });
 
-    let totalValue = 0;
-    let totalInvested = 0;
+    if (entries.length === 0) {
+      return res.json({
+        totalValue: 0,
+        totalInvested: 0,
+        unrealizedPL: 0,
+        unrealizedPLPercent: 0,
+        positionCount: 0,
+        positions: [],
+        lastUpdated: new Date()
+      });
+    }
 
-    const positions = entries.map((entry) => {
-      const currentPrice = entry.skin.priceLatest || entry.skin.priceAvg || entry.buyPrice;
-      const value = currentPrice * entry.amount;
-      const invested = entry.buyPrice * entry.amount;
-      totalValue += value;
-      totalInvested += invested;
-      return {
+    // 1) Group Portfolio rows by skinId.
+    const skinMap = {};
+    for (const entry of entries) {
+      const sid = entry.skinId;
+      if (!skinMap[sid]) {
+        skinMap[sid] = {
+          skin: entry.skin,
+          purchases: [],
+          amount: 0,
+          totalInvested: 0,
+        };
+      }
+      skinMap[sid].purchases.push({
         id: entry.id,
-        skinId: entry.skinId,
-        skinName: entry.skin.name,
         amount: entry.amount,
         buyPrice: entry.buyPrice,
+        buyDate: entry.buyDate,
+      });
+      skinMap[sid].amount += entry.amount;
+      skinMap[sid].totalInvested += entry.amount * entry.buyPrice;
+    }
+
+    // 2) Resolve current price per unique skin (DB first, Steam API fallback).
+    const groups = Object.values(skinMap);
+    const priceMap = {};
+    for (const g of groups) {
+      const mhn = g.skin.market_hash_name || g.skin.marketHashName || g.skin.name;
+      if (mhn && g.skin.priceLatest) {
+        priceMap[mhn] = g.skin.priceLatest;
+      }
+    }
+    const skinsNeedingSteamAPI = groups
+      .map(g => g.skin.market_hash_name || g.skin.marketHashName || g.skin.name)
+      .filter(mhn => mhn && priceMap[mhn] === undefined);
+    if (skinsNeedingSteamAPI.length > 0) {
+      await Promise.all(
+        skinsNeedingSteamAPI.map(async (mhn) => {
+          const p = await getCurrentSteamPrice(mhn);
+          priceMap[mhn] = typeof p === 'number' ? p : null;
+        })
+      );
+    }
+
+    // 3) Build aggregated positions + roll up totals.
+    let totalValue = 0;
+    let totalInvested = 0;
+    const positions = groups.map((g) => {
+      const s = g.skin;
+      const marketHashName = s.market_hash_name || s.marketHashName || s.name;
+      const imageUrl = s.imageUrl || s.image_url || s.itemimage || null;
+      // Fallback to priceAvg / first purchase price so positions never get a 0
+      // current price just because Steam API was down and DB has no priceLatest.
+      const currentPrice =
+        priceMap[marketHashName] ?? s.priceLatest ?? s.priceAvg ?? g.purchases[0].buyPrice;
+      const avgBuyPrice = g.amount > 0 ? g.totalInvested / g.amount : 0;
+      const positionValue = currentPrice * g.amount;
+      const unrealizedPL = positionValue - g.totalInvested;
+      const unrealizedPLPercent =
+        g.totalInvested > 0 ? (unrealizedPL / g.totalInvested) * 100 : 0;
+
+      totalValue += positionValue;
+      totalInvested += g.totalInvested;
+
+      return {
+        skinId: s.id,
+        skinName: s.name,
+        marketHashName,
+        imageUrl,
+        amount: g.amount,
+        avgBuyPrice,
         currentPrice,
-        value,
-        invested,
-        unrealizedPL: value - invested
+        totalInvested: g.totalInvested,
+        totalValue: positionValue,
+        unrealizedPL,
+        unrealizedPLPercent,
+        purchases: g.purchases,
       };
     });
 
     return res.json({
-      totalValue,
-      totalInvested,
-      unrealizedPL: totalValue - totalInvested,
-      positionCount: entries.length,
-      positions
+      totalValue: parseFloat(totalValue.toFixed(2)),
+      totalInvested: parseFloat(totalInvested.toFixed(2)),
+      unrealizedPL: parseFloat((totalValue - totalInvested).toFixed(2)),
+      unrealizedPLPercent:
+        totalInvested > 0
+          ? parseFloat((((totalValue - totalInvested) / totalInvested) * 100).toFixed(2))
+          : 0,
+      positionCount: positions.length,
+      positions,
+      lastUpdated: new Date(),
     });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// GET /portfolio/export?format=csv
+// Pro tier only. Returns CSV of portfolio entries with current price + P/L.
+// v1: one row per Portfolio entry (not aggregated by skinId). Aggregation will
+// come once the parallel getPortfolioSummary aggregation fix lands.
+export const exportPortfolio = async (req, res) => {
+  try {
+    const userId = req.userId || req.auth?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    // Tier check via subscription service (single source of truth).
+    const sub = await subscriptionService.getOrCreateSubscription(userId);
+    if (sub.tier !== 'pro') {
+      return res.status(403).json({ error: "Pro tier required" });
+    }
+
+    const format = (req.query.format || 'csv').toString().toLowerCase();
+    if (format !== 'csv') {
+      return res.status(400).json({ error: "Unsupported format. Use format=csv" });
+    }
+
+    // Pull user's preferredCurrency for the (future) currency-aware formatting.
+    // For v1 the CSV outputs raw numbers — Excel/Sheets handles locale display.
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { preferredCurrency: true },
+    });
+    const currency = user?.preferredCurrency || 'EUR';
+
+    const entries = await prisma.portfolio.findMany({
+      where: { userId },
+      include: { skin: true },
+      orderBy: { buyDate: 'asc' },
+    });
+
+    // CSV escape (RFC 4180): wrap in quotes if value contains comma, quote, or
+    // newline. Quotes inside the value are doubled.
+    const esc = (v) => {
+      if (v === null || v === undefined) return '';
+      const s = String(v);
+      if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    };
+
+    // Defuse Excel/Sheets formula injection for text fields that come from
+    // untrusted sources (Steam-sourced skin name, market_hash_name, wear,
+    // rarity). A leading `=`, `+`, `@`, `\t`, or `\r` makes spreadsheets
+    // interpret the cell as a formula; prefix with single quote in that case.
+    // We intentionally do NOT include `-`: it would mangle negative numbers,
+    // and numeric values pass through fmtNum (controlled) anyway.
+    const FORMULA_TRIGGERS = /^[=+@\t\r]/;
+    const escText = (v) => {
+      if (v === null || v === undefined) return '';
+      let s = String(v);
+      if (FORMULA_TRIGGERS.test(s)) s = "'" + s;
+      if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    };
+
+    const fmtNum = (n) => {
+      if (typeof n !== 'number' || !Number.isFinite(n)) return '';
+      return n.toFixed(2);
+    };
+
+    const header = [
+      'skinName',
+      'marketHashName',
+      'wear',
+      'rarity',
+      'amount',
+      'buyPrice',
+      'buyDate',
+      'currentPrice',
+      'currentValue',
+      'unrealizedPL',
+      'unrealizedPLPercent',
+    ].join(',');
+
+    const rows = entries.map((e) => {
+      const s = e.skin || {};
+      const marketHashName = s.market_hash_name || s.marketHashName || s.name || '';
+      const currentPrice = s.priceLatest || s.priceAvg || e.buyPrice;
+      const currentValue = currentPrice * e.amount;
+      const invested = e.buyPrice * e.amount;
+      const unrealizedPL = currentValue - invested;
+      const unrealizedPLPercent = invested > 0 ? (unrealizedPL / invested) * 100 : 0;
+
+      return [
+        escText(s.name || ''),
+        escText(marketHashName),
+        escText(s.wear || ''),
+        escText(s.rarity || ''),
+        esc(e.amount),
+        esc(fmtNum(e.buyPrice)),
+        esc(e.buyDate ? new Date(e.buyDate).toISOString().slice(0, 10) : ''),
+        esc(fmtNum(currentPrice)),
+        esc(fmtNum(currentValue)),
+        esc(fmtNum(unrealizedPL)),
+        esc(fmtNum(unrealizedPLPercent)),
+      ].join(',');
+    });
+
+    // BOM so Excel detects UTF-8 properly with accented characters.
+    const csv = '﻿' + [header, ...rows].join('\r\n') + '\r\n';
+
+    const today = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="portfolio-${today}.csv"`
+    );
+    // Hint to currency-aware tooling downstream (not used by browsers).
+    res.setHeader('X-Currency', currency);
+    return res.send(csv);
+  } catch (err) {
+    console.error('[PORTFOLIO-EXPORT]', err);
+    return res.status(500).json({ error: "Failed to export portfolio" });
   }
 };
 

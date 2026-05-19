@@ -1,7 +1,6 @@
 import prisma from '../../prisma/prismaClient.js';
 import logger from '../../utils/logger.js';
 import { deliverEmail } from './delivery/emailDelivery.js';
-import { deliverDiscord } from './delivery/discordDelivery.js';
 import { volatilityEvaluator } from './evaluators/volatilityEvaluator.js';
 import { floatTierEvaluator } from './evaluators/floatTierEvaluator.js';
 import { caseEvEvaluator } from './evaluators/caseEvEvaluator.js';
@@ -54,8 +53,11 @@ export async function deliverAlert({ alert, result }) {
     let res;
     if (channel === 'email') {
       res = await deliverEmail({ alert, result });
-    } else if (channel === 'discord') {
-      res = await deliverDiscord({ alert, result, webhookUrl: alert.user?.discordWebhook });
+    } else if (channel === 'in_app') {
+      // In-app notifications are surfaced via the AlertEvent row written
+      // below (the frontend polls /alerts/:id/events). No separate transport
+      // needed — the row IS the notification.
+      res = { ok: true };
     } else {
       res = { ok: false, error: `unknown channel ${channel}` };
     }

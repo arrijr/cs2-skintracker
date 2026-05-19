@@ -4,8 +4,7 @@ import logger from '../utils/logger.js';
 const TIER_QUOTA = { free: 1, lite: 5, pro: 999 };
 const VALID_TYPES = ['price_threshold', 'volatility', 'float_tier', 'case_ev'];
 // in_app = bell notification via AlertEvent rows + frontend SWR poll
-// discord kept for backwards compat with legacy alerts; not exposed in new UI
-const VALID_CHANNELS = ['email', 'in_app', 'discord'];
+const VALID_CHANNELS = ['email', 'in_app'];
 
 function getTierFromUser(user) {
   // TODO: when Lite tier is distinct in DB, return 'lite' for those users.

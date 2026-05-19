@@ -10,6 +10,7 @@ import {
   handleWebhook,
   getSubscription,
   cancelSubscription,
+  reactivateSubscription,
   createCustomerPortalSession
 } from '../controllers/subscriptionController.js';
 
@@ -19,6 +20,7 @@ const router = express.Router();
 router.post('/checkout', verifyClerkJwt, createCheckoutSession);
 router.get('/status', verifyClerkJwt, getSubscription);
 router.post('/cancel', verifyClerkJwt, cancelSubscription);
+router.post('/reactivate', verifyClerkJwt, reactivateSubscription);
 router.post('/portal', verifyClerkJwt, createCustomerPortalSession);
 
 // Webhook (no auth - verified by Stripe signature)

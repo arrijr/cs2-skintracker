@@ -1,5 +1,6 @@
 import express from "express";
-import { register, login, getProfile, updateProfile, deleteAccount, changePassword, syncUser } from "../controllers/userController.js";
+import { register, login, getProfile, updateProfile, deleteAccount, syncUser, markOnboarded } from "../controllers/userController.js";
+import rateLimit from "express-rate-limit";
 import { clerkAuth, optionalClerkAuth } from "../middleware/clerkAuth.js";
 import { verifyClerkJwt } from "../middleware/verifyClerkJwt.js";
 import { getUserRoleFromDB } from "../utils/roleHelpers.js";
@@ -18,10 +19,25 @@ router.post('/sync', verifyClerkJwt, syncUser);
 // (portfolio, watchlist, subscriptions, alerts all use verifyClerkJwt).
 // Production: full JWT validation when CLERK_* env vars are set.
 // Dev: mock fallback (req.userId=1) when env vars are missing.
+// Stricter limiter for irreversible account actions (Task 6).
+// 5 requests / hour / user — separate from the general /users sensitiveLimiter.
+// Mounted AFTER verifyClerkJwt so we can key by `req.userId` instead of IP,
+// otherwise a shared NAT (corp/uni) would hit the limit collectively.
+const accountChangeLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: { error: "Too many account changes; try again in an hour." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => (req.userId ? `user:${req.userId}` : req.ip),
+});
+
 router.get("/me", verifyClerkJwt, getProfile);
 router.patch("/me", verifyClerkJwt, updateProfile);
-router.patch("/me/password", verifyClerkJwt, changePassword);
-router.delete("/me", verifyClerkJwt, deleteAccount);
+// First-sign-in onboarding flow — stamp completion timestamp. Idempotent.
+router.post("/me/onboarded", verifyClerkJwt, markOnboarded);
+// /me/password removed (Task 2) — Clerk owns password management.
+router.delete("/me", verifyClerkJwt, accountChangeLimiter, deleteAccount);
 
 // Role endpoint for frontend role checks
 router.get("/me/role", verifyClerkJwt, async (req, res) => {

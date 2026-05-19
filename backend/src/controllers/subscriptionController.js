@@ -158,15 +158,58 @@ export const cancelSubscription = async (req, res) => {
       });
     }
 
-    // Cancel in Stripe
-    await stripe.subscriptions.cancel(sub.stripeSubId);
+    if (sub.cancelAtPeriodEnd) {
+      return res.status(400).json({
+        error: 'Subscription already scheduled to cancel at period end',
+      });
+    }
 
-    logger.info('Subscription canceled by user', {
-      userId,
-      stripeSubId: sub.stripeSubId
+    // Cancel at period end (NOT immediate). User keeps access until renewal
+    // date and can reactivate before then via /subscriptions/reactivate.
+    // Stripe webhook `customer.subscription.updated` will also fire and
+    // resync state, but we update DB inline to give the UI immediate
+    // feedback without waiting for the webhook round-trip.
+    const stripeSub = await stripe.subscriptions.update(sub.stripeSubId, {
+      cancel_at_period_end: true,
     });
 
-    return res.json({ message: 'Subscription canceled' });
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        cancelAtPeriodEnd: !!stripeSub.cancel_at_period_end,
+        subscriptionStatus: stripeSub.status ?? null,
+        currentPeriodEnd: stripeSub.current_period_end
+          ? new Date(stripeSub.current_period_end * 1000)
+          : null,
+      },
+    });
+
+    const updated = await subscriptionService.getOrCreateSubscription(userId);
+
+    logger.info('Subscription set to cancel at period end', {
+      userId,
+      stripeSubId: sub.stripeSubId,
+      currentPeriodEnd: updated.currentPeriodEnd,
+    });
+
+    return res.json({
+      message: 'Subscription will cancel at period end',
+      subscription: {
+        id: updated.id,
+        tier: updated.tier,
+        status: updated.status,
+        stripeSubId: updated.stripeSubId,
+        stripeCustomerId: updated.stripeCustomerId,
+        currentPeriodStart: updated.currentPeriodStart,
+        currentPeriodEnd: updated.currentPeriodEnd,
+        renewalDate: updated.currentPeriodEnd,
+        cancelAtPeriodEnd: updated.cancelAtPeriodEnd,
+        canceledAt: updated.canceledAt,
+        canCreatePortfolio: updated.canCreatePortfolio,
+        canAccessResearch: updated.canAccessResearch,
+        canExportCSV: updated.canExportCSV,
+      },
+    });
   } catch (error) {
     logger.error('Failed to cancel subscription', {
       userId: req.auth?.userId,
@@ -175,6 +218,81 @@ export const cancelSubscription = async (req, res) => {
 
     return res.status(500).json({
       error: 'Failed to cancel subscription'
+    });
+  }
+};
+
+/**
+ * POST /subscriptions/reactivate
+ * Resume a subscription that was set to cancel at period end.
+ * Flips Stripe `cancel_at_period_end` back to false and syncs DB row.
+ */
+export const reactivateSubscription = async (req, res) => {
+  try {
+    const userId = req.auth?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const sub = await subscriptionService.getOrCreateSubscription(userId);
+
+    if (!sub.stripeSubId || !sub.cancelAtPeriodEnd) {
+      return res.status(400).json({ error: 'Nothing to reactivate' });
+    }
+
+    // Resume in Stripe
+    const stripeSub = await stripe.subscriptions.update(sub.stripeSubId, {
+      cancel_at_period_end: false,
+    });
+
+    // Sync DB. Stripe webhook event metadata may not contain userId on
+    // `subscriptions.update` response, so update directly here instead of
+    // relying on subscriptionService.updateSubscriptionFromStripe.
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        cancelAtPeriodEnd: !!stripeSub.cancel_at_period_end,
+        subscriptionStatus: stripeSub.status ?? null,
+        currentPeriodEnd: stripeSub.current_period_end
+          ? new Date(stripeSub.current_period_end * 1000)
+          : null,
+      },
+    });
+
+    const updated = await subscriptionService.getOrCreateSubscription(userId);
+
+    logger.info('Subscription reactivated by user', {
+      userId,
+      stripeSubId: sub.stripeSubId,
+    });
+
+    return res.json({
+      message: 'Subscription reactivated',
+      subscription: {
+        id: updated.id,
+        tier: updated.tier,
+        status: updated.status,
+        stripeSubId: updated.stripeSubId,
+        stripeCustomerId: updated.stripeCustomerId,
+        currentPeriodStart: updated.currentPeriodStart,
+        currentPeriodEnd: updated.currentPeriodEnd,
+        renewalDate: updated.currentPeriodEnd,
+        cancelAtPeriodEnd: updated.cancelAtPeriodEnd,
+        canceledAt: updated.canceledAt,
+        canCreatePortfolio: updated.canCreatePortfolio,
+        canAccessResearch: updated.canAccessResearch,
+        canExportCSV: updated.canExportCSV,
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to reactivate subscription', {
+      userId: req.auth?.userId,
+      error: error.message,
+    });
+
+    return res.status(500).json({
+      error: 'Failed to reactivate subscription',
     });
   }
 };

@@ -14,15 +14,28 @@ const BACKEND_BASE = process.env.STEAM_OPENID_RETURN_BASE_URL || 'http://localho
 const FRONTEND_BASE = process.env.FRONTEND_URL || 'http://localhost:3000';
 const STATE_SECRET = process.env.STEAM_OPENID_STATE_SECRET || 'dev-state-secret-replace-in-prod';
 
-export async function connectRedirect(req, res, { prismaClient = defaultPrisma } = {}) {
-  const userId = req.userId;
-  if (!userId) return res.status(401).json({ error: 'auth required' });
-
+function buildSteamAuthUrl(userId) {
   const state = signState({ userId, ts: Date.now() }, STATE_SECRET);
   const returnTo = `${BACKEND_BASE}/api/v1/steam/connect/callback?state=${encodeURIComponent(state)}`;
   const realm = BACKEND_BASE.endsWith('/') ? BACKEND_BASE : `${BACKEND_BASE}/`;
-  const url = buildAuthRedirectUrl({ returnTo, realm });
-  return res.redirect(302, url);
+  return buildAuthRedirectUrl({ returnTo, realm });
+}
+
+// Legacy: GET /connect/redirect — kept for back-compat. The frontend now uses
+// POST /connect/start (with Authorization header) to avoid leaking the JWT in
+// the URL. This route still requires Clerk auth via the middleware.
+export async function connectRedirect(req, res) {
+  const userId = req.userId;
+  if (!userId) return res.status(401).json({ error: 'auth required' });
+  return res.redirect(302, buildSteamAuthUrl(userId));
+}
+
+// POST /connect/start — returns the Steam OpenID URL as JSON so the client can
+// navigate without exposing the Clerk JWT in the URL bar / proxy logs (Task 4).
+export async function connectStart(req, res) {
+  const userId = req.userId;
+  if (!userId) return res.status(401).json({ error: 'auth required' });
+  return res.json({ url: buildSteamAuthUrl(userId) });
 }
 
 export async function connectCallback(req, res, { prismaClient = defaultPrisma, openIdVerify = verifyAuthCallback } = {}) {
