@@ -49,26 +49,30 @@ Things only Arthur can do (account signups, API keys, DNS). Each blocks a portio
 
 ## 3. Custom Domain — 30 min
 
-Trust-killer right now: `backend-three-theta-44.vercel.app`. Paying users won't trust it.
+**Domain: `skintrackr.io`** (already registered — no purchase needed).
 
-Suggested options (cheap, available, decent name):
-- `skintrackr.com` (~$12/yr)
-- `cs2tracker.app` (~$15/yr)
-- `cs2skins.pro` (~$30/yr)
-- `csgomarket.tools` (~$10/yr)
+Trust-killer right now: `backend-three-theta-44.vercel.app`. Paying users won't trust it. We point `skintrackr.io` at the Vercel frontend and `api.skintrackr.io` at the Render backend.
 
 Steps:
-1. Pick + buy at Cloudflare Registrar (no markup, free WHOIS privacy)
-2. **Vercel** (frontend): Project → Settings → Domains → add domain, follow DNS records
-3. **Render** (backend): use subdomain `api.<domain>` → Service → Settings → Custom Domains → add `api.skintrackr.com`
-4. Update `ALLOWED_ORIGINS` in Render env to include new frontend domain
-5. Update `FRONTEND_URL` in Render env
-6. Update `NEXT_PUBLIC_API_URL` in Vercel env to `https://api.<domain>`
-7. Re-issue Clerk redirect URLs in Clerk Dashboard (custom domain)
-8. Update Stripe webhook URL in Stripe Dashboard
-9. **`NEXT_PUBLIC_SITE_URL` in Vercel** (both `production` AND `preview`) → `https://<your-domain>`. Required for `robots.ts` + `sitemap.ts` to use the right canonical host. Without it, sitemap submission to Google Search Console fails and Sprint 2 programmatic SEO (`/skins/[slug]` rich-results) never indexes.
+1. **Vercel** (frontend): Project → Settings → Domains → add `skintrackr.io` + `www.skintrackr.io`, follow DNS records (CNAME / A record per Vercel's instructions). Recommended: `www → skintrackr.io` redirect.
+2. **Render** (backend): Service → Settings → Custom Domains → add `api.skintrackr.io`. Configure the CNAME at your DNS provider per Render's instructions.
+3. **Render env** — update:
+   ```
+   ALLOWED_ORIGINS=https://skintrackr.io,https://www.skintrackr.io
+   FRONTEND_URL=https://skintrackr.io
+   ```
+4. **Vercel env** — update (both `production` AND `preview`):
+   ```
+   NEXT_PUBLIC_API_URL=https://api.skintrackr.io
+   NEXT_PUBLIC_SITE_URL=https://skintrackr.io
+   ```
+   `NEXT_PUBLIC_SITE_URL` is **required** for `robots.ts` + `sitemap.ts` to use the right canonical host. Without it Sprint 2 SEO is broken.
+5. **Clerk Dashboard** → Production instance → set allowed redirect URLs to `skintrackr.io` paths.
+6. **Stripe Dashboard** → update webhook URL to `https://api.skintrackr.io/api/v1/subscriptions/webhook`.
 
-**Why:** trust + brand + email-sending (mail-from on custom domain has better deliverability). Plus: SEO requires a stable canonical host or programmatic 15k-page indexing is broken.
+**Why:** trust + brand + email-sending (mail-from on custom domain has better deliverability). Plus: SEO requires a stable canonical host or programmatic 16k-page indexing is broken.
+
+**Cost:** $0 — `skintrackr.io` is already paid. `.io` renewal is the only fixed cost in the entire stack.
 
 ---
 
@@ -90,7 +94,7 @@ Steps:
    STRIPE_SECRET_KEY=sk_live_xxx   # swap from sk_test_xxx
    ```
 5. Webhook: Dashboard → Developers → Webhooks → add endpoint
-   - URL: `https://api.<domain>/api/v1/subscriptions/webhook`
+   - URL: `https://api.skintrackr.io/api/v1/subscriptions/webhook`
    - Events: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`
    - Copy `whsec_xxx` → `STRIPE_WEBHOOK_SECRET` in Render
 6. (Optional but recommended) Stripe Tax → activate for EU VAT auto-collection
@@ -169,7 +173,7 @@ Render Dashboard → Service → Environment → remove if present.
 We send email alerts. If using Resend (or any email provider):
 1. Verify sender domain (DKIM, SPF, DMARC) on custom domain
 2. `RESEND_API_KEY` in Render env
-3. `EMAIL_FROM=alerts@<domain>`
+3. `EMAIL_FROM=alerts@skintrackr.io`
 
 Without this, alerts can't be sent → alert feature is broken for paying users.
 
@@ -210,7 +214,7 @@ Sprint 2 shipped 16,829 programmatic skin pages + 4 paginated sitemaps + JSON-LD
 1. Sign in: https://search.google.com/search-console (free, requires Google account).
 2. Add property: **Domain property** for `<your-domain>` (the one you set up in §3). Use DNS TXT verification — Cloudflare Registrar supports it natively.
 3. Submit sitemap:
-   - URL: `https://<your-domain>/sitemap.xml`
+   - URL: `https://skintrackr.io/sitemap.xml`
    - GSC auto-discovers paginated sub-sitemaps via the index. You should see 5 sub-sitemaps (page 0 = static + blog; pages 1-4 = 5000 skins each).
 4. Wait 24-48h for first crawl signals.
 5. Top metrics to watch weekly:
