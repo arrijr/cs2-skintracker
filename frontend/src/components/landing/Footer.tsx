@@ -28,10 +28,9 @@ const footerLinks = {
     { name: "Careers", href: "/careers" }
   ],
   legal: [
-    { name: "Terms of Service", href: "/terms" },
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Cookie Policy", href: "/cookies" },
-    { name: "GDPR", href: "/gdpr" }
+    { name: "Terms of Service", href: "/legal/terms" },
+    { name: "Privacy Policy", href: "/legal/privacy" },
+    { name: "Refund Policy", href: "/legal/refund" }
   ],
   support: [
     { name: "Help Center", href: "/help" },
