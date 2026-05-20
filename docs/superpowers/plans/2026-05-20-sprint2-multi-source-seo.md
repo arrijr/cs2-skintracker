@@ -224,7 +224,7 @@ describe('weaponSlugFor', () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd backend && npx jest --testPathPatterns=slugify --no-coverage
+cd backend && npx cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=slugify --no-coverage
 ```
 
 Expected: FAIL — `Cannot find module '../utils/slugify.js'`.
@@ -287,7 +287,7 @@ export function weaponSlugFor(marketHashName) {
 - [ ] **Step 4: Run test to verify it passes**
 
 ```bash
-cd backend && npx jest --testPathPatterns=slugify --no-coverage
+cd backend && npx cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=slugify --no-coverage
 ```
 
 Expected: PASS — 12 tests / 12 passing.
@@ -589,7 +589,7 @@ describe('skinDetailController', () => {
 - [ ] **Step 2: Run test (it fails)**
 
 ```bash
-cd backend && npx jest --testPathPatterns=skinDetail --no-coverage
+cd backend && npx cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=skinDetail --no-coverage
 ```
 
 Expected: FAIL — `Cannot find module ../controllers/skinDetailController.js`.
@@ -677,7 +677,7 @@ app.use("/api/v1/skins", skinDetailRoutes);
 - [ ] **Step 6: Run tests**
 
 ```bash
-cd backend && npx jest --testPathPatterns=skinDetail --no-coverage
+cd backend && npx cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=skinDetail --no-coverage
 ```
 
 Expected: PASS — 4 tests / 4 passing.
@@ -1321,7 +1321,7 @@ describe('fetchSkinportItem', () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd backend && npx jest --testPathPatterns=skinportClient --no-coverage
+cd backend && npx cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=skinportClient --no-coverage
 ```
 
 Expected: FAIL — module not found.
@@ -1418,7 +1418,7 @@ export async function fetchSkinportItem(
 - [ ] **Step 4: Run tests**
 
 ```bash
-cd backend && npx jest --testPathPatterns=skinportClient --no-coverage
+cd backend && npx cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=skinportClient --no-coverage
 ```
 
 Expected: PASS — 4 tests / 4 passing.
@@ -1492,7 +1492,7 @@ describe('fetchCsfloatItem', () => {
 - [ ] **Step 2: Run test**
 
 ```bash
-cd backend && npx jest --testPathPatterns=csfloatClient --no-coverage
+cd backend && npx cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=csfloatClient --no-coverage
 ```
 
 Expected: FAIL — module not found.
@@ -1598,7 +1598,7 @@ export async function fetchCsfloatItem(
 - [ ] **Step 4: Run tests**
 
 ```bash
-cd backend && npx jest --testPathPatterns=csfloatClient --no-coverage
+cd backend && npx cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=csfloatClient --no-coverage
 ```
 
 Expected: PASS — 4 tests passing.
@@ -1660,7 +1660,7 @@ describe('aggregateMultiSourcePrice', () => {
 - [ ] **Step 2: Run test**
 
 ```bash
-cd backend && npx jest --testPathPatterns=multiSourceAggregator --no-coverage
+cd backend && npx cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=multiSourceAggregator --no-coverage
 ```
 
 Expected: FAIL — module not found.
@@ -1752,7 +1752,7 @@ export async function aggregateMultiSourcePrice(
 - [ ] **Step 4: Run tests**
 
 ```bash
-cd backend && npx jest --testPathPatterns=multiSourceAggregator --no-coverage
+cd backend && npx cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=multiSourceAggregator --no-coverage
 ```
 
 Expected: PASS — 3 tests passing.
