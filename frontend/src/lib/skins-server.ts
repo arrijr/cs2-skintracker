@@ -1,0 +1,69 @@
+import 'server-only';
+
+/**
+ * Server-only DB readers for skin pages. NEVER import this from a
+ * client component — it pulls server-only code into the client bundle.
+ */
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+export interface SkinDetail {
+  id: number;
+  slug: string;
+  weaponSlug: string;
+  name: string;
+  marketHashName: string;
+  imageUrl: string | null;
+  weaponType: string | null;
+  collection: string | null;
+  wear: string | null;
+  rarity: string | null;
+  isStattrak: boolean | null;
+  priceLatest: number | null;
+  priceMedian: number | null;
+  priceAvg: number | null;
+  priceMin: number | null;
+  priceMax: number | null;
+  priceMedian7d: number | null;
+  priceMedian30d: number | null;
+  priceMedian90d: number | null;
+  sold24h: number | null;
+  sold7d: number | null;
+  sold30d: number | null;
+  variantOf: number | null;
+}
+
+export async function getSkinBySlug(slug: string): Promise<SkinDetail | null> {
+  const res = await fetch(`${API_BASE}/api/v1/skins/${encodeURIComponent(slug)}`, {
+    next: { revalidate: 3600, tags: [`skin:${slug}`] },
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`getSkinBySlug HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function listSkinsByWeapon(weaponSlug: string, limit = 200): Promise<SkinDetail[]> {
+  const res = await fetch(
+    `${API_BASE}/api/v1/skins?weapon=${encodeURIComponent(weaponSlug)}&limit=${limit}`,
+    { next: { revalidate: 3600, tags: [`weapon:${weaponSlug}`] } }
+  );
+  if (!res.ok) throw new Error(`listSkinsByWeapon HTTP ${res.status}`);
+  return res.json();
+}
+
+/**
+ * Paginated reader for sitemap generation. Returns slugs + lastModified.
+ * NOT cached — sitemap rebuilds on every request to the chunked URL,
+ * Next batches them via generateSitemaps.
+ */
+export async function listSkinSlugsPaged(
+  page: number,
+  pageSize = 5000
+): Promise<Array<{ slug: string; weaponSlug: string; updatedAt: string }>> {
+  const res = await fetch(
+    `${API_BASE}/api/v1/skins/slugs?page=${page}&pageSize=${pageSize}`,
+    { cache: 'no-store' }
+  );
+  if (!res.ok) throw new Error(`listSkinSlugsPaged HTTP ${res.status}`);
+  return res.json();
+}
