@@ -60,7 +60,13 @@ model Skin {
   itemName     String?     // aus itemname
   itemGroup    String?     // aus itemgroup (rifle, pistol, etc.)
   variantOf    Int?        // Loose self-reference: points at base Skin.id for wear/ST variant rows
-  
+
+  // SEO canonical slug — backfilled from marketHashName via slugify() in
+  // backend/src/utils/slugify.js. Nullable until backfill completes;
+  // the API resolves null → 404 (Sprint 2).
+  slug         String?  @unique
+  weaponSlug   String?  // pillar-page grouping, e.g. "ak-47", "awp", "karambit"
+
   // Current prices
   priceLatest  Float?      // aus pricelatest
   priceLatestSell Float?   // aus pricelatestsell
@@ -115,6 +121,7 @@ model Skin {
   @@index([wear])
   @@index([priceAvg])
   @@index([variantOf])
+  @@index([weaponSlug])
 }
 
 model AuditLog {
