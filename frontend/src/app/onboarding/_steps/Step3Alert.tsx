@@ -8,6 +8,7 @@ import { Bell, Search, Check, ArrowRight, X } from "lucide-react";
 import { useAlerts } from "@/hooks/useAlerts";
 import { apiUrl, swrFetcher } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { analytics } from "@/lib/analytics";
 
 interface SkinResult {
   id: number;
@@ -81,12 +82,34 @@ export function Step3Alert({ onBack, onFinish }: Step3AlertProps) {
         config: { direction: "below", price: threshold },
         channels: ["email", "in_app"],
       });
+      analytics.track({
+        name: "alert_created",
+        properties: {
+          type: "price_threshold",
+          channels: ["email", "in_app"],
+          skinId: selected.id,
+        },
+      });
+      analytics.track({
+        name: "onboarding_step_completed",
+        properties: { step: 3 },
+      });
+      analytics.track({ name: "onboarding_completed" });
       onFinish();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create alert");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleSkipFinish() {
+    analytics.track({
+      name: "onboarding_step_completed",
+      properties: { step: 3, skipped: true },
+    });
+    analytics.track({ name: "onboarding_completed" });
+    onFinish();
   }
 
   return (
@@ -268,14 +291,14 @@ export function Step3Alert({ onBack, onFinish }: Step3AlertProps) {
             </button>
             <button
               type="button"
-              onClick={onFinish}
+              onClick={handleSkipFinish}
               className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
             >
               Skip — I&apos;ll set alerts later
             </button>
           </div>
           <Button
-            onClick={selected && threshold > 0 ? handleCreate : onFinish}
+            onClick={selected && threshold > 0 ? handleCreate : handleSkipFinish}
             disabled={submitting}
             className="order-1 sm:order-2 w-full sm:w-auto bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20 gap-2"
           >

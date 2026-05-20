@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link2, Link2Off, RefreshCw, Zap, ShieldCheck, Sparkles } from "lucide-react";
 import { useSteamConnection } from "@/hooks/useSteamConnection";
 import { ImportPreviewModal } from "./ImportPreviewModal";
+import { analytics } from "@/lib/analytics";
 
 export function SteamConnectSection() {
   const { status, loading, error, connect, disconnect, refresh } = useSteamConnection();
@@ -77,7 +78,13 @@ export function SteamConnectSection() {
               {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
 
               <Button
-                onClick={connect}
+                onClick={() => {
+                  analytics.track({
+                    name: "steam_connect_started",
+                    properties: { source: "account_page" },
+                  });
+                  connect();
+                }}
                 size="lg"
                 className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white gap-2 font-semibold"
               >

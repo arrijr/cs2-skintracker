@@ -22,6 +22,7 @@ const fontMono = JetBrains_Mono({
   display: "swap",
 });
 import Providers from "./providers";
+import { PostHogProvider } from "./providers/PostHogProvider";
 import AppHeader from "./components/AppHeader";
 import BuildInfo from "./components/BuildInfo";
 import { Toaster } from "@/components/ui/toaster";
@@ -30,6 +31,7 @@ import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import ErrorBanner from "@/components/ErrorBanner";
 import { ErrorProvider } from "@/context/ErrorContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { CookieBanner } from "@/components/CookieBanner";
 
 // {/* Debug logging for ENV variables */}
 if (typeof window !== 'undefined') {
@@ -83,17 +85,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body className="bg-slate-950 text-white min-h-screen font-sans antialiased">
           <ErrorProvider>
             <Providers>
-              <CurrencyProvider>
-                {/* Global Error Banner */}
-                <ErrorBanner />
+              <PostHogProvider>
+                <CurrencyProvider>
+                  {/* Global Error Banner */}
+                  <ErrorBanner />
 
-                {/* App Shell */}
-                <AppHeader />
+                  {/* App Shell */}
+                  <AppHeader />
 
-                <main className="min-h-screen">
-                  {children}
-                </main>
-              </CurrencyProvider>
+                  <main className="min-h-screen">
+                    {children}
+                  </main>
+
+                  {/* GDPR cookie consent — appears bottom-right on first visit
+                      until the user makes a choice. */}
+                  <CookieBanner />
+                </CurrencyProvider>
+              </PostHogProvider>
 
               {/* Build Info - dev only */}
               <BuildInfo className="max-w-md" />

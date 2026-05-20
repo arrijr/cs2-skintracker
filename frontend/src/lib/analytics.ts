@@ -1,208 +1,256 @@
-// frontend/src/lib/analytics.ts — [Frontend]
-// {/* P3 - Analytics Service for tracking user interactions without PII */}
+/**
+ * Analytics wrapper around posthog-js.
+ *
+ * Design goals:
+ *  - Typed event names + payloads (discriminated union) so we can't typo events.
+ *  - Safe no-op when NEXT_PUBLIC_POSTHOG_KEY is missing (dev/preview builds
+ *    must not crash if PostHog isn't provisioned yet).
+ *  - Respect Do-Not-Track on init.
+ *  - Never throw, never log noisy errors.
+ *
+ * Init happens in `PostHogProvider` — this module exposes the helpers.
+ */
+import type { PostHog } from "posthog-js";
 
-interface AnalyticsEvent {
-  event: string;
-  properties?: Record<string, any>;
-  timestamp: number;
-  sessionId: string;
-}
+// --- Event taxonomy ---------------------------------------------------------
 
-class AnalyticsService {
-  private sessionId: string;
-  private events: AnalyticsEvent[] = [];
-  private isEnabled: boolean;
-
-  constructor() {
-    this.sessionId = this.generateSessionId();
-    this.isEnabled = process.env.NODE_ENV === 'production' && typeof window !== 'undefined';
-  }
-
-  private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  private track(event: string, properties?: Record<string, any>): void {
-    if (!this.isEnabled) {
-      console.log(`[Analytics] ${event}:`, properties);
-      return;
+export type AnalyticsEvent =
+  | { name: "signup_completed"; properties?: { method?: string } }
+  | {
+      name: "onboarding_step_completed";
+      properties: { step: 1 | 2 | 3; skipped?: boolean };
     }
-
-    const analyticsEvent: AnalyticsEvent = {
-      event,
+  | { name: "onboarding_completed"; properties?: Record<string, unknown> }
+  | { name: "steam_connect_started"; properties?: { source?: string } }
+  | { name: "steam_connect_completed"; properties?: Record<string, unknown> }
+  | {
+      name: "portfolio_first_item_added";
+      properties: { source: "manual" | "steam_import" };
+    }
+  | {
+      name: "alert_created";
       properties: {
-        ...properties,
-        url: window.location.href,
-        userAgent: navigator.userAgent,
-        screenResolution: `${screen.width}x${screen.height}`,
-        viewportSize: `${window.innerWidth}x${window.innerHeight}`,
-      },
-      timestamp: Date.now(),
-      sessionId: this.sessionId,
-    };
-
-    this.events.push(analyticsEvent);
-    this.sendToAnalytics(analyticsEvent);
-  }
-
-  private async sendToAnalytics(event: AnalyticsEvent): Promise<void> {
-    try {
-      // In production, send to your analytics service
-      // For now, we'll just log to console
-      console.log('[Analytics Event]', event);
-      
-      // Example: Send to your analytics endpoint
-      // await fetch('/api/analytics', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(event)
-      // });
-    } catch (error) {
-      console.error('[Analytics] Failed to send event:', error);
+        type: string;
+        channels: string[];
+        skinId?: number | null;
+      };
     }
-  }
+  | {
+      name: "alert_triggered";
+      properties: { alertId: number; type: string };
+    }
+  | { name: "pricing_page_viewed"; properties?: Record<string, unknown> }
+  | {
+      name: "checkout_started";
+      properties: {
+        tier: "lite" | "pro";
+        billing?: "monthly" | "annual";
+      };
+    }
+  | {
+      name: "subscription_created";
+      properties: { tier: string; amount: number; currency: string };
+    }
+  | { name: "subscription_canceled"; properties?: Record<string, unknown> }
+  | { name: "subscription_reactivated"; properties?: Record<string, unknown> }
+  | { name: "csv_export_used"; properties?: Record<string, unknown> }
+  | {
+      name: "affiliate_click";
+      properties: { skin?: string; source?: string };
+    }
+  | { name: "extension_installed"; properties?: Record<string, unknown> };
 
-  // P3 - Skin Detail Page Events
-  trackVariantChange(skinId: number, variantId: number, variantName: string): void {
-    this.track('variant_change', {
-      skinId,
-      variantId,
-      variantName,
-    });
-  }
+export type AnalyticsEventName = AnalyticsEvent["name"];
 
-  trackRangeChange(range: string, previousRange: string): void {
-    this.track('range_change', {
-      range,
-      previousRange,
-    });
-  }
+// --- Internal state ---------------------------------------------------------
 
-  trackScaleToggle(scale: string, previousScale: string): void {
-    this.track('scale_toggle', {
-      scale,
-      previousScale,
-    });
-  }
+let posthogInstance: PostHog | null = null;
+let initPromise: Promise<PostHog | null> | null = null;
 
-  trackMovingAverageToggle(ma: string, previousMa: string): void {
-    this.track('ma_toggle', {
-      movingAverage: ma,
-      previousMovingAverage: previousMa,
-    });
-  }
-
-  trackWatchlistAdd(skinId: number, skinName: string, price: number): void {
-    this.track('watchlist_add', {
-      skinId,
-      skinName,
-      price,
-    });
-  }
-
-  trackPortfolioAdd(skinId: number, skinName: string, price: number): void {
-    this.track('portfolio_add', {
-      skinId,
-      skinName,
-      price,
-    });
-  }
-
-  trackAlertCreate(skinId: number, skinName: string, targetPrice: number): void {
-    this.track('alert_create', {
-      skinId,
-      skinName,
-      targetPrice,
-    });
-  }
-
-  trackCaseMateClick(skinId: number, caseName: string, clickedSkinId: number): void {
-    this.track('case_mate_click', {
-      skinId,
-      caseName,
-      clickedSkinId,
-    });
-  }
-
-  trackRelatedClick(skinId: number, relatedSkinId: number, relatedSkinName: string): void {
-    this.track('related_click', {
-      skinId,
-      relatedSkinId,
-      relatedSkinName,
-    });
-  }
-
-  trackCopyLink(skinId: number, skinName: string): void {
-    this.track('copy_link', {
-      skinId,
-      skinName,
-    });
-  }
-
-  trackExportData(skinId: number, skinName: string, format: 'csv' | 'json', dataPoints: number): void {
-    this.track('export_data', {
-      skinId,
-      skinName,
-      format,
-      dataPoints,
-    });
-  }
-
-  trackPageView(skinId: number, skinName: string, referrer?: string): void {
-    this.track('page_view', {
-      skinId,
-      skinName,
-      referrer: referrer || document.referrer,
-    });
-  }
-
-  trackError(error: string, context: string, skinId?: number): void {
-    this.track('error', {
-      error,
-      context,
-      skinId,
-    });
-  }
-
-  // P3 - Performance Metrics
-  trackPerformance(metric: string, value: number, unit: string = 'ms'): void {
-    this.track('performance', {
-      metric,
-      value,
-      unit,
-    });
-  }
-
-  // P3 - User Engagement
-  trackEngagement(action: string, duration?: number): void {
-    this.track('engagement', {
-      action,
-      duration,
-    });
-  }
-
-  // Get all events (for debugging)
-  getEvents(): AnalyticsEvent[] {
-    return [...this.events];
-  }
-
-  // Clear events (for testing)
-  clearEvents(): void {
-    this.events = [];
-  }
+function isBrowser(): boolean {
+  return typeof window !== "undefined";
 }
 
-// Singleton instance
-export const analytics = new AnalyticsService();
-
-// P3 - Hook for easy usage in components
-export function useAnalytics() {
-  // Ensure analytics is always available
-  if (!analytics) {
-    console.error('[Analytics] Analytics service not initialized');
-    return new AnalyticsService();
-  }
-  return analytics;
+function getKey(): string | undefined {
+  return process.env.NEXT_PUBLIC_POSTHOG_KEY;
 }
 
-export default analytics;
+function getHost(): string {
+  return process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com";
+}
+
+/**
+ * Initialize PostHog once. Returns the instance, or null if PostHog is
+ * disabled (missing key, server-side, or load error).
+ *
+ * Safe to call multiple times — second call is a no-op.
+ */
+export async function initAnalytics(): Promise<PostHog | null> {
+  if (!isBrowser()) return null;
+  if (!getKey()) return null;
+  if (posthogInstance) return posthogInstance;
+  if (initPromise) return initPromise;
+
+  initPromise = (async () => {
+    try {
+      // Dynamic import keeps posthog-js out of the SSR bundle.
+      const mod = await import("posthog-js");
+      const posthog = mod.default;
+
+      posthog.init(getKey() as string, {
+        api_host: getHost(),
+        // Respect Do-Not-Track on the user's browser.
+        respect_dnt: true,
+        // GDPR: start opted-out, require explicit consent via cookie banner
+        // before any events are captured or cookies are written. Banner
+        // calls analytics.optIn() / .optOut() to flip this.
+        opt_out_capturing_by_default: true,
+        // Capture pageviews manually — App Router doesn't auto-fire them.
+        capture_pageview: false,
+        autocapture: true,
+        person_profiles: "identified_only",
+        loaded: (ph) => {
+          if (
+            typeof navigator !== "undefined" &&
+            navigator.doNotTrack === "1"
+          ) {
+            try {
+              ph.opt_out_capturing();
+            } catch {
+              // Swallow — we'll just no-op everything downstream.
+            }
+          }
+        },
+      });
+
+      posthogInstance = posthog;
+      return posthog;
+    } catch {
+      return null;
+    }
+  })();
+
+  return initPromise;
+}
+
+/**
+ * Synchronously read the instance if it's been initialized. Returns null
+ * otherwise. Used by the helpers below so we don't await for fire-and-forget.
+ */
+function ph(): PostHog | null {
+  return posthogInstance;
+}
+
+// --- Public API -------------------------------------------------------------
+
+export const analytics = {
+  /**
+   * Tie subsequent events to a Clerk user.
+   */
+  identify(userId: string, traits?: Record<string, unknown>): void {
+    if (!getKey()) return;
+    try {
+      ph()?.identify(userId, traits);
+    } catch {
+      // never throw from analytics
+    }
+  },
+
+  /**
+   * Clear the identified user (call on sign-out).
+   */
+  reset(): void {
+    if (!getKey()) return;
+    try {
+      ph()?.reset();
+    } catch {
+      // ignore
+    }
+  },
+
+  /**
+   * Fire a typed event.
+   *
+   * Pass a discriminated event object (`{ name, properties }`) for full
+   * type-checking on the payload, or a `(name, properties)` pair for
+   * codepaths where TS narrowing is inconvenient.
+   */
+  track(
+    eventOrName: AnalyticsEvent | AnalyticsEventName,
+    properties?: Record<string, unknown>
+  ): void {
+    if (!getKey()) return;
+    try {
+      if (typeof eventOrName === "string") {
+        ph()?.capture(eventOrName, properties);
+      } else {
+        ph()?.capture(
+          eventOrName.name,
+          (eventOrName as { properties?: Record<string, unknown> }).properties
+        );
+      }
+    } catch {
+      // ignore
+    }
+  },
+
+  /**
+   * Manually fire a pageview. App Router doesn't auto-track navigations,
+   * so the provider hooks `usePathname` + `useSearchParams` and calls this.
+   */
+  page(path: string, properties?: Record<string, unknown>): void {
+    if (!getKey()) return;
+    try {
+      ph()?.capture("$pageview", { $current_url: path, ...properties });
+    } catch {
+      // ignore
+    }
+  },
+
+  /**
+   * Cookie-consent: user accepted analytics. Flips PostHog into capturing
+   * mode and writes a persistent flag the banner reads on revisit.
+   */
+  optIn(): void {
+    if (!getKey()) return;
+    try {
+      ph()?.opt_in_capturing();
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("cookie-consent", "accepted");
+      }
+    } catch {
+      // ignore
+    }
+  },
+
+  /**
+   * Cookie-consent: user declined analytics. Stays opted-out and writes
+   * the persistent flag so we don't ask again on every visit.
+   */
+  optOut(): void {
+    if (!getKey()) return;
+    try {
+      ph()?.opt_out_capturing();
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("cookie-consent", "declined");
+      }
+    } catch {
+      // ignore
+    }
+  },
+
+  /**
+   * Read persisted consent decision. Returns:
+   *  - 'accepted' — user clicked accept; analytics enabled
+   *  - 'declined' — user clicked decline; analytics disabled
+   *  - null      — never asked; banner should be shown
+   */
+  hasConsent(): "accepted" | "declined" | null {
+    if (typeof window === "undefined") return null;
+    const v = window.localStorage.getItem("cookie-consent");
+    if (v === "accepted" || v === "declined") return v;
+    return null;
+  },
+};
+
+export type Analytics = typeof analytics;

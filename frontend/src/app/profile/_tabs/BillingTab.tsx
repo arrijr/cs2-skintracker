@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useSubscription } from '@/hooks/useSubscription';
+import { analytics } from '@/lib/analytics';
 
 type Tier = 'free' | 'lite' | 'pro';
 
@@ -154,6 +155,7 @@ export function BillingTab() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      analytics.track({ name: 'csv_export_used' });
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Couldn't export portfolio. Try again.");
     } finally {

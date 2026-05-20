@@ -9,6 +9,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useSteamConnection } from "@/hooks/useSteamConnection";
+import { analytics } from "@/lib/analytics";
 
 interface Step2SteamProps {
   onBack: () => void;
@@ -32,11 +33,23 @@ export function Step2Steam({ onBack, onContinue }: Step2SteamProps) {
     setConnecting(true);
     setError(null);
     try {
+      analytics.track({
+        name: "steam_connect_started",
+        properties: { source: "onboarding" },
+      });
       await connect(); // Redirects away on success — code below won't run.
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to start Steam connect");
       setConnecting(false);
     }
+  }
+
+  function handleContinue() {
+    analytics.track({
+      name: "onboarding_step_completed",
+      properties: { step: 2, skipped: !connected },
+    });
+    onContinue();
   }
 
   return (
@@ -119,7 +132,7 @@ export function Step2Steam({ onBack, onContinue }: Step2SteamProps) {
             {!connected && (
               <button
                 type="button"
-                onClick={onContinue}
+                onClick={handleContinue}
                 className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
               >
                 Skip — I&apos;ll add skins manually
@@ -128,7 +141,7 @@ export function Step2Steam({ onBack, onContinue }: Step2SteamProps) {
           </div>
           <Button
             variant={connected ? "default" : "outline"}
-            onClick={onContinue}
+            onClick={handleContinue}
             className={
               connected
                 ? "order-1 sm:order-2 w-full sm:w-auto bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20 gap-2"

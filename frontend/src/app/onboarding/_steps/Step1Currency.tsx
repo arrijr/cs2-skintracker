@@ -4,6 +4,7 @@ import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Euro, DollarSign, Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { analytics } from "@/lib/analytics";
 
 type Currency = "EUR" | "USD";
 
@@ -46,6 +47,10 @@ export function Step1Currency({
         body: JSON.stringify({ preferredCurrency: currency }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      analytics.track({
+        name: "onboarding_step_completed",
+        properties: { step: 1 },
+      });
       onContinue();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to save currency");

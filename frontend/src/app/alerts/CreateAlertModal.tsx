@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Bell, AlarmClock } from "lucide-react";
 import { Alert } from "@/hooks/useAlerts";
 import { apiUrl, swrFetcher } from "@/lib/api";
+import { analytics } from "@/lib/analytics";
 
 type RangeKey = "1M" | "3M" | "6M" | "1J";
 const RANGE_DAYS: Record<RangeKey, number> = { "1M": 30, "3M": 90, "6M": 180, "1J": 365 };
@@ -152,12 +153,18 @@ export function CreateAlertModal({
       if (type === 'float_tier') config = { tier, maxPrice: parseFloat(maxPrice) };
       if (type === 'case_ev') config = { evMarginPercent: parseFloat(evMarginPercent) };
 
+      const submittedSkinId =
+        type === 'case_ev' ? null : (skinId ? parseInt(skinId, 10) : null);
       await onCreate({
         type,
-        skinId: type === 'case_ev' ? null : (skinId ? parseInt(skinId, 10) : null),
+        skinId: submittedSkinId,
         caseId: type === 'case_ev' ? (caseId ? parseInt(caseId, 10) : null) : null,
         config,
         channels,
+      });
+      analytics.track({
+        name: 'alert_created',
+        properties: { type, channels, skinId: submittedSkinId },
       });
       reset();
       setOpen(false);
