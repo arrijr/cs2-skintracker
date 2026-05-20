@@ -8,6 +8,7 @@
 
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { getSkinBySlug } from '@/lib/skins-server';
 import SkinDetailClient from './_components/SkinDetailClient';
@@ -97,9 +98,24 @@ export default async function SkinDetailPage({ params, searchParams }: PageProps
           {/* Client-rendered chart + interactivity */}
           <SkinDetailClient skin={skin} initialWear={searchParams.wear ?? null} />
 
-          {/* SEO content blocks (server-rendered) */}
-          <MultiSourcePriceTable skinSlug={skin.slug} />
-          <WearComparisonTable weaponSlug={skin.weaponSlug} baseId={skin.variantOf ?? skin.id} />
+          {/* SEO content blocks (server-rendered).
+              Wrapped in Suspense so slow external fetches (Skinport ~5MB feed,
+              CSFloat listings) don't block the rest of the page. Next.js
+              streams the page shell first, then resolves these chunks. Cold
+              cache can take 15-45s; ISR makes subsequent hits fast. */}
+          <Suspense fallback={
+            <section className="my-8 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+              <h2 className="text-xl font-semibold mb-2">Live prices across markets</h2>
+              <p className="text-slate-400 text-sm">Loading multi-market prices&hellip;</p>
+            </section>
+          }>
+            <MultiSourcePriceTable skinSlug={skin.slug} />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <WearComparisonTable weaponSlug={skin.weaponSlug} baseId={skin.variantOf ?? skin.id} />
+          </Suspense>
+
           <SkinFAQ skin={skin} />
         </div>
       </main>
