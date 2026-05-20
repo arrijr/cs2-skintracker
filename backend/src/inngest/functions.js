@@ -187,10 +187,63 @@ export const portfolioHistorySnapshot = inngest.createFunction(
   }
 );
 
+/* ───────────────────────────── MULTI-SOURCE PRICE REFRESH ───────────────────────────── */
+// Daily 04:00 UTC (after Steam refresh ~03:30): warm the multi-source
+// aggregator cache for the top-2000 skins by 30-day volume. The per-skin
+// /api/v1/skins/:slug/prices endpoint also serves on-demand, but this cron
+// makes the first SSR hit fast and amortizes external API load.
+export const refreshMultiSourcePrices = inngest.createFunction(
+  {
+    id: 'refresh-multi-source-prices',
+    name: 'Refresh Multi-Source Skin Prices',
+    retries: 2,
+    triggers: [{ cron: '0 4 * * *' }, { event: 'pricing/multi-source/refresh' }],
+  },
+  async ({ step, logger: l }) => {
+    const TOP_N = 2000;
+
+    const skins = await step.run('list-top-skins', async () =>
+      prisma.skin.findMany({
+        where: { slug: { not: null } },
+        orderBy: { sold30d: 'desc' },
+        take: TOP_N,
+        select: { id: true, slug: true, marketHashName: true, priceLatest: true },
+      })
+    );
+
+    let ok = 0;
+    let fail = 0;
+    const CHUNK = 50;
+    for (let i = 0; i < skins.length; i += CHUNK) {
+      const batch = skins.slice(i, i + CHUNK);
+      await step.run(`refresh-batch-${i}`, async () => {
+        // Lazy-import to keep this module load-cheap when the function isn't invoked.
+        const { aggregateMultiSourcePrice } = await import(
+          '../services/pricing/multiSourceAggregator.js'
+        );
+        await Promise.all(
+          batch.map(async (s) => {
+            try {
+              await aggregateMultiSourcePrice(s);
+              ok++;
+            } catch (_e) {
+              fail++;
+            }
+          })
+        );
+      });
+    }
+
+    l.info('Multi-source refresh complete', { processed: skins.length, ok, fail });
+    return { processed: skins.length, ok, fail };
+  }
+);
+
 /* ───────────────────────────── REGISTRY ───────────────────────────── */
 export const allFunctions = [
   catalogSync,
   priceRefresh,
   priceAlertsCheck,
   portfolioHistorySnapshot,
+  refreshMultiSourcePrices,
 ];
