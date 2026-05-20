@@ -1,5 +1,16 @@
 import defaultPrisma from '../prisma/prismaClient.js';
 
+export async function getSkinById(req, res, { prismaClient = defaultPrisma } = {}) {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid id' });
+  const skin = await prismaClient.skin.findUnique({
+    where: { id },
+    select: { id: true, slug: true, weaponSlug: true },
+  });
+  if (!skin) return res.status(404).json({ error: 'not found' });
+  return res.json(skin);
+}
+
 export async function getSkinBySlug(req, res, { prismaClient = defaultPrisma } = {}) {
   const { slug } = req.params;
   if (!slug) return res.status(400).json({ error: 'slug required' });
