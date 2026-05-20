@@ -11,10 +11,12 @@ const {
   NODE_ENV,
 } = process.env;
 
-// Fallback für Development - aus dem Screenshot
+// Fallback für Development - aus dem Screenshot.
+// IMPORTANT: audience spelling is `skintracker` (NOT `skintrackr`). Mismatch
+// will reject every JWT silently. Prod audience = `cs2-skintracker-api`.
 const FALLBACK_ISSUER = "https://leading-bug-60.clerk.accounts.dev";
 const FALLBACK_JWKS_URL = "https://leading-bug-60.clerk.accounts.dev/.well-known/jwks.json";
-const FALLBACK_AUDIENCE = "cs2-skintrackr-api-dev";
+const FALLBACK_AUDIENCE = "cs2-skintracker-api-dev";
 
 // Prüfe ob alle ENV-Variablen gesetzt sind
 if (!CLERK_JWKS_URL || !CLERK_ISSUER || !CLERK_AUDIENCE) {
@@ -76,14 +78,25 @@ export async function verifyClerkJwt(req, res, next) {
       });
     }
 
-    // Skip JWT verification if JWKS ENV vars are not configured
+    // Skip JWT verification if JWKS ENV vars are not configured.
     if (!CLERK_JWKS_URL || !CLERK_ISSUER || !CLERK_AUDIENCE) {
       if (process.env.NODE_ENV === 'production') {
         console.error('[AUTH] FATAL: Missing Clerk env vars in production');
         return res.status(500).json({ error: 'Server misconfigured' });
       }
-      console.warn("[JWT VERIFY] Skipping JWT verification - JWKS not configured");
-      // Create a mock payload for testing
+      // Dev fallback: hardcoded userId=1 bypass. EXPLICITLY OPT-IN via env
+      // var so missing Clerk config in dev doesn't silently give every
+      // request full access to user 1. Set DEV_BYPASS_AUTH=1 in your local
+      // .env if you genuinely want this for testing without Clerk.
+      if (process.env.DEV_BYPASS_AUTH !== '1') {
+        console.error('[JWT VERIFY] Clerk env vars missing and DEV_BYPASS_AUTH not set — rejecting');
+        return res.status(401).json({
+          ok: false,
+          code: 'AUTH_NOT_CONFIGURED',
+          message: 'Clerk authentication not configured. Set CLERK_* env vars or DEV_BYPASS_AUTH=1.',
+        });
+      }
+      console.warn("[JWT VERIFY] DEV_BYPASS_AUTH=1 — skipping JWT verification");
       req.clerkJwt = { sub: "test-user", aud: audience, iss: issuer };
       req.userId = 1;
       req.auth = { userId: 1 };

@@ -25,51 +25,79 @@ let initialized = false;
  * Defensive: any throw inside scrubbing returns the event unmodified so we
  * never drop error reporting itself.
  */
+const SENSITIVE_HEADER_KEYS = [
+  "authorization",
+  "cookie",
+  "set-cookie",
+  "stripe-signature",
+  "clerk-auth",
+  "x-clerk-auth",
+];
+
+const TOKEN_PATTERNS = [
+  /(__session)=[^&\s;]+/g,
+  /(__client)=[^&\s;]+/g,
+  /(__clerk_[a-z0-9_]+)=[^&\s;]+/gi,
+  /(sk_(?:test|live)_[A-Za-z0-9]+)/g,
+  /(whsec_[A-Za-z0-9]+)/g,
+];
+
+function scrubString(input) {
+  let out = input;
+  for (const re of TOKEN_PATTERNS) {
+    out = out.replace(re, (_match, group1) => `${group1 ?? ""}[Filtered]`);
+  }
+  return out;
+}
+
 function scrubEvent(event) {
   try {
-    // Request headers — Authorization + cookies leak Clerk session tokens
+    // 1. Request headers — case-insensitive sweep
     if (event.request?.headers) {
       const h = event.request.headers;
-      if (h.Authorization) h.Authorization = "[Filtered]";
-      if (h.authorization) h.authorization = "[Filtered]";
-      if (h.Cookie) h.Cookie = "[Filtered]";
-      if (h.cookie) h.cookie = "[Filtered]";
-      if (h["stripe-signature"]) h["stripe-signature"] = "[Filtered]";
-    }
-
-    // Drop Stripe webhook bodies wholesale — they contain customer + payment
-    // metadata that we never want in Sentry.
-    if (typeof event.request?.url === "string" && /\/subscriptions\/webhook/i.test(event.request.url)) {
-      if (event.request.data !== undefined) {
-        event.request.data = "[Filtered: stripe webhook body]";
+      for (const key of Object.keys(h)) {
+        if (SENSITIVE_HEADER_KEYS.includes(key.toLowerCase())) {
+          h[key] = "[Filtered]";
+        }
       }
     }
 
-    // If a request body got captured and contains Stripe / Clerk secret
-    // material, redact it.
+    // 2. Drop Stripe webhook bodies wholesale — they contain customer +
+    //    payment metadata we never want in Sentry.
+    if (typeof event.request?.url === "string") {
+      event.request.url = scrubString(event.request.url);
+      if (/\/subscriptions\/webhook/i.test(event.request.url)) {
+        if (event.request.data !== undefined) {
+          event.request.data = "[Filtered: stripe webhook body]";
+        }
+      }
+    }
+
+    // 3. Request body (string only) — scrub token patterns inline
     if (typeof event.request?.data === "string") {
-      if (/sk_(test|live)_|whsec_|__session=|stripe-signature/i.test(event.request.data)) {
-        event.request.data = "[Filtered]";
-      }
+      event.request.data = scrubString(event.request.data);
     }
 
-    // Scrub breadcrumb data (outgoing fetches, db queries, console)
+    // 4. Breadcrumbs (fetch, db, console)
     if (Array.isArray(event.breadcrumbs)) {
       for (const crumb of event.breadcrumbs) {
         const data = crumb?.data;
         if (!data) continue;
-        if (data.Authorization) data.Authorization = "[Filtered]";
-        if (data.authorization) data.authorization = "[Filtered]";
-        if (typeof data.url === "string") {
-          data.url = data.url.replace(/(__session=)[^&]+/g, "$1[Filtered]");
+        for (const key of Object.keys(data)) {
+          if (SENSITIVE_HEADER_KEYS.includes(key.toLowerCase())) {
+            data[key] = "[Filtered]";
+          }
         }
-        if (typeof data.body === "string" && /sk_(test|live)_|whsec_/.test(data.body)) {
-          data.body = "[Filtered]";
+        if (typeof data.url === "string") {
+          data.url = scrubString(data.url);
+        }
+        if (typeof data.body === "string") {
+          data.body = scrubString(data.body);
         }
       }
     }
 
-    // Stripe context, if any tool added one
+    // 5. Drop Stripe context
     if (event.contexts && "stripe" in event.contexts) {
       delete event.contexts.stripe;
     }

@@ -79,9 +79,11 @@ export const createCheckoutSession = async (req, res) => {
 
     if (!priceId) {
       const missing = envVarName(tier, billingCycle);
+      // Log the precise env var server-side, return a generic message to
+      // the client so we don't leak deployment naming convention.
       logger.error('Price ID not configured', { tier, billingCycle, missing });
       return res.status(500).json({
-        error: `${missing} not configured`,
+        error: 'Pricing not available. Please contact support.',
       });
     }
 
@@ -116,10 +118,11 @@ export const createCheckoutSession = async (req, res) => {
       url: session.url
     });
   } catch (error) {
-    console.error('[STRIPE ERROR]', error.message, error.type, error.code);
     logger.error('Failed to create checkout session', {
       userId: req.auth?.userId,
-      error: error.message
+      error: error.message,
+      errorType: error.type,
+      errorCode: error.code,
     });
 
     return res.status(500).json({

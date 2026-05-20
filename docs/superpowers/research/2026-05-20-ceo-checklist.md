@@ -112,12 +112,37 @@ Steps:
 4. Add to **Render** env (same):
    ```
    CLERK_SECRET_KEY=sk_live_xxx
-   CLERK_AUDIENCE=cs2-skintracker-api   # production audience, not the dev one
+   CLERK_AUDIENCE=cs2-skintracker-api   # exact spelling: skintracker (NOT skintrackr)
    ```
+   **Note:** the audience claim must match this string EXACTLY in your Clerk
+   JWT template. The fallback in `verifyClerkJwt.js` also uses `skintracker`
+   — typo in the audience name will silently reject every JWT.
 5. Configure allowed origins / redirect URLs in Clerk Dashboard to match custom domain
 6. **Important:** uncomment Clerk audience validation in `backend/src/middleware/verifyClerkJwt.js` ~line 92. Currently disabled for dev; required in prod.
 
 **Why:** test keys cap at 100 users. Live keys + audience validation = real auth.
+
+---
+
+## 5b. Steam OpenID State Secret — 2 min
+
+For the Steam account-link flow to be safe across the stateless OpenID
+redirect, we sign the `return_to` URL with an HMAC. Generate a random
+32+ character secret and set it in **Render** env:
+
+```
+STEAM_OPENID_STATE_SECRET=<paste 32-char random string>
+STEAM_OPENID_RETURN_BASE_URL=https://api.<your-domain>   # or http://localhost:5000 for dev
+```
+
+Generate with:
+```bash
+openssl rand -hex 32
+```
+
+**Why:** without the secret, the OpenID callback can't verify that the
+state param wasn't tampered with — a malicious link could attach a
+Steam account to the wrong user.
 
 ---
 

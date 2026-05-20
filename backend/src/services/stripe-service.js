@@ -1,17 +1,20 @@
 /**
- * Stripe Payment Service
- * Handles subscription management, checkout sessions, and webhook processing
+ * ⚠️ LEGACY — DO NOT IMPORT IN NEW CODE ⚠️
  *
- * Usage:
- *   const stripe = require('./services/stripe-service');
+ * This module predates the new pricing matrix (Sprint 0, 2026-05-20)
+ * and still references `STRIPE_PRICE_PRO_ID` / `STRIPE_PRICE_ENTERPRISE_ID`
+ * which were removed in favour of `STRIPE_PRICE_{LITE,PRO}_{MONTHLY,ANNUAL}`.
  *
- *   // Create checkout session
- *   const session = await stripe.createCheckoutSession({
- *     customerId: 'user-id',
- *     tierName: 'pro',
- *     successUrl: 'https://app.example.com/success',
- *     cancelUrl: 'https://app.example.com/pricing'
- *   });
+ * The CURRENT subscription + webhook flow lives in:
+ *   - backend/src/controllers/subscriptionController.js
+ *   - backend/src/services/subscriptionService.js
+ *
+ * This file (and `routes/webhook-stripe.js` which imports it) is NOT
+ * mounted in `app.js`. It is kept only as historical reference until
+ * Sprint 1 closes; remove entirely after that.
+ *
+ * If you find yourself importing this file: stop. You probably want
+ * `subscriptionController` instead.
  */
 
 import Stripe from 'stripe';

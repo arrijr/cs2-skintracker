@@ -1,9 +1,15 @@
 /**
- * Stripe Webhook Handler
- * Receives and processes Stripe events
+ * ⚠️ LEGACY — NOT MOUNTED ⚠️
  *
- * Route: POST /api/v1/webhooks/stripe
- * No authentication needed (verified by Stripe signature)
+ * This router targets the OLD Stripe-price-ID schema and is not
+ * registered in `app.js`. The active webhook handler is
+ * `subscriptionController.handleWebhook` mounted at
+ * `/api/v1/subscriptions/webhook`.
+ *
+ * Kept only for historical reference; remove after Sprint 1.
+ *
+ * If you re-mount this you will break the new {tier × cycle} pricing
+ * matrix because this handler still reads `STRIPE_PRICE_PRO_ID`.
  */
 
 import express from 'express';

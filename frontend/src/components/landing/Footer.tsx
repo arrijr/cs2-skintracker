@@ -173,7 +173,7 @@ export default function Footer() {
           <div className="border-t border-slate-800 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-2 text-slate-400 text-sm">
-                <span>© 2024 SkinTracker. Made with</span>
+                <span>© 2026 SkinTrackr. Made with</span>
                 <Heart className="h-4 w-4 text-brand-red" />
                 <span>for the CS2 community.</span>
               </div>
