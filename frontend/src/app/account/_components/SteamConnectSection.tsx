@@ -9,10 +9,28 @@ import { ImportPreviewModal } from "./ImportPreviewModal";
 import { analytics } from "@/lib/analytics";
 
 export function SteamConnectSection() {
-  const { status, loading, error, connect, disconnect, refresh } = useSteamConnection();
+  const { status, loading, error, connect, disconnect, refresh, resync } = useSteamConnection();
   const searchParams = useSearchParams();
   const [showImport, setShowImport] = useState(false);
+  const [resyncing, setResyncing] = useState(false);
   const [notice, setNotice] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
+
+  const handleResync = async () => {
+    if (resyncing) return;
+    setResyncing(true);
+    try {
+      const result = await resync();
+      const parts: string[] = [];
+      if (result.added) parts.push(`${result.added} added`);
+      if (result.removed) parts.push(`${result.removed} removed`);
+      const summary = parts.length ? parts.join(', ') : 'no changes';
+      setNotice({ kind: 'success', text: `Resync complete — ${summary}.` });
+    } catch (e) {
+      setNotice({ kind: 'error', text: e instanceof Error ? e.message : 'Resync failed.' });
+    } finally {
+      setResyncing(false);
+    }
+  };
 
   useEffect(() => {
     const s = searchParams.get('steam');
@@ -150,11 +168,21 @@ export function SteamConnectSection() {
           >
             <Link2Off className="h-4 w-4" /> Disconnect
           </Button>
+          {status.lastImportedAt && (
+            <Button
+              variant="outline"
+              onClick={handleResync}
+              disabled={resyncing}
+              className="border-slate-700 bg-slate-900/60 text-slate-200 hover:text-fuchsia-300 hover:bg-fuchsia-500/10 hover:border-fuchsia-500/40 gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${resyncing ? 'animate-spin' : ''}`} /> {resyncing ? 'Syncing...' : 'Resync'}
+            </Button>
+          )}
           <Button
             onClick={() => setShowImport(true)}
             className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white gap-2"
           >
-            <RefreshCw className="h-4 w-4" /> Import inventory
+            <RefreshCw className="h-4 w-4" /> {status.lastImportedAt ? 'Re-import' : 'Import inventory'}
           </Button>
         </div>
       </div>

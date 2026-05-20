@@ -146,3 +146,102 @@ export async function importInventory(req, res, { prismaClient = defaultPrisma }
     return res.status(500).json({ error: err.message });
   }
 }
+
+/**
+ * POST /steam/inventory/resync
+ *
+ * Re-fetches the user's Steam inventory and reconciles it against the
+ * Portfolio rows that originated from a previous Steam import.
+ *
+ * Semantics (v1 — skin-level, not per-row-amount):
+ *   1. For each skinId in Steam that has NO active (removedFromSteamAt = null)
+ *      imported Portfolio row → create a fresh row with importedFromSteamAt
+ *      = now (cost basis = null; user can backfill later).
+ *   2. For each skinId on an active imported Portfolio row that is NO LONGER
+ *      in the Steam inventory → flag those rows removedFromSteamAt = now.
+ *
+ * Manual (non-imported) rows are NEVER touched, regardless of overlap.
+ * History is preserved — we never delete portfolio rows.
+ */
+export async function resync(req, res, {
+  prismaClient = defaultPrisma,
+  fetchInventoryImpl = fetchInventory,
+  matchInventoryImpl = matchInventory,
+} = {}) {
+  const userId = req.userId;
+  if (!userId) return res.status(401).json({ error: 'auth required' });
+  const user = await prismaClient.user.findUnique({
+    where: { id: userId },
+    select: { steamId: true },
+  });
+  if (!user?.steamId) {
+    return res.status(400).json({ error: 'Steam account not connected' });
+  }
+
+  try {
+    const items = await fetchInventoryImpl(user.steamId);
+    const matchResult = await matchInventoryImpl(items, { prismaClient });
+
+    const steamSkinIds = new Set(
+      matchResult.matched
+        .filter((m) => m.kind === 'skin' && m.skinId != null)
+        .map((m) => m.skinId)
+    );
+
+    // Active rows = imported from Steam AND not already flagged removed.
+    const activeRows = await prismaClient.portfolio.findMany({
+      where: {
+        userId,
+        importedFromSteamAt: { not: null },
+        removedFromSteamAt: null,
+      },
+      select: { id: true, skinId: true },
+    });
+
+    const activeSkinIds = new Set(activeRows.map((r) => r.skinId).filter(Boolean));
+    const now = new Date();
+
+    // 1. Add rows for newly-present Steam skins.
+    let added = 0;
+    for (const m of matchResult.matched) {
+      if (m.kind !== 'skin' || m.skinId == null) continue;
+      if (activeSkinIds.has(m.skinId)) continue;
+      await prismaClient.portfolio.create({
+        data: {
+          userId,
+          skinId: m.skinId,
+          amount: m.amount,
+          buyPrice: null,
+          buyDate: now,
+          importedFromSteamAt: now,
+        },
+      });
+      added++;
+    }
+
+    // 2. Flag rows for skins no longer in Steam.
+    const idsToRemove = activeRows
+      .filter((r) => r.skinId != null && !steamSkinIds.has(r.skinId))
+      .map((r) => r.id);
+    let removed = 0;
+    if (idsToRemove.length) {
+      const result = await prismaClient.portfolio.updateMany({
+        where: { id: { in: idsToRemove } },
+        data: { removedFromSteamAt: now },
+      });
+      removed = result.count;
+    }
+
+    return res.json({
+      added,
+      removed,
+      totals: {
+        steamSkins: steamSkinIds.size,
+        activeImported: activeRows.length,
+      },
+    });
+  } catch (err) {
+    logger.error('Steam resync failed', { userId, error: err.message });
+    return res.status(500).json({ error: err.message });
+  }
+}

@@ -8,6 +8,7 @@ import {
   status,
   preview,
   importInventory,
+  resync,
 } from '../controllers/steamController.js';
 
 const router = Router();
@@ -29,5 +30,6 @@ router.delete('/disconnect',       (req, res) => disconnect(req, res));
 router.get('/status',              (req, res) => status(req, res));
 router.post('/inventory/preview',  (req, res) => preview(req, res));
 router.post('/inventory/import',   (req, res) => importInventory(req, res));
+router.post('/inventory/resync',   (req, res) => resync(req, res));
 
 export default router;

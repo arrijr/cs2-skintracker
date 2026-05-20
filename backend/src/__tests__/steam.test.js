@@ -345,3 +345,164 @@ describe('importSkinMatches', () => {
     ).rejects.toThrow(/userId/);
   });
 });
+
+// ── Resync controller ────────────────────────────────────────────────────────
+
+import { resync } from '../controllers/steamController.js';
+
+describe('steamController.resync', () => {
+  function makeRes() {
+    return {
+      statusCode: 200,
+      body: null,
+      status(c) { this.statusCode = c; return this; },
+      json(b) { this.body = b; return this; },
+    };
+  }
+
+  function fakePrismaWithRows(steamUser, importedRows) {
+    return {
+      user: {
+        findUnique: jest.fn(async () => steamUser),
+      },
+      portfolio: {
+        findMany: jest.fn(async () => importedRows),
+        create: jest.fn(async (args) => ({ id: 999, ...args.data })),
+        updateMany: jest.fn(async ({ where }) => ({
+          count: Array.isArray(where.id?.in) ? where.id.in.length : 0,
+        })),
+      },
+    };
+  }
+
+  it('requires authenticated user', async () => {
+    const res = makeRes();
+    await resync({ userId: null }, res, { prismaClient: {} });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('returns 400 when Steam account not connected', async () => {
+    const prisma = fakePrismaWithRows({ steamId: null }, []);
+    const res = makeRes();
+    await resync({ userId: 1 }, res, { prismaClient: prisma });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/not connected/i);
+  });
+
+  it('adds rows for newly-present Steam skins (no active import yet)', async () => {
+    const prisma = fakePrismaWithRows(
+      { steamId: '76561198000000001' },
+      [] // no existing imported rows
+    );
+    const fakeFetch = jest.fn(async () => [{ marketHashName: 'AK-47 | Redline (FT)', amount: 1 }]);
+    const fakeMatch = jest.fn(async () => ({
+      matched: [
+        { kind: 'skin', skinId: 10, amount: 1, marketHashName: 'AK-47 | Redline (FT)', name: 'AK-47 | Redline' },
+        { kind: 'skin', skinId: 11, amount: 2, marketHashName: 'AWP | Asiimov (FT)', name: 'AWP | Asiimov' },
+      ],
+      skipped: [],
+    }));
+    const res = makeRes();
+    await resync({ userId: 42 }, res, {
+      prismaClient: prisma,
+      fetchInventoryImpl: fakeFetch,
+      matchInventoryImpl: fakeMatch,
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.added).toBe(2);
+    expect(res.body.removed).toBe(0);
+    expect(prisma.portfolio.create).toHaveBeenCalledTimes(2);
+  });
+
+  it('flags rows as removed when their skin is no longer in Steam', async () => {
+    const prisma = fakePrismaWithRows(
+      { steamId: '76561198000000001' },
+      [
+        { id: 1, skinId: 10 }, // active imported, still in Steam
+        { id: 2, skinId: 99 }, // active imported, NOT in Steam anymore
+      ]
+    );
+    const fakeFetch = jest.fn(async () => []);
+    const fakeMatch = jest.fn(async () => ({
+      matched: [
+        { kind: 'skin', skinId: 10, amount: 1, marketHashName: 'X', name: 'X' },
+      ],
+      skipped: [],
+    }));
+    const res = makeRes();
+    await resync({ userId: 42 }, res, {
+      prismaClient: prisma,
+      fetchInventoryImpl: fakeFetch,
+      matchInventoryImpl: fakeMatch,
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.removed).toBe(1);
+    expect(prisma.portfolio.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: { in: [2] } },
+        data: expect.objectContaining({ removedFromSteamAt: expect.any(Date) }),
+      })
+    );
+  });
+
+  it('does NOT double-add a skin that is already in active imported rows', async () => {
+    const prisma = fakePrismaWithRows(
+      { steamId: '76561198000000001' },
+      [{ id: 1, skinId: 10 }]
+    );
+    const fakeFetch = jest.fn(async () => []);
+    const fakeMatch = jest.fn(async () => ({
+      matched: [
+        { kind: 'skin', skinId: 10, amount: 1, marketHashName: 'X', name: 'X' },
+      ],
+      skipped: [],
+    }));
+    const res = makeRes();
+    await resync({ userId: 42 }, res, {
+      prismaClient: prisma,
+      fetchInventoryImpl: fakeFetch,
+      matchInventoryImpl: fakeMatch,
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.added).toBe(0);
+    expect(res.body.removed).toBe(0);
+    expect(prisma.portfolio.create).not.toHaveBeenCalled();
+  });
+
+  it('ignores non-skin matches (cases, market items)', async () => {
+    const prisma = fakePrismaWithRows(
+      { steamId: '76561198000000001' },
+      []
+    );
+    const fakeFetch = jest.fn(async () => []);
+    const fakeMatch = jest.fn(async () => ({
+      matched: [
+        { kind: 'case',        skinId: null, caseId: 5,  amount: 1, marketHashName: 'Case', name: 'Case' },
+        { kind: 'market_item', skinId: null, marketItemId: 7, amount: 1, marketHashName: 'Sticker', name: 'Sticker' },
+      ],
+      skipped: [],
+    }));
+    const res = makeRes();
+    await resync({ userId: 42 }, res, {
+      prismaClient: prisma,
+      fetchInventoryImpl: fakeFetch,
+      matchInventoryImpl: fakeMatch,
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.added).toBe(0);
+    expect(prisma.portfolio.create).not.toHaveBeenCalled();
+  });
+
+  it('returns 500 with logged error when Steam fetch throws', async () => {
+    const prisma = fakePrismaWithRows({ steamId: '76561198000000001' }, []);
+    const fakeFetch = jest.fn(async () => { throw new Error('Steam HTTP 500'); });
+    const res = makeRes();
+    await resync({ userId: 42 }, res, {
+      prismaClient: prisma,
+      fetchInventoryImpl: fakeFetch,
+      matchInventoryImpl: jest.fn(),
+    });
+    expect(res.statusCode).toBe(500);
+    expect(res.body.error).toMatch(/Steam HTTP 500/);
+  });
+});

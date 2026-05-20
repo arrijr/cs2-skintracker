@@ -116,5 +116,29 @@ export function useSteamConnection() {
     return data as { created: number; matched: number; skipped: number };
   }, [apiUrl, getToken, refresh]);
 
-  return { status, loading, error, refresh, connect, disconnect, preview, importNow };
+  /**
+   * Re-fetch the user's Steam inventory and reconcile against existing
+   * imported portfolio rows. Returns { added, removed } counts. Manual
+   * (non-imported) rows are never touched.
+   */
+  const resync = useCallback(async () => {
+    const token = await getToken();
+    const res = await fetch(`${apiUrl}/api/v1/steam/inventory/resync`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    await refresh();
+    return data as {
+      added: number;
+      removed: number;
+      totals: { steamSkins: number; activeImported: number };
+    };
+  }, [apiUrl, getToken, refresh]);
+
+  return { status, loading, error, refresh, connect, disconnect, preview, importNow, resync };
 }

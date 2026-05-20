@@ -176,10 +176,40 @@ See **[[guides/Development-Workflow]]** for details.
 - [ ] Auth field inconsistency: `req.auth?.userId` vs `req.userId` zwischen Controllern
 
 **Before Production Deploy (MUST FIX)**:
-- [ ] Clerk audience validation re-enable (verifyClerkJwt.js line ~92, currently commented out)
-- [ ] Stripe Price IDs: replace `prod_...` with actual `price_...` IDs from Stripe Dashboard
-- [ ] Swap Clerk test keys → live keys in Vercel env vars
-- [ ] Remove DEV_TEST_TOKEN + DEV_FREE_TOKEN from .env
+- [x] Clerk audience validation already active (verifyClerkJwt.js line 100). Fallback typo `cs2-skintrackr-api-dev` → `cs2-skintracker-api-dev` fixed 2026-05-20.
+- [x] Stripe Price IDs migrated to matrix: `STRIPE_PRICE_{LITE,PRO}_{MONTHLY,ANNUAL}` (4 env vars). CEO must create live prices in Stripe Dashboard — see `docs/superpowers/research/2026-05-20-ceo-checklist.md` §4.
+- [ ] Swap Clerk test keys → live keys in Vercel env vars (CEO task — checklist §5)
+- [x] Dev-fallback auth bypass gated behind explicit `DEV_BYPASS_AUTH=1` env var (was: any non-prod request with missing Clerk env → user 1). Tests still get bypass via test setup; new dev installs hit 401 instead of silent backdoor.
+- [ ] Remove DEV_TEST_TOKEN + DEV_FREE_TOKEN from .env (only referenced in tests — safe in prod env as long as not set in Render)
+
+**CEO-Orchestration Strategy (2026-05-20)**:
+Research at `docs/superpowers/research/`:
+- `2026-05-20-market-analysis.md` — 8 competitors mapped, pricing benchmarks
+- `2026-05-20-product-roadmap.md` — codebase audit, pre-revenue blockers, 90-day plan
+- `2026-05-20-ceo-strategy.md` — synthesis with decisions locked: €9.99 Pro, no Lifetime SKU, no Discord/Telegram, email + in_app only
+- `2026-05-20-ceo-checklist.md` — manual CEO tasks (Stripe Live, Clerk Live, Domain, PostHog/Sentry signups) ~100 min
+
+**Sprint 0 — Cash-Ready (2026-05-20)** — first paying customer technically possible:
+- [x] Sentry SDK frontend + backend (silent no-op without DSN) — frontend `sentry.{client,server,edge}.config.ts` + `sentry.scrubber.ts` shared PII filter; backend `src/instrumentation/sentry.js`. Headers + Clerk cookies (`__session`/`__client`/`__clerk_*`) + Stripe secret keys (`sk_*`/`whsec_*`) scrubbed before transport.
+- [x] PostHog SDK + typed event taxonomy + GDPR opt-in-by-default + cookie banner. `frontend/src/lib/analytics.ts` exposes `analytics.{identify,reset,track,page,optIn,optOut,hasConsent}`. Events fire from onboarding steps, pricing/checkout/CSV-export/alert-create/Steam-connect. Server-side `signup_completed` + `subscription_created` deferred (need Clerk + Stripe webhook → posthog-node, later sprint).
+- [x] Legal pages: `/legal/{privacy,terms,refund}` with shared draft-template warning. GDPR Art. 6 bases, 10 named processors, German consumer-law refund flow (§ 355 BGB), Valve disclaimer. Footer repointed. **TODO before launch:** legal entity, support email, Impressum page.
+- [x] Pricing repriced + Monthly/Annual toggle: Free €0 (2 alerts, was 1), Lite €6.99/mo or €67/yr (15 alerts, was 5), Pro €9.99/mo or €96/yr (was €19.99). Backend price-ID matrix `getPriceId(tier, cycle)`, env vars `STRIPE_PRICE_{LITE,PRO}_{MONTHLY,ANNUAL}`. Annual UI shows "≈ €X/mo" + savings badge.
+- [x] `/onboarding` Suspense fix — wrapped `useSearchParams()` reader so Vercel can statically prerender (was blocking prod deploys).
+- [x] Cookie consent banner — bottom-of-page, Accept analytics / Essential only. PostHog inits in opt-out-by-default mode and only enables capturing after consent. Persists via localStorage.
+- [x] Legacy `backend/src/services/stripe-service.js` + `routes/webhook-stripe.js` quarantined with `⚠️ LEGACY` warning — both still use old single-tier Stripe price env vars, not mounted in `app.js`. Delete after Sprint 1.
+- [x] Sprint 0 review agent caught 2 critical (Clerk audience typo + dev bypass backdoor) + 4 important (Sentry scrubber gaps, error-message env-var leak, footer copyright 2024 → 2026, brand "SkinTracker" → "SkinTrackr"). All fixed in commit `0dce30a`.
+- [ ] CEO checklist items remaining: PostHog signup, Sentry signup, custom domain, Stripe Live products, Clerk Live keys, Resend setup. ~100 min total.
+
+**Sprint 1 — Steam Inventory Import (2026-05-20)**:
+- [x] Steam OpenID 2.0 stateless connect flow (HMAC-signed state JWT, no passport/session). Connect/disconnect/callback live in `backend/src/services/steam/steamOpenId.js` + `controllers/steamController.js`. POST `/connect/start` returns `{url}` to avoid JWT leak in browser URL.
+- [x] Steam inventory client (`steamInventoryClient.js`) — public inventory fetch with 5-min cache, 3-attempt retry on 429/5xx, 403 → "set inventory to public" error.
+- [x] Inventory matcher (`inventoryMatcher.js`) — joins `assets[] + descriptions[]` by `classid:instanceid`, matches `marketHashName` against `Skin`/`Case`/`MarketItem` catalog with `Skin > Case > MarketItem` precedence.
+- [x] Portfolio importer (`portfolioImporter.js`) — 3 cost-basis modes (`empty` / `current_market` / `custom`), creates one Portfolio row per skin match with `importedFromSteamAt = now`.
+- [x] Frontend `/account` page with `SteamConnectSection` + `ImportPreviewModal` + `BulkEditCostBasis`. `useSteamConnection` hook (`status / connect / disconnect / preview / importNow / resync`).
+- [x] Resync endpoint shipped 2026-05-20 — POST `/api/v1/steam/inventory/resync`. Reconciles imported Portfolio rows against current Steam inventory: adds new skins, flags removed skins via `removedFromSteamAt` (never deletes). Manual (non-imported) rows untouched. UI shows Resync button on connected account when a previous import exists.
+- [x] Tests: 7 new resync controller tests added to `backend/src/__tests__/steam.test.js` (covers auth, not-connected, add/remove flow, non-skin filter, error path). Matcher + importer + OpenID tests already existed.
+- [ ] Steam OpenID `STEAM_OPENID_STATE_SECRET` required in prod — CEO checklist §5b.
+- [ ] **Phase 2 / out-of-scope:** Case + MarketItem (sticker/agent/key) import to dedicated portfolios; sticker detection on imported skins; trade-locked-until display from Steam descriptions; auto-sync cron (manual Resync only today).
 
 **Profile/Settings Production-Readiness** (plan: `docs/superpowers/plans/2026-05-18-profile-settings-production-ready.md`):
 - [x] Phase 1 — 7 critical security + auth fixes shipped (2026-05-18):
