@@ -23,6 +23,26 @@ const stripe = new Proxy({}, {
   },
 });
 
+// Price ID matrix — keyed by tier × billing cycle. Read lazily so that env
+// changes between requests (e.g. Vercel redeploy) are picked up without a
+// process restart, and so a missing single env var doesn't kill boot.
+const getPriceId = (tier, billingCycle) => {
+  const PRICE_IDS = {
+    lite: {
+      monthly: process.env.STRIPE_PRICE_LITE_MONTHLY,
+      annual: process.env.STRIPE_PRICE_LITE_ANNUAL,
+    },
+    pro: {
+      monthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
+      annual: process.env.STRIPE_PRICE_PRO_ANNUAL,
+    },
+  };
+  return PRICE_IDS[tier]?.[billingCycle] ?? null;
+};
+
+const envVarName = (tier, billingCycle) =>
+  `STRIPE_PRICE_${tier.toUpperCase()}_${billingCycle.toUpperCase()}`;
+
 /**
  * POST /subscriptions/checkout
  * Create a Stripe checkout session for tier upgrade
@@ -30,7 +50,7 @@ const stripe = new Proxy({}, {
 export const createCheckoutSession = async (req, res) => {
   try {
     const userId = req.auth?.userId;
-    const { tier } = req.body;
+    const { tier, billingCycle: rawBillingCycle } = req.body;
 
     // Validate inputs
     if (!userId) {
@@ -41,19 +61,27 @@ export const createCheckoutSession = async (req, res) => {
       return res.status(400).json({ error: 'Invalid tier. Use: lite or pro' });
     }
 
+    // Default billing cycle is monthly so existing callers (e.g. Profile
+    // billing tab) that don't pass a cycle keep working.
+    const billingCycle = rawBillingCycle ?? 'monthly';
+    if (!['monthly', 'annual'].includes(billingCycle)) {
+      return res.status(400).json({
+        error: 'Invalid billingCycle. Use: monthly or annual',
+      });
+    }
+
     // Get or create subscription
     let sub = await subscriptionService.getOrCreateSubscription(userId);
     let customerId = sub.stripeCustomerId;
 
-    // Get price ID from environment
-    const priceId = tier === 'lite'
-      ? process.env.STRIPE_PRICE_LITE_ID
-      : process.env.STRIPE_PRICE_PRO_ID;
+    // Get price ID from matrix (tier × billing cycle)
+    const priceId = getPriceId(tier, billingCycle);
 
     if (!priceId) {
-      logger.error('Price ID not configured', { tier });
+      const missing = envVarName(tier, billingCycle);
+      logger.error('Price ID not configured', { tier, billingCycle, missing });
       return res.status(500).json({
-        error: `Price ID not configured for ${tier} tier`
+        error: `${missing} not configured`,
       });
     }
 
@@ -71,13 +99,15 @@ export const createCheckoutSession = async (req, res) => {
       cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/pricing`,
       metadata: {
         userId: String(userId),
-        tier
+        tier,
+        billingCycle,
       }
     });
 
     logger.info('Checkout session created', {
       userId,
       tier,
+      billingCycle,
       sessionId: session.id
     });
 

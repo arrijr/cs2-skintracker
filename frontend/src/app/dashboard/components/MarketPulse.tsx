@@ -88,7 +88,7 @@ export default function MarketPulse({
             className="bg-gradient-to-br from-amber-400 to-orange-500 hover:opacity-95 text-[#2c1c00] font-bold gap-2 px-5 py-3 rounded-[10px] shadow-[0_12px_30px_-10px_rgba(245,185,72,0.5)] min-h-[40px]"
           >
             <Link href="/pricing">
-              <Crown className="h-4 w-4" aria-hidden="true" /> Upgrade to Pro · €4.99/mo
+              <Crown className="h-4 w-4" aria-hidden="true" /> Upgrade to Pro · €9.99/mo
             </Link>
           </Button>
         </div>

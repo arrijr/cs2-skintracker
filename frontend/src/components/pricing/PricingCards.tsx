@@ -20,7 +20,8 @@ export interface Plan {
   gradient: string;
 }
 
-/** Canonical plan list — used by both /pricing and landing PricingSection. */
+/** Canonical plan list — used by landing PricingSection (monthly snapshot).
+ *  Annual pricing + toggle lives on /pricing only. */
 export const PLANS: Plan[] = [
   {
     id: "free",
@@ -30,7 +31,7 @@ export const PLANS: Plan[] = [
     description: "Get started in seconds",
     features: [
       "Up to 5 skins in watchlist",
-      "1 price alert",
+      "2 price alerts",
       "Basic portfolio tracking",
       "Live price updates",
       "Community support",
@@ -43,15 +44,15 @@ export const PLANS: Plan[] = [
   {
     id: "lite",
     name: "Lite",
-    price: "€4.99",
+    price: "€6.99",
     period: "per month",
     description: "For collectors and content creators",
     features: [
       "Unlimited watchlist",
-      "5 price alerts",
-      "90-day price history",
+      "15 price alerts",
+      "120-day price history",
       "Advanced analytics",
-      "Email notifications",
+      "Email + in-app notifications",
     ],
     highlight: false,
     ctaLabel: "Upgrade to Lite",
@@ -61,7 +62,7 @@ export const PLANS: Plan[] = [
   {
     id: "pro",
     name: "Pro",
-    price: "€19.99",
+    price: "€9.99",
     period: "per month",
     description: "For professional traders",
     features: [
@@ -74,7 +75,7 @@ export const PLANS: Plan[] = [
     highlight: true,
     ctaLabel: "Upgrade to Pro",
     ctaHref: "/pricing",
-    gradient: "from-purple-500 to-pink-500",
+    gradient: "from-fuchsia-500 to-pink-500",
   },
 ];
 

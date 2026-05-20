@@ -52,9 +52,13 @@ export const subscriptionService = {
    */
   async updateSubscriptionFromStripe(stripeSubscription) {
     try {
-      // Extract user ID and tier from metadata
+      // Extract user ID, tier, and billing cycle from metadata
       const userId = parseInt(stripeSubscription.metadata?.userId || 0);
       const tier = stripeSubscription.metadata?.tier || 'lite';
+      // billingCycle is logged for now — future tier-aware UI can persist it
+      // (would require a new `billingCycle` column on User; out of scope this
+      // sprint).
+      const billingCycle = stripeSubscription.metadata?.billingCycle || 'monthly';
 
       if (!userId) {
         logger.error('No userId in Stripe metadata', { stripeSubId: stripeSubscription.id });
@@ -83,6 +87,7 @@ export const subscriptionService = {
       logger.info('Subscription updated from Stripe', {
         userId,
         tier,
+        billingCycle,
         status: sub.subscriptionStatus,
         stripeSubId: stripeSubscription.id
       });

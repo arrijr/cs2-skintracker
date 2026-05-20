@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -8,11 +8,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, Star, Zap, Shield, Crown } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
+import { analytics } from '@/lib/analytics';
+
+type BillingCycle = 'monthly' | 'annual';
 
 interface Plan {
   id: 'free' | 'lite' | 'pro';
   name: string;
-  price: string;
+  priceMonthly: string;
+  priceAnnual: string;
+  pricePerMonthAnnual: string;
+  savings: string;
   period: string;
   description: string;
   features: string[];
@@ -25,12 +31,15 @@ const plans: Plan[] = [
   {
     id: 'free',
     name: 'Free',
-    price: '€0',
+    priceMonthly: '€0',
+    priceAnnual: '€0',
+    pricePerMonthAnnual: '€0',
+    savings: '',
     period: 'forever',
     description: 'Perfect to get started',
     features: [
       'Up to 5 skins in watchlist',
-      '1 price alert',
+      '2 price alerts',
       'Basic portfolio tracking',
       'Live price updates',
       'Community support',
@@ -42,15 +51,18 @@ const plans: Plan[] = [
   {
     id: 'lite',
     name: 'Lite',
-    price: '€4.99',
+    priceMonthly: '€6.99',
+    priceAnnual: '€67',
+    pricePerMonthAnnual: '€5.58',
+    savings: 'Save €17/year',
     period: 'per month',
     description: 'For collectors & content creators',
     features: [
       'Unlimited watchlist',
-      '5 price alerts',
-      '90-day price history',
+      '15 price alerts',
+      '120-day price history',
       'Advanced analytics',
-      'Email notifications',
+      'Email + in-app notifications',
       'Portfolio overview with KPIs',
     ],
     highlight: false,
@@ -60,7 +72,10 @@ const plans: Plan[] = [
   {
     id: 'pro',
     name: 'Pro',
-    price: '€19.99',
+    priceMonthly: '€9.99',
+    priceAnnual: '€96',
+    pricePerMonthAnnual: '€8.00',
+    savings: 'Save €24/year',
     period: 'per month',
     description: 'For professional traders',
     features: [
@@ -68,14 +83,14 @@ const plans: Plan[] = [
       'Unlimited price alerts',
       'Volatility analysis (7d/30d/90d)',
       'Rarity scoring & research tools',
-      '180-day price history',
+      'Full price history',
       'CSV export',
       'Priority support',
-      'API access (coming soon)',
+      'Multi-source pricing (Skinport + CSFloat — coming Sprint 2)',
     ],
     highlight: true,
     ctaLabel: 'Upgrade to Pro',
-    gradient: 'from-purple-500 to-pink-500',
+    gradient: 'from-fuchsia-500 to-pink-500',
   },
 ];
 
@@ -84,6 +99,11 @@ export default function PricingPage() {
   const { isSignedIn } = useUser();
   const { checkout, tier: currentTier } = useSubscription();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
+
+  useEffect(() => {
+    analytics.track({ name: 'pricing_page_viewed' });
+  }, []);
 
   const handleSelect = async (planId: 'free' | 'lite' | 'pro') => {
     if (planId === 'free') {
@@ -92,13 +112,13 @@ export default function PricingPage() {
     }
 
     if (!isSignedIn) {
-      router.push(`/sign-up?plan=${planId}`);
+      router.push(`/sign-up?plan=${planId}&billing=${billingCycle}`);
       return;
     }
 
     setLoadingTier(planId);
     try {
-      await checkout(planId);
+      await checkout(planId, billingCycle);
     } catch (err) {
       console.error('Checkout failed:', err);
       setLoadingTier(null);
@@ -109,13 +129,13 @@ export default function PricingPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-16 px-4">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
-        <div className="text-center mb-16">
-          <Badge variant="outline" className="mb-4 border-purple-500/30 text-purple-400 bg-purple-500/10">
+        <div className="text-center mb-12">
+          <Badge variant="outline" className="mb-4 border-fuchsia-500/30 text-fuchsia-400 bg-fuchsia-500/10">
             Pricing
           </Badge>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
             Choose your{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400">
               trading plan
             </span>
           </h1>
@@ -124,24 +144,76 @@ export default function PricingPage() {
           </p>
         </div>
 
+        {/* Billing cycle toggle */}
+        <div className="flex justify-center mb-12">
+          <div
+            role="group"
+            aria-label="Billing cycle"
+            className="relative inline-flex items-center rounded-full border border-slate-800 bg-slate-900/50 p-1"
+          >
+            <button
+              type="button"
+              onClick={() => setBillingCycle('monthly')}
+              aria-pressed={billingCycle === 'monthly'}
+              className={`relative z-10 px-5 py-2 text-sm font-semibold rounded-full transition-colors duration-200 ${
+                billingCycle === 'monthly'
+                  ? 'bg-slate-100 text-slate-900 shadow'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              onClick={() => setBillingCycle('annual')}
+              aria-pressed={billingCycle === 'annual'}
+              className={`relative z-10 px-5 py-2 text-sm font-semibold rounded-full transition-colors duration-200 inline-flex items-center gap-2 ${
+                billingCycle === 'annual'
+                  ? 'bg-slate-100 text-slate-900 shadow'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              Annual
+              <span
+                className={`text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-full ${
+                  billingCycle === 'annual'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-emerald-500/20 text-emerald-300'
+                }`}
+              >
+                -20%
+              </span>
+            </button>
+          </div>
+        </div>
+
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan) => {
             const isCurrent = currentTier === plan.id;
             const isLoading = loadingTier === plan.id;
+            const isFree = plan.id === 'free';
+            const isAnnual = billingCycle === 'annual' && !isFree;
+
+            const displayPrice = isAnnual ? plan.priceAnnual : plan.priceMonthly;
+            const displayPeriod = isFree
+              ? plan.period
+              : isAnnual
+              ? 'per year'
+              : 'per month';
 
             return (
               <Card
                 key={plan.id}
-                className={`relative bg-slate-900/60 backdrop-blur border transition-all duration-300 ${
+                className={`relative bg-slate-900/50 backdrop-blur border rounded-2xl transition-all duration-300 ${
                   plan.highlight
-                    ? 'border-purple-500/50 shadow-2xl shadow-purple-500/20 lg:scale-105'
-                    : 'border-slate-700/50 hover:border-slate-600'
+                    ? 'border-fuchsia-500/50 shadow-2xl shadow-fuchsia-500/20 lg:scale-105'
+                    : 'border-slate-800 hover:border-slate-700'
                 }`}
               >
                 {plan.highlight && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1">
+                    <Badge className="bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white px-4 py-1">
                       <Star className="h-3 w-3 mr-1" />
                       Most Popular
                     </Badge>
@@ -159,9 +231,26 @@ export default function PricingPage() {
 
                 <CardHeader className="text-center pb-4">
                   <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                  <div className="mb-2">
-                    <span className="text-5xl font-bold text-white">{plan.price}</span>
-                    <span className="text-slate-400 ml-1">/{plan.period}</span>
+                  <div className="mb-2 min-h-[88px] flex flex-col items-center justify-center">
+                    <div className="flex items-baseline justify-center transition-all duration-200">
+                      <span className="text-5xl font-bold text-white">{displayPrice}</span>
+                      <span className="text-slate-400 ml-1">/{displayPeriod}</span>
+                    </div>
+                    {isAnnual && (
+                      <>
+                        <span className="text-sm text-slate-400 mt-1">
+                          ≈ {plan.pricePerMonthAnnual}/mo
+                        </span>
+                        {plan.savings && (
+                          <Badge
+                            variant="outline"
+                            className="mt-2 border-emerald-500/40 text-emerald-300 bg-emerald-500/10"
+                          >
+                            {plan.savings}
+                          </Badge>
+                        )}
+                      </>
+                    )}
                   </div>
                   <p className="text-slate-300">{plan.description}</p>
                 </CardHeader>
@@ -186,7 +275,7 @@ export default function PricingPage() {
                         ? 'bg-slate-700 hover:bg-slate-600 text-white'
                         : plan.id === 'lite'
                         ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white'
-                        : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
+                        : 'bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white'
                     }`}
                   >
                     {isLoading ? (
@@ -247,7 +336,7 @@ export default function PricingPage() {
                 a: 'The Free tier is unlimited and forever free. Lite and Pro do not currently offer a trial, but you can cancel anytime.',
               },
             ].map((item) => (
-              <Card key={item.q} className="bg-slate-900/40 border-slate-700/50">
+              <Card key={item.q} className="bg-slate-900/50 border border-slate-800 rounded-2xl">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-white mb-2">{item.q}</h3>
                   <p className="text-slate-300">{item.a}</p>

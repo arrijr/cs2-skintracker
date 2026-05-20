@@ -1,7 +1,10 @@
 import prisma from '../prisma/prismaClient.js';
 import logger from '../utils/logger.js';
 
-const TIER_QUOTA = { free: 1, lite: 5, pro: 999 };
+// Quotas per tier. CEO strategy 2026-05-20: Free bumped 1 → 2 alerts so
+// new users get a real "aha moment" before hitting the paywall. Lite 5 →
+// 15 to match the new €6.99 positioning. Pro stays unlimited.
+const TIER_QUOTA = { free: 2, lite: 15, pro: 999 };
 const VALID_TYPES = ['price_threshold', 'volatility', 'float_tier', 'case_ev'];
 // in_app = bell notification via AlertEvent rows + frontend SWR poll
 const VALID_CHANNELS = ['email', 'in_app'];

@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useAuth } from '@clerk/nextjs';
+import { analytics } from '@/lib/analytics';
 
 export interface Subscription {
   id: number;
@@ -76,7 +77,10 @@ export function useSubscription() {
     fetchSubscription();
   }, [fetchSubscription]);
 
-  const checkout = async (tier: 'lite' | 'pro') => {
+  const checkout = async (
+    tier: 'lite' | 'pro',
+    billingCycle: 'monthly' | 'annual' = 'monthly'
+  ) => {
     const token = await getToken({ template: 'backend' });
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/checkout`,
@@ -86,12 +90,16 @@ export function useSubscription() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ tier, billingCycle }),
       }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const { url } = await res.json();
     if (!url) throw new Error('No checkout URL returned');
+    analytics.track({
+      name: 'checkout_started',
+      properties: { tier, billing: billingCycle },
+    });
     window.location.href = url;
   };
 
@@ -102,6 +110,7 @@ export function useSubscription() {
       { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    analytics.track({ name: 'subscription_canceled' });
     await fetchSubscription();
   };
 
@@ -121,6 +130,7 @@ export function useSubscription() {
       }
       throw new Error(msg);
     }
+    analytics.track({ name: 'subscription_reactivated' });
     await fetchSubscription();
   };
 

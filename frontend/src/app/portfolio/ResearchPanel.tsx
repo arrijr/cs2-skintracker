@@ -107,7 +107,7 @@ export default function ResearchPanel() {
               <span>Investitions-Recommendations</span>
             </li>
           </ul>
-          <UpgradeModal tier="pro" triggerText="Zu Pro upgraden - 19,99€/Monat" />
+          <UpgradeModal tier="pro" triggerText="Zu Pro upgraden - 9,99€/Monat" />
         </CardContent>
       </Card>
     );
