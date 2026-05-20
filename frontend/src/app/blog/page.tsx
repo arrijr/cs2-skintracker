@@ -6,7 +6,7 @@ import { BlogHero } from '@/components/blog/BlogHero';
 import { BlogFilters } from '@/components/blog/BlogFilters';
 import { Pagination } from '@/components/blog/Pagination';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cs2-skintracker.com';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://skintrackr.io';
 
 export const metadata: Metadata = {
   title: 'CS2 Skin Tracker Blog - Market Analysis, Guides & Updates',

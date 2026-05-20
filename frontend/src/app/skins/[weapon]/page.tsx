@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { listSkinsByWeapon } from '@/lib/skins-server';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cs2-skintracker.com';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://skintrackr.io';
 
 interface Props {
   params: { weapon: string };

@@ -13,14 +13,14 @@ export default function PrivacyPolicyPage() {
       <p>
         This Privacy Policy describes how SkinTrackr UG (i.G.) (&quot;SkinTrackr&quot;,
         &quot;we&quot;, &quot;us&quot;) collects, uses, and shares personal data when you use
-        skintrackr.com and the related services (the &quot;Service&quot;). We are the data
+        skintrackr.io and the related services (the &quot;Service&quot;). We are the data
         controller within the meaning of the EU General Data Protection Regulation (GDPR).
       </p>
 
       <h2>1. Who we are</h2>
       <p>
         SkinTrackr UG (i.G.) is a company being incorporated in Germany. You can reach us at{' '}
-        <a href="mailto:arthur@skintrackr.com">arthur@skintrackr.com</a> for any privacy-related
+        <a href="mailto:arthur@skintrackr.io">arthur@skintrackr.io</a> for any privacy-related
         request.
       </p>
 
@@ -167,7 +167,7 @@ export default function PrivacyPolicyPage() {
       </ul>
       <p>
         To exercise any of these rights, email{' '}
-        <a href="mailto:arthur@skintrackr.com">arthur@skintrackr.com</a>. We will respond
+        <a href="mailto:arthur@skintrackr.io">arthur@skintrackr.io</a>. We will respond
         within one month.
       </p>
       <p>
@@ -211,7 +211,7 @@ export default function PrivacyPolicyPage() {
       <p>
         SkinTrackr UG (i.G.)
         <br />
-        Email: <a href="mailto:arthur@skintrackr.com">arthur@skintrackr.com</a>
+        Email: <a href="mailto:arthur@skintrackr.io">arthur@skintrackr.io</a>
       </p>
     </LegalPage>
   );

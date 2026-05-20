@@ -70,7 +70,7 @@ export default function RefundPolicyPage() {
         </li>
       </ul>
       <p>
-        Send the request to <a href="mailto:arthur@skintrackr.com">arthur@skintrackr.com</a>{' '}
+        Send the request to <a href="mailto:arthur@skintrackr.io">arthur@skintrackr.io</a>{' '}
         with the subject line &quot;Refund request&quot;. You do not need to give a reason
         — though feedback helps us improve.
       </p>
@@ -93,7 +93,7 @@ export default function RefundPolicyPage() {
       <h2>7. Disputes</h2>
       <p>
         If you believe a charge is incorrect or unauthorised, please contact us first at{' '}
-        <a href="mailto:arthur@skintrackr.com">arthur@skintrackr.com</a> — we&apos;ll
+        <a href="mailto:arthur@skintrackr.io">arthur@skintrackr.io</a> — we&apos;ll
         usually resolve it within one business day. Initiating a chargeback before
         contacting us may trigger an automatic account suspension while the dispute is
         investigated.
@@ -102,7 +102,7 @@ export default function RefundPolicyPage() {
       <h2>8. Contact</h2>
       <p>
         Questions about this policy? Email{' '}
-        <a href="mailto:arthur@skintrackr.com">arthur@skintrackr.com</a>.
+        <a href="mailto:arthur@skintrackr.io">arthur@skintrackr.io</a>.
       </p>
     </LegalPage>
   );

@@ -2,7 +2,7 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cs2-skintracker.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://skintrackr.io';
 
   return {
     rules: [

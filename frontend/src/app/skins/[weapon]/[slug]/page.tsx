@@ -21,7 +21,7 @@ interface PageProps {
   searchParams: { wear?: string };
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cs2-skintracker.com';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://skintrackr.io';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const skin = await getSkinBySlug(params.slug);

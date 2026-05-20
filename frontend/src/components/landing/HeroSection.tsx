@@ -65,7 +65,7 @@ export default function HeroSection() {
                   <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
                   <div className="w-3 h-3 rounded-full bg-green-500/60" />
                 </div>
-                <span className="text-xs text-slate-500 ml-2">skintrackr.com/dashboard</span>
+                <span className="text-xs text-slate-500 ml-2">skintrackr.io/dashboard</span>
               </div>
 
               <CardContent className="p-6 md:p-8 text-left">

@@ -20,7 +20,7 @@ interface BlogPostPageProps {
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   try {
     const post = await getBlogPost(params.slug);
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cs2-skintracker.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://skintrackr.io';
     
     return {
       title: `${post.title} | CS2 Skin Tracker Blog`,

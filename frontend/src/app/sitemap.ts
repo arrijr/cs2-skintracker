@@ -12,7 +12,7 @@ import { getBlogPosts } from '@/lib/blog';
 import { listSkinSlugsPaged } from '@/lib/skins-server';
 
 const SITEMAP_PAGE_SIZE = 5000;
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cs2-skintracker.com';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://skintrackr.io';
 
 export async function generateSitemaps(): Promise<{ id: number }[]> {
   // Conservative 4 skin pages (covers up to 20k skins).

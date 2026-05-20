@@ -4,7 +4,7 @@ import { ItemsBrowse } from "./_components/ItemsBrowse";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
-  title: "Browse Items — skintrackr.com",
+  title: "Browse Items — skintrackr.io",
   description: "Search and filter all CS2 stickers, agents, patches, graffiti, music kits, collectibles, and keys. Live prices from Steam Market.",
 };
 

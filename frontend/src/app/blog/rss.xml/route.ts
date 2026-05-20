@@ -4,7 +4,7 @@ import { getBlogPosts } from '@/lib/blog';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cs2-skintracker.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://skintrackr.io';
   
   // Fetch all published blog posts
   const { posts } = await getBlogPosts({ limit: 100, isPublished: true });

@@ -12,7 +12,7 @@ export default function TermsPage() {
       <p>
         These Terms of Service (the &quot;Terms&quot;) form a contract between you and
         SkinTrackr UG (i.G.) (&quot;SkinTrackr&quot;, &quot;we&quot;, &quot;us&quot;)
-        governing your use of skintrackr.com and the related services (the
+        governing your use of skintrackr.io and the related services (the
         &quot;Service&quot;). By creating an account or otherwise using the Service, you
         agree to these Terms.
       </p>
@@ -22,7 +22,7 @@ export default function TermsPage() {
         You must be at least 16 years old to use the Service. Authentication is provided
         through Clerk; you are responsible for keeping your credentials secure and for all
         activity that occurs under your account. Notify us promptly at{' '}
-        <a href="mailto:arthur@skintrackr.com">arthur@skintrackr.com</a> if you suspect any
+        <a href="mailto:arthur@skintrackr.io">arthur@skintrackr.io</a> if you suspect any
         unauthorised access.
       </p>
 
@@ -82,7 +82,7 @@ export default function TermsPage() {
         <li>
           attempt to reverse engineer, decompile, or probe the Service for vulnerabilities
           except via a coordinated disclosure to{' '}
-          <a href="mailto:arthur@skintrackr.com">arthur@skintrackr.com</a>;
+          <a href="mailto:arthur@skintrackr.io">arthur@skintrackr.io</a>;
         </li>
         <li>
           resell, sublicense, or redistribute SkinTrackr data, paid features, or API
@@ -183,7 +183,7 @@ export default function TermsPage() {
       <h2>11. Contact</h2>
       <p>
         Questions about these Terms? Email{' '}
-        <a href="mailto:arthur@skintrackr.com">arthur@skintrackr.com</a>.
+        <a href="mailto:arthur@skintrackr.io">arthur@skintrackr.io</a>.
       </p>
     </LegalPage>
   );

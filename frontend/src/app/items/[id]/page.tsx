@@ -61,9 +61,9 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { id } = await params;
   const item = await fetchItem(id);
-  if (!item) return { title: "Item not found — skintrackr.com" };
+  if (!item) return { title: "Item not found — skintrackr.io" };
   return {
-    title: `${item.name} — skintrackr.com`,
+    title: `${item.name} — skintrackr.io`,
     description: `${CATEGORY_LABELS[item.category]} ${item.priceLatest != null ? `· €${item.priceLatest.toFixed(2)}` : ''}`.trim(),
   };
 }
