@@ -58,7 +58,16 @@ export type AnalyticsEvent =
       name: "affiliate_click";
       properties: { skin?: string; source?: string };
     }
-  | { name: "extension_installed"; properties?: Record<string, unknown> };
+  | { name: "extension_installed"; properties?: Record<string, unknown> }
+  // Sprint 2 SEO events — fired from programmatic skin/weapon/case landing pages.
+  | {
+      name: "seo_landing_viewed";
+      properties: { skinSlug: string; weaponSlug: string };
+    }
+  | {
+      name: "seo_internal_link_clicked";
+      properties: { from: string; to: string };
+    };
 
 export type AnalyticsEventName = AnalyticsEvent["name"];
 

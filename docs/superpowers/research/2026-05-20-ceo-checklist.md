@@ -66,8 +66,9 @@ Steps:
 6. Update `NEXT_PUBLIC_API_URL` in Vercel env to `https://api.<domain>`
 7. Re-issue Clerk redirect URLs in Clerk Dashboard (custom domain)
 8. Update Stripe webhook URL in Stripe Dashboard
+9. **`NEXT_PUBLIC_SITE_URL` in Vercel** (both `production` AND `preview`) → `https://<your-domain>`. Required for `robots.ts` + `sitemap.ts` to use the right canonical host. Without it, sitemap submission to Google Search Console fails and Sprint 2 programmatic SEO (`/skins/[slug]` rich-results) never indexes.
 
-**Why:** trust + brand + email-sending (mail-from on custom domain has better deliverability).
+**Why:** trust + brand + email-sending (mail-from on custom domain has better deliverability). Plus: SEO requires a stable canonical host or programmatic 15k-page indexing is broken.
 
 ---
 
@@ -199,3 +200,39 @@ Without this, alerts can't be sent → alert feature is broken for paying users.
 - ⏳ `.env.example` audit + DEV tokens grep
 
 When all CEO items above are filled in and my Sprint 0 work is merged, we run an end-to-end test: fresh signup → onboarding → portfolio add → upgrade to Pro Monthly → verify Stripe live charge + Sentry capture + PostHog event → cancel → reactivate. That's "Cash-Ready" done.
+
+---
+
+## 8. Google Search Console — 15 min (AFTER Sprint 2 deploys)
+
+Sprint 2 shipped 16,829 programmatic skin pages + 4 paginated sitemaps + JSON-LD on every page. Now Google needs to know they exist.
+
+1. Sign in: https://search.google.com/search-console (free, requires Google account).
+2. Add property: **Domain property** for `<your-domain>` (the one you set up in §3). Use DNS TXT verification — Cloudflare Registrar supports it natively.
+3. Submit sitemap:
+   - URL: `https://<your-domain>/sitemap.xml`
+   - GSC auto-discovers paginated sub-sitemaps via the index. You should see 5 sub-sitemaps (page 0 = static + blog; pages 1-4 = 5000 skins each).
+4. Wait 24-48h for first crawl signals.
+5. Top metrics to watch weekly:
+   - **Coverage → Valid pages**: target 10k+ within 60 days.
+   - **Performance → Impressions**: trending up for `/skins/*` queries.
+   - **URL Inspection**: spot-check 3-5 skin pages to confirm Product rich results detected.
+6. Set up alerts: GSC → Settings → Email preferences → All issues.
+
+**Bing Webmaster Tools** (15 min more): https://www.bing.com/webmasters. Bing is ~5% of search traffic but indexes faster than Google — useful early signal.
+
+---
+
+## 9. PostHog SEO dashboard — 10 min (one-time)
+
+After Sprint 2 deploys + GSC traffic starts flowing:
+
+1. PostHog → Dashboards → New dashboard "SEO Funnel"
+2. Add insights:
+   - **Trend**: `seo_landing_viewed` count per day, grouped by `weaponSlug` (which weapons drive most traffic?)
+   - **Funnel**: `seo_landing_viewed` → `alert_created` (conversion of organic visit → engagement)
+   - **Trend**: `affiliate_click` per day, grouped by `source` (which market refers most clicks?)
+   - **Trend**: `pricing_page_viewed` filtered by referrer = `/skins/` (organic → pricing flow)
+3. Pin to homepage.
+
+This is the leading indicator that Sprint 2 SEO work is paying off. Weekly review until the numbers compound.

@@ -31,6 +31,7 @@ import {
 } from "@/app/skins/[skinId]/_components/SidebarWidgets";
 import { CreateAlertModal } from "@/app/alerts/CreateAlertModal";
 import { useAlerts } from "@/hooks/useAlerts";
+import { analytics } from "@/lib/analytics";
 
 // Wear label -> short code, used by the wear-thumb selector below.
 const WEAR_SHORT: Record<string, string> = {
@@ -101,6 +102,16 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
   const [portfolioIds, setPortfolioIds] = useState<number[]>([]);
   const [alertModalOpen, setAlertModalOpen] = useState(false);
   const { createAlert } = useAlerts();
+
+  // Sprint 2 SEO event — fire once per SSR landing render.
+  useEffect(() => {
+    if (!skin.slug || !skin.weaponSlug) return;
+    analytics.track({
+      name: "seo_landing_viewed",
+      properties: { skinSlug: skin.slug, weaponSlug: skin.weaponSlug },
+    });
+    // Only re-fire if the user navigates to a different skin.
+  }, [skin.slug, skin.weaponSlug]);
 
   // Load user lists
   useEffect(() => {
