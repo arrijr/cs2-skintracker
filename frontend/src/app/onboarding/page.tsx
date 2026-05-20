@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { ProgressBar } from "./_components/ProgressBar";
@@ -19,8 +19,35 @@ type Step = 1 | 2 | 3;
  * server-side and route to /dashboard.
  *
  * Step persists in `?step=1|2|3` so reloads/back-button keep their place.
+ *
+ * Next.js 15 requires `useSearchParams()` to live inside a `<Suspense>`
+ * boundary or static prerendering will bail. Wrap the inner component
+ * accordingly so this page can be statically generated.
  */
 export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<OnboardingSkeleton />}>
+      <OnboardingInner />
+    </Suspense>
+  );
+}
+
+function OnboardingSkeleton() {
+  return (
+    <main className="relative min-h-screen bg-slate-950 text-white overflow-x-hidden">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(217,70,239,0.18),transparent_70%)]"
+      />
+      <div className="relative container mx-auto px-4 py-12 max-w-2xl">
+        <div className="h-2 rounded-full bg-slate-900/60 animate-pulse mb-8" />
+        <div className="h-96 rounded-3xl bg-slate-900/50 border border-slate-800 animate-pulse" />
+      </div>
+    </main>
+  );
+}
+
+function OnboardingInner() {
   const router = useRouter();
   const params = useSearchParams();
   const { user, isLoaded, isSignedIn } = useUser();
@@ -63,18 +90,7 @@ export default function OnboardingPage() {
   }, [apiBase, getToken, router]);
 
   if (!isLoaded) {
-    return (
-      <main className="relative min-h-screen bg-slate-950 text-white overflow-x-hidden">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(217,70,239,0.18),transparent_70%)]"
-        />
-        <div className="relative container mx-auto px-4 py-12 max-w-2xl">
-          <div className="h-2 rounded-full bg-slate-900/60 animate-pulse mb-8" />
-          <div className="h-96 rounded-3xl bg-slate-900/50 border border-slate-800 animate-pulse" />
-        </div>
-      </main>
-    );
+    return <OnboardingSkeleton />;
   }
 
   if (!isSignedIn) {
