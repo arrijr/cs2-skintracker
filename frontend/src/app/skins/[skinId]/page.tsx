@@ -10,7 +10,9 @@
 import { redirect, notFound } from 'next/navigation';
 import { permanentRedirect } from 'next/navigation';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === 'production' ? 'https://api.skintrackr.io' : 'http://localhost:5000');
 
 interface PageProps {
   params: { skinId: string };

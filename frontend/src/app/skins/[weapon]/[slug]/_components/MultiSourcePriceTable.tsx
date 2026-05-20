@@ -16,7 +16,9 @@ interface PriceResult {
 }
 
 async function fetchPrices(slug: string): Promise<PriceResult | null> {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_URL ||
+    (process.env.NODE_ENV === 'production' ? 'https://api.skintrackr.io' : 'http://localhost:5000');
   const res = await fetch(`${apiBase}/api/v1/skins/${encodeURIComponent(slug)}/prices`, {
     next: { revalidate: 600, tags: [`prices:${slug}`] },
   });

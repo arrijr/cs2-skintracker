@@ -7,7 +7,9 @@ interface WearRow {
 }
 
 async function fetchVariants(baseId: number): Promise<WearRow[]> {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_URL ||
+    (process.env.NODE_ENV === 'production' ? 'https://api.skintrackr.io' : 'http://localhost:5000');
   const res = await fetch(`${apiBase}/api/v1/skins/by-id/${baseId}/variants`, {
     next: { revalidate: 3600 },
   });

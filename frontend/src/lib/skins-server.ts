@@ -5,7 +5,14 @@ import 'server-only';
  * client component — it pulls server-only code into the client bundle.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+// Defensive fallback chain:
+//   1. NEXT_PUBLIC_API_URL — set on Vercel/local for the canonical API origin.
+//   2. NODE_ENV === 'production' → hardcoded prod URL so SSR doesn't hang on
+//      a missing env var (e.g. preview deploys before env vars propagate).
+//   3. Local dev → localhost:5000.
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === 'production' ? 'https://api.skintrackr.io' : 'http://localhost:5000');
 
 export interface SkinDetail {
   id: number;
