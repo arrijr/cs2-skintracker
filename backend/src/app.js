@@ -106,6 +106,14 @@ app.options(/.*/, cors(corsOptions));
 
 // Routes (nur Pfade, keine URLs!)
 app.use("/api/v1/users", sensitiveLimiter, userRoutes);
+
+// Sprint 2 SEO-Routes MUST come BEFORE legacy `skinRoutes` because they share
+// the `/api/v1/skins` mount path. Sprint 2 handlers are slug-aware and call
+// `next()` for numeric inputs so the legacy integer-id router still serves
+// `/api/v1/skins/123/price-history` etc.
+app.use("/api/v1/skins", skinDetailRoutes);
+app.use("/api/v1/cases", caseRouter);
+
 app.use("/api/v1/skins", skinRoutes);
 app.use("/api/v1/market-items", marketItemRoutes);
 app.use("/api/v1/cases", caseRoutes);
@@ -125,10 +133,6 @@ app.use("/api/v1/research", researchRoutes);
 app.use("/api/v1/alerts", alertRoutes);
 app.use("/api/v1/steam", steamRoutes);
 app.use("/api/v1/notifications", notificationsRoutes);
-
-// Public skin readers — SSR + sitemap depend on these.
-app.use("/api/v1/skins", skinDetailRoutes);
-app.use("/api/v1/cases", caseRouter);
 
 // Inngest webhook endpoint — receives cron triggers + manual events. (ADR-004)
 // In dev (no signing key) Inngest CLI handles auth via local dev server (http://127.0.0.1:8288).
