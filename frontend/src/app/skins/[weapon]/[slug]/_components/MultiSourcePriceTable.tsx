@@ -1,3 +1,5 @@
+"use client";
+import { useEffect, useState } from 'react';
 import { AffiliateLink } from '@/components/skins/AffiliateLink';
 
 interface Source {
@@ -15,17 +17,6 @@ interface PriceResult {
   refreshedAt: string;
 }
 
-async function fetchPrices(slug: string): Promise<PriceResult | null> {
-  const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ||
-    (process.env.NODE_ENV === 'production' ? 'https://api.skintrackr.io' : 'http://localhost:5000');
-  const res = await fetch(`${apiBase}/api/v1/skins/${encodeURIComponent(slug)}/prices`, {
-    next: { revalidate: 600, tags: [`prices:${slug}`] },
-  });
-  if (!res.ok) return null;
-  return res.json();
-}
-
 const SOURCE_LABELS: Record<string, string> = {
   steam: 'Steam Community Market',
   skinport: 'Skinport',
@@ -33,10 +24,62 @@ const SOURCE_LABELS: Record<string, string> = {
   csmoney: 'CS.MONEY',
 };
 
-export async function MultiSourcePriceTable({ skinSlug }: { skinSlug: string }) {
-  const data = await fetchPrices(skinSlug);
+/**
+ * Client component: fetches multi-market prices on mount.
+ *
+ * Was server component originally — but the backend aggregator can take
+ * 30+ seconds when Skinport's 5MB feed isn't cached, and Vercel's Hobby
+ * tier has a 10s function timeout. Moving the fetch to the client unblocks
+ * SSR — the page renders instantly with a skeleton, then the table
+ * progressively fills in once the user's browser has the data.
+ */
+export function MultiSourcePriceTable({ skinSlug }: { skinSlug: string }) {
+  const [data, setData] = useState<PriceResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!data || data.sources.length === 0) {
+  useEffect(() => {
+    let cancelled = false;
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_URL ||
+      (typeof window !== 'undefined' && window.location.hostname.includes('skintrackr.io')
+        ? 'https://api.skintrackr.io'
+        : 'http://localhost:5000');
+    fetch(`${apiBase}/api/v1/skins/${encodeURIComponent(skinSlug)}/prices`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)))
+      .then((json: PriceResult) => {
+        if (!cancelled) setData(json);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(String(e));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [skinSlug]);
+
+  if (error) {
+    return (
+      <section className="my-8 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+        <h2 className="text-xl font-semibold mb-2">Live prices across markets</h2>
+        <p className="text-slate-400 text-sm">Prices unavailable right now — please refresh in a moment.</p>
+      </section>
+    );
+  }
+
+  if (!data) {
+    return (
+      <section className="my-8 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+        <h2 className="text-xl font-semibold mb-2">Live prices across markets</h2>
+        <div className="space-y-2 animate-pulse">
+          <div className="h-4 bg-slate-800 rounded w-full" />
+          <div className="h-4 bg-slate-800 rounded w-full" />
+          <div className="h-4 bg-slate-800 rounded w-3/4" />
+        </div>
+      </section>
+    );
+  }
+
+  if (data.sources.length === 0) {
     return (
       <section className="my-8 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
         <h2 className="text-xl font-semibold mb-2">Live prices across markets</h2>

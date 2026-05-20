@@ -1,3 +1,5 @@
+"use client";
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 interface WearRow {
@@ -6,27 +8,55 @@ interface WearRow {
   priceLatest: number | null;
 }
 
-async function fetchVariants(baseId: number): Promise<WearRow[]> {
-  const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ||
-    (process.env.NODE_ENV === 'production' ? 'https://api.skintrackr.io' : 'http://localhost:5000');
-  const res = await fetch(`${apiBase}/api/v1/skins/by-id/${baseId}/variants`, {
-    next: { revalidate: 3600 },
-  });
-  if (!res.ok) return [];
-  return res.json();
-}
-
 const WEARS = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred'];
 
-export async function WearComparisonTable({
+/**
+ * Client component for the same reason as MultiSourcePriceTable:
+ * keeps the SSR function fast on Vercel's Hobby tier (10s limit).
+ */
+export function WearComparisonTable({
   weaponSlug,
   baseId,
 }: {
   weaponSlug: string;
   baseId: number;
 }) {
-  const variants = await fetchVariants(baseId);
+  const [variants, setVariants] = useState<WearRow[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_URL ||
+      (typeof window !== 'undefined' && window.location.hostname.includes('skintrackr.io')
+        ? 'https://api.skintrackr.io'
+        : 'http://localhost:5000');
+    fetch(`${apiBase}/api/v1/skins/by-id/${baseId}/variants`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((json: WearRow[]) => {
+        if (!cancelled) setVariants(json);
+      })
+      .catch(() => {
+        if (!cancelled) setVariants([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [baseId]);
+
+  if (variants === null) {
+    // Still loading — render skeleton to reserve layout space
+    return (
+      <section className="my-8 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+        <h2 className="text-xl font-semibold mb-4">Compare wear conditions</h2>
+        <div className="space-y-2 animate-pulse">
+          <div className="h-4 bg-slate-800 rounded w-full" />
+          <div className="h-4 bg-slate-800 rounded w-full" />
+          <div className="h-4 bg-slate-800 rounded w-2/3" />
+        </div>
+      </section>
+    );
+  }
+
   if (variants.length <= 1) return null;
 
   const byWear = new Map(variants.map((v) => [v.wear, v]));
