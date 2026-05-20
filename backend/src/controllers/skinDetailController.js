@@ -1,4 +1,35 @@
 import defaultPrisma from '../prisma/prismaClient.js';
+import { aggregateMultiSourcePrice } from '../services/pricing/multiSourceAggregator.js';
+
+// 5-minute in-memory cache keyed by slug. Daily Inngest refresh writes the
+// canonical record; this fallback covers ad-hoc lookups for skins that
+// missed the batch.
+const priceCache = new Map(); // slug → { value, expiresAt }
+const PRICE_CACHE_MS = 5 * 60 * 1000;
+
+export async function getSkinPrices(req, res, { prismaClient = defaultPrisma } = {}) {
+  const { slug } = req.params;
+  if (!slug) return res.status(400).json({ error: 'slug required' });
+
+  const cached = priceCache.get(slug);
+  if (cached && cached.expiresAt > Date.now()) {
+    return res.json(cached.value);
+  }
+
+  const skin = await prismaClient.skin.findUnique({
+    where: { slug },
+    select: { marketHashName: true, priceLatest: true, slug: true },
+  });
+  if (!skin) return res.status(404).json({ error: 'not found' });
+
+  try {
+    const result = await aggregateMultiSourcePrice(skin);
+    priceCache.set(slug, { value: result, expiresAt: Date.now() + PRICE_CACHE_MS });
+    return res.json(result);
+  } catch (err) {
+    return res.status(502).json({ error: 'aggregator failed', detail: err.message });
+  }
+}
 
 export async function getSkinById(req, res, { prismaClient = defaultPrisma } = {}) {
   const id = parseInt(req.params.id, 10);
