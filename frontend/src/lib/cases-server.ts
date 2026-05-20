@@ -20,10 +20,16 @@ export interface CaseDetail {
 }
 
 export async function getCaseBySlug(slug: string): Promise<CaseDetail | null> {
-  const res = await fetch(`${API_BASE}/api/v1/cases/${encodeURIComponent(slug)}`, {
-    next: { revalidate: 3600, tags: [`case:${slug}`] },
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`getCaseBySlug HTTP ${res.status}`);
-  return res.json();
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/cases/${encodeURIComponent(slug)}`, {
+      next: { revalidate: 3600, tags: [`case:${slug}`] },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`getCaseBySlug HTTP ${res.status}`);
+    return res.json();
+  } catch (e) {
+    console.error('[cases-server] getCaseBySlug failed', e);
+    return null;
+  }
 }

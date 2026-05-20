@@ -40,22 +40,41 @@ export interface SkinDetail {
   variantOf: number | null;
 }
 
+// Hard 5s timeout so SSR can never hang beyond Vercel's 10s function limit.
+// If the backend is slow, we return null/empty and let the page render with
+// a skeleton or notFound() rather than 504-ing the whole request.
+const SSR_FETCH_TIMEOUT_MS = 5000;
+
 export async function getSkinBySlug(slug: string): Promise<SkinDetail | null> {
-  const res = await fetch(`${API_BASE}/api/v1/skins/${encodeURIComponent(slug)}`, {
-    next: { revalidate: 3600, tags: [`skin:${slug}`] },
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`getSkinBySlug HTTP ${res.status}`);
-  return res.json();
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/skins/${encodeURIComponent(slug)}`, {
+      next: { revalidate: 3600, tags: [`skin:${slug}`] },
+      signal: AbortSignal.timeout(SSR_FETCH_TIMEOUT_MS),
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`getSkinBySlug HTTP ${res.status}`);
+    return res.json();
+  } catch (e) {
+    console.error('[skins-server] getSkinBySlug failed', e);
+    return null;
+  }
 }
 
 export async function listSkinsByWeapon(weaponSlug: string, limit = 200): Promise<SkinDetail[]> {
-  const res = await fetch(
-    `${API_BASE}/api/v1/skins?weapon=${encodeURIComponent(weaponSlug)}&limit=${limit}`,
-    { next: { revalidate: 3600, tags: [`weapon:${weaponSlug}`] } }
-  );
-  if (!res.ok) throw new Error(`listSkinsByWeapon HTTP ${res.status}`);
-  return res.json();
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/v1/skins?weapon=${encodeURIComponent(weaponSlug)}&limit=${limit}`,
+      {
+        next: { revalidate: 3600, tags: [`weapon:${weaponSlug}`] },
+        signal: AbortSignal.timeout(SSR_FETCH_TIMEOUT_MS),
+      }
+    );
+    if (!res.ok) throw new Error(`listSkinsByWeapon HTTP ${res.status}`);
+    return res.json();
+  } catch (e) {
+    console.error('[skins-server] listSkinsByWeapon failed', e);
+    return [];
+  }
 }
 
 /**
