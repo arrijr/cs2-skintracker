@@ -1,9 +1,15 @@
 // /backend/src/app.js
+// IMPORTANT: dotenv must load + Sentry must initialise BEFORE any other
+// module imports run, so @sentry/node can patch http / express before route
+// modules are evaluated. We do this via a tiny side-effect bootstrap module.
+import "./instrumentation/sentry-bootstrap.js";
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
+import { Sentry, isSentryEnabled } from "./instrumentation/sentry.js";
 import "./cron/index.js";
 
 import userRoutes from "./routes/userRoutes.js";
@@ -137,6 +143,14 @@ app.use((req, res) => {
     res.status(404).json({ error: `No route for: ${req.method} ${req.originalUrl}` });
   }
 });
+
+// Sentry Express error handler — must come BEFORE any other error middleware
+// and AFTER all routes. v8+ API: setupExpressErrorHandler(app).
+// No-op when SENTRY_DSN is unset (init was skipped, so the handler attaches
+// but has nothing to send).
+if (isSentryEnabled()) {
+  Sentry.setupExpressErrorHandler(app);
+}
 
 // Error handler
 app.use((err, req, res, next) => {

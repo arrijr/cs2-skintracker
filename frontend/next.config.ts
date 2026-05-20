@@ -8,7 +8,7 @@ const nextConfig = {
   // {/* Keep builds unblocked (you already had this) */}
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
-  
+
   // {/* Enable source maps for debugging */}
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
@@ -38,4 +38,21 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+// {/* Sentry: source-map upload only runs when SENTRY_AUTH_TOKEN is set.
+//     Without the token, withSentryConfig still wraps the build to forward
+//     errors at runtime, but skips the upload step. Silent no-op otherwise. */}
+const { withSentryConfig } = require("@sentry/nextjs");
+
+const sentryWebpackPluginOptions = {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Suppress all Sentry CLI logs unless we're in CI with the token present
+  silent: !process.env.SENTRY_AUTH_TOKEN,
+  // Don't upload maps in dev — only when token is provided in CI/Vercel
+  disableServerWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+  disableClientWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+  // Keep widening client file upload tree off — we don't need premium uploads
+  widenClientFileUpload: false,
+};
+
+module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
