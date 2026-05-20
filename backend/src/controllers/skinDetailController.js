@@ -64,6 +64,25 @@ export async function listSkinsByWeapon(req, res, { prismaClient = defaultPrisma
   return res.json(skins);
 }
 
+export async function getSkinVariants(req, res, { prismaClient = defaultPrisma } = {}) {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid id' });
+  const base = await prismaClient.skin.findUnique({
+    where: { id },
+    select: { id: true, variantOf: true },
+  });
+  if (!base) return res.json([]);
+  const rootId = base.variantOf ?? base.id;
+  const variants = await prismaClient.skin.findMany({
+    where: {
+      OR: [{ id: rootId }, { variantOf: rootId }],
+    },
+    select: { wear: true, slug: true, priceLatest: true },
+    orderBy: { id: 'asc' },
+  });
+  return res.json(variants);
+}
+
 export async function listSkinSlugs(req, res, { prismaClient = defaultPrisma } = {}) {
   const page = Math.max(parseInt(req.query.page, 10) || 0, 0);
   const pageSize = Math.min(parseInt(req.query.pageSize, 10) || 5000, 10000);
