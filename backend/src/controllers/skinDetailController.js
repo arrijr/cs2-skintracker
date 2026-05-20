@@ -105,12 +105,19 @@ export async function getSkinVariants(req, res, { prismaClient = defaultPrisma }
 export async function listSkinSlugs(req, res, { prismaClient = defaultPrisma } = {}) {
   const page = Math.max(parseInt(req.query.page, 10) || 0, 0);
   const pageSize = Math.min(parseInt(req.query.pageSize, 10) || 5000, 10000);
+  // NOTE: Skin model has `priceUpdatedAt` but no generic `updatedAt`.
+  // The sitemap reader expects `updatedAt` per the TS interface in
+  // `frontend/src/lib/skins-server.ts`, so we alias here.
   const skins = await prismaClient.skin.findMany({
     where: { slug: { not: null } },
-    select: { slug: true, weaponSlug: true, updatedAt: true },
+    select: { slug: true, weaponSlug: true, priceUpdatedAt: true },
     skip: page * pageSize,
     take: pageSize,
     orderBy: { id: 'asc' },
   });
-  return res.json(skins);
+  return res.json(skins.map((s) => ({
+    slug: s.slug,
+    weaponSlug: s.weaponSlug,
+    updatedAt: s.priceUpdatedAt ?? new Date().toISOString(),
+  })));
 }
