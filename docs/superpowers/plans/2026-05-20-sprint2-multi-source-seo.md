@@ -576,7 +576,7 @@ describe('skinDetailController', () => {
     const findMany = jest.fn(async () => [{ slug: 'x', weaponSlug: 'ak-47', updatedAt: new Date() }]);
     const prisma = { skin: { findMany } };
     const res = makeRes();
-    await listSkinSlugs({ query: { page: '2', pageSize: '5000' } }, res, { prismaClient: prisma });
+    await listSkinSlugs({ query: { page: '1', pageSize: '5000' } }, res, { prismaClient: prisma });
     expect(findMany).toHaveBeenCalledWith(expect.objectContaining({
       skip: 5000,
       take: 5000,
