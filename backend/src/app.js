@@ -32,7 +32,7 @@ import researchRoutes from "./routes/researchRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
 import steamRoutes from "./routes/steamRoutes.js";
 import notificationsRoutes from "./routes/notificationsRoutes.js";
-import skinDetailRoutes from "./routes/skinDetailRoutes.js";
+import skinDetailRoutes, { caseRouter } from "./routes/skinDetailRoutes.js";
 
 // Inngest — background job orchestration (ADR-004)
 import { serve as inngestServe } from "inngest/express";
@@ -128,6 +128,7 @@ app.use("/api/v1/notifications", notificationsRoutes);
 
 // Public skin readers — SSR + sitemap depend on these.
 app.use("/api/v1/skins", skinDetailRoutes);
+app.use("/api/v1/cases", caseRouter);
 
 // Inngest webhook endpoint — receives cron triggers + manual events. (ADR-004)
 // In dev (no signing key) Inngest CLI handles auth via local dev server (http://127.0.0.1:8288).

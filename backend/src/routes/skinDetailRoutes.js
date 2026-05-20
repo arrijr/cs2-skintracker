@@ -6,9 +6,14 @@ import {
   getSkinById,
   getSkinPrices,
   getSkinVariants,
+  getCaseBySlug,
 } from '../controllers/skinDetailController.js';
 
 const router = Router();
+
+// Separate router for /cases endpoints — exported below + mounted in app.js.
+export const caseRouter = Router();
+caseRouter.get('/:slug', (req, res) => getCaseBySlug(req, res));
 
 // Public — these power SEO landing pages, no auth required.
 // IMPORTANT: order matters — `/by-id/:id`, `/slugs`, `/:slug/prices` MUST

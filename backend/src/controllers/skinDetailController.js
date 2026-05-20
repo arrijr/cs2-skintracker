@@ -64,6 +64,25 @@ export async function listSkinsByWeapon(req, res, { prismaClient = defaultPrisma
   return res.json(skins);
 }
 
+export async function getCaseBySlug(req, res, { prismaClient = defaultPrisma } = {}) {
+  const { slug } = req.params;
+  if (!slug) return res.status(400).json({ error: 'slug required' });
+  // Case has no `slug` column — match case name with hyphens converted to
+  // spaces (case-insensitive). e.g. "operation-bravo-case" → "Operation Bravo Case".
+  const c = await prismaClient.case.findFirst({
+    where: {
+      name: { equals: slug.replace(/-/g, ' '), mode: 'insensitive' },
+    },
+    include: {
+      caseSkins: { include: { skin: true } },
+    },
+  });
+  if (!c) return res.status(404).json({ error: 'not found' });
+  // Normalize response shape: rename caseSkins → drops for the frontend.
+  const { caseSkins, ...rest } = c;
+  return res.json({ ...rest, slug, drops: caseSkins });
+}
+
 export async function getSkinVariants(req, res, { prismaClient = defaultPrisma } = {}) {
   const id = parseInt(req.params.id, 10);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid id' });
