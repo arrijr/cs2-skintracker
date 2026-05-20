@@ -38,12 +38,10 @@ router.get('/:slug', (req, res, next) => {
   return getSkinBySlug(req, res);
 });
 
-// Catches `/api/v1/skins/:slug/<anything-else>` for numeric slugs and lets
-// them fall through to the legacy router.
-router.get('/:slug/*', (req, res, next) => {
-  if (/^\d+$/.test(req.params.slug)) return next();
-  return res.status(404).json({ error: 'not found' });
-});
+// No `/:slug/*` catch-all — Express auto-falls-through to the next router
+// (legacy skinRoutes) when none of the above match, which handles all
+// integer-id sub-paths like `/123/price-history`, `/123/related`, etc.
+// (Express 5 / path-to-regexp 6 doesn't support unnamed wildcards anyway.)
 
 router.get('/', (req, res) => listSkinsByWeapon(req, res));
 
