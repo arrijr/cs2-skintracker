@@ -239,6 +239,53 @@ Research at `docs/superpowers/research/`:
 - [x] `alertEngine` now handles `in_app` channel — no-op deliverer (AlertEvent row IS the notification). Previously was marking every in_app delivery as failed.
 - [x] `accountChangeLimiter` reordered behind `verifyClerkJwt` with `keyGenerator: user:${req.userId}` — shared NAT no longer hits collective limit.
 - [x] `backend/logs/error.log` untracked via `git rm --cached` — `*.log` was already in `.gitignore` but the file was committed before the rule.
+**Sprint 2 — Multi-Source Pricing + Programmatic SEO (2026-05-20)**:
+Plan: `docs/superpowers/plans/2026-05-20-sprint2-multi-source-seo.md` (21 tasks, ~8 dev-days budget).
+Research: `2026-05-20-seo-audit.md` (22/100 score, SSR conversion non-negotiable), `2026-05-20-seo-strategy.md` (URL pattern + 3 page templates), `2026-05-20-competitor-seo.md` (multi-market wedge + 10 quick-win keywords).
+- [x] Phase A — Schema + slug foundation (3 tasks).
+  - Migration `20260521000000_skin_slug_columns` adds `Skin.slug` (unique-where-not-null) + `Skin.weaponSlug` (indexed).
+  - `slugify` + `weaponSlugFor` helpers — NFD normalization (NFKD trap fixed mid-execution), 12 unit tests passing.
+  - Idempotent backfill script — **16,829 rows** populated, 0 collisions, 64 distinct weapons.
+- [x] Phase B — SSR conversion (4 tasks).
+  - `frontend/src/lib/skins-server.ts` server-only readers (`getSkinBySlug`, `listSkinsByWeapon`, `listSkinSlugsPaged`).
+  - Backend endpoints `/api/v1/skins/:slug`, `/skins/by-id/:id`, `/skins/slugs`, `/skins?weapon=`. 4 controller tests passing.
+  - Old `/skins/[skinId]` page reduced to a `permanentRedirect()` (HTTP 308) to the new canonical URL.
+  - New SSR canonical at `/skins/[weapon]/[slug]/page.tsx` with `generateMetadata` (title, description, OG, canonical, robots-noindex when `priceLatest == null`), wrong-weapon path guard, full breadcrumb.
+- [x] Phase C — JSON-LD + sitemap (3 tasks).
+  - `SkinProductSchema` emits Product + Offer + BreadcrumbList LD on every skin page.
+  - `SkinFAQ` emits FAQPage LD with 5 programmatic high-intent Q&As (price, investment thesis, wear conditions, cheapest market, alerts).
+  - Sitemap rewritten with `generateSitemaps()` — 1 chunk for static+blog + 4 chunks of 5000 skin URLs = up to 20k URL capacity.
+- [x] Phase D — Multi-source pricing backend (4 tasks, 16 unit tests).
+  - `skinportClient.js` — fetches public ask/bid feed, EUR→USD, 3-attempt retry with 429 handling. 5 tests.
+  - `csfloatClient.js` — fetches `/api/v1/listings`, aggregates min price + float + listing count per item. 4 tests.
+  - `multiSourceAggregator.js` — joins Steam (local) + Skinport + CSFloat, sorts cheapest-first (effective price = Steam × 1.13 fee), tolerates partial failures. 3 tests.
+  - `GET /api/v1/skins/:slug/prices` with 5-min in-memory cache.
+- [x] Phase E — Frontend multi-source UI (2 tasks).
+  - `AffiliateLink` client wrapper: `rel="sponsored nofollow noopener"` + PostHog `affiliate_click` event.
+  - `MultiSourcePriceTable` server component renders cross-market grid with "Cheapest" pill + listed/after-fees columns.
+  - `WearComparisonTable` + backend `/skins/by-id/:id/variants` endpoint surfaces every wear variant on canonical page (covers wear-suffix long-tails without thin per-wear pages).
+- [x] Phase F — Pillar + case pages (2 tasks).
+  - `/skins/[weapon]/page.tsx` lists top-200 skins per weapon by 30-day volume; ItemList JSON-LD on top 50.
+  - `/cases/[slug]/page.tsx` with drop table + naive EV (avg of drop prices). Backend `/api/v1/cases/:slug` matches by case name (hyphens → spaces, case-insensitive). NOTE: `Case.slug` not added to schema; cases reach SEO via name-mapping. Relation in Prisma is `caseSkins`, normalized to `drops` in the API response.
+- [x] Phase G — Cron + analytics (3 tasks).
+  - Daily Inngest function `refresh-multi-source-prices` (04:00 UTC, after Steam refresh at 03:30) warms cache for top-2000 skins by 30-day volume. Lazy-imports aggregator to keep load-cost low.
+  - PostHog event taxonomy extended: `seo_landing_viewed` + `seo_internal_link_clicked`. Fired from `SkinDetailClient.tsx` mount.
+  - CEO checklist appended §8 (GSC submission) + §9 (PostHog SEO dashboard config).
+- [x] Sprint 2 unit tests: 28 passing across 5 suites (slugify, skinDetail, skinportClient, csfloatClient, multiSourceAggregator).
+- [ ] Sprint 2 follow-ups (CEO action):
+  - Set `NEXT_PUBLIC_SITE_URL` in Vercel for both `production` + `preview` envs (see checklist §3.7).
+  - Submit sitemap to GSC + Bing Webmaster Tools (checklist §8).
+  - PostHog SEO dashboard (checklist §9).
+  - Optional: apply for Skinport partner code (`SKINPORT_PARTNER_CODE` env) + CSFloat affiliate (`CSFLOAT_PARTNER_CODE` env).
+- [ ] Sprint 2 known plan deviations (recorded in plan doc):
+  - Test count fixed from 13 → 12 in slugify.
+  - NFKD → NFD bug fix (™ symbol).
+  - Pagination test typo (`page: '2' → '1'`).
+  - Jest 30 flag `--testPathPattern` → `--testPathPatterns` everywhere.
+  - Jest cmd needs `cross-env NODE_OPTIONS=--experimental-vm-modules` prefix for backend ESM.
+  - Case page falls back to `name`-matching since `Case.slug` doesn't exist; Prisma relation is `caseSkins` (renamed to `drops` in API).
+  - Skin catalog actually has 16,829 rows (not 15,071 as plan/CLAUDE.md said).
+
 - [ ] Total Phase 3+4: 16 (polish + long-tail)
 - [ ] TODO: BlogPost cascade — make `authorId` nullable + `ON DELETE SET NULL`, so user-delete preserves posts.
 - [ ] TODO: prune `req.auth?.userId` vs `req.userId` inconsistency across controllers — `subscriptionController` uses `req.auth?.userId`, most others use `req.userId`. Both resolve to the same DB id via `verifyClerkJwt`, but the duplication is brittle.
