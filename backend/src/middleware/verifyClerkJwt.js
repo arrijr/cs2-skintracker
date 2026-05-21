@@ -115,9 +115,22 @@ export async function verifyClerkJwt(req, res, next) {
       },
       async (err, payload) => {
         if (err) {
+          // Unverified base64-decode of payload so we can see what audience/
+          // issuer the JWT actually carries. Helpful when Clerk JWT template
+          // and backend CLERK_AUDIENCE drift apart.
+          let actualClaims = null;
+          try {
+            const parts = token?.split('.');
+            if (parts?.length === 3) {
+              const json = Buffer.from(parts[1], 'base64url').toString('utf-8');
+              const p = JSON.parse(json);
+              actualClaims = { aud: p.aud, iss: p.iss, sub: p.sub };
+            }
+          } catch (_) { /* ignore decode errors */ }
           console.error("[JWT VERIFY] failed:", err?.message, {
-            issuer: issuer,
-            audience: audience,
+            expectedIssuer: issuer,
+            expectedAudience: audience,
+            actualClaims,
             errorType: err.name,
             tokenStart: token?.substring(0, 20) + "..."
           });
