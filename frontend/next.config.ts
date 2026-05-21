@@ -38,17 +38,22 @@ const nextConfig = {
   },
 };
 
-// {/* Sentry temporarily DISABLED — suspected of hanging SSR fetch() calls
-//     via auto-instrumentation. Re-enable after debugging by uncommenting
-//     below + restoring `module.exports = withSentryConfig(...)`. */}
-// const { withSentryConfig } = require("@sentry/nextjs");
-// const sentryWebpackPluginOptions = {
-//   org: process.env.SENTRY_ORG,
-//   project: process.env.SENTRY_PROJECT,
-//   silent: !process.env.SENTRY_AUTH_TOKEN,
-//   disableServerWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
-//   disableClientWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
-//   widenClientFileUpload: false,
-// };
+// {/* Sentry: source-map upload only runs when SENTRY_AUTH_TOKEN is set.
+//     Without the token, withSentryConfig still wraps the build to forward
+//     errors at runtime, but skips the upload step. Silent no-op otherwise.
+//
+//     NOTE: We confirmed via diagnostic disable that Sentry is NOT the cause
+//     of the SSR-fetch hang issue we're seeing on Vercel — pages still
+//     time out 504 even with Sentry off. Root cause TBD. */}
+const { withSentryConfig } = require("@sentry/nextjs");
 
-module.exports = nextConfig;
+const sentryWebpackPluginOptions = {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: !process.env.SENTRY_AUTH_TOKEN,
+  disableServerWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+  disableClientWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+  widenClientFileUpload: false,
+};
+
+module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
