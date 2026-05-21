@@ -3,13 +3,8 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight,
-  Mail,
-  Twitter,
-  Youtube,
-  Github,
   Shield,
   Heart
 } from "lucide-react";
@@ -17,33 +12,17 @@ import {
 const footerLinks = {
   product: [
     { name: "Features", href: "#features" },
-    { name: "Pricing", href: "#pricing" },
-    { name: "API", href: "/docs/api" },
-    { name: "Changelog", href: "/docs/changelog" }
+    { name: "Pricing", href: "/pricing" }
   ],
   company: [
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
-    { name: "Blog", href: "/blog" },
-    { name: "Careers", href: "/careers" }
+    { name: "Blog", href: "/blog" }
   ],
   legal: [
     { name: "Terms of Service", href: "/legal/terms" },
     { name: "Privacy Policy", href: "/legal/privacy" },
     { name: "Refund Policy", href: "/legal/refund" }
-  ],
-  support: [
-    { name: "Help Center", href: "/help" },
-    { name: "FAQ", href: "/faq" },
-    { name: "Status", href: "/status" }
   ]
 };
-
-const socialLinks = [
-  { name: "Twitter", href: "https://twitter.com/skintracker", icon: Twitter, color: "text-blue-400 hover:text-blue-300" },
-  { name: "YouTube", href: "https://youtube.com/@skintracker", icon: Youtube, color: "text-red-400 hover:text-red-300" },
-  { name: "GitHub", href: "https://github.com/skintracker", icon: Github, color: "text-slate-400 hover:text-slate-300" }
-];
 
 export default function Footer() {
   return (
@@ -52,7 +31,7 @@ export default function Footer() {
         <div className="max-w-6xl mx-auto">
           
           {/* Main Footer Content */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             
             {/* Brand Column */}
             <div className="lg:col-span-2 space-y-6">
@@ -69,26 +48,6 @@ export default function Footer() {
                 </p>
               </div>
 
-              {/* Social Links */}
-              <div className="space-y-4">
-                <h3 className="text-white font-semibold">Follow us</h3>
-                <div className="flex space-x-4">
-                  {socialLinks.map((social) => {
-                    const Icon = social.icon;
-                    return (
-                      <Link
-                        key={social.name}
-                        href={social.href}
-                        className={`p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors duration-200 ${social.color}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Icon className="h-5 w-5" />
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
 
             {/* Link Columns */}
@@ -124,21 +83,6 @@ export default function Footer() {
               </ul>
             </div>
 
-            <div className="space-y-6">
-              <h3 className="text-white font-semibold">Support</h3>
-              <ul className="space-y-3">
-                {footerLinks.support.map((link) => (
-                  <li key={link.name}>
-                    <Link 
-                      href={link.href} 
-                      className="text-slate-300 hover:text-white transition-colors duration-200"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
 
           {/* CTA Section */}

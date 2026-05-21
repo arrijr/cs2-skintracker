@@ -38,9 +38,10 @@ interface Case {
   isDiscontinued: boolean;
   releaseDate: string;
   lastUpdated: string;
+  timeToExtinction?: number;
 }
 
-type SortField = 'name' | 'price' | 'marketCap' | 'remaining' | 'priceChange24h';
+type SortField = 'name' | 'price' | 'marketCap' | 'remaining' | 'priceChange24h' | 'timeToExtinction';
 type SortDirection = 'asc' | 'desc';
 
 export default function CasesPage() {
@@ -109,8 +110,13 @@ export default function CasesPage() {
       let bValue: any = b[sortField];
 
       if (sortField === 'name') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
+        aValue = (aValue ?? '').toLowerCase();
+        bValue = (bValue ?? '').toLowerCase();
+      } else {
+        // Numeric fields — push undefined/null to the end regardless of direction.
+        // `timeToExtinction` in particular is optional on the Case type.
+        aValue = aValue ?? Infinity;
+        bValue = bValue ?? Infinity;
       }
 
       if (sortDirection === 'asc') {

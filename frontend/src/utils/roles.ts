@@ -11,13 +11,6 @@ export interface UserRole {
   email: string | null;
 }
 
-// Admin email whitelist (fallback for development/testing)
-const ADMIN_EMAILS = [
-  'admin@example.com',
-  'test@test.de',
-  'arthur@example.com' // Add your admin email here
-];
-
 /**
  * Get user role information from Clerk user object
  * @param user - Clerk user object
@@ -35,9 +28,9 @@ export function getUserRole(user: any): UserRole {
   }
 
   const email = user.primaryEmailAddress?.emailAddress || user.emailAddresses?.[0]?.emailAddress;
-  const isAdmin = user.publicMetadata?.role === 'admin' || 
-                  user.unsafeMetadata?.role === 'admin' ||
-                  ADMIN_EMAILS.includes(email || '');
+  // Admin role MUST come from Clerk publicMetadata. Email-based allowlist removed
+  // (was a security hole — anyone could sign up with a whitelisted email).
+  const isAdmin = user.publicMetadata?.role === 'admin';
   
   // Check premium status from Clerk metadata
   const isPremium = user.publicMetadata?.isPremium === true || 
