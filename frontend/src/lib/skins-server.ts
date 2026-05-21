@@ -40,10 +40,12 @@ export interface SkinDetail {
   variantOf: number | null;
 }
 
-// Hard 5s timeout so SSR can never hang beyond Vercel's 10s function limit.
-// If the backend is slow, we return null/empty and let the page render with
-// a skeleton or notFound() rather than 504-ing the whole request.
-const SSR_FETCH_TIMEOUT_MS = 5000;
+// Hard 9s timeout — sits just under Vercel Hobby's 10s function ceiling.
+// Backend cold start can take 4-6s on Render Free Tier; 5s was too tight and
+// caused intermittent 404s when getSkinBySlug aborted right before the data
+// arrived. 9s gives ~2x headroom while still degrading gracefully (null/empty
+// → notFound() / empty list) instead of 504-ing the whole request.
+const SSR_FETCH_TIMEOUT_MS = 9000;
 
 export async function getSkinBySlug(slug: string): Promise<SkinDetail | null> {
   try {
