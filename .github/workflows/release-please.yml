@@ -1,0 +1,47 @@
+# Automated versioning + changelog via release-please.
+#
+# How it works:
+#   1. Every push to main triggers this workflow.
+#   2. release-please reads new conventional commits (fix:/feat:/feat!:) since
+#      the last tagged release and computes the next semver bump.
+#   3. It opens/updates a PR titled "chore(main): release vX.Y.Z" containing
+#      the version bump (.release-please-manifest.json) + CHANGELOG.md diff.
+#   4. When you merge that PR, release-please creates a git tag `vX.Y.Z` and
+#      a matching GitHub Release with auto-generated notes.
+#
+# Vercel/Render are unaffected — they deploy on every main push as before.
+# The tag is just a marker you can use to roll back ("promote" any past
+# deploy on Vercel by SHA, or revert main to a tagged commit).
+#
+# Prereqs:
+#   - GitHub repo Settings → Actions → General → Workflow permissions:
+#     "Read and write permissions" + "Allow GitHub Actions to create and
+#     approve pull requests" — otherwise the action errors with HTTP 403.
+#
+# Bumps:
+#   fix:   → patch (0.1.0 → 0.1.1)
+#   feat:  → minor (0.1.0 → 0.2.0)
+#   feat!: → major (0.1.0 → 1.0.0)   (or any commit with `BREAKING CHANGE:`)
+#   chore:/docs:/refactor:/test:/build:/ci: → no version bump, but listed in
+#   the "Miscellaneous" changelog section per release-please-config.json.
+
+name: release-please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          # Defaults: reads release-please-config.json + .release-please-manifest.json.
+          # Token defaults to ${{ github.token }} which works once repo perms
+          # allow it (see "Prereqs" above).
+          token: ${{ secrets.GITHUB_TOKEN }}
