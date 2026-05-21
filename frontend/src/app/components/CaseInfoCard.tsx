@@ -1,12 +1,16 @@
 // /frontend/src/app/components/CaseInfoCard.tsx (Frontend)
 "use client";
 
+import type { ElementType } from "react";
 import { Package, Star, Zap, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface CaseSkin {
   id: number;
   name: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   wear: string;
   rarity: string;
   quality: string;
@@ -57,7 +61,7 @@ export default function CaseInfoCard({ caseInfo }: CaseInfoCardProps) {
   };
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
+    <div className="bg-slate-900/50 rounded-2xl p-6 border border-slate-800">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Package className="w-5 h-5 text-yellow-400" />
@@ -77,18 +81,24 @@ export default function CaseInfoCard({ caseInfo }: CaseInfoCardProps) {
 
       {/* Case Skins Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
-        {caseInfo.skins.map((skin) => (
-          <Link
+        {caseInfo.skins.map((skin) => {
+          const href = skinDetailHref(skin);
+          const Wrapper: ElementType = href ? Link : "div";
+          const wrapperProps = href
+            ? { href }
+            : { "aria-disabled": true, tabIndex: -1 };
+          return (
+          <Wrapper
             key={skin.id}
-            href={`/skins/${skin.id}`}
-            className="group relative bg-gray-800 rounded-lg p-3 border transition-all hover:border-gray-600 hover:bg-gray-750"
+            {...wrapperProps}
+            className="group relative bg-slate-800/50 rounded-lg p-3 border transition-all hover:border-slate-600 hover:bg-slate-700/70"
           >
             {/* Skin Image */}
             <div className="relative mb-3">
               <img
                 src={skin.imageUrl || "/images/placeholder-skin.png"}
                 alt={skin.name}
-                className="w-full h-20 object-contain rounded-md bg-gray-700"
+                className="w-full h-20 object-contain rounded-md bg-slate-700"
               />
               
               {/* Special Indicators */}
@@ -121,12 +131,13 @@ export default function CaseInfoCard({ caseInfo }: CaseInfoCardProps) {
 
             {/* Hover Effect */}
             <div className="absolute inset-0 bg-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
-          </Link>
-        ))}
+          </Wrapper>
+          );
+        })}
       </div>
 
       {/* Case Navigation */}
-      <div className="mt-4 pt-4 border-t border-gray-800">
+      <div className="mt-4 pt-4 border-t border-slate-800">
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-400">
             Click on any skin to view its details

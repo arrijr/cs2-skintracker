@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useMemo } from "react";
 import { TrendingUp, TrendingDown, Activity, Shield, Target, BarChart3, Info } from "lucide-react";
 import Tooltip from "../components/Tooltip";
@@ -128,7 +128,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
         <h3 className="text-2xl font-bold text-white">Portfolio Performance</h3>
         {!isPremium && (
           <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full">
-            🔒 Premium Feature
+            ðŸ”’ Premium Feature
           </div>
         )}
       </div>
@@ -136,27 +136,27 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
       {/* Hero KPIs - Only the most important metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
         <div className="text-center">
-          <div className="text-5xl font-bold text-white mb-2">
+          <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2">
             {formatCurrency(metrics.currentValue)}
           </div>
           <div className="text-lg text-slate-400 mb-1">Current Value</div>
-          <div className="text-sm text-slate-500">Total portfolio value</div>
+          <div className="text-sm text-slate-400">Total portfolio value</div>
         </div>
 
         <div className="text-center">
-          <div className={`text-5xl font-bold mb-2 ${metrics.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+          <div className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-2 ${metrics.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {formatCurrency(metrics.totalReturn)}
           </div>
           <div className="text-lg text-slate-400 mb-1">Total Return</div>
-          <div className="text-sm text-slate-500">Profit/Loss</div>
+          <div className="text-sm text-slate-400">Profit/Loss</div>
         </div>
 
         <div className="text-center">
-          <div className={`text-5xl font-bold mb-2 ${metrics.totalReturnPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+          <div className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-2 ${metrics.totalReturnPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {formatPercent(metrics.totalReturnPercent)}
           </div>
           <div className="text-lg text-slate-400 mb-1">Return %</div>
-          <div className="text-sm text-slate-500">Performance</div>
+          <div className="text-sm text-slate-400">Performance</div>
         </div>
       </div>
 
@@ -184,7 +184,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Activity className="w-5 h-5 text-purple-400" />
                   <span className="text-caption text-slate-400">Sharpe Ratio</span>
-                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors cursor-help" />
+                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-300 transition-colors cursor-help" />
                 </div>
                 <div className="text-xl font-bold text-purple-400">
                   {metrics.sharpeRatio.toFixed(3)}
@@ -197,7 +197,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <BarChart3 className="w-5 h-5 text-purple-400" />
                   <span className="text-caption text-slate-400">Beta</span>
-                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors cursor-help" />
+                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-300 transition-colors cursor-help" />
                 </div>
                 <div className="text-xl font-bold text-purple-400">
                   {metrics.beta.toFixed(2)}
@@ -210,7 +210,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Target className={`w-5 h-5 ${metrics.alpha >= 0 ? 'text-green-400' : 'text-red-400'}`} />
                   <span className="text-caption text-slate-400">Alpha</span>
-                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors cursor-help" />
+                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-300 transition-colors cursor-help" />
                 </div>
                 <div className={`text-xl font-bold ${metrics.alpha >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {formatPercent(metrics.alpha * 100)}
@@ -223,7 +223,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Shield className="w-5 h-5 text-red-400" />
                   <span className="text-caption text-slate-400">Max Drawdown</span>
-                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors cursor-help" />
+                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-300 transition-colors cursor-help" />
                 </div>
                 <div className="text-xl font-bold text-red-400">
                   {metrics.maxDrawdown.toFixed(1)}%
@@ -254,7 +254,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
       ) : (
         <div className="text-center py-8">
           <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-lg p-6 max-w-md mx-auto">
-            <div className="text-2xl mb-4">🔒</div>
+            <div className="text-2xl mb-4">ðŸ”’</div>
             <h4 className="text-lg font-medium mb-2 text-white">Unlock Advanced Analytics</h4>
             <p className="text-sm text-slate-400 mb-4">
               Get professional-grade portfolio insights: Sharpe Ratio, Beta, Alpha, Max Drawdown, and more.
@@ -288,7 +288,7 @@ export default function PerformanceDashboard({ portfolio, history, isPremium = f
           </div>
 
           {isPremium && (
-            <div className="text-xs text-slate-500 bg-slate-800/60 border border-slate-700/50 px-3 py-2 rounded-lg">
+            <div className="text-xs text-slate-400 bg-slate-800/60 border border-slate-700/50 px-3 py-2 rounded-lg">
               Last updated: {new Date().toLocaleString()}
             </div>
           )}

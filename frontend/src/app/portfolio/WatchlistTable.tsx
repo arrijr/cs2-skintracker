@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Bell, DollarSign } from "lucide-react";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 type WatchlistEntry =
   | {
@@ -16,10 +17,14 @@ type WatchlistEntry =
       name?: string;
       imageUrl?: string;
       marketHashName?: string;
+      slug?: string | null;
+      weaponSlug?: string | null;
       // nested
       skin?: {
         id: number;
         name: string;
+        slug?: string | null;
+        weaponSlug?: string | null;
         image_url?: string;
         imageUrl?: string;
         itemimage?: string;
@@ -42,7 +47,8 @@ export default function WatchlistTable({ watchlist, onRemove, onUpdateAlert }: P
   return (
     <div className="bg-gray-900 rounded-xl p-6 shadow-md w-full max-w-3xl mx-auto mt-8" data-testid="watchlist-table">
       <h2 className="text-xl font-bold mb-4">Watchlist</h2>
-      <table className="w-full text-sm">
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+      <table className="w-full text-sm min-w-[640px]">
         <thead>
           <tr className="text-gray-300 border-b border-gray-700">
             <th className="py-2">Image</th>
@@ -63,6 +69,11 @@ export default function WatchlistTable({ watchlist, onRemove, onUpdateAlert }: P
               entry.imageUrl ||
               "/images/placeholder-skin.png";
             const linkId = s?.id ?? entry.skinId;
+            const href = skinDetailHref({
+              id: linkId,
+              slug: s?.slug ?? entry.slug ?? null,
+              weaponSlug: s?.weaponSlug ?? entry.weaponSlug ?? null,
+            });
 
             return (
               <tr key={`${entry.id}-${linkId}`} className="border-b border-gray-800">
@@ -70,9 +81,19 @@ export default function WatchlistTable({ watchlist, onRemove, onUpdateAlert }: P
                   <Image src={img} width={48} height={48} alt={name} className="rounded" />
                 </td>
                 <td>
-                  <Link href={`/skins/${linkId}`} className="text-blue-400 hover:underline">
-                    {name}
-                  </Link>
+                  {href ? (
+                    <Link href={href} className="text-fuchsia-400 hover:underline">
+                      {name}
+                    </Link>
+                  ) : (
+                    <span
+                      aria-disabled="true"
+                      tabIndex={-1}
+                      className="text-gray-300 cursor-default"
+                    >
+                      {name}
+                    </span>
+                  )}
                 </td>
                 <td className="text-center">
                   {isPremium ? (
@@ -152,6 +173,7 @@ export default function WatchlistTable({ watchlist, onRemove, onUpdateAlert }: P
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

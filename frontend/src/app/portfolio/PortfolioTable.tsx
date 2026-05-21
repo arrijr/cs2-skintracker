@@ -7,10 +7,13 @@ import PurchaseAccordion from "../components/PurchaseAccordion";
 import clsx from "clsx";
 import Tooltip from "../components/Tooltip";
 import { safeLower, safeIncludes, safeLocaleCompare } from "@/lib/strings";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 type Skin = {
   id: number;
   name: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   imageUrl?: string | null;
   itemimage?: string | null;
   marketPrice?: number | null;
@@ -253,13 +256,6 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
           entry.skin.imageUrl ||
           "/images/placeholder-skin.png";
 
-        // Debug-Logging für Bilder
-        console.log(`[DEBUG] Skin ${entry.skin.id} (${entry.skin.name}):`, {
-          itemimage: entry.skin.itemimage,
-          imageUrl: entry.skin.imageUrl,
-          finalImg: img
-        });
-
         return (
           <div
             key={entry.skin.id}
@@ -267,8 +263,18 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
           >
             {/* Klickbarer Header */}
             <div
-              className="flex flex-wrap sm:flex-nowrap justify-between items-center cursor-pointer p-4 gap-3"
+              role="button"
+              tabIndex={0}
+              aria-expanded={isOpen}
+              aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${entry.skin.name} details`}
+              className="flex flex-wrap sm:flex-nowrap justify-between items-center cursor-pointer p-4 gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl"
               onClick={() => setOpenSkinId(isOpen ? null : entry.skin.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setOpenSkinId(isOpen ? null : entry.skin.id);
+                }
+              }}
             >
               <div className="flex gap-4 items-center min-w-0 flex-1">
                 {/* Portfolio Row Image */}
@@ -281,13 +287,27 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
                 />
                 <div>
                   <div className="font-bold flex items-center gap-2">
-                    <Link 
-                      href={`/skins/${entry.skin.id}`}
-                      onClick={(e) => e.stopPropagation()} // Verhindert Accordion-Toggle
-                      className="hover:text-blue-400 transition-colors"
-                    >
-                      {entry.skin.name}
-                    </Link>
+                    {(() => {
+                      const href = skinDetailHref(entry.skin);
+                      return href ? (
+                        <Link
+                          href={href}
+                          onClick={(e) => e.stopPropagation()} // Verhindert Accordion-Toggle
+                          className="hover:text-fuchsia-400 transition-colors"
+                        >
+                          {entry.skin.name}
+                        </Link>
+                      ) : (
+                        <span
+                          aria-disabled="true"
+                          tabIndex={-1}
+                          className="cursor-default text-zinc-200"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {entry.skin.name}
+                        </span>
+                      );
+                    })()}
                     {/* Alert Badge */}
                     {alertObj && (
                       <Tooltip content={`Price alert: ${alertObj.priceAlert} $`}>

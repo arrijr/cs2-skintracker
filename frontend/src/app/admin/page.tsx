@@ -221,7 +221,8 @@ export default function AdminPage() {
 
           {/* Tab Navigation */}
           <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as AdminTab)} className="w-full animate-slide-up">
-            <TabsList className="grid w-full grid-cols-5">
+            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="grid w-max grid-cols-5 sm:w-full">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Overview
@@ -243,6 +244,7 @@ export default function AdminPage() {
                 Controls
               </TabsTrigger>
             </TabsList>
+            </div>
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-6 mt-6">

@@ -119,9 +119,20 @@ export default function SkinImage({
   const gradientBackground = getGradientBackground();
 
   return (
-    <div 
-      className={`relative overflow-hidden rounded-lg group ${gradientBackground} hover:shadow-xl transition-all duration-300 ${onClick ? 'cursor-pointer' : ''} ${fill ? 'w-full h-full' : ''} ${className || ''}`}
+    <div
+      className={`relative overflow-hidden rounded-lg group ${gradientBackground} hover:shadow-xl transition-all duration-300 ${onClick ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500' : ''} ${fill ? 'w-full h-full' : ''} ${className || ''}`}
       onClick={onClick}
+      {...(onClick ? {
+        role: 'button',
+        tabIndex: 0,
+        onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick();
+          }
+        },
+        'aria-label': alt,
+      } : {})}
       style={fill ? { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 } : {}}
       {...props}
     >

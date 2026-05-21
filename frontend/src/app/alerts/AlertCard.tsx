@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +45,7 @@ export function AlertCard({ alert, onToggle, onDelete }: AlertCardProps) {
             <div className="text-sm text-slate-400 mt-1">
               {summarizeConfig(alert)}
             </div>
-            <div className="flex items-center gap-3 mt-2 text-xs text-slate-500 flex-wrap">
+            <div className="flex items-center gap-3 mt-2 text-xs text-slate-400 flex-wrap">
               {alert.channels.includes('email') && (
                 <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> email</span>
               )}
@@ -75,11 +75,11 @@ function summarizeConfig(alert: Alert): string {
     case 'price_threshold':
       return `Trigger when price ${alert.config.direction} €${alert.config.price}`;
     case 'volatility':
-      return `Trigger when ${alert.config.windowHours ?? 24}h change ≥ ${alert.config.thresholdPercent}%`;
+      return `Trigger when ${alert.config.windowHours ?? 24}h change ‰ ${alert.config.thresholdPercent}%`;
     case 'float_tier':
       return `Trigger when ${alert.config.tier} float listed below €${alert.config.maxPrice}`;
     case 'case_ev':
-      return `Trigger when case price ≥ ${alert.config.evMarginPercent}% below EV`;
+      return `Trigger when case price ‰ ${alert.config.evMarginPercent}% below EV`;
     default:
       return '';
   }

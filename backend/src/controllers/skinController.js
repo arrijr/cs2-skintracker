@@ -247,6 +247,8 @@ export const getSkinVariants = async (req, res) => {
       select: {
         id: true,
         name: true,
+        slug: true,
+        weaponSlug: true,
         wear: true,
         quality: true,
         isStattrak: true,
@@ -271,6 +273,8 @@ export const getSkinVariants = async (req, res) => {
       select: {
         id: true,
         name: true,
+        slug: true,
+        weaponSlug: true,
         wear: true,
         quality: true,
         isStattrak: true,

@@ -42,7 +42,7 @@ export function WearFloatBar({ float, wear }: WearFloatBarProps) {
           <div className="font-mono text-2xl font-bold text-white tabular-nums tracking-tight">
             {hasFloat ? float!.toFixed(4) : "—"}
           </div>
-          <div className="text-xs text-slate-500 mt-0.5">
+          <div className="text-xs text-slate-400 mt-0.5">
             {wear ?? "Unknown wear"}
             {range && (
               <span> range {range[0].toFixed(2)} – {range[1].toFixed(2)}</span>
@@ -51,9 +51,9 @@ export function WearFloatBar({ float, wear }: WearFloatBarProps) {
         </div>
         {percentile !== null && (
           <div className="text-right">
-            <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Percentile</div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Percentile</div>
             <div className="font-mono text-lg font-bold text-white tabular-nums">{percentile}th</div>
-            <div className="text-[11px] text-slate-500">
+            <div className="text-[11px] text-slate-400">
               cleaner than {100 - percentile}% of {wear}
             </div>
           </div>

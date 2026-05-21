@@ -31,7 +31,7 @@ export default function SkinVariantsCard({ variants, currentSkinId, onVariantSel
 
   return (
     <div className="w-full bg-neutral-800 rounded-xl shadow-md p-4 mb-4">
-      <h3 className="text-lg font-semibold mb-3 text-blue-400">🔄 Skin Variants</h3>
+      <h3 className="text-lg font-semibold mb-3 text-fuchsia-400">🔄 Skin Variants</h3>
       
       <div className="space-y-3">
         {sortedVariants.map((variant) => (

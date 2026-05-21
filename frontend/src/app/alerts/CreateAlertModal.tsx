@@ -225,11 +225,11 @@ export function CreateAlertModal({
             {/* Chart */}
             <div className="relative h-56 w-full rounded-xl bg-slate-900/50 border border-slate-800 p-3">
               {historyLoading ? (
-                <div className="flex h-full items-center justify-center text-xs text-slate-500">
+                <div className="flex h-full items-center justify-center text-xs text-slate-400">
                   Loading price history…
                 </div>
               ) : historyData.length === 0 ? (
-                <div className="flex h-full items-center justify-center text-xs text-slate-500">
+                <div className="flex h-full items-center justify-center text-xs text-slate-400">
                   Price history not available yet
                 </div>
               ) : (
@@ -317,7 +317,7 @@ export function CreateAlertModal({
                 <div className="text-3xl font-semibold tabular-nums text-white">
                   €{currentPrice.toFixed(2)}
                 </div>
-                <div className="text-xs uppercase tracking-wider text-slate-500 mt-1">
+                <div className="text-xs uppercase tracking-wider text-slate-400 mt-1">
                   Current price
                 </div>
               </div>
@@ -342,7 +342,7 @@ export function CreateAlertModal({
 
             {/* Realism slider */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-500">
+              <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-400">
                 <span>Unrealistic</span>
                 <span>Realistic</span>
               </div>
@@ -357,13 +357,13 @@ export function CreateAlertModal({
                 </div>
               </div>
               {defaultPriceMin != null && currentPrice > 0 && (
-                <p className="text-[11px] text-slate-500 pt-0.5 leading-relaxed">
+                <p className="text-[11px] text-slate-400 pt-0.5 leading-relaxed">
                   Target in [€{defaultPriceMin.toFixed(2)}, €{currentPrice.toFixed(2)}] = realistic
                   (reached in last 90 days). Below €{defaultPriceMin.toFixed(2)} = unrealistic
                   (new low needed).
                 </p>
               )}
-              <p className="text-xs text-slate-500 pt-1">
+              <p className="text-xs text-slate-400 pt-1">
                 {validTarget && currentPrice > 0
                   ? targetNum >= currentPrice
                     ? "Target is at or above current price — alert fires immediately."
@@ -376,7 +376,7 @@ export function CreateAlertModal({
 
             {/* Channels */}
             <div className="space-y-2 pt-1">
-              <Label className="text-xs uppercase tracking-wider text-slate-500">
+              <Label className="text-xs uppercase tracking-wider text-slate-400">
                 Delivery channels
               </Label>
               <div className="flex items-center gap-6">
@@ -403,7 +403,7 @@ export function CreateAlertModal({
               </div>
             </div>
 
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {error && <p role="alert" className="text-red-400 text-sm">{error}</p>}
 
             <Button
               onClick={handleSubmit}
@@ -495,7 +495,7 @@ export function CreateAlertModal({
             <div>
               <Label>EV margin %</Label>
               <Input className="bg-slate-800 border-slate-700" type="number" value={evMarginPercent} onChange={e => setEvMarginPercent(e.target.value)} step="0.1" />
-              <p className="text-xs text-slate-500 mt-1">Trigger when case price is at least this % below expected drop value.</p>
+              <p className="text-xs text-slate-400 mt-1">Trigger when case price is at least this % below expected drop value.</p>
             </div>
           )}
 
@@ -511,7 +511,7 @@ export function CreateAlertModal({
             </div>
           </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p role="alert" className="text-red-400 text-sm">{error}</p>}
 
           <Button onClick={handleSubmit} disabled={submitting} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
             {submitting ? 'Creating...' : 'Create alert'}

@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useUser, useAuth } from "@clerk/nextjs";
+import { toast } from "sonner";
+import { apiUrl, fetchJson } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Crown, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +58,9 @@ interface PortfolioKPIs {
 }
 
 export default function PortfolioPage() {
+  const router = useRouter();
   const { isSignedIn, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const [activeFilter, setActiveFilter] = useState<{ type: string; value: string; values?: string[] } | null>(null);
   const [showPremiumBanner, setShowPremiumBanner] = useState(true);
 
@@ -77,23 +82,26 @@ export default function PortfolioPage() {
   // {/* Remove from Watchlist */}
   async function handleRemoveWatchlist(skinId: number) {
     try {
-      // TODO: Implement removeFromWatchlist with auth
-      console.log("Remove from watchlist:", skinId);
+      const token = await getToken({ template: "backend" });
+      await fetchJson(apiUrl(`/api/v1/watchlist/${skinId}`), {
+        method: "DELETE",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+      toast.success("Removed from watchlist");
       mutateWatchlist();
     } catch (e: any) {
       console.error("Failed to remove from watchlist:", e);
+      toast.error(e?.message || "Failed to remove from watchlist");
     }
   }
 
   // {/* Update Price Alert */}
-  async function handleUpdateAlert(skinId: number, alertPrice: number) {
-    try {
-      // TODO: Implement updateAlert with auth
-      console.log("Update alert for skin:", skinId, "price:", alertPrice);
-      mutateWatchlist();
-    } catch (e: any) {
-      console.error("Failed to update alert:", e);
-    }
+  // TODO: standalone alert-edit page does not exist yet; route to /alerts so the
+  // user can manage alerts there. Replace with inline edit modal when available.
+  async function handleUpdateAlert(_skinId: number, _alertPrice: number) {
+    router.push("/alerts");
   }
 
   // While loading auth state or data, show skeleton.
@@ -149,7 +157,7 @@ export default function PortfolioPage() {
           </p>
           <button
             onClick={() => setShowPremiumBanner(false)}
-            className="text-slate-500 hover:text-white transition-colors"
+            className="text-slate-400 hover:text-white transition-colors"
             aria-label="Dismiss"
           >
             <X className="w-4 h-4" />

@@ -49,6 +49,8 @@ const getAllCases = async (req, res) => {
               select: {
                 id: true,
                 name: true,
+                slug: true,
+                weaponSlug: true,
                 imageUrl: true,
                 rarity: true
               }
@@ -102,6 +104,8 @@ const getCaseById = async (req, res) => {
               select: {
                 id: true,
                 name: true,
+                slug: true,
+                weaponSlug: true,
                 imageUrl: true,
                 rarity: true,
                 priceLatest: true,
@@ -352,6 +356,8 @@ const getCaseSkins = async (req, res) => {
           select: {
             id: true,
             name: true,
+            slug: true,
+            weaponSlug: true,
             imageUrl: true,
             rarity: true,
             priceLatest: true,

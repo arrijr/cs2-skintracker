@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -6,11 +6,14 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RarityBar } from "@/components/ui/rarity-indicator";
 import { steamImageSrc } from "@/lib/image-proxy";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface PortfolioItem {
   id?: number;
   skinId?: number;
   name?: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   imageUrl?: string;
   marketPrice?: number;
   priceLatest?: number;
@@ -65,14 +68,27 @@ export function TopHoldings({ portfolio, totalValue }: TopHoldingsProps) {
                     )}
                   </div>
                   <div className="flex-1 min-w-0 self-center">
-                    <Link
-                      href={`/skins/${h.skinId ?? h.id}`}
-                      className="text-sm text-slate-200 hover:text-white truncate block"
-                    >
-                      {h.name ?? "Unknown skin"}
-                    </Link>
-                    <p className="text-xs text-slate-500 font-mono tabular-nums">
-                      €{h.value.toFixed(2)} · {pct.toFixed(1)}%
+                    {(() => {
+                      const href = skinDetailHref(h);
+                      return href ? (
+                        <Link
+                          href={href}
+                          className="text-sm text-slate-200 hover:text-white truncate block"
+                        >
+                          {h.name ?? "Unknown skin"}
+                        </Link>
+                      ) : (
+                        <span
+                          aria-disabled="true"
+                          tabIndex={-1}
+                          className="text-sm text-slate-300 truncate block cursor-default"
+                        >
+                          {h.name ?? "Unknown skin"}
+                        </span>
+                      );
+                    })()}
+                    <p className="text-xs text-slate-400 font-mono tabular-nums">
+                      €{h.value.toFixed(2)} Â· {pct.toFixed(1)}%
                     </p>
                   </div>
                 </div>

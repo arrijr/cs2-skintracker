@@ -35,7 +35,7 @@ export function OrderBook({ buys = [], sells = [], last, currency = "€" }: Ord
 
   if (buysSorted.length === 0 && sellsSorted.length === 0) {
     return (
-      <div className="text-center py-6 text-sm text-slate-500">
+      <div className="text-center py-6 text-sm text-slate-400">
         No order book data available yet.
       </div>
     );
@@ -60,19 +60,19 @@ export function OrderBook({ buys = [], sells = [], last, currency = "€" }: Ord
 
       <div className="mt-3 pt-3 pb-3 border-y border-dashed border-slate-700/50 flex justify-between font-mono text-xs">
         <span>
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500 mr-2">Spread</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 mr-2">Spread</span>
           <span className="font-bold text-white">
             {spread !== null ? `${currency}${fmt(spread)}` : "—"}
-            {spreadPct !== null && <span className="text-slate-500"> ({spreadPct.toFixed(2)}%)</span>}
+            {spreadPct !== null && <span className="text-slate-400"> ({spreadPct.toFixed(2)}%)</span>}
           </span>
         </span>
         <span>
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500 mr-2">Mid</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 mr-2">Mid</span>
           <span className="font-bold text-white">{mid !== null ? `${currency}${fmt(mid)}` : "—"}</span>
         </span>
         {last !== null && last !== undefined && (
           <span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500 mr-2">Last</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 mr-2">Last</span>
             <span className="font-bold text-white">{currency}{fmt(last)}</span>
           </span>
         )}
@@ -100,7 +100,7 @@ function Side({
         isBuy ? "text-emerald-400" : "text-rose-400"
       )}>
         <span>{isBuy ? "Buy orders" : "Sell orders"}</span>
-        <span className="text-slate-500 font-normal tracking-normal text-[10px]">Qty · Total</span>
+        <span className="text-slate-400 font-normal tracking-normal text-[10px]">Qty · Total</span>
       </h5>
       <div className="space-y-0.5">
         {rows.slice(0, 6).map((o, i) => {
@@ -129,7 +129,7 @@ function Side({
                 {currency}{fmt(o.price)}
               </span>
               <span className="relative z-10 text-slate-400 tabular-nums text-right">{fmtInt(o.qty)}</span>
-              <span className="relative z-10 text-slate-500 tabular-nums text-right text-[10.5px]">
+              <span className="relative z-10 text-slate-400 tabular-nums text-right text-[10.5px]">
                 {currency}{fmtInt(o.price * o.qty)}
               </span>
             </div>

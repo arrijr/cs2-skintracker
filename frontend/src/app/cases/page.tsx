@@ -38,9 +38,10 @@ interface Case {
   isDiscontinued: boolean;
   releaseDate: string;
   lastUpdated: string;
+  timeToExtinction?: number;
 }
 
-type SortField = 'name' | 'price' | 'marketCap' | 'remaining' | 'priceChange24h';
+type SortField = 'name' | 'price' | 'marketCap' | 'remaining' | 'priceChange24h' | 'timeToExtinction';
 type SortDirection = 'asc' | 'desc';
 
 export default function CasesPage() {
@@ -81,9 +82,8 @@ export default function CasesPage() {
         const data = await apiFetch('/api/v1/case-portfolio');
         const caseIds = data.portfolio.map((entry: any) => entry.case.id);
         setUserCasePortfolio(caseIds);
-      } catch (err) {
+      } catch {
         // User might not be logged in, ignore error
-        console.log('User not authenticated or no case portfolio');
       }
     };
 
@@ -109,8 +109,13 @@ export default function CasesPage() {
       let bValue: any = b[sortField];
 
       if (sortField === 'name') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
+        aValue = (aValue ?? '').toLowerCase();
+        bValue = (bValue ?? '').toLowerCase();
+      } else {
+        // Numeric fields — push undefined/null to the end regardless of direction.
+        // `timeToExtinction` in particular is optional on the Case type.
+        aValue = aValue ?? Infinity;
+        bValue = bValue ?? Infinity;
       }
 
       if (sortDirection === 'asc') {
@@ -302,7 +307,7 @@ export default function CasesPage() {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="border-b border-gray-700">
                     <th 

@@ -663,7 +663,7 @@ export function SkinsPageContent() {
                 <span className="font-mono text-2xl font-semibold text-white tabular-nums">
                   {total != null ? total.toLocaleString("en-GB") : "—"}
                 </span>
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
                   results
                 </span>
               </div>
@@ -893,7 +893,7 @@ export function SkinsPageContent() {
 
             {/* Price-based Quick Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                 Quick filters
               </span>
               <div className="flex gap-2 flex-wrap">

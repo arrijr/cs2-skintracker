@@ -21,7 +21,7 @@ const fmtPrice = (n: number, c: string) =>
 export function RecentActivity({ events = [], currency = "€" }: RecentActivityProps) {
   if (events.length === 0) {
     return (
-      <p className="text-center text-sm text-slate-500 py-4">
+      <p className="text-center text-sm text-slate-400 py-4">
         No recent activity for this skin yet.
       </p>
     );
@@ -43,7 +43,7 @@ export function RecentActivity({ events = [], currency = "€" }: RecentActivity
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-[12.5px] text-white font-semibold truncate">{e.label}</div>
-              <div className="text-[11px] text-slate-500">{e.meta}</div>
+              <div className="text-[11px] text-slate-400">{e.meta}</div>
             </div>
             <div className="font-mono text-[12.5px] font-bold text-white tabular-nums">
               {fmtPrice(e.price, currency)}
@@ -79,12 +79,12 @@ export function Stickers({ stickers = [], totalValue, currency = "€" }: Sticke
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-display text-base font-semibold text-white">Stickers</h3>
         {totalValue !== null && totalValue !== undefined && totalValue > 0 && (
-          <span className="text-xs text-slate-500 font-semibold">
+          <span className="text-xs text-slate-400 font-semibold">
             +{currency}{totalValue.toFixed(2)} sticker value
           </span>
         )}
       </div>
-      <div className="grid grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {filled.map((s, i) => (
           <div
             key={i}
@@ -95,7 +95,7 @@ export function Stickers({ stickers = [], totalValue, currency = "€" }: Sticke
             title={s.name}
           >
             {s.name}
-            {s.type && <span className="block text-slate-500 mt-0.5">({s.type})</span>}
+            {s.type && <span className="block text-slate-400 mt-0.5">({s.type})</span>}
           </div>
         ))}
         {Array.from({ length: empty }).map((_, i) => (
@@ -129,10 +129,10 @@ export function PatternIndex({ primary, examples = [], note }: PatternIndexProps
       <div className="flex items-center justify-between mb-2">
         <h3 className="font-display text-base font-semibold text-white">Pattern index</h3>
         {primary && (
-          <span className="text-xs font-semibold text-slate-500 font-mono">#{primary.num}</span>
+          <span className="text-xs font-semibold text-slate-400 font-mono">#{primary.num}</span>
         )}
       </div>
-      {note && <p className="text-xs text-slate-500 mb-3">{note}</p>}
+      {note && <p className="text-xs text-slate-400 mb-3">{note}</p>}
       {examples.length > 0 && (
         <div className="grid grid-cols-3 gap-2">
           {examples.map((t, i) => (
@@ -148,7 +148,7 @@ export function PatternIndex({ primary, examples = [], note }: PatternIndexProps
                 className={
                   t.rare
                     ? "font-semibold uppercase tracking-wide text-amber-400"
-                    : "font-semibold uppercase tracking-wide text-slate-500"
+                    : "font-semibold uppercase tracking-wide text-slate-400"
                 }
               >
                 {t.rare && "★ "}{t.label}
@@ -176,7 +176,7 @@ export function AlertBanner({ count = 0, target, currency = "€" }: AlertBanner
         className="block rounded-xl p-4 border border-slate-700/40 bg-slate-900/40 hover:border-slate-600/60 hover:bg-slate-900/60 transition-colors group"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-800/60 text-slate-500 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-slate-800/60 text-slate-400 flex items-center justify-center">
             <Bell className="h-4 w-4" />
           </div>
           <div className="flex-1 text-sm text-slate-400 group-hover:text-slate-300">

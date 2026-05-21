@@ -131,7 +131,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
               <User2 className="h-4 w-4 text-slate-400" />
               <div>
                 <p className="font-medium text-slate-100">Profile</p>
-                <p className="text-xs text-slate-500">View and edit your profile</p>
+                <p className="text-xs text-slate-400">View and edit your profile</p>
               </div>
             </Link>
           </DropdownMenuItem>
@@ -144,7 +144,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
               <BarChart3 className="h-4 w-4 text-slate-400" />
               <div>
                 <p className="font-medium text-slate-100">Dashboard</p>
-                <p className="text-xs text-slate-500">Portfolio at a glance</p>
+                <p className="text-xs text-slate-400">Portfolio at a glance</p>
               </div>
             </Link>
           </DropdownMenuItem>
@@ -157,7 +157,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
               <Heart className="h-4 w-4 text-slate-400" />
               <div>
                 <p className="font-medium text-slate-100">Portfolio</p>
-                <p className="text-xs text-slate-500">Manage your skins</p>
+                <p className="text-xs text-slate-400">Manage your skins</p>
               </div>
             </Link>
           </DropdownMenuItem>
@@ -180,14 +180,14 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
                 {steamStatus?.connected ? (
                   <>
                     <p className="font-medium text-slate-100">Steam connected</p>
-                    <p className="text-xs text-slate-500 truncate">
+                    <p className="text-xs text-slate-400 truncate">
                       {steamStatus.steamId ?? "Linked"}
                     </p>
                   </>
                 ) : (
                   <>
                     <p className="font-medium text-slate-100">Connect Steam</p>
-                    <p className="text-xs text-slate-500">Import your inventory</p>
+                    <p className="text-xs text-slate-400">Import your inventory</p>
                   </>
                 )}
               </div>
@@ -202,7 +202,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
               <Settings className="h-4 w-4 text-slate-400" />
               <div>
                 <p className="font-medium text-slate-100">Settings</p>
-                <p className="text-xs text-slate-500">Account preferences</p>
+                <p className="text-xs text-slate-400">Account preferences</p>
               </div>
             </Link>
           </DropdownMenuItem>
@@ -216,7 +216,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
               <Sparkles className="h-4 w-4 text-fuchsia-300" />
               <div>
                 <p className="font-medium text-slate-100">Re-run setup</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   Replay the 3-step onboarding
                 </p>
               </div>
@@ -234,7 +234,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
                   <Shield className="h-4 w-4 text-amber-400" />
                   <div>
                     <p className="font-medium text-amber-300">Admin panel</p>
-                    <p className="text-xs text-slate-500">System administration</p>
+                    <p className="text-xs text-slate-400">System administration</p>
                   </div>
                 </Link>
               </DropdownMenuItem>

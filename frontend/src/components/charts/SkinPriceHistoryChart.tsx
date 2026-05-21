@@ -168,13 +168,13 @@ export default function SkinPriceHistoryChart({
             <Tooltip
               formatter={(value: number) => `${value.toFixed(2)}€`}
               labelFormatter={(label) => `${label}`}
-              contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
+              contentStyle={{ backgroundColor: 'rgb(15 23 42 / 0.95)', border: '1px solid rgb(168 85 247)', color: 'rgb(168 85 247)' }}
             />
             <Legend />
             <Line
               type="monotone"
               dataKey="price"
-              stroke="#3b82f6"
+              stroke="#a855f7"
               dot={false}
               isAnimationActive={false}
               name="Aktueller Preis"

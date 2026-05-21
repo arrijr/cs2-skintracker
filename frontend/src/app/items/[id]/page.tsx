@@ -124,7 +124,7 @@ export default async function ItemDetailPage(
                 </span>
               )}
               {item.collection && (
-                <span className="ml-auto text-xs text-slate-500">{item.collection}</span>
+                <span className="ml-auto text-xs text-slate-400">{item.collection}</span>
               )}
             </div>
 
@@ -207,7 +207,7 @@ export default async function ItemDetailPage(
             </Button>
           )}
 
-          <p className="text-xs text-slate-500 pt-2 border-t border-slate-700/40 break-words">
+          <p className="text-xs text-slate-400 pt-2 border-t border-slate-700/40 break-words">
             Market hash name:{" "}
             <code className="bg-slate-900/70 border border-slate-700/30 px-2 py-1 rounded font-mono break-all">
               {item.marketHashName}
@@ -222,9 +222,9 @@ export default async function ItemDetailPage(
 function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700/40">
-      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1.5">{label}</div>
+      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1.5">{label}</div>
       <div className="font-mono font-bold text-sm text-white tabular-nums">{value}</div>
-      {sub && <div className="text-[11px] text-slate-500 mt-0.5">{sub}</div>}
+      {sub && <div className="text-[11px] text-slate-400 mt-0.5">{sub}</div>}
     </div>
   );
 }

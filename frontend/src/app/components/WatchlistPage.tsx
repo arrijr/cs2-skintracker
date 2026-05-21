@@ -25,6 +25,8 @@ type WatchlistItem = {
   skin: {
     id: number;
     name: string;
+    slug?: string | null;
+    weaponSlug?: string | null;
     itemimage?: string;
     itemImage?: string;
     image_url?: string;
@@ -194,6 +196,8 @@ export default function WatchlistPage() {
               <WatchlistCard
                 key={`${it.id}-${it.skinId}`}
                 skinId={it.skinId}
+                slug={it.skin.slug ?? null}
+                weaponSlug={it.skin.weaponSlug ?? null}
                 name={it.skin.name}
                 imageUrl={img}
                 rarity={rar}

@@ -45,11 +45,13 @@ export default function WatchlistAdd({ onAdded }: Props) {
         className="input-main w-36"
         min={0}
         step={0.01}
+        aria-invalid={!!error}
+        aria-describedby={error ? "watchlist-add-error" : undefined}
       />
       <button onClick={handleAdd} className="btn-main" style={{ minWidth: 64 }} disabled={loading || !newSkin}>
         {loading ? "Adding…" : "Add"}
       </button>
-      {error && <span className="text-red-500 text-sm ml-2">{error}</span>}
+      {error && <p id="watchlist-add-error" role="alert" className="text-red-500 text-sm ml-2">{error}</p>}
     </div>
   );
 }

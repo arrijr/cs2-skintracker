@@ -92,7 +92,7 @@ export function MultiSourcePriceTable({ skinSlug }: { skinSlug: string }) {
     <section className="my-8 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
       <div className="flex items-baseline justify-between mb-4">
         <h2 className="text-xl font-semibold">Live prices across markets</h2>
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-slate-400">
           Updated {new Date(data.refreshedAt).toLocaleTimeString()}
         </span>
       </div>
@@ -134,7 +134,7 @@ export function MultiSourcePriceTable({ skinSlug }: { skinSlug: string }) {
           ))}
         </tbody>
       </table>
-      <p className="text-xs text-slate-500 mt-3">
+      <p className="text-xs text-slate-400 mt-3">
         Steam prices include the 13% Steam Market transaction fee; Skinport and CSFloat are net.
       </p>
     </section>

@@ -159,7 +159,7 @@ export default function PortfolioDashboard() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="border-b border-slate-700/50">
                   <th className={`text-left py-2 px-2 font-semibold ${tokens.text.muted}`}>Skin</th>

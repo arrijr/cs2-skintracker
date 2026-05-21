@@ -8,10 +8,13 @@ import { Heart, Plus, Star, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { rarityToken } from "@/lib/design-tokens";
 import { steamImageSrc } from "@/lib/image-proxy";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface SkinForCard {
   id: number;
   name: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   marketHashName?: string;
   imageUrl?: string;
   weaponType?: string;
@@ -97,17 +100,30 @@ export function EnhancedSkinCard({
   const price = skin.priceLatest ?? skin.priceMedian ?? null;
   const code = weaponCode(skin.weaponType, skin.name);
 
+  const detailHref = skinDetailHref(skin);
   const handleClick = () => {
-    if (onSkinClick) onSkinClick(skin.id);
-    else router.push(`/skins/${skin.id}`);
+    if (onSkinClick) {
+      onSkinClick(skin.id);
+      return;
+    }
+    if (detailHref) router.push(detailHref);
   };
 
   if (viewMode === "list") {
     return (
       <div
+        role="button"
+        tabIndex={0}
         onClick={handleClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
+        aria-label={skin.name}
         className={cn(
-          "group flex items-center gap-4 bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl p-3 cursor-pointer transition-all",
+          "group flex items-center gap-4 bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl p-3 cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500",
           "hover:border-slate-600/60 hover:bg-slate-800/40",
           className
         )}
@@ -170,8 +186,17 @@ export function EnhancedSkinCard({
   // GRID view — trading-card style
   return (
     <article
+      role="button"
+      tabIndex={0}
       onClick={handleClick}
-      className={cn("group relative cursor-pointer", className)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+      aria-label={skin.name}
+      className={cn("group relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500 rounded-2xl", className)}
     >
       {/* Outer rarity-tinted glow halo on hover */}
       <span

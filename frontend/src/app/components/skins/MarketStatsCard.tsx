@@ -44,7 +44,7 @@ export default function MarketStatsCard({ stats }: MarketStatsCardProps) {
              <Tip label="Estimated trades on Steam during last 7 days">
                <div className="text-sm text-gray-400">7d Volume</div>
              </Tip>
-             <div className="text-lg font-bold text-blue-400">
+             <div className="text-lg font-bold text-fuchsia-400">
                {stats.volume7d?.toLocaleString() || "—"}
              </div>
            </div>

@@ -80,7 +80,7 @@ export default function MarketPulse({
             <Lock className="h-5 w-5" aria-hidden="true" />
           </div>
           <div className="font-display text-lg font-semibold text-white text-center">Unlock Pro Insights</div>
-          <p className="text-[12.5px] text-slate-400 text-center max-w-[260px]">
+          <p className="text-sm text-slate-400 text-center max-w-[260px]">
             7-day trends, liquidity analysis, sector rotation & portfolio benchmarking.
           </p>
           <Button

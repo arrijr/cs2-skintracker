@@ -65,7 +65,7 @@ export default function HeroSection() {
                   <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
                   <div className="w-3 h-3 rounded-full bg-green-500/60" />
                 </div>
-                <span className="text-xs text-slate-500 ml-2">skintrackr.io/dashboard</span>
+                <span className="text-xs text-slate-400 ml-2">skintrackr.io/dashboard</span>
               </div>
 
               <CardContent className="p-6 md:p-8 text-left">
@@ -110,9 +110,9 @@ export default function HeroSection() {
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm text-slate-300 font-medium">Portfolio Value (30d)</span>
                     <div className="flex gap-2">
-                      <span className="text-xs text-slate-500 px-2 py-1 rounded bg-slate-700/50">7D</span>
+                      <span className="text-xs text-slate-400 px-2 py-1 rounded bg-slate-700/50">7D</span>
                       <span className="text-xs text-purple-300 px-2 py-1 rounded bg-purple-500/20 border border-purple-500/30">30D</span>
-                      <span className="text-xs text-slate-500 px-2 py-1 rounded bg-slate-700/50">1Y</span>
+                      <span className="text-xs text-slate-400 px-2 py-1 rounded bg-slate-700/50">1Y</span>
                     </div>
                   </div>
                   {/* Stylized SVG chart */}

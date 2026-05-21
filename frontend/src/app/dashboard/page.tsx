@@ -49,6 +49,8 @@ export default function Dashboard() {
         id: p.skin?.id,
         skinId: p.skin?.id,
         name: p.skin?.name,
+        slug: p.skin?.slug ?? null,
+        weaponSlug: p.skin?.weaponSlug ?? null,
         imageUrl: p.skin?.imageUrl,
         rarity: p.skin?.rarity,
         weaponType: p.skin?.weaponType,

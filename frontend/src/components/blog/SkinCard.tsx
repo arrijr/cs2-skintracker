@@ -1,11 +1,12 @@
 'use client';
 
 // frontend/src/components/blog/SkinCard.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ElementType } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { skinDetailHref } from '@/lib/skin-urls';
 
 interface SkinCardProps {
   id: string;
@@ -14,6 +15,8 @@ interface SkinCardProps {
 interface SkinData {
   id: number;
   name: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   marketHashName: string;
   imageUrl?: string;
   weaponType?: string;
@@ -93,9 +96,15 @@ export function SkinCard({ id }: SkinCardProps) {
     }
   };
 
+  const href = skinDetailHref(skin);
+  const Wrapper: ElementType = href ? Link : 'div';
+  const wrapperProps = href
+    ? { href }
+    : { 'aria-disabled': true, tabIndex: -1 };
+
   return (
     <div className="bg-card border border-border rounded-lg p-4 my-4 hover:shadow-md transition-shadow">
-      <Link href={`/skins/${skin.id}`} className="block">
+      <Wrapper {...wrapperProps} className="block">
         <div className="flex items-center space-x-4">
           {/* Skin Image */}
           <div className="relative w-16 h-16 flex-shrink-0">
@@ -160,7 +169,7 @@ export function SkinCard({ id }: SkinCardProps) {
             <div className={`w-2 h-8 rounded ${getRarityColor(skin.rarity)}`} />
           )}
         </div>
-      </Link>
+      </Wrapper>
     </div>
   );
 }

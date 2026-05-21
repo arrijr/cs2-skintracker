@@ -82,7 +82,7 @@ export function Step1Currency({
 
         {/* Currency card */}
         <div className="mb-6">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-3">
             Preferred currency
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -103,7 +103,7 @@ export function Step1Currency({
               onClick={() => setCurrency("USD")}
             />
           </div>
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-slate-400">
             All prices, portfolio values, and alerts will display in your chosen
             currency. Change anytime in Profile → Account.
           </p>
@@ -175,7 +175,7 @@ function CurrencyOption({
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-white">{code}</span>
-          <span className="text-slate-500 text-sm">({symbol})</span>
+          <span className="text-slate-400 text-sm">({symbol})</span>
         </div>
         <p className="text-xs text-slate-400">{label}</p>
       </div>

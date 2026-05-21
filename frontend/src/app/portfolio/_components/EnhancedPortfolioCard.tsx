@@ -23,6 +23,7 @@ import { formatUSD, safeToFixed } from "@/lib/num";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface EnhancedPortfolioCardProps {
   entry: {
@@ -39,6 +40,8 @@ interface EnhancedPortfolioCardProps {
     skin: {
       id: number;
       name: string;
+      slug?: string | null;
+      weaponSlug?: string | null;
       imageUrl?: string | null;
       itemimage?: string | null;
       marketPrice?: number | null;
@@ -197,16 +200,32 @@ export function EnhancedPortfolioCard({
 
             {/* Actions */}
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="h-8 w-8 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/10 transition-all duration-200"
-              >
-                <Link href={`/skins/${skin.id}`}>
-                  <Eye className="h-4 w-4" />
-                </Link>
-              </Button>
+              {(() => {
+                const href = skinDetailHref(skin);
+                return href ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className="h-8 w-8 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/10 transition-all duration-200"
+                  >
+                    <Link href={href}>
+                      <Eye className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled
+                    aria-disabled="true"
+                    tabIndex={-1}
+                    className="h-8 w-8 p-0 text-slate-400 cursor-not-allowed"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                );
+              })()}
               
               <Button
                 variant="ghost"
@@ -319,17 +338,34 @@ export function EnhancedPortfolioCard({
             "absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300",
             "bg-black/40 backdrop-blur-sm"
           )}>
-            <Button
-              variant="secondary"
-              size="sm"
-              asChild
-              className="h-8 px-3 bg-white/20 hover:bg-brand-blue/20 text-white hover:text-brand-blue transition-all duration-200"
-            >
-              <Link href={`/skins/${skin.id}`}>
-                <Eye className="h-4 w-4 mr-1" />
-                View
-              </Link>
-            </Button>
+            {(() => {
+              const href = skinDetailHref(skin);
+              return href ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  asChild
+                  className="h-8 px-3 bg-white/20 hover:bg-brand-blue/20 text-white hover:text-brand-blue transition-all duration-200"
+                >
+                  <Link href={href}>
+                    <Eye className="h-4 w-4 mr-1" />
+                    View
+                  </Link>
+                </Button>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled
+                  aria-disabled="true"
+                  tabIndex={-1}
+                  className="h-8 px-3 bg-white/10 text-slate-300 cursor-not-allowed"
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  View
+                </Button>
+              );
+            })()}
           </div>
         </div>
         

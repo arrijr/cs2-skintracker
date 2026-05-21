@@ -115,6 +115,8 @@ router.get('/by-name/:name/skins', async (req, res) => {
       select: {
         id: true,
         name: true,
+        slug: true,
+        weaponSlug: true,
         wear: true,
         rarity: true,
         quality: true,

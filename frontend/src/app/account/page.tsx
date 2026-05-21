@@ -52,7 +52,7 @@ export default function AccountPage() {
       <div className="space-y-6">
         {/* Steam Connect — elevated hero */}
         <section>
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
             Connections
           </p>
           <SteamConnectSection />
@@ -60,7 +60,7 @@ export default function AccountPage() {
 
         {/* Profile — quieter secondary */}
         <section>
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
             Profile
           </p>
           <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
@@ -82,7 +82,7 @@ export default function AccountPage() {
 
             <dl className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-                <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Mail className="h-3 w-3" aria-hidden="true" />
                   Email
                 </dt>
@@ -91,7 +91,7 @@ export default function AccountPage() {
                 </dd>
               </div>
               <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-                <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Calendar className="h-3 w-3" aria-hidden="true" />
                   Member since
                 </dt>

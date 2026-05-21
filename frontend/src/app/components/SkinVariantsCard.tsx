@@ -1,12 +1,16 @@
 // /frontend/src/app/components/SkinVariantsCard.tsx (Frontend)
 "use client";
 
+import type { ElementType } from "react";
 import { Star, Zap, Package } from "lucide-react";
 import Link from "next/link";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface SkinVariant {
   id: number;
   name: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   wear: string;
   quality: string;
   isStattrak: boolean;
@@ -49,7 +53,7 @@ export default function SkinVariantsCard({ variants, currentSkinId }: SkinVarian
   };
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
+    <div className="bg-slate-900/50 rounded-2xl p-6 border border-slate-800">
       <div className="flex items-center gap-2 mb-4">
         <Package className="w-5 h-5 text-purple-400" />
         <h3 className="text-lg font-semibold">Skin Variants</h3>
@@ -57,11 +61,17 @@ export default function SkinVariantsCard({ variants, currentSkinId }: SkinVarian
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {variants.map((variant) => (
-          <Link
+        {variants.map((variant) => {
+          const href = skinDetailHref(variant);
+          const Wrapper: ElementType = href ? Link : "div";
+          const wrapperProps = href
+            ? { href }
+            : { "aria-disabled": true, tabIndex: -1 };
+          return (
+          <Wrapper
             key={variant.id}
-            href={`/skins/${variant.id}`}
-            className={`group relative bg-gray-800 rounded-lg p-3 border transition-all hover:border-gray-600 hover:bg-gray-750 ${
+            {...wrapperProps}
+            className={`group relative bg-slate-800/50 rounded-lg p-3 border transition-all hover:border-slate-600 hover:bg-slate-700/70 ${
               variant.id === currentSkinId ? 'ring-2 ring-blue-500' : ''
             }`}
           >
@@ -77,7 +87,7 @@ export default function SkinVariantsCard({ variants, currentSkinId }: SkinVarian
               <img
                 src={variant.imageUrl || "/images/placeholder-skin.png"}
                 alt={variant.name}
-                className="w-full h-20 object-contain rounded-md bg-gray-700"
+                className="w-full h-20 object-contain rounded-md bg-slate-700"
               />
               
               {/* Special Indicators */}
@@ -111,11 +121,12 @@ export default function SkinVariantsCard({ variants, currentSkinId }: SkinVarian
 
             {/* Hover Effect */}
             <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
-          </Link>
-        ))}
+          </Wrapper>
+          );
+        })}
       </div>
 
-      <div className="mt-4 pt-4 border-t border-gray-800">
+      <div className="mt-4 pt-4 border-t border-slate-800">
         <div className="text-xs text-gray-400 text-center">
           Click on any variant to view its details
         </div>

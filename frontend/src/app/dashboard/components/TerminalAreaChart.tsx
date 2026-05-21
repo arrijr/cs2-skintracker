@@ -92,7 +92,7 @@ export function TerminalAreaChart({
   if (data.length === 0) {
     return (
       <div
-        className={`flex items-center justify-center text-slate-500 text-sm ${className ?? ""}`}
+        className={`flex items-center justify-center text-slate-400 text-sm ${className ?? ""}`}
         style={{ height }}
       >
         No history yet — check back after the next price refresh.
@@ -114,10 +114,10 @@ export function TerminalAreaChart({
   return (
     <div className={`relative ${className ?? ""}`} style={{ height }}>
       {/* Y-axis range labels (top-left + bottom-left, terminal style) */}
-      <div className="absolute top-0 left-0 font-mono text-[0.65rem] text-slate-500 tabular-nums pointer-events-none">
+      <div className="absolute top-0 left-0 font-mono text-[0.65rem] text-slate-400 tabular-nums pointer-events-none">
         {currency}{max.toFixed(2)}
       </div>
-      <div className="absolute bottom-5 left-0 font-mono text-[0.65rem] text-slate-500 tabular-nums pointer-events-none">
+      <div className="absolute bottom-5 left-0 font-mono text-[0.65rem] text-slate-400 tabular-nums pointer-events-none">
         {currency}{min.toFixed(2)}
       </div>
 

@@ -143,7 +143,7 @@ export function AccountTab() {
               value={data.displayName ?? ''}
               onChange={(e) => setData({ ...data, displayName: e.target.value })}
               placeholder="Your name"
-              className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500 focus:border-fuchsia-500"
+              className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-400 focus:border-fuchsia-500"
             />
           </div>
         </div>
@@ -178,7 +178,7 @@ export function AccountTab() {
               value={data.preferredCurrency}
               onChange={(v) => setData({ ...data, preferredCurrency: v })}
             />
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               Portfolio values render in this currency app-wide.
             </p>
           </div>
@@ -231,7 +231,7 @@ export function AccountTab() {
 
     {/* Steam connection — identity / profile, not security */}
     <section id="steam">
-      <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+      <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
         Connections
       </p>
       <SteamConnectSection />

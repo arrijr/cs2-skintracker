@@ -101,7 +101,7 @@ export function SkinPriceChart({ data, patches = [], currency = "€", height = 
   if (!layout) {
     return (
       <div
-        className="flex items-center justify-center text-slate-500 text-sm"
+        className="flex items-center justify-center text-slate-400 text-sm"
         style={{ height }}
       >
         Not enough price history yet.
@@ -257,7 +257,7 @@ export function SkinPriceChart({ data, patches = [], currency = "€", height = 
             transform: "translate(12px, -50%)",
           }}
         >
-          <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">
+          <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">
             {new Date(hover.p.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" })}
           </div>
           <div className="font-mono font-bold text-pink-400 tabular-nums">
