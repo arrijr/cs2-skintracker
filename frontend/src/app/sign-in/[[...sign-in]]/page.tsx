@@ -4,16 +4,24 @@ export default function Page() {
   return (
     <div className="dashboard-bg flex items-center justify-center">
       <div className="w-full max-w-md relative z-10">
-        <SignIn 
+        <SignIn
           appearance={{
+            variables: {
+              colorPrimary: '#a855f7',
+              colorText: '#f1f5f9',
+              colorTextSecondary: '#94a3b8',
+              colorBackground: 'rgb(15 23 42 / 0.5)',
+              colorInputBackground: 'rgb(15 23 42 / 0.7)',
+              colorInputText: '#f1f5f9',
+            },
             elements: {
-              formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-sm normal-case',
-              card: 'bg-gray-900 border border-gray-700',
+              card: 'bg-slate-900/50 border border-slate-800 rounded-2xl shadow-xl',
+              formButtonPrimary: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-sm normal-case',
               headerTitle: 'text-white',
-              headerSubtitle: 'text-gray-400',
-              socialButtonsBlockButton: 'bg-gray-800 border-gray-600 hover:bg-gray-700',
-              formFieldInput: 'bg-gray-800 border-gray-600 text-white',
-              footerActionLink: 'text-blue-400 hover:text-blue-300',
+              headerSubtitle: 'text-slate-400',
+              socialButtonsBlockButton: 'bg-slate-800/50 border-slate-700 hover:bg-slate-700',
+              formFieldInput: 'bg-slate-900/70 border-slate-700 text-white',
+              footerActionLink: 'text-fuchsia-400 hover:text-fuchsia-300',
             },
           }}
         />

@@ -38,14 +38,14 @@ export default function PortfolioChart() {
         label: "Portfolio Value ($)", // <-- App-Währung $
         data: data.map(d => d.value),
         fill: false,
-        borderColor: "rgb(59,130,246)",
+        borderColor: "rgb(168,85,247)",
         tension: 0.2,
       },
     ],
   };
 
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-xl shadow p-4 mb-6">
+    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 mb-6">
       <h3 className="text-lg font-semibold mb-2">Portfolio Value History</h3>
       <Line data={chartData} />
     </div>

@@ -69,13 +69,13 @@ export default function InsightCards({ portfolio, token }: Props) {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/50 rounded-2xl p-6 shadow-md">
         <h3 className="text-xl font-semibold mb-4">Portfolio Insights</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-gray-800 rounded-lg p-4 animate-pulse">
-              <div className="h-4 bg-gray-700 rounded mb-2"></div>
-              <div className="h-8 bg-gray-700 rounded"></div>
+            <div key={i} className="bg-slate-800/50 rounded-lg p-4 animate-pulse">
+              <div className="h-4 bg-slate-700 rounded mb-2"></div>
+              <div className="h-8 bg-slate-700 rounded"></div>
             </div>
           ))}
         </div>
@@ -85,7 +85,7 @@ export default function InsightCards({ portfolio, token }: Props) {
 
   if (error) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/50 rounded-2xl p-6 shadow-md">
         <h3 className="text-xl font-semibold mb-4">Portfolio Insights</h3>
         <div className="text-center text-red-400 py-8">
           <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
@@ -98,7 +98,7 @@ export default function InsightCards({ portfolio, token }: Props) {
 
   if (!insights || !insights.hasEnoughData) {
     return (
-      <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+      <div className="bg-slate-900/50 rounded-2xl p-6 shadow-md">
         <h3 className="text-xl font-semibold mb-4">Portfolio Insights</h3>
         <div className="text-center text-gray-400 py-8">
           <BarChart3 className="w-8 h-8 mx-auto mb-2" />
@@ -110,12 +110,12 @@ export default function InsightCards({ portfolio, token }: Props) {
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 shadow-md">
+    <div className="bg-slate-900/50 rounded-2xl p-6 shadow-md">
       <h3 className="text-xl font-semibold mb-4">Portfolio Insights</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Volatility Card */}
-        <div className="bg-gray-800 rounded-lg p-4">
+        <div className="bg-slate-800/50 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-5 h-5 text-orange-400" />
             <span className="text-sm text-gray-400">30-Day Volatility</span>
@@ -129,7 +129,7 @@ export default function InsightCards({ portfolio, token }: Props) {
         </div>
 
         {/* Max Drawdown Card */}
-        <div className="bg-gray-800 rounded-lg p-4">
+        <div className="bg-slate-800/50 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingDown className="w-5 h-5 text-red-400" />
             <span className="text-sm text-gray-400">Max Drawdown (90d)</span>
@@ -143,7 +143,7 @@ export default function InsightCards({ portfolio, token }: Props) {
         </div>
 
         {/* Contribution Card */}
-        <div className="bg-gray-800 rounded-lg p-4">
+        <div className="bg-slate-800/50 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <BarChart3 className="w-5 h-5 text-blue-400" />
             <span className="text-sm text-gray-400">Week Performance</span>
@@ -163,7 +163,7 @@ export default function InsightCards({ portfolio, token }: Props) {
           <h4 className="text-lg font-medium mb-3">Top Contributors (7d)</h4>
           <div className="space-y-2">
             {insights.contribution.contributions.slice(0, 3).map((item: any) => (
-              <div key={item.skinId} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+              <div key={item.skinId} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
                 <div className="flex-1">
                   <div className="font-medium text-sm">{item.skinName}</div>
                   <div className="text-xs text-gray-400">

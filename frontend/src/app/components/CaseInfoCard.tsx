@@ -61,7 +61,7 @@ export default function CaseInfoCard({ caseInfo }: CaseInfoCardProps) {
   };
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
+    <div className="bg-slate-900/50 rounded-2xl p-6 border border-slate-800">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Package className="w-5 h-5 text-yellow-400" />
@@ -91,14 +91,14 @@ export default function CaseInfoCard({ caseInfo }: CaseInfoCardProps) {
           <Wrapper
             key={skin.id}
             {...wrapperProps}
-            className="group relative bg-gray-800 rounded-lg p-3 border transition-all hover:border-gray-600 hover:bg-gray-750"
+            className="group relative bg-slate-800/50 rounded-lg p-3 border transition-all hover:border-slate-600 hover:bg-slate-700/70"
           >
             {/* Skin Image */}
             <div className="relative mb-3">
               <img
                 src={skin.imageUrl || "/images/placeholder-skin.png"}
                 alt={skin.name}
-                className="w-full h-20 object-contain rounded-md bg-gray-700"
+                className="w-full h-20 object-contain rounded-md bg-slate-700"
               />
               
               {/* Special Indicators */}
@@ -137,7 +137,7 @@ export default function CaseInfoCard({ caseInfo }: CaseInfoCardProps) {
       </div>
 
       {/* Case Navigation */}
-      <div className="mt-4 pt-4 border-t border-gray-800">
+      <div className="mt-4 pt-4 border-t border-slate-800">
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-400">
             Click on any skin to view its details
