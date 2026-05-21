@@ -21,7 +21,7 @@ export const tokens = {
     primary: 'text-white',
     secondary: 'text-slate-300',
     muted: 'text-slate-400',
-    subtle: 'text-slate-500',
+    subtle: 'text-slate-400',
     success: 'text-green-400',
     danger: 'text-red-400',
     warning: 'text-amber-400',
@@ -48,9 +48,9 @@ export const tokens = {
     h3: 'text-lg md:text-xl font-semibold',
     body: 'text-base text-slate-300',
     bodySmall: 'text-sm text-slate-300',
-    caption: 'text-xs text-slate-500',
+    caption: 'text-xs text-slate-400',
     eyebrow: 'text-xs font-semibold uppercase tracking-wider text-purple-300/80',
-    label: 'text-xs font-semibold uppercase tracking-wider text-slate-500',
+    label: 'text-xs font-semibold uppercase tracking-wider text-slate-400',
   },
   /** Icon size scale — pick exactly one per context. */
   icon: {

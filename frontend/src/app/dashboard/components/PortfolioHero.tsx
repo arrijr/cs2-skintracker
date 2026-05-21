@@ -146,11 +146,11 @@ export function PortfolioHero({
                 className="font-display font-semibold text-white leading-[0.95] tracking-[-0.035em] flex items-baseline gap-1 text-[44px] sm:text-[60px] md:text-[76px]"
                 aria-label={`Portfolio value: ${currency}${intPart}.${decPart}`}
               >
-                <span className="text-slate-500 text-[26px] sm:text-[36px] md:text-[44px] mr-1 -translate-y-1 inline-block">
+                <span className="text-slate-400 text-[26px] sm:text-[36px] md:text-[44px] mr-1 -translate-y-1 inline-block">
                   {currency}
                 </span>
                 <span>{intPart}</span>
-                <span className="text-slate-500 text-[22px] sm:text-[30px] md:text-[36px]">.{decPart}</span>
+                <span className="text-slate-400 text-[22px] sm:text-[30px] md:text-[36px]">.{decPart}</span>
               </span>
             </FlashValue>
 

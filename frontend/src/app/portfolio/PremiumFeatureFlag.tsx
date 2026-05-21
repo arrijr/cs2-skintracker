@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { Crown, Lock, CheckCircle } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -39,7 +39,7 @@ export default function PremiumFeatureFlag({
     return fallback || (
       <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md" data-testid="premium-feature">
         <div className="text-center py-8">
-          <div className="text-2xl mb-4">🔒</div>
+          <div className="text-2xl mb-4">ðŸ”’</div>
           <h4 className="text-lg font-medium mb-2 text-white">Feature Disabled</h4>
           <p className="text-sm text-slate-400">
             {isPremium
@@ -118,7 +118,7 @@ export default function PremiumFeatureFlag({
                 // Redirect to Clerk dashboard for premium upgrade
                 window.open('/profile', '_blank');
               }}
-              className="block mx-auto text-xs text-slate-500 hover:text-slate-400 underline"
+              className="block mx-auto text-xs text-slate-400 hover:text-slate-400 underline"
             >
               Manage Subscription
             </button>
@@ -170,42 +170,42 @@ export const PREMIUM_FEATURES = [
     id: 'performance-dashboard',
     name: 'Performance Dashboard',
     description: 'Sharpe Ratio, Beta, Alpha, Max Drawdown',
-    icon: '📊',
+    icon: 'ðŸ“Š',
     category: 'Analytics'
   },
   {
     id: 'advanced-charts',
     name: 'Advanced Charts',
     description: 'Candlesticks, Volume, Correlation Matrix',
-    icon: '📈',
+    icon: 'ðŸ“ˆ',
     category: 'Charts'
   },
   {
     id: 'smart-alerts',
     name: 'Smart Alerts',
     description: 'Technical Indicators, Portfolio Rebalancing',
-    icon: '🔔',
+    icon: 'ðŸ””',
     category: 'Trading'
   },
   {
     id: 'transaction-analytics',
     name: 'Transaction Analytics',
     description: 'Realized P/L, Tax Reporting, Cost Basis',
-    icon: '💰',
+    icon: 'ðŸ’°',
     category: 'Analytics'
   },
   {
     id: 'portfolio-health',
     name: 'Portfolio Health Score',
     description: 'Diversification, Risk, Liquidity Analysis',
-    icon: '🏥',
+    icon: 'ðŸ¥',
     category: 'Risk'
   },
   {
     id: 'market-intelligence',
     name: 'Market Intelligence',
     description: 'Price Predictions, Market Cycles, News',
-    icon: '🧠',
+    icon: 'ðŸ§ ',
     category: 'Intelligence'
   }
 ];

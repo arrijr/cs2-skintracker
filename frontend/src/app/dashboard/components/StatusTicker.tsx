@@ -26,7 +26,7 @@ export function StatusTicker({ lastUpdated, steamConnected, alertCount = 0 }: St
     <div
       role="status"
       aria-live="off"
-      className="bg-slate-950 border border-slate-800 px-4 py-1.5 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-slate-500 flex items-center justify-between flex-wrap gap-x-4 gap-y-1"
+      className="bg-slate-950 border border-slate-800 px-4 py-1.5 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-slate-400 flex items-center justify-between flex-wrap gap-x-4 gap-y-1"
     >
       <div className="flex items-center gap-3 flex-wrap">
         <span className="inline-flex items-center gap-1.5 text-green-400">

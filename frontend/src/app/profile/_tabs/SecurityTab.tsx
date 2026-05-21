@@ -53,7 +53,7 @@ export function SecurityTab() {
       {/* Sign-in & Security (Clerk-managed, inline) */}
       <section className="space-y-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
             Account
           </p>
           <h2 className="text-lg font-semibold text-white">Sign-in & Security</h2>

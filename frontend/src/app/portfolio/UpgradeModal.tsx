@@ -139,7 +139,7 @@ export default function UpgradeModal({
             {isLoading ? 'Redirecting…' : plan.cta}
           </Button>
 
-          <p className="text-xs text-center text-slate-500">
+          <p className="text-xs text-center text-slate-400">
             Secure payment via Stripe. No hidden fees.
           </p>
         </div>

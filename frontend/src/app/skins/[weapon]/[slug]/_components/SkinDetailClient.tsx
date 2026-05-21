@@ -250,7 +250,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
 
       <div className="relative z-10 container mx-auto px-4 max-w-7xl py-6">
         {/* Breadcrumbs */}
-        <nav className="flex items-center gap-2 text-[12.5px] text-slate-500 mb-3" aria-label="Breadcrumb">
+        <nav className="flex items-center gap-2 text-[12.5px] text-slate-400 mb-3" aria-label="Breadcrumb">
           <Link href="/skins" className="hover:text-white transition-colors">Skins</Link>
           <span className="text-slate-700">/</span>
           {skin.weaponType && (
@@ -263,7 +263,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
           )}
           <span className="text-white">
             {skin.name}
-            {skin.wear && <span className="text-slate-500"> ({skin.wear})</span>}
+            {skin.wear && <span className="text-slate-400"> ({skin.wear})</span>}
           </span>
         </nav>
 
@@ -293,7 +293,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
                   </span>
                 )}
                 {skin.collection && (
-                  <span className="ml-auto text-xs text-slate-500">{skin.collection}</span>
+                  <span className="ml-auto text-xs text-slate-400">{skin.collection}</span>
                 )}
               </div>
 
@@ -376,7 +376,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
             </div>
 
             <div className="flex items-baseline gap-4 py-4 border-y border-slate-700/40">
-              <span className="font-display text-[3.5rem] font-bold leading-none tracking-tight tabular-nums">
+              <span className="font-display text-3xl sm:text-5xl md:text-[3.5rem] font-bold leading-none tracking-tight tabular-nums">
                 {price != null ? <>€{fmtEUR(price)}</> : "—"}
               </span>
               {deltaPct24h != null && (
@@ -393,7 +393,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
                     {deltaPct24h >= 0 ? "+" : ""}{deltaPct24h.toFixed(2)}% 24h
                   </span>
                   {delta24h != null && (
-                    <span className="font-mono text-[11.5px] text-slate-500 tabular-nums">
+                    <span className="font-mono text-[11.5px] text-slate-400 tabular-nums">
                       {fmtEURSigned(delta24h)}€ since yesterday
                     </span>
                   )}
@@ -402,7 +402,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
             </div>
 
             {/* Stat tiles */}
-            <div className="grid grid-cols-4 gap-3.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
               <StatTile label="Median" value={skin.priceMedian != null ? `€${fmtEUR(skin.priceMedian)}` : "—"} />
               <StatTile label="30D high" value={high30 != null ? `€${fmtEUR(high30)}` : "—"} sub="all-time tracked" />
               <StatTile label="Vol 24h" value={skin.sold24h != null ? `${skin.sold24h}` : "—"} sub="trades" />
@@ -462,7 +462,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
                 asChild
                 variant="ghost"
                 size="sm"
-                className="text-slate-500 hover:text-slate-300 self-start gap-2 -mt-2"
+                className="text-slate-400 hover:text-slate-300 self-start gap-2 -mt-2"
               >
                 <a
                   href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName)}`}
@@ -486,7 +486,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
               <div className="flex justify-between items-end gap-4 mb-4">
                 <div>
                   <h3 className="font-display text-base font-semibold text-white">Price history</h3>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-400 mt-1">
                     {skin.wear ?? ""}{skin.wear && skin.isStattrak ? " · " : ""}{skin.isStattrak ? "StatTrak™ " : ""}· Steam Market median
                   </p>
                 </div>
@@ -610,10 +610,10 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-white">{skin.caseInfo.name}</div>
-                  <div className="text-xs text-slate-500">Source case for this skin</div>
+                  <div className="text-xs text-slate-400">Source case for this skin</div>
                 </div>
               </div>
-              <ExternalLink className="h-4 w-4 text-slate-500 group-hover:text-white transition-colors" />
+              <ExternalLink className="h-4 w-4 text-slate-400 group-hover:text-white transition-colors" />
             </Link>
           </div>
         )}
@@ -626,9 +626,9 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
 function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700/40">
-      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1.5">{label}</div>
+      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1.5">{label}</div>
       <div className="font-mono font-bold text-sm text-white tabular-nums">{value}</div>
-      {sub && <div className="text-[11px] text-slate-500 mt-0.5">{sub}</div>}
+      {sub && <div className="text-[11px] text-slate-400 mt-0.5">{sub}</div>}
     </div>
   );
 }

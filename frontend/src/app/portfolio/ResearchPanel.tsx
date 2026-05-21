@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useUser, useAuth } from '@clerk/nextjs';
@@ -96,18 +96,18 @@ export default function ResearchPanel() {
           <ul className="space-y-2 text-sm text-slate-300">
             <li className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-purple-400" />
-              <span>Volatilitätsanalyse für alle Positionen</span>
+              <span>VolatilitÃ¤tsanalyse fÃ¼r alle Positionen</span>
             </li>
             <li className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-purple-400" />
-              <span>Rarity-Scoring für Sammler-Items</span>
+              <span>Rarity-Scoring fÃ¼r Sammler-Items</span>
             </li>
             <li className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-purple-400" />
               <span>Investitions-Recommendations</span>
             </li>
           </ul>
-          <UpgradeModal tier="pro" triggerText="Zu Pro upgraden - 9,99€/Monat" />
+          <UpgradeModal tier="pro" triggerText="Zu Pro upgraden - 9,99â‚¬/Monat" />
         </CardContent>
       </Card>
     );
@@ -150,7 +150,7 @@ export default function ResearchPanel() {
     return (
       <Card className="bg-slate-900/70 backdrop-blur border-slate-700/30">
         <CardContent className="pt-6 text-center text-slate-400">
-          Keine Research-Daten verfügbar. Fügen Sie Positionen zu Ihrem Portfolio hinzu.
+          Keine Research-Daten verfÃ¼gbar. FÃ¼gen Sie Positionen zu Ihrem Portfolio hinzu.
         </CardContent>
       </Card>
     );
@@ -164,7 +164,7 @@ export default function ResearchPanel() {
           Research Analysis
         </CardTitle>
         <CardDescription className="text-slate-400">
-          Volatilitäts- und Rarity-Analysen für Ihr Portfolio
+          VolatilitÃ¤ts- und Rarity-Analysen fÃ¼r Ihr Portfolio
         </CardDescription>
       </CardHeader>
 
@@ -182,7 +182,7 @@ export default function ResearchPanel() {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h3 className="font-semibold text-white">{item.skinName}</h3>
-                    <p className="text-xs text-slate-500">{item.scarcityRating}</p>
+                    <p className="text-xs text-slate-400">{item.scarcityRating}</p>
                   </div>
                   <div className="flex gap-2">
                     {isHighVolatility && (
@@ -202,7 +202,7 @@ export default function ResearchPanel() {
                 {/* Volatility */}
                 <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                   <div>
-                    <p className="text-slate-400">Volatilität (30d)</p>
+                    <p className="text-slate-400">VolatilitÃ¤t (30d)</p>
                     <p className="font-semibold text-white">{item.volatility.volatility.toFixed(2)}%</p>
                   </div>
                   <div>
@@ -216,7 +216,7 @@ export default function ResearchPanel() {
                   <div className="flex justify-between">
                     <span className="text-slate-400">30-Tage Spanne:</span>
                     <span className="font-medium text-slate-300">
-                      {item.volatility.minPrice.toFixed(2)}€ - {item.volatility.maxPrice.toFixed(2)}€
+                      {item.volatility.minPrice.toFixed(2)}â‚¬ - {item.volatility.maxPrice.toFixed(2)}â‚¬
                     </span>
                   </div>
                 </div>
@@ -225,7 +225,7 @@ export default function ResearchPanel() {
           })}
         </div>
 
-        <p className="text-xs text-slate-500 mt-4">
+        <p className="text-xs text-slate-400 mt-4">
           Analysiert am: {new Date(research.analysisDate).toLocaleString('de-DE')}
         </p>
       </CardContent>

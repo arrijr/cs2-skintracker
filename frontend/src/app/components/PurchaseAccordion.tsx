@@ -33,7 +33,8 @@ export default function PurchaseAccordion({ purchases, onTransactionChange }: Om
 
   return (
       <div className="p-4 border-t border-zinc-800">
-        <table className="w-full text-xs">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm">
             <thead>
             <tr className="text-zinc-400">
                 <th className="text-left py-1 px-2">Date</th>
@@ -76,6 +77,7 @@ export default function PurchaseAccordion({ purchases, onTransactionChange }: Om
             ))}
             </tbody>
         </table>
+        </div>
       </div>
   );
 }

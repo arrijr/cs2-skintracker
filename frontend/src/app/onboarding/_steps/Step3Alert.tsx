@@ -137,7 +137,7 @@ export function Step3Alert({ onBack, onFinish }: Step3AlertProps) {
         {!selected ? (
           <div className="mb-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -151,9 +151,9 @@ export function Step3Alert({ onBack, onFinish }: Step3AlertProps) {
             {debounced.length >= 2 && (
               <div className="mt-3 rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden max-h-80 overflow-y-auto">
                 {isLoading ? (
-                  <div className="p-4 text-sm text-slate-500">Searching…</div>
+                  <div className="p-4 text-sm text-slate-400">Searching…</div>
                 ) : results.length === 0 ? (
-                  <div className="p-4 text-sm text-slate-500">
+                  <div className="p-4 text-sm text-slate-400">
                     No skins match &ldquo;{debounced}&rdquo;.
                   </div>
                 ) : (
@@ -179,7 +179,7 @@ export function Step3Alert({ onBack, onFinish }: Step3AlertProps) {
                                   unoptimized
                                 />
                               ) : (
-                                <Bell className="h-4 w-4 text-slate-500" />
+                                <Bell className="h-4 w-4 text-slate-400" />
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -216,7 +216,7 @@ export function Step3Alert({ onBack, onFinish }: Step3AlertProps) {
                     unoptimized
                   />
                 ) : (
-                  <Bell className="h-5 w-5 text-slate-500" />
+                  <Bell className="h-5 w-5 text-slate-400" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
@@ -262,7 +262,7 @@ export function Step3Alert({ onBack, onFinish }: Step3AlertProps) {
                   <span className="font-semibold text-amber-300 tabular-nums">
                     €{threshold.toFixed(2)}
                   </span>{" "}
-                  <span className="text-slate-500">
+                  <span className="text-slate-400">
                     (15% below current price)
                   </span>
                   .

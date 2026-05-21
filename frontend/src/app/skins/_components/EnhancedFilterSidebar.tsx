@@ -122,7 +122,7 @@ export function EnhancedFilterSidebar({
         <div>
           <h2 className="font-display text-base font-semibold text-white">Filters</h2>
           {activeFilterCount > 0 && (
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5">
               <span className="font-mono tabular-nums text-purple-300">{activeFilterCount}</span> active
             </p>
           )}
@@ -142,7 +142,7 @@ export function EnhancedFilterSidebar({
       <Section eyebrow="Search">
         <div className="relative">
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500"
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400"
             aria-hidden="true"
           />
           <Input
@@ -155,7 +155,7 @@ export function EnhancedFilterSidebar({
           {filters.q && (
             <button
               onClick={() => onFilterChange("q", "")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white p-1"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
               aria-label="Clear search"
             >
               <X className="h-3.5 w-3.5" />
@@ -192,7 +192,7 @@ export function EnhancedFilterSidebar({
       <Section eyebrow="Price range (€)">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1 block">Min</label>
+            <label className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1 block">Min</label>
             <Input
               type="number"
               min={0}
@@ -203,7 +203,7 @@ export function EnhancedFilterSidebar({
             />
           </div>
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1 block">Max</label>
+            <label className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1 block">Max</label>
             <Input
               type="number"
               min={0}
@@ -218,7 +218,7 @@ export function EnhancedFilterSidebar({
 
       {/* WEAR (multi-select) */}
       <Section eyebrow="Wear">
-        <p className="text-[10px] text-slate-500 mb-2 leading-relaxed">
+        <p className="text-[10px] text-slate-400 mb-2 leading-relaxed">
           Wear filter currently limited to skins with wear-specific variants in our catalog.
         </p>
         <div className="flex flex-wrap gap-1.5">
@@ -355,7 +355,7 @@ export function EnhancedFilterSidebar({
 function Section({ eyebrow, children }: { eyebrow: string; children: React.ReactNode }) {
   return (
     <div className="px-5 py-4">
-      <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-2.5">
+      <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 mb-2.5">
         {eyebrow}
       </h3>
       {children}

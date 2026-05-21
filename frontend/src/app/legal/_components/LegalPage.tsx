@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+﻿import type { ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 interface LegalPageProps {
@@ -18,7 +18,7 @@ export function LegalPage({ eyebrow, title, lastUpdated, children }: LegalPagePr
         <h1 className="text-3xl md:text-4xl font-display font-bold text-white tracking-tight">
           {title}
         </h1>
-        <p className="mt-2 text-sm text-slate-500">Last updated: {lastUpdated}</p>
+        <p className="mt-2 text-sm text-slate-400">Last updated: {lastUpdated}</p>
       </header>
 
       <div

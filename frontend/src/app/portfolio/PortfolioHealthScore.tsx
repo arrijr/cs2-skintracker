@@ -293,7 +293,7 @@ export default function PortfolioHealthScore({ portfolio, history, isPremium = f
 
       {/* Overall Health Score */}
       <div className="text-center mb-8">
-        <div className={`text-6xl font-bold mb-2 ${getScoreColor(healthScore.overall)}`}>
+        <div className={`text-4xl sm:text-5xl md:text-6xl font-bold mb-2 ${getScoreColor(healthScore.overall)}`}>
           {healthScore.overall}
         </div>
         <div className="text-lg text-slate-300 mb-2">

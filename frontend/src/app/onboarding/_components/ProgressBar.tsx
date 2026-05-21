@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { cn } from "@/lib/utils";
 
 interface ProgressBarProps {
@@ -49,7 +49,7 @@ export function ProgressBar({ step, onJump }: ProgressBarProps) {
               onClick={() => clickable && onJump?.(n)}
               className={cn(
                 "flex items-center gap-2 transition-colors",
-                reached ? "text-slate-200" : "text-slate-500",
+                reached ? "text-slate-200" : "text-slate-400",
                 clickable && "hover:text-fuchsia-300 cursor-pointer",
                 !clickable && "cursor-default"
               )}

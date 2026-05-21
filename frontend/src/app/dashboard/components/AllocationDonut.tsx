@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -43,7 +43,7 @@ const PALETTE = ["#a855f7", "#ec4899", "#f5b948", "#34d399", "#06b6d4", "#fb7185
 
 type Tab = "Rarity" | "Weapon" | "Exterior";
 
-export function AllocationDonut({ portfolio, currency = "€" }: AllocationDonutProps) {
+export function AllocationDonut({ portfolio, currency = "â‚¬" }: AllocationDonutProps) {
   const [tab, setTab] = useState<Tab>("Rarity");
 
   const slices = useMemo<Slice[]>(() => {
@@ -125,7 +125,7 @@ export function AllocationDonut({ portfolio, currency = "€" }: AllocationDonut
         </div>
 
         {slices.length === 0 ? (
-          <p className="text-center text-sm text-slate-500 py-12">No data yet.</p>
+          <p className="text-center text-sm text-slate-400 py-12">No data yet.</p>
         ) : (
           <div className="flex flex-col items-center">
             <div className="relative w-[200px] h-[200px]">
@@ -157,7 +157,7 @@ export function AllocationDonut({ portfolio, currency = "€" }: AllocationDonut
                 <li key={i} className="grid grid-cols-[12px_1fr_auto_auto] gap-2.5 items-center text-xs">
                   <span className="w-2.5 h-2.5 rounded-[3px]" style={{ background: a.color }} aria-hidden="true" />
                   <span className="text-slate-300 truncate">{a.name}</span>
-                  <span className="font-mono text-slate-500 min-w-[44px] text-right">{a.pct.toFixed(0)}%</span>
+                  <span className="font-mono text-slate-400 min-w-[44px] text-right">{a.pct.toFixed(0)}%</span>
                   <span className="font-mono font-semibold text-white">
                     {currency}{a.val.toLocaleString("en-GB", { maximumFractionDigits: 0 })}
                   </span>

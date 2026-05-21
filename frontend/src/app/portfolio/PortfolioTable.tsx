@@ -270,8 +270,18 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
           >
             {/* Klickbarer Header */}
             <div
-              className="flex flex-wrap sm:flex-nowrap justify-between items-center cursor-pointer p-4 gap-3"
+              role="button"
+              tabIndex={0}
+              aria-expanded={isOpen}
+              aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${entry.skin.name} details`}
+              className="flex flex-wrap sm:flex-nowrap justify-between items-center cursor-pointer p-4 gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl"
               onClick={() => setOpenSkinId(isOpen ? null : entry.skin.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setOpenSkinId(isOpen ? null : entry.skin.id);
+                }
+              }}
             >
               <div className="flex gap-4 items-center min-w-0 flex-1">
                 {/* Portfolio Row Image */}

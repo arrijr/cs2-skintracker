@@ -372,7 +372,7 @@ export function EnhancedPortfolioGrid({
                     placeholder="Search portfolio..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-500"
+                    className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
                   />
                 </div>
               )}

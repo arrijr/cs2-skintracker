@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useMemo } from "react";
 import { Brain, TrendingUp, TrendingDown, Newspaper, Calendar, Target, BarChart3, Zap } from "lucide-react";
 import Tooltip from "../components/Tooltip";
@@ -316,7 +316,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
       <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
         <h3 className="text-xl font-semibold mb-4 text-white">Market Intelligence</h3>
         <div className="text-center py-8">
-          <div className="text-2xl mb-4">🔒</div>
+          <div className="text-2xl mb-4">ðŸ”’</div>
           <h4 className="text-lg font-medium mb-2 text-white">Market Intelligence Disabled</h4>
           <p className="text-sm text-slate-400 mb-4">
             Enable market intelligence with NEXT_PUBLIC_PORTFOLIO_MARKET_INTELLIGENCE=true
@@ -349,7 +349,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
         <h3 className="text-2xl font-bold text-white">Market Intelligence</h3>
         <div className="flex items-center gap-2">
           <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">
-            🔒 Premium Feature
+            ðŸ”’ Premium Feature
           </div>
         </div>
       </div>
@@ -569,7 +569,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
                   </div>
                   <p className="text-sm text-slate-400 mb-2">{event.description}</p>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500">{event.category.replace('_', ' ')}</span>
+                    <span className="text-slate-400">{event.category.replace('_', ' ')}</span>
                     <span className="text-purple-400">
                       {new Date(event.date).toLocaleDateString()}
                     </span>
@@ -587,7 +587,7 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
 
       {/* Disclaimer */}
       <div className="mt-6 pt-6 border-t border-slate-700/50">
-        <div className="text-xs text-slate-500 text-center">
+        <div className="text-xs text-slate-400 text-center">
           <Zap className="inline w-3 h-3 mr-1" />
           AI-powered insights are for informational purposes only. 
           Always conduct your own research before making investment decisions.

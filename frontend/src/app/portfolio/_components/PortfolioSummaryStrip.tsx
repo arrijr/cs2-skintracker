@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,7 @@ export function PortfolioSummaryStrip({ cards }: { cards: SumCard[] }) {
                   "font-mono text-xs mt-1",
                   c.subTone === "pos" && "text-emerald-400",
                   c.subTone === "neg" && "text-rose-400",
-                  (!c.subTone || c.subTone === "neutral") && "text-slate-500"
+                  (!c.subTone || c.subTone === "neutral") && "text-slate-400"
                 )}
               >
                 {c.sub}

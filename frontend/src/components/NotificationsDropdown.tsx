@@ -89,7 +89,7 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative w-9 h-9 rounded-[9px] bg-slate-900/70 border border-slate-700/40 inline-flex items-center justify-center text-slate-300 hover:text-white hover:border-slate-600/60 transition-colors focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+        className="relative w-11 h-11 sm:w-9 sm:h-9 rounded-[9px] bg-slate-900/70 border border-slate-700/40 inline-flex items-center justify-center text-slate-300 hover:text-white hover:border-slate-600/60 transition-colors focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
         aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ""}`}
         aria-expanded={open}
       >
@@ -103,7 +103,7 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-[340px] bg-slate-900/95 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl shadow-purple-500/10 overflow-hidden z-50">
+        <div className="absolute right-0 top-full mt-2 w-[min(340px,calc(100vw-1rem))] bg-slate-900/95 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-2xl shadow-purple-500/10 overflow-hidden z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700/40">
             <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
               Notifications
@@ -126,7 +126,7 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
               <div className="px-4 py-10 text-center">
                 <Bell className="h-8 w-8 text-slate-700 mx-auto mb-3" aria-hidden="true" />
                 <p className="text-sm font-medium text-slate-300">No new notifications yet</p>
-                <p className="text-xs text-slate-500 mt-1">Alerts and price events will appear here.</p>
+                <p className="text-xs text-slate-400 mt-1">Alerts and price events will appear here.</p>
               </div>
             ) : (
               <ul className="divide-y divide-slate-700/30">

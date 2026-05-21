@@ -220,7 +220,7 @@ export function EnhancedPortfolioCard({
                     disabled
                     aria-disabled="true"
                     tabIndex={-1}
-                    className="h-8 w-8 p-0 text-slate-500 cursor-not-allowed"
+                    className="h-8 w-8 p-0 text-slate-400 cursor-not-allowed"
                   >
                     <Eye className="h-4 w-4" />
                   </Button>

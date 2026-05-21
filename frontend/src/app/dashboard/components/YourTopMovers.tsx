@@ -77,7 +77,7 @@ export function YourTopMovers({ portfolio, timeframe, onTimeframeChange }: YourT
       </CardHeader>
       <CardContent>
         {!hasMovers ? (
-          <p className="text-sm text-slate-500 text-center py-6">
+          <p className="text-sm text-slate-400 text-center py-6">
             No price movement in your portfolio yet.
           </p>
         ) : (
@@ -85,7 +85,7 @@ export function YourTopMovers({ portfolio, timeframe, onTimeframeChange }: YourT
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="h-4 w-4 text-green-400" aria-hidden="true" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Gainers
                 </span>
               </div>
@@ -94,7 +94,7 @@ export function YourTopMovers({ portfolio, timeframe, onTimeframeChange }: YourT
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <TrendingDown className="h-4 w-4 text-red-400" aria-hidden="true" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Losers
                 </span>
               </div>
@@ -150,7 +150,7 @@ function MoverList({ items }: { items: Array<PortfolioItem & { delta: number; va
                 </span>
               );
             })()}
-            <p className="text-xs text-slate-500 font-mono tabular-nums">
+            <p className="text-xs text-slate-400 font-mono tabular-nums">
               €{(it.marketPrice ?? it.priceLatest ?? 0).toFixed(2)}
             </p>
           </div>

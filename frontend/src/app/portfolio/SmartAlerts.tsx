@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useMemo } from "react";
 import { Bell, AlertTriangle, TrendingUp, TrendingDown, Settings, Zap, Shield, Info } from "lucide-react";
 import Tooltip from "../components/Tooltip";
@@ -207,7 +207,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
       <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
         <h3 className="text-xl font-semibold mb-4 text-white">Smart Alerts</h3>
         <div className="text-center py-8">
-          <div className="text-2xl mb-4">🔒</div>
+          <div className="text-2xl mb-4">ðŸ”’</div>
           <h4 className="text-lg font-medium mb-2 text-white">Smart Alerts Disabled</h4>
           <p className="text-sm text-slate-400 mb-4">
             Enable smart alerts with NEXT_PUBLIC_PORTFOLIO_SMART_ALERTS=true
@@ -243,7 +243,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
         <h3 className="text-2xl font-bold text-white">Smart Alerts</h3>
         <div className="flex items-center gap-2">
           <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">
-            🔒 Premium Feature
+            ðŸ”’ Premium Feature
           </div>
           {hasAlerts && (
             <div className="text-xs bg-red-500/10 text-red-400 border border-red-500/30 px-2 py-1 rounded">
@@ -319,7 +319,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
                       <p className="text-sm opacity-90 mb-2">{alert.description}</p>
                       {alert.action && (
                         <p className="text-xs opacity-75">
-                          💡 <strong>Action:</strong> {alert.action}
+                          ðŸ’¡ <strong>Action:</strong> {alert.action}
                         </p>
                       )}
                     </div>
@@ -339,7 +339,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
         </div>
       ) : (
         <div className="text-center py-8">
-          <div className="text-2xl mb-4">✅</div>
+          <div className="text-2xl mb-4">âœ…</div>
           <h4 className="text-lg font-medium mb-2 text-white">All Clear!</h4>
           <p className="text-sm text-slate-400">
             No active alerts at the moment. Your portfolio is performing well.
@@ -356,7 +356,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
               <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
                 <div className="text-slate-400 flex items-center justify-center gap-1">
                   RSI (14)
-                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-300 transition-colors" />
                 </div>
                 <div className={`font-medium ${
                   technicalIndicators.rsi > 70 ? 'text-red-400' :
@@ -371,7 +371,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
               <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
                 <div className="text-slate-400 flex items-center justify-center gap-1">
                   MACD
-                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-300 transition-colors" />
                 </div>
                 <div className={`font-medium ${
                   technicalIndicators.macd > 0 ? 'text-green-400' : 'text-red-400'
@@ -385,7 +385,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
               <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
                 <div className="text-slate-400 flex items-center justify-center gap-1">
                   SMA 20
-                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-300 transition-colors" />
                 </div>
                 <div className="font-medium text-purple-400">
                   ${technicalIndicators.sma20.toFixed(2)}
@@ -397,7 +397,7 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
               <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
                 <div className="text-slate-400 flex items-center justify-center gap-1">
                   SMA 50
-                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-300 transition-colors" />
                 </div>
                 <div className="font-medium text-purple-400">
                   ${technicalIndicators.sma50.toFixed(2)}

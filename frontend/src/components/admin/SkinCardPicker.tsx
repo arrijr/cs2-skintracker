@@ -4,10 +4,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, X, Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Search, Plus } from 'lucide-react';
 import Image from 'next/image';
 import axios from 'axios';
 
@@ -63,16 +64,13 @@ export default function SkinCardPicker({ onSelect, onClose }: SkinCardPickerProp
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[80vh] overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Select Skin for Blog Post</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="w-4 h-4" />
-          </Button>
-        </CardHeader>
-        
-        <CardContent className="overflow-y-auto max-h-[60vh]">
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden p-0">
+        <DialogHeader className="px-6 pt-6 pb-2">
+          <DialogTitle>Select Skin for Blog Post</DialogTitle>
+        </DialogHeader>
+
+        <div className="overflow-y-auto max-h-[60vh] px-6 pb-6">
           <div className="mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -115,10 +113,19 @@ export default function SkinCardPicker({ onSelect, onClose }: SkinCardPickerProp
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {skins.map((skin) => (
-                <Card 
-                  key={skin.id} 
-                  className="cursor-pointer hover:shadow-md transition-shadow"
+                <Card
+                  key={skin.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Select ${skin.name}`}
+                  className="cursor-pointer hover:shadow-md transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500"
                   onClick={() => handleSelectSkin(skin)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelectSkin(skin);
+                    }
+                  }}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center space-x-3">
@@ -166,8 +173,8 @@ export default function SkinCardPicker({ onSelect, onClose }: SkinCardPickerProp
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

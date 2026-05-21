@@ -4,8 +4,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, X, Link as LinkIcon } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Upload, Link as LinkIcon } from 'lucide-react';
 
 interface ImageUploadProps {
   onUpload: (imageUrl: string) => void;
@@ -38,16 +38,13 @@ export default function ImageUpload({ onUpload, onClose }: ImageUploadProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Add Image</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="w-4 h-4" />
-          </Button>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add Image</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
           <div>
             <label className="text-sm font-medium mb-2 block">Image URL</label>
             <div className="flex space-x-2">
@@ -95,8 +92,8 @@ export default function ImageUpload({ onUpload, onClose }: ImageUploadProps) {
           <div className="text-xs text-gray-500">
             Note: File uploads are currently simulated. In production, implement proper image hosting.
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

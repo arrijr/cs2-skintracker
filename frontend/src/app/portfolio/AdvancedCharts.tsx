@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useMemo } from "react";
 import { Line, Bar, Doughnut } from "react-chartjs-2";
 import { Chart, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip as ChartTooltip, Legend, Title, Filler } from "chart.js";
@@ -229,7 +229,7 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
       <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
         <h3 className="text-xl font-semibold mb-4 text-white">Advanced Charts</h3>
         <div className="text-center py-8">
-          <div className="text-2xl mb-4">🔒</div>
+          <div className="text-2xl mb-4">ðŸ”’</div>
           <h4 className="text-lg font-medium mb-2 text-white">Advanced Charting Disabled</h4>
           <p className="text-sm text-slate-400 mb-4">
             Enable advanced charts with NEXT_PUBLIC_PORTFOLIO_ADVANCED_CHARTS=true
@@ -245,7 +245,7 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
         <h3 className="text-2xl font-bold text-white">Advanced Charts</h3>
         {!isPremium && (
           <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">
-            🔒 Premium Feature
+            ðŸ”’ Premium Feature
           </div>
         )}
       </div>
@@ -342,7 +342,7 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
               <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
                 <div className="text-slate-400 flex items-center justify-center gap-1 mb-1">
                   Best Day
-                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-300 transition-colors" />
                 </div>
                 <div className="text-green-400 font-medium">
                   {Math.max(...chartData.candlestick.map(entry => entry.changePercent)).toFixed(2)}%
@@ -354,7 +354,7 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
               <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
                 <div className="text-slate-400 flex items-center justify-center gap-1 mb-1">
                   Worst Day
-                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-300 transition-colors" />
                 </div>
                 <div className="text-red-400 font-medium">
                   {Math.min(...chartData.candlestick.map(entry => entry.changePercent)).toFixed(2)}%
@@ -366,7 +366,7 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
               <div className="text-center p-3 bg-slate-800/60 border border-slate-700/50 rounded-lg hover:border-slate-600 transition-colors cursor-help">
                 <div className="text-slate-400 flex items-center justify-center gap-1 mb-1">
                   Avg Daily Change
-                  <Info className="w-3 h-3 text-slate-500 hover:text-slate-300 transition-colors" />
+                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-300 transition-colors" />
                 </div>
                 <div className="text-purple-400 font-medium">
                   {(chartData.candlestick.reduce((sum, entry) => sum + entry.changePercent, 0) / chartData.candlestick.length).toFixed(2)}%

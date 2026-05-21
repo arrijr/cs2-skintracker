@@ -47,7 +47,8 @@ export default function WatchlistTable({ watchlist, onRemove, onUpdateAlert }: P
   return (
     <div className="bg-gray-900 rounded-xl p-6 shadow-md w-full max-w-3xl mx-auto mt-8" data-testid="watchlist-table">
       <h2 className="text-xl font-bold mb-4">Watchlist</h2>
-      <table className="w-full text-sm">
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+      <table className="w-full text-sm min-w-[640px]">
         <thead>
           <tr className="text-gray-300 border-b border-gray-700">
             <th className="py-2">Image</th>
@@ -172,6 +173,7 @@ export default function WatchlistTable({ watchlist, onRemove, onUpdateAlert }: P
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

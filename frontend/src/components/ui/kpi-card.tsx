@@ -53,7 +53,7 @@ export function KPICard({ label, value, delta, deltaLabel, icon, tone = "neutral
               "font-mono text-xs mt-1.5 flex items-center gap-1.5",
               delta !== undefined
                 ? isPos ? "text-emerald-400" : "text-rose-400"
-                : "text-slate-500"
+                : "text-slate-400"
             )}
           >
             {delta !== undefined && (
@@ -62,7 +62,7 @@ export function KPICard({ label, value, delta, deltaLabel, icon, tone = "neutral
                 <span className="tabular-nums">
                   {isPos ? "+" : ""}{delta.toFixed(2)}%
                 </span>
-                {deltaLabel && <span className="text-slate-500 font-sans ml-0.5">{deltaLabel}</span>}
+                {deltaLabel && <span className="text-slate-400 font-sans ml-0.5">{deltaLabel}</span>}
               </>
             )}
             {!delta && sub && <span className="font-sans">{sub}</span>}

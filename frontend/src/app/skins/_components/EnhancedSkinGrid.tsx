@@ -354,7 +354,7 @@ export function EnhancedSkinGrid({
               "p-1.5 rounded transition-colors",
               viewMode === 'grid'
                 ? "bg-slate-800/80 text-white"
-                : "text-slate-500 hover:text-slate-300"
+                : "text-slate-400 hover:text-slate-300"
             )}
             aria-label="Grid view"
           >
@@ -367,7 +367,7 @@ export function EnhancedSkinGrid({
               "p-1.5 rounded transition-colors",
               viewMode === 'list'
                 ? "bg-slate-800/80 text-white"
-                : "text-slate-500 hover:text-slate-300"
+                : "text-slate-400 hover:text-slate-300"
             )}
             aria-label="List view"
           >

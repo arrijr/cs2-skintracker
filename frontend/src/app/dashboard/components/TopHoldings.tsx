@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -87,8 +87,8 @@ export function TopHoldings({ portfolio, totalValue }: TopHoldingsProps) {
                         </span>
                       );
                     })()}
-                    <p className="text-xs text-slate-500 font-mono tabular-nums">
-                      €{h.value.toFixed(2)} · {pct.toFixed(1)}%
+                    <p className="text-xs text-slate-400 font-mono tabular-nums">
+                      â‚¬{h.value.toFixed(2)} Â· {pct.toFixed(1)}%
                     </p>
                   </div>
                 </div>

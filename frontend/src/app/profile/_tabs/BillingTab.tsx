@@ -185,7 +185,7 @@ export function BillingTab() {
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
               Current plan
             </div>
             <div className="mt-1.5 flex items-center gap-2">
@@ -205,7 +205,7 @@ export function BillingTab() {
 
           {tier !== 'free' && renewalLabel && (
             <div className="text-right">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                 {cancelAtPeriodEnd ? 'Ends' : 'Renews'}
               </div>
               <div className="mt-1 text-sm text-slate-200 font-medium tabular-nums">
@@ -253,7 +253,7 @@ export function BillingTab() {
         </div>
 
         {!hasStripeCustomer && tier === 'free' && (
-          <p className="mt-4 text-xs text-slate-500">
+          <p className="mt-4 text-xs text-slate-400">
             Subscribe first to manage billing through the Stripe Customer Portal.
           </p>
         )}

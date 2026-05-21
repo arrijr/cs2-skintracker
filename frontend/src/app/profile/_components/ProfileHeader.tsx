@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@clerk/nextjs';
@@ -80,7 +80,7 @@ export function ProfileHeader() {
         </div>
         <div className="text-slate-400 text-sm truncate">{email}</div>
         {memberSince && (
-          <div className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+          <div className="text-xs text-slate-400 flex items-center gap-1 mt-1">
             <Calendar className="w-3 h-3" aria-hidden="true" />
             Member since {memberSince}
           </div>

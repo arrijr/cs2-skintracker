@@ -66,7 +66,7 @@ export default function AppHeader() {
             {/* Spacer + Search-shortcut button (opens command palette) */}
             <button
               onClick={() => cmd.setOpen(true)}
-              className="hidden lg:flex items-center gap-2 ml-auto bg-slate-900/70 border border-slate-700/40 px-3 py-1.5 rounded-md min-w-[260px] text-sm text-slate-500 hover:text-slate-300 hover:border-slate-600/60 transition-colors focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              className="hidden lg:flex items-center gap-2 ml-auto bg-slate-900/70 border border-slate-700/40 px-3 py-1.5 rounded-md min-w-[260px] text-sm text-slate-400 hover:text-slate-300 hover:border-slate-600/60 transition-colors focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
               aria-label="Open command palette"
             >
               <Search className="h-3.5 w-3.5" aria-hidden="true" />
@@ -90,7 +90,7 @@ export default function AppHeader() {
             <div className="md:hidden ml-auto flex items-center gap-2" data-testid="mobile-menu">
               <button
                 onClick={() => cmd.setOpen(true)}
-                className="w-9 h-9 rounded-[9px] bg-slate-900/70 border border-slate-700/40 inline-flex items-center justify-center text-slate-300 hover:text-white"
+                className="w-11 h-11 sm:w-9 sm:h-9 rounded-[9px] bg-slate-900/70 border border-slate-700/40 inline-flex items-center justify-center text-slate-300 hover:text-white"
                 aria-label="Open search"
               >
                 <Search className="h-4 w-4" aria-hidden="true" />

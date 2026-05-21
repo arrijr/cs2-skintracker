@@ -108,7 +108,7 @@ export function SteamConnectSection() {
               >
                 <Link2 className="h-4 w-4" /> Connect Steam Account
               </Button>
-              <p className="text-xs text-slate-500 mt-3">Your Steam profile must be set to public to import inventory.</p>
+              <p className="text-xs text-slate-400 mt-3">Your Steam profile must be set to public to import inventory.</p>
             </div>
           </div>
         </div>
@@ -145,17 +145,17 @@ export function SteamConnectSection() {
 
         <dl className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3">
-            <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Steam ID</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Steam ID</dt>
             <dd className="mt-1 text-sm text-slate-200">
               <code className="bg-slate-900/80 px-1.5 py-0.5 rounded text-xs">{status.steamId}</code>
             </dd>
           </div>
           <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3">
-            <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Connected</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Connected</dt>
             <dd className="mt-1 text-sm text-slate-200">{status.steamConnectedAt ? new Date(status.steamConnectedAt).toLocaleDateString() : '—'}</dd>
           </div>
           <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3">
-            <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Last import</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Last import</dt>
             <dd className="mt-1 text-sm text-slate-200">{status.lastImportedAt ? new Date(status.lastImportedAt).toLocaleDateString() : '—'}</dd>
           </div>
         </dl>

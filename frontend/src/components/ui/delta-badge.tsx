@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +33,7 @@ export function DeltaBadge({ value, size = "sm", showIcon = true, suffix, classN
         {isPositive ? "+" : ""}
         {value.toFixed(2)}%
       </span>
-      {suffix && <span className="text-slate-500 ml-1">{suffix}</span>}
+      {suffix && <span className="text-slate-400 ml-1">{suffix}</span>}
     </div>
   );
 }
