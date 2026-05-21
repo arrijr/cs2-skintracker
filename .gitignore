@@ -21,6 +21,9 @@ node_modules/
 *.sln
 *.sw?
 
+# Claude Code local config + worktrees (may contain MCP tokens, never commit)
+.claude/
+
 # OS specific
 .DS_Store
 
