@@ -101,8 +101,12 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
 };
 
+// `app.use(cors())` handles OPTIONS preflight automatically. The
+// previously-explicit `app.options(/.*/, cors(corsOptions))` line caused
+// Express 5 + path-to-regexp v6 to throw 500 on preflight (incompatible
+// regex semantics), which broke www.skintrackr.io → api.skintrackr.io
+// cross-origin requests entirely. Removed 2026-05-22.
 app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
 
 // Routes (nur Pfade, keine URLs!)
 app.use("/api/v1/users", sensitiveLimiter, userRoutes);
