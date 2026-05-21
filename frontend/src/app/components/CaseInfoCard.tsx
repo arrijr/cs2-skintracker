@@ -1,12 +1,16 @@
 // /frontend/src/app/components/CaseInfoCard.tsx (Frontend)
 "use client";
 
+import type { ElementType } from "react";
 import { Package, Star, Zap, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface CaseSkin {
   id: number;
   name: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   wear: string;
   rarity: string;
   quality: string;
@@ -77,10 +81,16 @@ export default function CaseInfoCard({ caseInfo }: CaseInfoCardProps) {
 
       {/* Case Skins Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
-        {caseInfo.skins.map((skin) => (
-          <Link
+        {caseInfo.skins.map((skin) => {
+          const href = skinDetailHref(skin);
+          const Wrapper: ElementType = href ? Link : "div";
+          const wrapperProps = href
+            ? { href }
+            : { "aria-disabled": true, tabIndex: -1 };
+          return (
+          <Wrapper
             key={skin.id}
-            href={`/skins/${skin.id}`}
+            {...wrapperProps}
             className="group relative bg-gray-800 rounded-lg p-3 border transition-all hover:border-gray-600 hover:bg-gray-750"
           >
             {/* Skin Image */}
@@ -121,8 +131,9 @@ export default function CaseInfoCard({ caseInfo }: CaseInfoCardProps) {
 
             {/* Hover Effect */}
             <div className="absolute inset-0 bg-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
-          </Link>
-        ))}
+          </Wrapper>
+          );
+        })}
       </div>
 
       {/* Case Navigation */}

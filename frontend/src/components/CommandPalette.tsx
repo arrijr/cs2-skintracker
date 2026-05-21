@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { Search, ArrowRight, Bell, BarChart3, Crown, Crosshair, Package, Eye, User, Sparkles, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiUrl, swrFetcher } from "@/lib/api";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface CommandItem {
   id: string;
@@ -63,20 +64,25 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const skinItems: CommandItem[] = useMemo(() => {
     const items =
       (skinsResp as any)?.items ?? (skinsResp as any)?.data ?? (Array.isArray(skinsResp) ? skinsResp : []);
-    return (items as any[]).map((s: any) => {
-      const price = typeof s.priceMedian === 'number' ? s.priceMedian : null;
-      const desc = s.rarity
-        ? `${s.rarity}${price !== null ? ` · €${price.toFixed(2)}` : ''}`
-        : (price !== null ? `€${price.toFixed(2)}` : undefined);
-      return {
-        id: `skin-${s.id}`,
-        label: s.name ?? s.marketHashName ?? `Skin ${s.id}`,
-        description: desc,
-        href: `/skins/${s.id}`,
-        icon: ImageIcon,
-        group: 'skins' as const,
-      };
-    });
+    return (items as any[])
+      .map((s: any) => {
+        const price = typeof s.priceMedian === 'number' ? s.priceMedian : null;
+        const desc = s.rarity
+          ? `${s.rarity}${price !== null ? ` · €${price.toFixed(2)}` : ''}`
+          : (price !== null ? `€${price.toFixed(2)}` : undefined);
+        const href = skinDetailHref(s);
+        // Skip skins without canonical slug — legacy `/skins/${id}` route is gone.
+        if (!href) return null;
+        return {
+          id: `skin-${s.id}`,
+          label: s.name ?? s.marketHashName ?? `Skin ${s.id}`,
+          description: desc,
+          href,
+          icon: ImageIcon,
+          group: 'skins' as const,
+        };
+      })
+      .filter(Boolean) as CommandItem[];
   }, [skinsResp]);
 
   // Fuzzy filter

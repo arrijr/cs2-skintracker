@@ -2,7 +2,7 @@
 // {/* Case Section Component - shows the case of a skin + grid of all skins from that case */}
 
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ElementType } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SkinImage from "@/components/SkinImage";
@@ -15,6 +15,7 @@ import { ExternalLink, Package } from "lucide-react";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { formatUSD } from "@/lib/num";
 import { caseToSlug } from "@/lib/strings";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface Case {
   id: number;
@@ -26,6 +27,8 @@ interface Case {
 interface CaseSkin {
   id: number;
   name: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   wear: string;
   rarity: string;
   quality: string;
@@ -154,10 +157,16 @@ export function CaseSection({ skinId }: CaseSectionProps) {
           {/* Case Skins Grid — all skins contained in this case */}
           {/* Desktop Grid */}
           <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {caseSkins.slice(0, 12).map((skin) => (
-              <Link 
-                key={skin.id} 
-                href={`/skins/${skin.id}`}
+            {caseSkins.slice(0, 12).map((skin) => {
+              const href = skinDetailHref(skin);
+              const Wrapper: ElementType = href ? Link : "div";
+              const wrapperProps = href
+                ? { href }
+                : { "aria-disabled": true, tabIndex: -1 };
+              return (
+              <Wrapper
+                key={skin.id}
+                {...wrapperProps}
                 className="group"
               >
                 <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-105 border-2 hover:border-accent/30 bg-gradient-to-br from-background to-accent/5">
@@ -217,18 +226,25 @@ export function CaseSection({ skinId }: CaseSectionProps) {
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
-            ))}
+              </Wrapper>
+              );
+            })}
           </div>
-          
+
           {/* Mobile Carousel for Skins (Case + Related) */}
           <div className="md:hidden">
             <Carousel className="w-full">
               <CarouselContent className="-ml-2 md:-ml-4">
-                {caseSkins.slice(0, 12).map((skin) => (
+                {caseSkins.slice(0, 12).map((skin) => {
+                  const href = skinDetailHref(skin);
+                  const Wrapper: ElementType = href ? Link : "div";
+                  const wrapperProps = href
+                    ? { href }
+                    : { "aria-disabled": true, tabIndex: -1 };
+                  return (
                   <CarouselItem key={skin.id} className="pl-2 md:pl-4 basis-1/2">
-                    <Link 
-                      href={`/skins/${skin.id}`}
+                    <Wrapper
+                      {...wrapperProps}
                       className="group"
                     >
                       <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-105 border-2 hover:border-accent/30 bg-gradient-to-br from-background to-accent/5">
@@ -288,9 +304,10 @@ export function CaseSection({ skinId }: CaseSectionProps) {
                           </div>
                         </CardContent>
                       </Card>
-                    </Link>
+                    </Wrapper>
                   </CarouselItem>
-                ))}
+                  );
+                })}
               </CarouselContent>
               <CarouselPrevious className="left-2" />
               <CarouselNext className="right-2" />

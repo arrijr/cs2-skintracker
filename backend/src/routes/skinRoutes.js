@@ -150,6 +150,8 @@ router.get("/", optionalClerkAuth, async (req, res) => {
         select: {
           id: true,
           name: true,
+          slug: true,
+          weaponSlug: true,
           marketHashName: true,
           imageUrl: true,
           weaponType: true,

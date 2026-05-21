@@ -7,11 +7,14 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { DeltaBadge } from "@/components/ui/delta-badge";
 import { RarityBar } from "@/components/ui/rarity-indicator";
 import { steamImageSrc } from "@/lib/image-proxy";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface PortfolioItem {
   id?: number;
   skinId?: number;
   name?: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   imageUrl?: string;
   marketPrice?: number;
   priceLatest?: number;
@@ -128,12 +131,25 @@ function MoverList({ items }: { items: Array<PortfolioItem & { delta: number; va
             )}
           </div>
           <div className="flex-1 min-w-0 self-center">
-            <Link
-              href={`/skins/${it.skinId ?? it.id}`}
-              className="text-sm text-slate-200 hover:text-white truncate block group-hover:underline"
-            >
-              {it.name ?? "Unknown skin"}
-            </Link>
+            {(() => {
+              const href = skinDetailHref(it);
+              return href ? (
+                <Link
+                  href={href}
+                  className="text-sm text-slate-200 hover:text-white truncate block group-hover:underline"
+                >
+                  {it.name ?? "Unknown skin"}
+                </Link>
+              ) : (
+                <span
+                  aria-disabled="true"
+                  tabIndex={-1}
+                  className="text-sm text-slate-300 truncate block cursor-default"
+                >
+                  {it.name ?? "Unknown skin"}
+                </span>
+              );
+            })()}
             <p className="text-xs text-slate-500 font-mono tabular-nums">
               €{(it.marketPrice ?? it.priceLatest ?? 0).toFixed(2)}
             </p>

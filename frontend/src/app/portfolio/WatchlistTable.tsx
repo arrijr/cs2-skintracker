@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Bell, DollarSign } from "lucide-react";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 type WatchlistEntry =
   | {
@@ -16,10 +17,14 @@ type WatchlistEntry =
       name?: string;
       imageUrl?: string;
       marketHashName?: string;
+      slug?: string | null;
+      weaponSlug?: string | null;
       // nested
       skin?: {
         id: number;
         name: string;
+        slug?: string | null;
+        weaponSlug?: string | null;
         image_url?: string;
         imageUrl?: string;
         itemimage?: string;
@@ -63,6 +68,11 @@ export default function WatchlistTable({ watchlist, onRemove, onUpdateAlert }: P
               entry.imageUrl ||
               "/images/placeholder-skin.png";
             const linkId = s?.id ?? entry.skinId;
+            const href = skinDetailHref({
+              id: linkId,
+              slug: s?.slug ?? entry.slug ?? null,
+              weaponSlug: s?.weaponSlug ?? entry.weaponSlug ?? null,
+            });
 
             return (
               <tr key={`${entry.id}-${linkId}`} className="border-b border-gray-800">
@@ -70,9 +80,19 @@ export default function WatchlistTable({ watchlist, onRemove, onUpdateAlert }: P
                   <Image src={img} width={48} height={48} alt={name} className="rounded" />
                 </td>
                 <td>
-                  <Link href={`/skins/${linkId}`} className="text-blue-400 hover:underline">
-                    {name}
-                  </Link>
+                  {href ? (
+                    <Link href={href} className="text-blue-400 hover:underline">
+                      {name}
+                    </Link>
+                  ) : (
+                    <span
+                      aria-disabled="true"
+                      tabIndex={-1}
+                      className="text-gray-300 cursor-default"
+                    >
+                      {name}
+                    </span>
+                  )}
                 </td>
                 <td className="text-center">
                   {isPremium ? (

@@ -6,9 +6,12 @@ import { Bell, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { rarityToken } from "@/lib/design-tokens";
 import { steamImageSrc } from "@/lib/image-proxy";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface WatchlistCardProps {
   skinId: number;
+  slug?: string | null;
+  weaponSlug?: string | null;
   name: string;
   imageUrl?: string | null;
   rarity?: string | null;
@@ -41,6 +44,8 @@ function getRarityChip(rarity?: string | null) {
 
 export function WatchlistCard({
   skinId,
+  slug,
+  weaponSlug,
   name,
   imageUrl,
   rarity,
@@ -53,6 +58,7 @@ export function WatchlistCard({
   history = [],
   onSetAlert,
 }: WatchlistCardProps) {
+  const detailHref = skinDetailHref({ id: skinId, slug, weaponSlug });
   const rarityHex = rarityToken(rarity).hex;
   const isUp = (delta ?? 0) >= 0;
 
@@ -178,11 +184,24 @@ export function WatchlistCard({
           >
             <Bell className="h-3.5 w-3.5" aria-hidden="true" /> Set alert
           </Button>
-          <Button asChild variant="outline" size="sm" className="flex-1 border-slate-700/50 text-slate-300 hover:text-white gap-1.5">
-            <Link href={`/skins/${skinId}`}>
+          {detailHref ? (
+            <Button asChild variant="outline" size="sm" className="flex-1 border-slate-700/50 text-slate-300 hover:text-white gap-1.5">
+              <Link href={detailHref}>
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /> Detail
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled
+              aria-disabled="true"
+              tabIndex={-1}
+              className="flex-1 border-slate-700/50 text-slate-500 cursor-not-allowed gap-1.5"
+            >
               <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /> Detail
-            </Link>
-          </Button>
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

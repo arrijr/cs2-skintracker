@@ -7,10 +7,13 @@ import PurchaseAccordion from "../components/PurchaseAccordion";
 import clsx from "clsx";
 import Tooltip from "../components/Tooltip";
 import { safeLower, safeIncludes, safeLocaleCompare } from "@/lib/strings";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 type Skin = {
   id: number;
   name: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   imageUrl?: string | null;
   itemimage?: string | null;
   marketPrice?: number | null;
@@ -281,13 +284,27 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
                 />
                 <div>
                   <div className="font-bold flex items-center gap-2">
-                    <Link 
-                      href={`/skins/${entry.skin.id}`}
-                      onClick={(e) => e.stopPropagation()} // Verhindert Accordion-Toggle
-                      className="hover:text-blue-400 transition-colors"
-                    >
-                      {entry.skin.name}
-                    </Link>
+                    {(() => {
+                      const href = skinDetailHref(entry.skin);
+                      return href ? (
+                        <Link
+                          href={href}
+                          onClick={(e) => e.stopPropagation()} // Verhindert Accordion-Toggle
+                          className="hover:text-blue-400 transition-colors"
+                        >
+                          {entry.skin.name}
+                        </Link>
+                      ) : (
+                        <span
+                          aria-disabled="true"
+                          tabIndex={-1}
+                          className="cursor-default text-zinc-200"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {entry.skin.name}
+                        </span>
+                      );
+                    })()}
                     {/* Alert Badge */}
                     {alertObj && (
                       <Tooltip content={`Price alert: ${alertObj.priceAlert} $`}>

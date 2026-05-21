@@ -1,12 +1,16 @@
 // /frontend/src/app/components/SkinVariantsCard.tsx (Frontend)
 "use client";
 
+import type { ElementType } from "react";
 import { Star, Zap, Package } from "lucide-react";
 import Link from "next/link";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface SkinVariant {
   id: number;
   name: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   wear: string;
   quality: string;
   isStattrak: boolean;
@@ -57,10 +61,16 @@ export default function SkinVariantsCard({ variants, currentSkinId }: SkinVarian
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {variants.map((variant) => (
-          <Link
+        {variants.map((variant) => {
+          const href = skinDetailHref(variant);
+          const Wrapper: ElementType = href ? Link : "div";
+          const wrapperProps = href
+            ? { href }
+            : { "aria-disabled": true, tabIndex: -1 };
+          return (
+          <Wrapper
             key={variant.id}
-            href={`/skins/${variant.id}`}
+            {...wrapperProps}
             className={`group relative bg-gray-800 rounded-lg p-3 border transition-all hover:border-gray-600 hover:bg-gray-750 ${
               variant.id === currentSkinId ? 'ring-2 ring-blue-500' : ''
             }`}
@@ -111,8 +121,9 @@ export default function SkinVariantsCard({ variants, currentSkinId }: SkinVarian
 
             {/* Hover Effect */}
             <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
-          </Link>
-        ))}
+          </Wrapper>
+          );
+        })}
       </div>
 
       <div className="mt-4 pt-4 border-t border-gray-800">

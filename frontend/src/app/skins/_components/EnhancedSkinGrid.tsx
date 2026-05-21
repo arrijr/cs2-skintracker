@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { EmptyState as SharedEmptyState } from "@/components/ui/empty-state";
 import { EmptyCrate } from "@/components/ui/empty-illustrations";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface EnhancedSkinGridProps {
   filters?: SkinsFilters;
@@ -143,13 +144,17 @@ export function EnhancedSkinGrid({
     return () => observer.disconnect();
   }, [enableInfiniteScroll, handleObserver]);
 
-  // Handle skin click
+  // Handle skin click — navigate to canonical /skins/{weaponSlug}/{slug} URL.
+  // Legacy `/skins/${id}` route no longer exists (Sprint 2). If a skin lacks
+  // slug/weaponSlug (unbackfilled row), we no-op rather than 404.
   const handleSkinClick = (skinId: number) => {
     if (onSkinClick) {
       onSkinClick(skinId);
-    } else {
-      router.push(`/skins/${skinId}`);
+      return;
     }
+    const skin: any = (skins ?? []).find((s: any) => s?.id === skinId);
+    const href = skinDetailHref(skin);
+    if (href) router.push(href);
   };
 
   // Handle skin add to portfolio
@@ -177,7 +182,8 @@ export function EnhancedSkinGrid({
 
       if (!fallbackPrice || fallbackPrice <= 0) {
         toast.error("This skin has no recent price — set buy price manually in Portfolio.");
-        router.push(`/skins/${skinId}`);
+        const href = skinDetailHref(skin);
+        if (href) router.push(href);
         return;
       }
 

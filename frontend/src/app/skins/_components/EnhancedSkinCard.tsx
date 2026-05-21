@@ -8,10 +8,13 @@ import { Heart, Plus, Star, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { rarityToken } from "@/lib/design-tokens";
 import { steamImageSrc } from "@/lib/image-proxy";
+import { skinDetailHref } from "@/lib/skin-urls";
 
 interface SkinForCard {
   id: number;
   name: string;
+  slug?: string | null;
+  weaponSlug?: string | null;
   marketHashName?: string;
   imageUrl?: string;
   weaponType?: string;
@@ -97,9 +100,13 @@ export function EnhancedSkinCard({
   const price = skin.priceLatest ?? skin.priceMedian ?? null;
   const code = weaponCode(skin.weaponType, skin.name);
 
+  const detailHref = skinDetailHref(skin);
   const handleClick = () => {
-    if (onSkinClick) onSkinClick(skin.id);
-    else router.push(`/skins/${skin.id}`);
+    if (onSkinClick) {
+      onSkinClick(skin.id);
+      return;
+    }
+    if (detailHref) router.push(detailHref);
   };
 
   if (viewMode === "list") {
