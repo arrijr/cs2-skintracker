@@ -105,7 +105,6 @@ export default function PremiumFeatureFlag({
             <button
               onClick={() => {
                 // TODO: Redirect to upgrade page or open modal
-                console.log('Upgrade clicked for feature:', feature);
               }}
               className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
             >

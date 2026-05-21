@@ -33,11 +33,6 @@ import { ErrorProvider } from "@/context/ErrorContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { CookieBanner } from "@/components/CookieBanner";
 
-// {/* Debug logging for ENV variables */}
-if (typeof window !== 'undefined') {
-  console.log('[ENV] NEXT_PUBLIC_API_ORIGIN =', process.env.NEXT_PUBLIC_API_ORIGIN);
-}
-
 export const metadata = {
   title: "CS2 Skin Price Tracker",
   description: "Track and analyze CS2 skin prices",

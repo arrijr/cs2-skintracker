@@ -107,7 +107,7 @@ export default function ResearchPanel() {
               <span>Investitions-Recommendations</span>
             </li>
           </ul>
-          <UpgradeModal tier="pro" triggerText="Zu Pro upgraden - 9,99â‚¬/Monat" />
+          <UpgradeModal tier="pro" triggerText="Zu Pro upgraden - 9,99€/Monat" />
         </CardContent>
       </Card>
     );
@@ -216,7 +216,7 @@ export default function ResearchPanel() {
                   <div className="flex justify-between">
                     <span className="text-slate-400">30-Tage Spanne:</span>
                     <span className="font-medium text-slate-300">
-                      {item.volatility.minPrice.toFixed(2)}â‚¬ - {item.volatility.maxPrice.toFixed(2)}â‚¬
+                      {item.volatility.minPrice.toFixed(2)}€ - {item.volatility.maxPrice.toFixed(2)}€
                     </span>
                   </div>
                 </div>

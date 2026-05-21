@@ -24,8 +24,8 @@ export function ShareButtons({ post }: ShareButtonsProps) {
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-      } catch (err) {
-        console.log('Error sharing:', err);
+      } catch {
+        // user cancelled share or share unsupported — non-fatal
       }
     } else {
       // Fallback to copying URL
@@ -55,8 +55,8 @@ export function ShareButtons({ post }: ShareButtonsProps) {
     try {
       await navigator.clipboard.writeText(url);
       // You could add a toast notification here
-    } catch (err) {
-      console.log('Error copying link:', err);
+    } catch {
+      // clipboard write blocked — non-fatal
     }
   };
 

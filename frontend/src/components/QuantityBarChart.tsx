@@ -127,8 +127,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
         
         // Use dynamic API URL from environment
         const apiEndpoint = apiUrl(`/skins/${skinId}/history/quantity?range=${range}`);
-        console.log('[QuantityChart] Fetching from:', apiEndpoint);
-        
+
         const response = await fetch(apiEndpoint);
         
         if (!response.ok) {
@@ -148,7 +147,6 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
         if (historyData.length === 0) {
           // Try fallback to 90d if current range is empty
           if (range !== '90d' && range !== 'all') {
-            console.log(`[QuantityChart] No data for ${range}, trying 90d fallback`);
             const fallbackEndpoint = apiUrl(`/skins/${skinId}/history/quantity?range=90d`);
             const fallbackResponse = await fetch(fallbackEndpoint);
             if (fallbackResponse.ok) {
@@ -160,12 +158,13 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
           }
         }
         
-        console.log('[QuantityChart] Data received:', historyData);
         setData(historyData);
         setLastUpdated(new Date().toLocaleTimeString());
-        
+
       } catch (err) {
-        console.error('Error fetching quantity history:', err);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Error fetching quantity history:', err);
+        }
         setError(err instanceof Error ? err.message : 'Failed to fetch data');
         setData([]);
       } finally {
@@ -442,10 +441,7 @@ const QuantityBarChart: React.FC<QuantityBarChartProps> = ({
                         size="sm" 
                         className="w-full"
                         onClick={() => {
-                          if (customDateRange.from && customDateRange.to) {
-                            // Trigger data fetch with custom range
-                            console.log('Custom range selected:', customDateRange);
-                          }
+                          // Trigger data fetch with custom range (TODO)
                         }}
                         disabled={!customDateRange.from || !customDateRange.to}
                       >

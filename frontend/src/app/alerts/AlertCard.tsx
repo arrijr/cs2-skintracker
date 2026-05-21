@@ -73,13 +73,13 @@ export function AlertCard({ alert, onToggle, onDelete }: AlertCardProps) {
 function summarizeConfig(alert: Alert): string {
   switch (alert.type) {
     case 'price_threshold':
-      return `Trigger when price ${alert.config.direction} â‚¬${alert.config.price}`;
+      return `Trigger when price ${alert.config.direction} €${alert.config.price}`;
     case 'volatility':
-      return `Trigger when ${alert.config.windowHours ?? 24}h change â‰¥ ${alert.config.thresholdPercent}%`;
+      return `Trigger when ${alert.config.windowHours ?? 24}h change ‰ ${alert.config.thresholdPercent}%`;
     case 'float_tier':
-      return `Trigger when ${alert.config.tier} float listed below â‚¬${alert.config.maxPrice}`;
+      return `Trigger when ${alert.config.tier} float listed below €${alert.config.maxPrice}`;
     case 'case_ev':
-      return `Trigger when case price â‰¥ ${alert.config.evMarginPercent}% below EV`;
+      return `Trigger when case price ‰ ${alert.config.evMarginPercent}% below EV`;
     default:
       return '';
   }

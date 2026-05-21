@@ -1123,8 +1123,22 @@
   .no-print {
     display: none !important;
   }
-  
+
   .print-optimized {
     @apply text-black bg-white;
+  }
+}
+
+/* WCAG 2.3.3 — respect user motion preferences.
+   Skips heavy framer-motion + Tailwind animate-in/out + custom @keyframes
+   for users who set "Reduce motion" in their OS. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

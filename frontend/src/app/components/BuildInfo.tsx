@@ -48,17 +48,18 @@ export default function BuildInfo({ showDetails = false, className = "" }: Build
       setError(null);
       
       const url = apiUrl('/api/v1/health/build-info');
-      // Debug-Log einmalig lassen, um künftige Fehlrouten zu erkennen
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
-        console.log("[BuildInfo] origin:", apiOrigin(), "url:", url);
+        console.debug("[BuildInfo] origin:", apiOrigin(), "url:", url);
       }
-      
+
       const response = await fetchJson<BuildInfo>(url);
       setBuildInfo(response);
       setLastRefresh(new Date());
     } catch (err) {
-      console.error('Error fetching build info:', err);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Error fetching build info:', err);
+      }
       setError(err instanceof Error ? err.message : 'Unknown error');
       
       // Fallback to static build info

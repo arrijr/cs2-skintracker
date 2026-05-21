@@ -82,9 +82,8 @@ export default function CasesPage() {
         const data = await apiFetch('/api/v1/case-portfolio');
         const caseIds = data.portfolio.map((entry: any) => entry.case.id);
         setUserCasePortfolio(caseIds);
-      } catch (err) {
+      } catch {
         // User might not be logged in, ignore error
-        console.log('User not authenticated or no case portfolio');
       }
     };
 

@@ -43,7 +43,7 @@ const PALETTE = ["#a855f7", "#ec4899", "#f5b948", "#34d399", "#06b6d4", "#fb7185
 
 type Tab = "Rarity" | "Weapon" | "Exterior";
 
-export function AllocationDonut({ portfolio, currency = "â‚¬" }: AllocationDonutProps) {
+export function AllocationDonut({ portfolio, currency = "€" }: AllocationDonutProps) {
   const [tab, setTab] = useState<Tab>("Rarity");
 
   const slices = useMemo<Slice[]>(() => {

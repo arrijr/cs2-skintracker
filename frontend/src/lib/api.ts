@@ -14,12 +14,9 @@ const ORIGIN_PROD =
 
 // Auswahl je nach Umgebung: DEV-Backend für Development verwenden
 export function apiOrigin() {
-  console.log('[API] VERCEL_ENV:', VERCEL_ENV);
   if (VERCEL_ENV === 'development' || VERCEL_ENV === 'preview') {
-    console.log('[API] Using DEV backend:', ORIGIN_DEV);
     return ORIGIN_DEV!; // DEV-Backend für Development/Preview
   }
-  console.log('[API] Using PROD backend:', ORIGIN_PROD);
   return ORIGIN_PROD!; // PROD-Backend für Production
 }
 

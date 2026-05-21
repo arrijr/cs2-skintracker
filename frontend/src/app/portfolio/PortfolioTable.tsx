@@ -256,13 +256,6 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
           entry.skin.imageUrl ||
           "/images/placeholder-skin.png";
 
-        // Debug-Logging für Bilder
-        console.log(`[DEBUG] Skin ${entry.skin.id} (${entry.skin.name}):`, {
-          itemimage: entry.skin.itemimage,
-          imageUrl: entry.skin.imageUrl,
-          finalImg: img
-        });
-
         return (
           <div
             key={entry.skin.id}

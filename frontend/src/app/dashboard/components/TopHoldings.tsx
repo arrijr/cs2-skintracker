@@ -88,7 +88,7 @@ export function TopHoldings({ portfolio, totalValue }: TopHoldingsProps) {
                       );
                     })()}
                     <p className="text-xs text-slate-400 font-mono tabular-nums">
-                      â‚¬{h.value.toFixed(2)} Â· {pct.toFixed(1)}%
+                      €{h.value.toFixed(2)} Â· {pct.toFixed(1)}%
                     </p>
                   </div>
                 </div>
