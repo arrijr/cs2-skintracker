@@ -360,7 +360,7 @@ export default function CasesPage() {
                       className="border-b border-gray-700/50 hover:bg-gray-800/30 transition-colors cursor-pointer"
                     >
                       <td className="py-4 px-4">
-                        <Link href={`/cases/${caseItem.id}`} className="flex items-center gap-3">
+                        <Link href={`/cases/${encodeURIComponent(caseItem.name)}`} className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center">
                             {caseItem.imageUrl ? (
                               <img 

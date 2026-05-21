@@ -600,7 +600,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
         {skin.caseInfo && (
           <div className="mt-6">
             <Link
-              href={`/cases/${skin.caseInfo.id}`}
+              href={`/cases/${encodeURIComponent(skin.caseInfo.name)}`}
               className="flex items-center justify-between p-4 rounded-xl bg-slate-900/70 backdrop-blur border border-slate-700/40 hover:border-slate-600/60 transition-colors group"
             >
               <div className="flex items-center gap-3">
