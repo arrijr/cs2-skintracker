@@ -16,15 +16,17 @@ import { WearComparisonTable } from './_components/WearComparisonTable';
 import { SkinFAQ } from './_components/SkinFAQ';
 import { SkinProductSchema } from '@/components/skins/SkinProductSchema';
 
+// Next.js 15: params + searchParams are async — must be awaited before access.
 interface PageProps {
-  params: { weapon: string; slug: string };
-  searchParams: { wear?: string };
+  params: Promise<{ weapon: string; slug: string }>;
+  searchParams: Promise<{ wear?: string }>;
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://skintrackr.io';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const skin = await getSkinBySlug(params.slug);
+  const { slug } = await params;
+  const skin = await getSkinBySlug(slug);
   if (!skin) {
     return { title: 'Skin not found', robots: { index: false } };
   }
@@ -62,12 +64,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function SkinDetailPage({ params, searchParams }: PageProps) {
-  const skin = await getSkinBySlug(params.slug);
+  const { weapon, slug } = await params;
+  const sp = await searchParams;
+  const skin = await getSkinBySlug(slug);
   if (!skin) notFound();
 
   // Guard: if user lands on /skins/awp/ak-47-redline-ft (wrong weapon), 404
   // rather than render confusing content.
-  if (skin.weaponSlug !== params.weapon) notFound();
+  if (skin.weaponSlug !== weapon) notFound();
 
   return (
     <>
@@ -95,7 +99,7 @@ export default async function SkinDetailPage({ params, searchParams }: PageProps
           </p>
 
           {/* Client-rendered chart + interactivity */}
-          <SkinDetailClient skin={skin} initialWear={searchParams.wear ?? null} />
+          <SkinDetailClient skin={skin} initialWear={sp.wear ?? null} />
 
           {/* Client components — fetch data on mount, render skeleton during.
               Keeps SSR function fast (Vercel Hobby = 10s limit). Cold-cache

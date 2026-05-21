@@ -5,24 +5,27 @@ import { listSkinsByWeapon } from '@/lib/skins-server';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://skintrackr.io';
 
+// Next.js 15: params is async.
 interface Props {
-  params: { weapon: string };
+  params: Promise<{ weapon: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const weaponLabel = params.weapon.replace(/-/g, ' ').toUpperCase();
+  const { weapon } = await params;
+  const weaponLabel = weapon.replace(/-/g, ' ').toUpperCase();
   return {
     title: `${weaponLabel} Skins — All Variants, Live Prices | CS2 SkinTrackr`,
     description: `Browse every ${weaponLabel} skin in CS2 with current Steam, Skinport and CSFloat prices. Sorted by 7-day volume. Free alerts.`,
-    alternates: { canonical: `${BASE_URL}/skins/${params.weapon}` },
+    alternates: { canonical: `${BASE_URL}/skins/${weapon}` },
   };
 }
 
 export default async function WeaponPillarPage({ params }: Props) {
-  const skins = await listSkinsByWeapon(params.weapon, 200);
+  const { weapon } = await params;
+  const skins = await listSkinsByWeapon(weapon, 200);
   if (skins.length === 0) notFound();
 
-  const weaponLabel = params.weapon.replace(/-/g, ' ').toUpperCase();
+  const weaponLabel = weapon.replace(/-/g, ' ').toUpperCase();
 
   const itemListLd = {
     '@context': 'https://schema.org',

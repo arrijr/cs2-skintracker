@@ -5,22 +5,25 @@ import { getCaseBySlug } from '@/lib/cases-server';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://skintrackr.io';
 
+// Next.js 15: params is async.
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const c = await getCaseBySlug(params.slug);
+  const { slug } = await params;
+  const c = await getCaseBySlug(slug);
   if (!c) return { title: 'Case not found', robots: { index: false } };
   return {
     title: `${c.name} — Drop Table, EV & CS2 Case Prices | SkinTrackr`,
     description: `${c.name} drop table with every skin, current Steam Market prices, and expected-value calculation. Free CS2 case opening analyzer.`,
-    alternates: { canonical: `${BASE_URL}/cases/${c.slug ?? params.slug}` },
+    alternates: { canonical: `${BASE_URL}/cases/${c.slug ?? slug}` },
   };
 }
 
 export default async function CaseDetailPage({ params }: Props) {
-  const c = await getCaseBySlug(params.slug);
+  const { slug } = await params;
+  const c = await getCaseBySlug(slug);
   if (!c) notFound();
 
   // Naive EV: average drop price, ignoring rarity-weighted odds (a refinement
