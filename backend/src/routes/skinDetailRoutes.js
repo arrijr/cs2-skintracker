@@ -45,6 +45,14 @@ router.get('/:slug', (req, res, next) => {
 // integer-id sub-paths like `/123/price-history`, `/123/related`, etc.
 // (Express 5 / path-to-regexp 6 doesn't support unnamed wildcards anyway.)
 
-router.get('/', (req, res) => listSkinsByWeapon(req, res));
+// Sprint 2 weapon-pillar listing: `/skins?weapon=ak-47`. When `weapon` is
+// absent, fall through to the legacy `skinRoutes` GET / handler which serves
+// the general /skins browse list (sort/page/pageSize/category filters).
+// Without this fall-through, the frontend `/skins` browse page (which sends
+// `?sort=name_asc&page=1&pageSize=24`) 400d on "weapon query required".
+router.get('/', (req, res, next) => {
+  if (!req.query.weapon) return next();
+  return listSkinsByWeapon(req, res);
+});
 
 export default router;
