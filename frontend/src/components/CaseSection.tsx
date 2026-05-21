@@ -14,6 +14,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { ExternalLink, Package } from "lucide-react";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { formatUSD } from "@/lib/num";
+import { caseToSlug } from "@/lib/strings";
 
 interface Case {
   id: number;
@@ -131,7 +132,7 @@ export function CaseSection({ skinId }: CaseSectionProps) {
             {/* Action Buttons */}
             <div className="flex gap-3">
               <Button variant="default" size="sm" asChild className="shadow-lg bg-accent hover:bg-accent/90 text-accent-foreground">
-                <Link href={`/cases/${encodeURIComponent(caseInfo.name)}`}>
+                <Link href={`/cases/${caseToSlug(caseInfo.name)}`}>
                   <Package className="h-4 w-4 mr-2" />
                   View Case
                 </Link>

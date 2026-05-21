@@ -30,3 +30,16 @@ export const safeLocaleCompare = (a: unknown, b: unknown): number => {
 
 // Generic safe function for any string operation
 export const safe = (v: unknown): string => (typeof v === 'string' ? v : v == null ? "" : String(v));
+
+/**
+ * Slugify a case name for URL use. Matches what backend /api/v1/cases/:slug
+ * expects: lowercase + spaces collapsed to hyphens. Backend reverses with
+ * (slug.replace(/-/g, ' ')) and does a case-insensitive match against
+ * `Case.name`. Do NOT URL-encode — backend won't decode "%20".
+ *
+ * Note: this is intentionally narrow (spaces only). Punctuation in case
+ * names (apostrophes, periods, parens) is rare; if it shows up, extend
+ * here AND the backend matcher in sync.
+ */
+export const caseToSlug = (name: string): string =>
+  safeString(name).toLowerCase().replace(/\s+/g, '-');

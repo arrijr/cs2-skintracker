@@ -20,6 +20,7 @@ import type { SkinDetail } from "@/lib/skins-server";
 import { rarityToken } from "@/lib/design-tokens";
 import { cn } from "@/lib/utils";
 import { steamImageSrc } from "@/lib/image-proxy";
+import { caseToSlug } from "@/lib/strings";
 import { SkinPriceChart } from "@/app/skins/[skinId]/_components/SkinPriceChart";
 import { WearFloatBar } from "@/app/skins/[skinId]/_components/WearFloatBar";
 import { OrderBook } from "@/app/skins/[skinId]/_components/OrderBook";
@@ -600,7 +601,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
         {skin.caseInfo && (
           <div className="mt-6">
             <Link
-              href={`/cases/${encodeURIComponent(skin.caseInfo.name)}`}
+              href={`/cases/${caseToSlug(skin.caseInfo.name)}`}
               className="flex items-center justify-between p-4 rounded-xl bg-slate-900/70 backdrop-blur border border-slate-700/40 hover:border-slate-600/60 transition-colors group"
             >
               <div className="flex items-center gap-3">
