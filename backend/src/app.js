@@ -75,8 +75,24 @@ const adminLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// CORS whitelist from ALLOWED_ORIGINS env (comma-separated)
-const ALLOWED = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',').map(s => s.trim()).filter(Boolean);
+// CORS whitelist from ALLOWED_ORIGINS env (comma-separated).
+// Plus a hardcoded safety net for the canonical production domains so a
+// misconfigured/missing env var can never blackhole the live site again.
+// Without this fallback we had a multi-hour outage (commit a7855d8) where
+// `ALLOWED_ORIGINS` was set correctly in the Render env-group but the
+// running process didn't see `https://www.skintrackr.io` — symptom was
+// every preflight returning 500 from `callback(new Error(…))`.
+const HARDCODED_PROD_ORIGINS = [
+  'https://skintrackr.io',
+  'https://www.skintrackr.io',
+  'https://api.skintrackr.io',
+];
+const ALLOWED = Array.from(new Set([
+  ...HARDCODED_PROD_ORIGINS,
+  ...(process.env.ALLOWED_ORIGINS || 'http://localhost:3000')
+    .split(',').map(s => s.trim()).filter(Boolean),
+]));
+console.log('[CORS] ALLOWED origins:', JSON.stringify(ALLOWED));
 
 // Vercel preview deployments for this project. Matches any branch / sha preview
 // URL like `cs2-skintracker-<hash>-arrijrs-projects.vercel.app` or
