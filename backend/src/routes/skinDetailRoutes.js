@@ -7,6 +7,7 @@ import {
   getSkinPrices,
   getSkinVariants,
   getCaseBySlug,
+  getSkinPresets,
 } from '../controllers/skinDetailController.js';
 
 const router = Router();
@@ -27,6 +28,7 @@ caseRouter.get('/:slug', (req, res) => getCaseBySlug(req, res));
 router.get('/by-id/:id/variants', (req, res) => getSkinVariants(req, res));
 router.get('/by-id/:id',          (req, res) => getSkinById(req, res));
 router.get('/slugs',              (req, res) => listSkinSlugs(req, res));
+router.get('/presets',            (req, res) => getSkinPresets(req, res));
 
 router.get('/:slug/prices', (req, res, next) => {
   if (/^\d+$/.test(req.params.slug)) return next();

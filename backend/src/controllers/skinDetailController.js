@@ -1,6 +1,44 @@
 import defaultPrisma from '../prisma/prismaClient.js';
 import { aggregateMultiSourcePrice } from '../services/pricing/multiSourceAggregator.js';
 
+// Cache filter presets in-memory for 1h. These are catalog metadata (wears +
+// rarities) that change rarely. Frontend `useSearch` / `useSkins` /
+// `SkinsPageContent` hit this on every render — query-per-request was the
+// 4th most expensive endpoint in our access log.
+let presetsCache = null;
+let presetsCacheExpiresAt = 0;
+const PRESETS_CACHE_MS = 60 * 60 * 1000;
+
+export async function getSkinPresets(req, res, { prismaClient = defaultPrisma } = {}) {
+  if (presetsCache && presetsCacheExpiresAt > Date.now()) {
+    return res.json(presetsCache);
+  }
+  try {
+    const [wears, rarities] = await Promise.all([
+      prismaClient.skin.findMany({
+        select: { wear: true },
+        distinct: ['wear'],
+        where: { wear: { not: null } },
+      }),
+      prismaClient.skin.findMany({
+        select: { rarity: true },
+        distinct: ['rarity'],
+        where: { rarity: { not: null } },
+      }),
+    ]);
+    const payload = {
+      wears: [...new Set(wears.map(w => w.wear).filter(Boolean))].sort(),
+      rarities: [...new Set(rarities.map(r => r.rarity).filter(Boolean))].sort(),
+    };
+    presetsCache = payload;
+    presetsCacheExpiresAt = Date.now() + PRESETS_CACHE_MS;
+    return res.json(payload);
+  } catch (e) {
+    console.error('[getSkinPresets]', e);
+    return res.status(500).json({ error: 'Failed to load presets' });
+  }
+}
+
 // 5-minute in-memory cache keyed by slug. Daily Inngest refresh writes the
 // canonical record; this fallback covers ad-hoc lookups for skins that
 // missed the batch.
