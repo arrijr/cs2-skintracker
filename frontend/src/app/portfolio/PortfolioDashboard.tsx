@@ -136,17 +136,19 @@ export default function PortfolioDashboard() {
     );
   }
 
-  const isPositive = portfolio.unrealizedPL >= 0;
+  const isPositive = (portfolio.unrealizedPL ?? 0) >= 0;
+  const fx = (n: number | null | undefined) =>
+    n != null && Number.isFinite(n) ? `${n.toFixed(2)}€` : "—";
 
   return (
     <div className="space-y-6">
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard label="Gesamtwert" value={`${portfolio.totalValue.toFixed(2)}€`} />
-        <KPICard label="Investiert" value={`${portfolio.totalInvested.toFixed(2)}€`} />
+        <KPICard label="Gesamtwert" value={fx(portfolio.totalValue)} />
+        <KPICard label="Investiert" value={fx(portfolio.totalInvested)} />
         <KPICard
           label="Gewinn/Verlust"
-          value={`${portfolio.unrealizedPL.toFixed(2)}€`}
+          value={fx(portfolio.unrealizedPL)}
           delta={portfolio.unrealizedPLPercent}
           icon={isPositive ? <TrendingUp className="w-4 h-4 text-green-400" /> : <TrendingDown className="w-4 h-4 text-red-400" />}
         />
@@ -182,11 +184,11 @@ export default function PortfolioDashboard() {
                       </div>
                     </td>
                     <td className={`text-right py-3 px-2 ${tokens.text.secondary}`}>{pos.amount}</td>
-                    <td className={`text-right py-3 px-2 ${tokens.text.secondary}`}>{pos.avgBuyPrice.toFixed(2)}€</td>
-                    <td className={`text-right py-3 px-2 ${tokens.text.secondary}`}>{pos.currentPrice.toFixed(2)}€</td>
-                    <td className={`text-right py-3 px-2 font-medium ${tokens.text.primary}`}>{pos.totalValue.toFixed(2)}€</td>
-                    <td className={`text-right py-3 px-2 font-medium ${pos.unrealizedPL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {pos.unrealizedPL.toFixed(2)}€
+                    <td className={`text-right py-3 px-2 ${tokens.text.secondary}`}>{fx(pos.avgBuyPrice)}</td>
+                    <td className={`text-right py-3 px-2 ${tokens.text.secondary}`}>{fx(pos.currentPrice)}</td>
+                    <td className={`text-right py-3 px-2 font-medium ${tokens.text.primary}`}>{fx(pos.totalValue)}</td>
+                    <td className={`text-right py-3 px-2 font-medium ${(pos.unrealizedPL ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {fx(pos.unrealizedPL)}
                     </td>
                   </tr>
                 ))}
