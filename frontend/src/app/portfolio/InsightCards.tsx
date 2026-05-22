@@ -167,15 +167,19 @@ export default function InsightCards({ portfolio, token }: Props) {
                 <div className="flex-1">
                   <div className="font-medium text-sm">{item.skinName}</div>
                   <div className="text-xs text-gray-400">
-                    Weight: {item.weight.toFixed(1)}% • Qty: {item.amount}
+                    Weight: {item.weight != null && Number.isFinite(item.weight) ? `${item.weight.toFixed(1)}%` : "—"} • Qty: {item.amount}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className={`font-semibold ${item.contribution >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {item.contribution >= 0 ? "+" : ""}{item.contribution.toFixed(2)}%
+                  <div className={`font-semibold ${(item.contribution ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {item.contribution != null && Number.isFinite(item.contribution)
+                      ? `${item.contribution >= 0 ? "+" : ""}${item.contribution.toFixed(2)}%`
+                      : "—"}
                   </div>
                   <div className="text-xs text-gray-400">
-                    {item.positionChangePercent >= 0 ? "+" : ""}{item.positionChangePercent.toFixed(1)}%
+                    {item.positionChangePercent != null && Number.isFinite(item.positionChangePercent)
+                      ? `${item.positionChangePercent >= 0 ? "+" : ""}${item.positionChangePercent.toFixed(1)}%`
+                      : "—"}
                   </div>
                 </div>
               </div>
