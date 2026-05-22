@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import { caseToSlug } from "@/lib/strings";
+import { formatEUR } from "@/lib/num";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { AppShell } from "@/components/layout/AppShell";
 
@@ -51,7 +52,8 @@ export default function CasesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>('timeToExtinction');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [filterDiscontinued, setFilterDiscontinued] = useState(true);
+  // True = show all cases (incl. discontinued). False = hide discontinued.
+  const [showDiscontinued, setShowDiscontinued] = useState(true);
   const [priceRange, setPriceRange] = useState<{min: number, max: number}>({min: 0, max: 1000});
   const [extinctionRange, setExtinctionRange] = useState<{min: number, max: number}>({min: 0, max: 2000});
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -94,12 +96,15 @@ export default function CasesPage() {
   const filteredAndSortedCases = useMemo(() => {
     let filtered = cases.filter(caseItem => {
       const matchesSearch = caseItem.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDiscontinued = true; // Always show all cases for now
-      const matchesPriceRange = caseItem.price ? 
+      // showDiscontinued=true → include discontinued; false → hide them.
+      // Default is true so "All Cases" matches its label until the user
+      // toggles to "Active Only".
+      const matchesDiscontinued = showDiscontinued ? true : !caseItem.isDiscontinued;
+      const matchesPriceRange = caseItem.price ?
         caseItem.price >= priceRange.min && caseItem.price <= priceRange.max : true;
-      const matchesExtinctionRange = caseItem.timeToExtinction ? 
+      const matchesExtinctionRange = caseItem.timeToExtinction ?
         caseItem.timeToExtinction >= extinctionRange.min && caseItem.timeToExtinction <= extinctionRange.max : true;
-      
+
       return matchesSearch && matchesDiscontinued && matchesPriceRange && matchesExtinctionRange;
     });
 
@@ -126,7 +131,7 @@ export default function CasesPage() {
     });
 
     return filtered;
-  }, [cases, searchTerm, sortField, sortDirection, filterDiscontinued, priceRange, extinctionRange]);
+  }, [cases, searchTerm, sortField, sortDirection, showDiscontinued, priceRange, extinctionRange]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -146,14 +151,9 @@ export default function CasesPage() {
     return num.toLocaleString();
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount);
-  };
+  // Currency is EUR-base (Steam Market is scraped in EUR); formatEUR honours
+  // the user's selected display currency from CurrencyContext.
+  const formatCurrency = (amount: number) => formatEUR(amount);
 
 
   const getPriceChangeColor = (change: number) => {
@@ -222,12 +222,13 @@ export default function CasesPage() {
               {/* Filters */}
               <div className="flex gap-2">
                 <Button
-                  variant={filterDiscontinued ? "default" : "outline"}
-                  onClick={() => setFilterDiscontinued(!filterDiscontinued)}
+                  variant={showDiscontinued ? "default" : "outline"}
+                  onClick={() => setShowDiscontinued(!showDiscontinued)}
                   className="flex items-center gap-2"
+                  title={showDiscontinued ? "Click to hide discontinued cases" : "Click to show all cases (including discontinued)"}
                 >
                   <Filter className="w-4 h-4" />
-                  All Cases
+                  {showDiscontinued ? "All Cases" : "Active Only"}
                 </Button>
                 <Button
                   variant={showAdvancedFilters ? "default" : "outline"}
@@ -247,7 +248,7 @@ export default function CasesPage() {
                   {/* Price Range */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Price Range (USD)
+                      Price Range (EUR)
                     </label>
                     <div className="flex gap-2">
                       <Input
@@ -335,7 +336,7 @@ export default function CasesPage() {
                       onClick={() => handleSort('price')}
                     >
                       <div className="flex items-center justify-end gap-2">
-                        Price (USD)
+                        Price
                         <ArrowUpDown className="w-3 h-3" />
                       </div>
                     </th>
@@ -344,7 +345,7 @@ export default function CasesPage() {
                       onClick={() => handleSort('marketCap')}
                     >
                       <div className="flex items-center justify-end gap-2">
-                        Market Cap (USD)
+                        Market Cap
                         <ArrowUpDown className="w-3 h-3" />
                       </div>
                     </th>
