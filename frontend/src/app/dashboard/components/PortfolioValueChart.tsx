@@ -6,9 +6,9 @@ interface Point {
   value: number;
 }
 
-interface TerminalAreaChartProps {
+interface PortfolioValueChartProps {
   data: Point[];
-  /** "up" tints green, "down" tints red, "flat" tints slate. */
+  /** "up" tints pos, "down" tints neg, "flat" stays brand purple. */
   trend?: "up" | "down" | "flat";
   height?: number;
   currency?: string;
@@ -16,41 +16,37 @@ interface TerminalAreaChartProps {
 }
 
 /**
- * Custom SVG area chart — terminal-brutalist style.
- * No axes/grid frame. Gradient fill matches trend. Dashed crosshair on hover.
- * Designed to bleed full-width inside hero card.
+ * CS:HUD-style portfolio area chart — purple-500 stroke on slate-950 backdrop with
+ * faint radar grid lines reminiscent of de_dust2 minimap overlays. No axes/frame.
+ * Renamed from TerminalAreaChart (Bloomberg-y) — stays on-brand for SkinTrackr.
  */
-export function TerminalAreaChart({
+export function PortfolioValueChart({
   data,
   trend = "flat",
   height = 220,
   currency = "€",
   className,
-}: TerminalAreaChartProps) {
+}: PortfolioValueChartProps) {
   const id = useId().replace(/:/g, "");
   const [hover, setHover] = useState<{ x: number; y: number; point: Point; i: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  // Use brand purple as default, only swap to red on clearly negative trend.
-  // Gaming/Robinhood vibe — keep it vibrant, not just green/red.
-  const stroke =
-    trend === "down" ? "#ef4444" : "#a855f7"; // pink-500 base, red on down
-  const strokeEnd =
-    trend === "down" ? "#f43f5e" : "#ec4899"; // gradient end stop (pink-500)
+  // Brand purple base. CS HUD red on clearly negative trend.
+  const stroke = trend === "down" ? "#ef4444" : "#a855f7";
+  const strokeEnd = trend === "down" ? "#f43f5e" : "#ec4899";
 
-  const { path, areaPath, points, min, max, range } = useMemo(() => {
+  const { path, areaPath, points, min, max } = useMemo(() => {
     if (!data || data.length === 0) {
-      return { path: "", areaPath: "", points: [] as Array<{ x: number; y: number; p: Point }>, min: 0, max: 0, range: 0 };
+      return { path: "", areaPath: "", points: [] as Array<{ x: number; y: number; p: Point }>, min: 0, max: 0 };
     }
     const values = data.map((d) => d.value);
     const minV = Math.min(...values);
     const maxV = Math.max(...values);
     const rangeV = Math.max(maxV - minV, 1);
 
-    // Padding so line doesn't kiss edges
     const padTop = 12;
     const padBottom = 18;
-    const drawH = 100 - padTop - padBottom; // %
+    const drawH = 100 - padTop - padBottom;
 
     const pts = data.map((p, i) => {
       const x = (i / Math.max(data.length - 1, 1)) * 100;
@@ -58,17 +54,15 @@ export function TerminalAreaChart({
       return { x, y, p };
     });
 
-    // Smooth Catmull-Rom-ish path using cubic Bezier control points.
     const linePath = pts.reduce((acc, pt, i) => {
       if (i === 0) return `M ${pt.x} ${pt.y}`;
       const prev = pts[i - 1];
-      // Control points at 1/2 of segment width — cheap smoothing
       const cpX = (prev.x + pt.x) / 2;
       return acc + ` C ${cpX} ${prev.y}, ${cpX} ${pt.y}, ${pt.x} ${pt.y}`;
     }, "");
     const fillPath = `${linePath} L 100 100 L 0 100 Z`;
 
-    return { path: linePath, areaPath: fillPath, points: pts, min: minV, max: maxV, range: rangeV };
+    return { path: linePath, areaPath: fillPath, points: pts, min: minV, max: maxV };
   }, [data]);
 
   const handleMove = (e: React.MouseEvent<SVGSVGElement>) => {
@@ -113,7 +107,7 @@ export function TerminalAreaChart({
 
   return (
     <div className={`relative ${className ?? ""}`} style={{ height }}>
-      {/* Y-axis range labels (top-left + bottom-left, terminal style) */}
+      {/* Y-axis range labels — CS HUD mono */}
       <div className="absolute top-0 left-0 font-mono text-[0.65rem] text-slate-400 tabular-nums pointer-events-none">
         {currency}{max.toFixed(2)}
       </div>
@@ -132,22 +126,28 @@ export function TerminalAreaChart({
         aria-label={`Area chart from ${currency}${min.toFixed(2)} to ${currency}${max.toFixed(2)}`}
       >
         <defs>
-          {/* Vertical fill gradient — fades to transparent */}
+          {/* HUD-grid pattern — 4 horizontal + 8 vertical lines, ultra-subtle */}
+          <pattern id={`grid-${id}`} width="12.5" height="25" patternUnits="userSpaceOnUse">
+            <path d="M 12.5 0 L 0 0 0 25" fill="none" stroke="rgba(168,85,247,0.06)" strokeWidth="0.15" vectorEffect="non-scaling-stroke" />
+          </pattern>
+          {/* Area fill — purple-500/15 brand-consistent */}
           <linearGradient id={`g-${id}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={stroke} stopOpacity="0.45" />
+            <stop offset="0%" stopColor={stroke} stopOpacity="0.28" />
             <stop offset="100%" stopColor={stroke} stopOpacity="0" />
           </linearGradient>
-          {/* Horizontal line gradient — purple to pink (or red gradient on down) */}
           <linearGradient id={`line-${id}`} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor={stroke} />
             <stop offset="100%" stopColor={strokeEnd} />
           </linearGradient>
         </defs>
 
+        {/* HUD radar grid behind the chart */}
+        <rect width="100" height="100" fill={`url(#grid-${id})`} />
+
         {/* Area fill */}
         <path d={areaPath} fill={`url(#g-${id})`} />
 
-        {/* Line — gradient stroke + smooth curve via path data */}
+        {/* Line — purple → pink gradient stroke */}
         <path
           d={path}
           fill="none"
