@@ -57,14 +57,22 @@ export default function MarketEvents({ events }: MarketEventsProps) {
 
   return (
     <div className="card-style bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display text-base font-semibold text-white flex items-center gap-2">
-          <Globe className="h-4 w-4 text-purple-300" aria-hidden="true" /> Market events
-          <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-600 ml-1">· this week</span>
-        </h3>
-        <Link href="/blog" className="text-xs font-semibold text-purple-300 hover:underline">
-          All events →
-        </Link>
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="font-display text-base font-semibold text-white flex items-center gap-2">
+            <Globe className="h-4 w-4 text-purple-300" aria-hidden="true" /> Market events
+            <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-600 ml-1">· this week</span>
+          </h3>
+          <p className="text-xs text-slate-400 mt-1">Sample data shown — real-time market intel ships in Phase 2.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="bg-amber-500/10 text-amber-300 border border-amber-500/30 rounded-md text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5">
+            Demo Data
+          </span>
+          <Link href="/blog" className="text-xs font-semibold text-purple-300 hover:underline">
+            All events →
+          </Link>
+        </div>
       </div>
 
       <ul className="flex flex-col gap-2.5">

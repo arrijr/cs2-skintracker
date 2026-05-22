@@ -243,11 +243,16 @@ export default function AdvancedCharts({ portfolio, history, isPremium = false }
     <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-bold text-white">Advanced Charts</h3>
-        {!isPremium && (
-          <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">
-            ðŸ”’ Premium Feature
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <span className="bg-amber-500/10 text-amber-300 border border-amber-500/30 rounded-md text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5">
+            Demo Data
+          </span>
+          {!isPremium && (
+            <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">
+              ðŸ”’ Premium Feature
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Chart Type Selector */}

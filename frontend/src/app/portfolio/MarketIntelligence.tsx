@@ -345,9 +345,15 @@ export default function MarketIntelligence({ portfolio, history, isPremium = fal
 
   return (
     <div className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl rounded-xl p-6 shadow-md">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-2xl font-bold text-white">Market Intelligence</h3>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h3 className="text-2xl font-bold text-white">Market Intelligence</h3>
+          <p className="text-xs text-slate-400 mt-1">Sample data shown — real-time market intel ships in Phase 2.</p>
+        </div>
         <div className="flex items-center gap-2">
+          <span className="bg-amber-500/10 text-amber-300 border border-amber-500/30 rounded-md text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5">
+            Demo Data
+          </span>
           <div className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded">
             ðŸ”’ Premium Feature
           </div>
