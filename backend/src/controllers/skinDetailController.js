@@ -87,7 +87,55 @@ export async function getSkinBySlug(req, res, { prismaClient = defaultPrisma } =
     where: { slug },
   });
   if (!skin) return res.status(404).json({ error: 'not found' });
+
+  // Derive 30-day stats from PriceHistory snapshots. The daily cron only
+  // writes Skin.priceLatest + sold24h; aggregates like priceMin/Max and
+  // priceMedian7d/30d have schema columns but no writer. We compute them
+  // on the fly here. PriceHistory.@@index([skinId, date]) keeps this O(log n).
+  try {
+    const cutoff30 = new Date(Date.now() - 30 * 86400000);
+    const cutoff7 = new Date(Date.now() - 7 * 86400000);
+    const history30 = await prismaClient.priceHistory.findMany({
+      where: { skinId: skin.id, date: { gte: cutoff30 } },
+      select: { date: true, price: true },
+      orderBy: { date: 'asc' },
+    });
+    if (history30.length > 0) {
+      const prices30 = history30.map((h) => h.price).filter((p) => p != null);
+      if (prices30.length > 0) {
+        if (skin.priceMax == null) skin.priceMax = Math.max(...prices30);
+        if (skin.priceMin == null) skin.priceMin = Math.min(...prices30);
+        if (skin.priceMedian30d == null) skin.priceMedian30d = median(prices30);
+      }
+      const prices7 = history30
+        .filter((h) => new Date(h.date) >= cutoff7)
+        .map((h) => h.price)
+        .filter((p) => p != null);
+      if (prices7.length > 0 && skin.priceMedian7d == null) {
+        skin.priceMedian7d = median(prices7);
+      }
+      // 24h: closest snapshot to 24h ago, used to compute price-change delta.
+      const cutoff24 = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const near24 = history30
+        .filter((h) => new Date(h.date) <= cutoff24)
+        .slice(-1)[0];
+      if (near24 && skin.priceMedian24h == null) {
+        skin.priceMedian24h = near24.price;
+      }
+    }
+  } catch (e) {
+    // Don't fail the request just because aggregation broke — log + continue.
+    console.error('[getSkinBySlug] PriceHistory aggregation failed:', e?.message);
+  }
+
   return res.json(skin);
+}
+
+function median(arr) {
+  if (!arr || arr.length === 0) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
 export async function listSkinsByWeapon(req, res, { prismaClient = defaultPrisma } = {}) {
