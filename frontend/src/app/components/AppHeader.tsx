@@ -26,6 +26,7 @@ export default function AppHeader() {
         { name: "Watchlist", href: "/watchlist" },
         { name: "Alerts", href: "/alerts" },
         { name: "Skins", href: "/skins" },
+        { name: "Cases", href: "/cases" },
         { name: "Items", href: "/items" },
       ]
     : [
