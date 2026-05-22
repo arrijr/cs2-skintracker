@@ -13,6 +13,11 @@ const REFRESH_DELAY_MS = 3000;
 // rows refresh first. Skinport bulk backfill (cron at 04:00 UTC) handles the
 // long tail.
 const MAX_SKINS_PER_RUN = 2000;
+// Same reasoning for MarketItem (stickers/agents/keys/music-kits/etc): prevents
+// the long tail from starving — cap at top-1000 by volume24h so the most-traded
+// items refresh first. Without this MarketItems sat at the end of the array
+// behind 16k skins and never got reached in a single cron window.
+const MAX_MARKET_ITEMS_PER_RUN = 1000;
 
 /**
  * Write the outcome of a single fetchPrice() call back to the DB.
@@ -175,6 +180,11 @@ export async function runPriceRefresh({ prismaClient = defaultPrisma, sleepImpl 
   const cases = await prismaClient.case.findMany({ select: { id: true, name: true } });
   const marketItems = await prismaClient.marketItem.findMany({
     where: { isActive: true },
+    orderBy: [
+      { priceUpdatedAt: { sort: 'asc', nulls: 'first' } },
+      { volume24h: { sort: 'desc', nulls: 'last' } },
+    ],
+    take: MAX_MARKET_ITEMS_PER_RUN,
     select: { id: true, marketHashName: true, consecutive404: true },
   });
 

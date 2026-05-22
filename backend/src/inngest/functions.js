@@ -64,12 +64,25 @@ export const priceRefresh = inngest.createFunction(
     // Step 1: load id list (durable — re-runs of later steps reuse this snapshot)
     // Skip items refreshed in the last 4h so retries / overlapping crons don't redo fresh work.
     // Skin + MarketItem use `priceUpdatedAt`; Case uses `lastUpdated`.
+    //
+    // Budget: 4 runs/day × ~6h window. At 3s/item with retries that's ~7000 items/run max.
+    // Cap per type so MarketItems (stickers/agents/keys/etc) actually get refreshed instead
+    // of starving behind 16k skins — previously the array order was [skins, cases, marketItems]
+    // and the unbounded skin list ate the whole 6h window before MarketItems ran. Cap +
+    // priority-ordering (stalest + most-traded first) ensures every type gets airtime.
+    const MAX_SKINS = 5000;
+    const MAX_MARKET_ITEMS = 1500;
     const items = await step.run('load-item-list', async () => {
       const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
       const skins = await prisma.skin.findMany({
         where: {
           OR: [{ priceUpdatedAt: null }, { priceUpdatedAt: { lt: fourHoursAgo } }],
         },
+        orderBy: [
+          { priceUpdatedAt: { sort: 'asc', nulls: 'first' } },
+          { sold30d: { sort: 'desc', nulls: 'last' } },
+        ],
+        take: MAX_SKINS,
         select: { id: true, marketHashName: true },
       });
       const all = skins.map((s) => ({ ...s, itemType: 'skin' }));
@@ -84,6 +97,11 @@ export const priceRefresh = inngest.createFunction(
             isActive: true,
             OR: [{ priceUpdatedAt: null }, { priceUpdatedAt: { lt: fourHoursAgo } }],
           },
+          orderBy: [
+            { priceUpdatedAt: { sort: 'asc', nulls: 'first' } },
+            { volume24h: { sort: 'desc', nulls: 'last' } },
+          ],
+          take: MAX_MARKET_ITEMS,
           select: { id: true, marketHashName: true, consecutive404: true },
         });
         all.push(
