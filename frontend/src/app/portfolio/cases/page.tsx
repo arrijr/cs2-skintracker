@@ -3,6 +3,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,6 @@ import {
   DollarSign,
   Calendar,
   Trash2,
-  Edit
 } from "lucide-react";
 import Link from "next/link";
 import { apiUrl, fetchJson } from "@/lib/api";
@@ -61,6 +61,29 @@ export default function CasePortfolioPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchPortfolio = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const token = await getToken({ template: "backend" });
+      const data = await fetchJson<{ portfolio: CasePortfolioEntry[]; stats: PortfolioStats }>(
+        apiUrl('/api/v1/case-portfolio'),
+        {
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
+      );
+      setPortfolio(data.portfolio ?? []);
+      setStats(data.stats ?? null);
+    } catch (err) {
+      setError('Failed to load case portfolio');
+      console.error('Error fetching case portfolio:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn) {
@@ -68,32 +91,26 @@ export default function CasePortfolioPage() {
       setError('Sign in to view your case portfolio');
       return;
     }
-
-    const fetchPortfolio = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const token = await getToken({ template: "backend" });
-        const data = await fetchJson<{ portfolio: CasePortfolioEntry[]; stats: PortfolioStats }>(
-          apiUrl('/api/v1/case-portfolio'),
-          {
-            headers: {
-              ...(token && { Authorization: `Bearer ${token}` }),
-            },
-          }
-        );
-        setPortfolio(data.portfolio ?? []);
-        setStats(data.stats ?? null);
-      } catch (err) {
-        setError('Failed to load case portfolio');
-        console.error('Error fetching case portfolio:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPortfolio();
   }, [isLoaded, isSignedIn, getToken]);
+
+  async function handleRemoveCase(caseId: number, caseName: string) {
+    if (!confirm(`Remove ${caseName} from your case portfolio?`)) return;
+    try {
+      const token = await getToken({ template: "backend" });
+      await fetchJson(apiUrl(`/api/v1/case-portfolio/${caseId}`), {
+        method: "DELETE",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+      toast.success(`Removed ${caseName}`);
+      await fetchPortfolio();
+    } catch (e: any) {
+      console.error("Failed to remove case from portfolio:", e);
+      toast.error(e?.message || "Failed to remove case from portfolio");
+    }
+  }
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
@@ -308,10 +325,14 @@ export default function CasePortfolioPage() {
                       </div>
 
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
+                        {/* TODO: wire Edit to a case-portfolio edit modal (backend PATCH /case-portfolio/:caseId already exists). Hidden until modal ships. */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRemoveCase(entry.case.id, entry.case.name)}
+                          aria-label={`Remove ${entry.case.name}`}
+                          title="Remove from portfolio"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
