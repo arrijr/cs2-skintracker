@@ -147,6 +147,7 @@ export default function Dashboard() {
             history={history || []}
             range={range}
             onRangeChange={setRange}
+            isPremium={isPremium}
           />
 
           {/* CTA ROW */}

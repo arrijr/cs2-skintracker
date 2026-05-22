@@ -12,6 +12,8 @@ interface PortfolioHeroProps {
   range: RangeKey;
   onRangeChange: (range: RangeKey) => void;
   currency?: string;
+  /** Pro/Lite users get a richer rarity stripe — defaults to false (free tier). */
+  isPremium?: boolean;
 }
 
 const RANGE_LABEL: Record<RangeKey, string> = {
@@ -47,6 +49,7 @@ export function PortfolioHero({
   range,
   onRangeChange,
   currency = "€",
+  isPremium = false,
 }: PortfolioHeroProps) {
   const delta = deltas[range] ?? 0;
   const isPos = delta > 0;
@@ -95,6 +98,13 @@ export function PortfolioHero({
     setHover({ x: best.xPct, y: best.yPct, date: best.date, value: best.v });
   };
 
+  // CS rarity-stripe palette: covert red -> classified pink -> restricted purple.
+  // Pro/Lite users get the full 3-stop gradient (rarer feeling); free shows the
+  // restricted purple alone — subtle "upgrade tease".
+  const rarityStripeBg = isPremium
+    ? "linear-gradient(180deg, #eb4b4b 0%, #d32ce6 45%, #8847ff 100%)"
+    : "linear-gradient(180deg, #8847ff 0%, #4b69ff 100%)";
+
   return (
     <section
       className="relative overflow-hidden rounded-[20px] border border-slate-700/30 backdrop-blur-[12px]"
@@ -103,16 +113,46 @@ export function PortfolioHero({
       }}
       aria-labelledby="portfolio-value-heading"
     >
-      {/* Inner gradient wash — emerald top right + purple bottom left */}
+      {/* CS rarity stripe — left edge accent bar. Pro tier = covert→classified→restricted,
+          free tier = restricted→milspec. Mimics the colored rarity bar on CS skin cards. */}
+      <div
+        aria-hidden="true"
+        className="absolute left-0 top-0 bottom-0 w-[3px] z-[1]"
+        style={{
+          background: rarityStripeBg,
+          boxShadow: isPremium
+            ? "0 0 18px rgba(235,75,75,0.25), 0 0 8px rgba(211,44,230,0.18)"
+            : "0 0 14px rgba(136,71,255,0.25)",
+        }}
+      />
+
+      {/* Tier-tinted radial gradient backdrop. Pro = purple/pink (brand), free = cooler slate-blue.
+          Combined with the delta tint so positive runs still feel rewarding. */}
       <div
         aria-hidden="true"
         className="absolute inset-0 pointer-events-none"
         style={{
           background: isPos
-            ? "radial-gradient(ellipse 70% 60% at 92% 8%, rgba(52,211,153,0.16), transparent 60%), radial-gradient(ellipse 50% 50% at 0% 100%, rgba(168,85,247,0.08), transparent 70%)"
+            ? "radial-gradient(ellipse 70% 60% at 92% 8%, rgba(34,197,94,0.14), transparent 60%), radial-gradient(ellipse 60% 60% at 5% 100%, rgba(168,85,247,0.12), transparent 70%)"
             : isNeg
-            ? "radial-gradient(ellipse 70% 60% at 92% 8%, rgba(251,113,133,0.16), transparent 60%), radial-gradient(ellipse 50% 50% at 0% 100%, rgba(168,85,247,0.08), transparent 70%)"
-            : "radial-gradient(ellipse 70% 60% at 92% 8%, rgba(168,85,247,0.10), transparent 60%)",
+            ? "radial-gradient(ellipse 70% 60% at 92% 8%, rgba(239,68,68,0.14), transparent 60%), radial-gradient(ellipse 60% 60% at 5% 100%, rgba(168,85,247,0.10), transparent 70%)"
+            : isPremium
+            ? "radial-gradient(ellipse 70% 60% at 92% 8%, rgba(168,85,247,0.14), transparent 60%), radial-gradient(ellipse 60% 60% at 5% 100%, rgba(236,72,153,0.08), transparent 70%)"
+            : "radial-gradient(ellipse 70% 60% at 92% 8%, rgba(75,105,255,0.10), transparent 60%)",
+        }}
+      />
+
+      {/* Subtle CS-HUD radar grid — geometric overlay (de_dust2 minimap-inspired).
+          Two-axis linear gradient pattern at ~6% opacity so it whispers rather than shouts. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none opacity-[0.07]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(168,85,247,1) 1px, transparent 1px), linear-gradient(to bottom, rgba(168,85,247,1) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black, transparent 90%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black, transparent 90%)",
         }}
       />
 
@@ -137,13 +177,14 @@ export function PortfolioHero({
               Portfolio value
             </div>
 
-            {/* Huge value — responsive scaling so it fits a 320px viewport */}
+            {/* Huge value — CS-feel mono + tabular-nums (terminal/HUD aesthetic).
+                Tighter letter-spacing keeps it from looking too techy/light. */}
             <FlashValue
               value={totalValue}
-              className="font-display flex items-baseline gap-1 mb-3.5"
+              className="font-mono flex items-baseline gap-1 mb-3.5"
             >
               <span
-                className="font-display font-semibold text-white leading-[0.95] tracking-[-0.035em] flex items-baseline gap-1 text-[44px] sm:text-[60px] md:text-[76px]"
+                className="font-mono font-semibold text-white leading-[0.95] tracking-[-0.04em] tabular-nums flex items-baseline gap-1 text-[44px] sm:text-[60px] md:text-[76px]"
                 aria-label={`Portfolio value: ${currency}${intPart}.${decPart}`}
               >
                 <span className="text-slate-400 text-[26px] sm:text-[36px] md:text-[44px] mr-1 -translate-y-1 inline-block">
@@ -154,12 +195,13 @@ export function PortfolioHero({
               </span>
             </FlashValue>
 
-            {/* Big delta chip */}
+            {/* CS HUD trade-color delta chip — stronger emerald-500/rose-500
+                (closer to in-game money colors than Bloomberg's softer emerald-400). */}
             <div
               className={cn(
                 "inline-flex flex-wrap items-center gap-2.5 px-3.5 py-2.5 rounded-[11px] text-[15px] sm:text-[17px] font-semibold border",
-                isPos && "bg-emerald-500/10 text-emerald-400 border-emerald-500/25",
-                isNeg && "bg-rose-500/10 text-rose-400 border-rose-500/25",
+                isPos && "bg-emerald-500/12 text-emerald-300 border-emerald-500/40 shadow-[0_0_24px_-12px_rgba(16,185,129,0.6)]",
+                isNeg && "bg-rose-500/12 text-rose-300 border-rose-500/40 shadow-[0_0_24px_-12px_rgba(244,63,94,0.6)]",
                 !isPos && !isNeg && "bg-slate-500/10 text-slate-400 border-slate-500/25"
               )}
             >
