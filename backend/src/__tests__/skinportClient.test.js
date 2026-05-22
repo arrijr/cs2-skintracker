@@ -3,9 +3,10 @@ import { fetchSkinportItem, parseSkinportItems } from '../services/pricing/skinp
 
 describe('parseSkinportItems', () => {
   it('returns map keyed by marketHashName with ask + bid in USD', () => {
+    // Skinport feed returns EUR in whole-unit scale (verified 2026-05-22).
     const raw = [
-      { market_hash_name: 'AK-47 | Redline (Field-Tested)', min_price: 1395, suggested_price: 1500, currency: 'EUR' },
-      { market_hash_name: 'AWP | Asiimov (Field-Tested)',   min_price: 5099, suggested_price: 5300, currency: 'EUR' },
+      { market_hash_name: 'AK-47 | Redline (Field-Tested)', min_price: 13.95, suggested_price: 15.00, currency: 'EUR' },
+      { market_hash_name: 'AWP | Asiimov (Field-Tested)',   min_price: 50.99, suggested_price: 53.00, currency: 'EUR' },
     ];
     const out = parseSkinportItems(raw, { eurToUsd: 1.08 });
     expect(out.get('AK-47 | Redline (Field-Tested)')).toMatchObject({
@@ -37,8 +38,8 @@ describe('fetchSkinportItem', () => {
       ok: true,
       json: async () => [{
         market_hash_name: 'AK-47 | Redline (FT)',
-        min_price: 1395,
-        suggested_price: 1500,
+        min_price: 13.95,
+        suggested_price: 15.00,
         currency: 'EUR',
       }],
     }));

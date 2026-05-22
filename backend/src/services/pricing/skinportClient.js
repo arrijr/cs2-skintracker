@@ -23,8 +23,12 @@ export function parseSkinportItems(items, { eurToUsd = 1.08 } = {}) {
   for (const it of items) {
     if (!it?.market_hash_name) continue;
     if (typeof it.min_price !== 'number') continue;
-    const askEur = it.min_price / 100;
-    const suggestedEur = typeof it.suggested_price === 'number' ? it.suggested_price / 100 : null;
+    // Skinport returns EUR in whole-unit scale (e.g. 21.21 = €21.21), NOT cents.
+    // Verified against live API 2026-05-22: `min_price: 21.21` for AK-47 Redline
+    // FT matched the Skinport site listing. Earlier `/100` divide was wrong and
+    // produced "$0.23"-scale prices throughout the multi-source UI.
+    const askEur = it.min_price;
+    const suggestedEur = typeof it.suggested_price === 'number' ? it.suggested_price : null;
     map.set(it.market_hash_name, {
       marketHashName: it.market_hash_name,
       askUsd: askEur * eurToUsd,
