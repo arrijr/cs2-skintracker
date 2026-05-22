@@ -7,7 +7,19 @@ const API_BASE =
 export interface CaseDrop {
   id: number;
   rarity: string | null;
-  skin: { id: number; slug: string | null; weaponSlug: string | null; marketHashName: string; priceLatest: number | null };
+  dropChance: number | null;
+  isSpecial: boolean;
+  skin: {
+    id: number;
+    name: string | null;
+    slug: string | null;
+    weaponSlug: string | null;
+    marketHashName: string;
+    imageUrl: string | null;
+    rarity: string | null;
+    weaponType: string | null;
+    priceLatest: number | null;
+  };
 }
 
 export interface CaseDetail {
@@ -16,6 +28,11 @@ export interface CaseDetail {
   name: string;
   imageUrl: string | null;
   price: number | null;
+  priceChange24h: number | null;
+  priceChange7d: number | null;
+  priceChange30d: number | null;
+  lastUpdated: string | null;
+  isDiscontinued: boolean;
   drops: CaseDrop[];
 }
 
@@ -31,5 +48,31 @@ export async function getCaseBySlug(slug: string): Promise<CaseDetail | null> {
   } catch (e) {
     console.error('[cases-server] getCaseBySlug failed', e);
     return null;
+  }
+}
+
+export interface CasePricePoint {
+  id: number;
+  caseId: number;
+  date: string;
+  price: number;
+  marketCap: number | null;
+  remaining: number | null;
+}
+
+export async function getCasePriceHistory(caseId: number, days = 90): Promise<CasePricePoint[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/v1/cases/${caseId}/price-history?days=${days}`,
+      {
+        next: { revalidate: 21600, tags: [`case-history:${caseId}`] }, // 6h cache — history only updates 1×/day
+        signal: AbortSignal.timeout(9000),
+      },
+    );
+    if (!res.ok) return [];
+    return res.json();
+  } catch (e) {
+    console.error('[cases-server] getCasePriceHistory failed', e);
+    return [];
   }
 }
