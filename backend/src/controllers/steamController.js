@@ -14,8 +14,23 @@ const BACKEND_BASE = process.env.STEAM_OPENID_RETURN_BASE_URL || 'http://localho
 const FRONTEND_BASE = process.env.FRONTEND_URL || 'http://localhost:3000';
 const STATE_SECRET = process.env.STEAM_OPENID_STATE_SECRET || 'dev-state-secret-replace-in-prod';
 
-function buildSteamAuthUrl(userId) {
-  const state = signState({ userId, ts: Date.now() }, STATE_SECRET);
+// Frontend paths the post-connect redirect is allowed to land on. Anything
+// not on this list collapses to the safe default. Prevents open-redirect
+// abuse where a malicious link starts the Steam flow with `returnTo=
+// https://evil.com/?steam=connected` and exfiltrates the success state.
+const SAFE_RETURN_PATHS = ['/account', '/profile', '/onboarding', '/dashboard'];
+
+function isSafeReturnPath(path) {
+  if (typeof path !== 'string' || !path.startsWith('/')) return false;
+  const base = path.split('?')[0].split('#')[0];
+  return SAFE_RETURN_PATHS.some((p) => base === p || base.startsWith(`${p}/`) || base.startsWith(`${p}?`));
+}
+
+function buildSteamAuthUrl(userId, requestedReturnPath) {
+  // Bake the desired post-callback redirect path into the signed state JWT
+  // so a stateless flow can recover it after the Steam round-trip.
+  const safeReturn = isSafeReturnPath(requestedReturnPath) ? requestedReturnPath : '/account';
+  const state = signState({ userId, returnPath: safeReturn, ts: Date.now() }, STATE_SECRET);
   const returnTo = `${BACKEND_BASE}/api/v1/steam/connect/callback?state=${encodeURIComponent(state)}`;
   const realm = BACKEND_BASE.endsWith('/') ? BACKEND_BASE : `${BACKEND_BASE}/`;
   return buildAuthRedirectUrl({ returnTo, realm });
@@ -32,22 +47,26 @@ export async function connectRedirect(req, res) {
   const userId = req.userId;
   if (!userId) return res.status(401).json({ error: 'auth required' });
   logger.warn('[steam] legacy /connect/redirect called', { userId });
-  return res.redirect(302, buildSteamAuthUrl(userId));
+  const requestedReturn = typeof req.query.returnPath === 'string' ? req.query.returnPath : undefined;
+  return res.redirect(302, buildSteamAuthUrl(userId, requestedReturn));
 }
 
 // POST /connect/start — returns the Steam OpenID URL as JSON so the client can
 // navigate without exposing the Clerk JWT in the URL bar / proxy logs (Task 4).
+// Caller may pass `returnPath` in the body to control where the success
+// redirect lands (e.g. `/onboarding?step=2` to keep onboarding flow state).
 export async function connectStart(req, res) {
   const userId = req.userId;
   if (!userId) return res.status(401).json({ error: 'auth required' });
-  return res.json({ url: buildSteamAuthUrl(userId) });
+  const requestedReturn = typeof req.body?.returnPath === 'string' ? req.body.returnPath : undefined;
+  return res.json({ url: buildSteamAuthUrl(userId, requestedReturn) });
 }
 
 export async function connectCallback(req, res, { prismaClient = defaultPrisma, openIdVerify = verifyAuthCallback } = {}) {
   try {
     const state = req.query.state;
     if (!state) throw new Error('missing state');
-    const { userId } = verifyState(String(state), STATE_SECRET);
+    const { userId, returnPath } = verifyState(String(state), STATE_SECRET);
 
     const openidParams = {};
     for (const [k, v] of Object.entries(req.query)) {
@@ -60,7 +79,11 @@ export async function connectCallback(req, res, { prismaClient = defaultPrisma, 
       data: { steamId, steamConnectedAt: new Date() },
     });
 
-    return res.redirect(302, `${FRONTEND_BASE}/account?steam=connected`);
+    // Trust returnPath only because it was signed into the state JWT —
+    // re-validate against the safe-path list in case the signing rule changes.
+    const safeReturn = isSafeReturnPath(returnPath) ? returnPath : '/account';
+    const sep = safeReturn.includes('?') ? '&' : '?';
+    return res.redirect(302, `${FRONTEND_BASE}${safeReturn}${sep}steam=connected`);
   } catch (err) {
     logger.error('Steam connect callback failed', { error: err.message });
     return res.redirect(302, `${FRONTEND_BASE}/account?steam=error&reason=${encodeURIComponent(err.message)}`);

@@ -61,13 +61,25 @@ export function useSteamConnection() {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const connect = useCallback(async () => {
+  const connect = useCallback(async (returnPath?: string) => {
     // Use POST /connect/start with Authorization header so the Clerk JWT
     // never appears in the URL / referer / proxy access logs (Task 4).
+    // `returnPath` (optional) tells the backend where to send the user
+    // after the Steam round-trip — falls back to /account if not passed
+    // or if the path isn't on the server-side allow-list (open-redirect
+    // protection). Defaults to current pathname so the user lands back
+    // exactly where they started (onboarding step 2, /account, etc.).
     const token = await getToken({ template: 'backend' });
+    const path = returnPath ?? (typeof window !== 'undefined'
+      ? window.location.pathname + window.location.search
+      : undefined);
     const res = await fetch(apiUrl('/api/v1/steam/connect/start'), {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token ?? ''}` },
+      headers: {
+        Authorization: `Bearer ${token ?? ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ returnPath: path }),
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
