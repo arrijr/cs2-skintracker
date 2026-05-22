@@ -719,3 +719,143 @@ User said "mach was du empfiehlst — du bist ceo". Sequential execution:
 - ⏸️ Stripe Live setup (1 week deferred)
 - ⏸️ Clerk Live keys (deferred with Stripe Live)
 - 🟡 35 important + 41 polish items still open
+
+## Security audit findings
+
+Audit scope: all routes mounted in `backend/src/app.js`. Read-only review, no fixes applied. Findings ranked by severity, capped at 25.
+
+---
+
+### 1. 🔴 CRITICAL — Cross-user IDOR on /api/v1/transactions (all 4 endpoints)
+- File: `backend/src/routes/transactionRoutes.js:8-11` + `backend/src/controllers/transactionController.js:6,24,69,113`
+- Attack: `transactionRoutes` mounts `clerkAuth` (sets only `req.auth.userId` = Clerk string `payload.sub`), but `transactionController` reads `req.userId` (DB integer), which is therefore `undefined`. Prisma treats `where: { userId: undefined }` as "no filter applied" → any authenticated user can `GET /transactions` and receive every user's BUY/SELL history, and `addTransaction` writes rows with `userId: undefined` (likely throws on NOT NULL but the read path is fully exploitable).
+- Fix: Replace `clerkAuth` with `verifyClerkJwt` in `transactionRoutes.js` so `req.userId` is populated from the DB lookup.
+
+### 2. 🔴 CRITICAL — Steam OpenID state secret has weak hardcoded fallback
+- File: `backend/src/controllers/steamController.js:15`
+- Attack: `STATE_SECRET = process.env.STEAM_OPENID_STATE_SECRET || 'dev-state-secret-replace-in-prod'`. If the env var is missing in prod (CEO checklist §5b lists it as still-TODO), an attacker forges a state JWT with arbitrary `userId`, completes the Steam OpenID round trip themselves, and the `connectCallback` writes their `steamId` onto the targeted victim's account — full account takeover of the Steam link, enables inventory exfiltration via `/inventory/preview`.
+- Fix: Refuse to boot or refuse to mount Steam routes when `process.env.NODE_ENV === 'production' && !process.env.STEAM_OPENID_STATE_SECRET` (mirror the Inngest fail-closed pattern at `app.js:173-176`).
+
+### 3. 🔴 CRITICAL — Tier bypass on user-controlled isPremium / role via PATCH /me? — not exploitable, but watch
+- File: `backend/src/controllers/userController.js:205-267`
+- Attack: PATCH /me whitelists exactly displayName/timezone/emailAlerts/pushAlerts/preferredCurrency/themePreference. NOT mass-assignable. **No issue here**, recorded as a deliberate-negative so auditor-of-auditor sees it was checked. Skip.
+
+### 4. 🟡 HIGH — Stripe webhook returns raw error.message to client
+- File: `backend/src/controllers/subscriptionController.js:497-499`
+- Attack: On signature verification failure the response body is `Webhook Error: ${error.message}` — Stripe's verification errors carry timestamps, signature byte mismatches, sometimes price/customer IDs. Stripe servers don't read the body, only the status code, so detail leaks only help an attacker probing the endpoint to learn signing-secret rotation timing.
+- Fix: Return a generic `{ error: 'Webhook signature verification failed' }` and log the detail server-side only.
+
+### 5. 🟡 HIGH — /api/v1/health/build-info is unauthenticated and leaks deploy metadata
+- File: `backend/src/routes/healthRoutes.js:19-54`
+- Attack: Anonymous GET returns gitCommit, gitBranch, NODE_ENV, lastDeploy, PID, OS, arch, memory usage. Lets an attacker fingerprint exact commit SHA → diff GitHub for unpatched CVEs in dependencies; PID + memory enable heap-spray timing.
+- Fix: Gate behind `clerkAdminAuth` or drop `gitCommit`/`gitBranch`/`pid` from the public payload.
+
+### 6. 🟡 HIGH — Blog admin routes use wrong order check syntax / orderBy injection
+- File: `backend/src/routes/blogRoutes.js:51-52,415-417`
+- Attack: `orderBy[sortBy] = sortOrder` with no allowlist. Caller passes `?sortBy=passwordHash&sortOrder=asc` — Prisma will throw because BlogPost has no `passwordHash` column, but the error response includes the column name (info disclosure). On other models the same pattern would let an attacker enumerate columns. The `sortOrder` value is also unvalidated; Prisma rejects anything non-`asc`/`desc`, but throws with a verbose `PrismaClientValidationError`.
+- Fix: Whitelist allowed sort fields per route (see `skinRoutes.js:130-142` for the correct pattern).
+
+### 7. 🟡 HIGH — Blog search uses unbounded `contains` against `content` column (DoS)
+- File: `backend/src/routes/blogRoutes.js:42-46,408-412`
+- Attack: Public GET `/api/v1/blog?search=<long-string>` with `mode: 'insensitive'` against `title`, `description`, AND `content` (full-text body) on every blog post — no length cap on `search`. Repeated requests force PostgreSQL to scan + ILIKE the entire `content` corpus, no index used. CPU/IO DoS vector.
+- Fix: Cap `search.length <= 64`, add a per-IP rate limit (`viewLimiter` pattern), index `content` with a GIN trigram index OR drop `content` from the search OR clauses for the public endpoint.
+
+### 8. 🟡 HIGH — caseController + casePortfolioController leak Prisma errors in non-prod
+- File: `backend/src/controllers/caseController.js:80,254,294,334,381,475` + `casePortfolioController.js:80,184,221,275`
+- Attack: All `details: error.message` (caseController is unconditional; casePortfolio is guarded by `NODE_ENV !== 'production'`). If `NODE_ENV` is ever misconfigured on Vercel (e.g. preview deploys that point at prod DB), Prisma errors include table names, foreign-key constraints, and sometimes column values.
+- Fix: Strip `details: error.message` from caseController entirely; standardize on the generic-error pattern used in `marketItemController.js`.
+
+### 9. 🟡 HIGH — clerkAdminAuth / requireAuth error fallback leaks error.message in development
+- File: `backend/src/middleware/clerkAdminAuth.js:49-53` + `backend/src/middleware/auth.js:43-47,67-70`
+- Attack: 500 response includes `details: error.message` when `NODE_ENV === 'development'`. Same Vercel-misconfig concern as #8. A dev env that talks to a prod-shaped Clerk JWKS endpoint will surface internal verifier errors.
+- Fix: Log server-side, return `{ error: 'Authentication failed' }` with no details field regardless of NODE_ENV.
+
+### 10. 🟡 HIGH — adminController exposes `error.message` on `/admin/update-skin-data`
+- File: `backend/src/routes/adminRoutes.js:120-125`
+- Attack: 500 returns `error: error.message` (no NODE_ENV gate). Admin-only, so blast radius is small, but admins also use shared Slack channels to share error screenshots; STEAMWEBAPI_KEY-related auth errors could leak partial key fragments via upstream HTTP error wrappers.
+- Fix: Generic message + structured server log.
+
+### 11. 🟡 HIGH — Field inconsistency `req.auth?.userId` vs `req.userId` documented but not enforced
+- File: `backend/src/controllers/subscriptionController.js:52,143,183,269,344` (uses `req.auth?.userId`); rest of codebase uses `req.userId`
+- Attack: Both resolve via `verifyClerkJwt` to the same value today, but the duplication is a footgun. If a future middleware revision sets only one of the two fields, the subscription endpoints silently grant access to user 1 (because `undefined === undefined` → both are truthy-but-undefined → controller proceeds with `userId: undefined` → mass IDOR like #1).
+- Fix: Pick one field, deprecate the other, add a smoke test that asserts the value is a positive integer in `verifyClerkJwt`.
+
+### 12. 🟡 HIGH — logsRoutes /stats + /recent gate broken & use `clerkAuth` which doesn't populate `req.user`
+- File: `backend/src/routes/logsRoutes.js:79-113,116-165`
+- Attack: `clerkAuth` only sets `req.auth`, never `req.user`. The admin gate `if (req.user?.role !== 'admin')` is always true → endpoint always returns 403. Currently this fails CLOSED (good), but the routes also lack a `prisma` import (`prisma.auditLog.groupBy` at line 87 would `ReferenceError` if it ever passed the gate). This is dormant code that's one bad refactor away from exposing every user's audit log. Plus the `req.userId` used in the catch logger is also undefined → log noise.
+- Fix: Replace `clerkAuth` with `clerkAdminAuth`, add `import prisma from '../prisma/prismaClient.js'`, OR delete the dead endpoints.
+
+### 13. 🟡 HIGH — Update/delete on portfolio + transactions allow mass-assignment via spread (low-risk subset)
+- File: `backend/src/controllers/transactionController.js:90-93`
+- Attack: `prisma.transaction.update({ data: { amount, price, notes } })` — destructured from `req.body`, so `type` and `userId` are NOT updatable here, but if a future PR adds `userId` to the destructure block it becomes a privilege escalation. The pattern is fragile.
+- Fix: Explicit `data: { ...(amount !== undefined && { amount }), ... }` pattern used in alertController.
+
+### 14. 🟡 HIGH — verifyClerkJwt logs unverified JWT claims in production logs
+- File: `backend/src/middleware/verifyClerkJwt.js:136-153`
+- Attack: On verify failure, base64-decodes the (untrusted) payload and logs `aud`, `iss`, `sub` claims. The values are technically already in the JWT, but `sub` is a Clerk user ID — appearing in Render/Sentry stdout it becomes searchable PII (and correlatable to billing email via the User table). If an attacker triggers many failed verifications (e.g. with crafted tokens carrying victim sub values), they can poison logs and complicate incident investigation.
+- Fix: In production, log only `errorType` + `err.message`, drop `actualClaims`.
+
+### 15. 🟢 MEDIUM — casePortfolio + caseController + blogRoutes spawn new PrismaClient()
+- File: `backend/src/controllers/casePortfolioController.js:3-4`, `controllers/caseController.js:3-4`, `controllers/marketSnapshotController.js:4-6`, `routes/blogRoutes.js:2,7`
+- Attack: Not directly security, but multiple PrismaClient instances drain the Render connection pool. Under load you get `P1001: Can't reach database` cascades that the global error handler returns as 500 with no body, masking auth bypass attempts in the metrics.
+- Fix: Import the singleton `prisma` from `src/prisma/prismaClient.js`.
+
+### 16. 🟢 MEDIUM — Stripe checkout success_url constructed from FRONTEND_URL env (open-redirect on misconfig)
+- File: `backend/src/controllers/subscriptionController.js:100-101,359`
+- Attack: Not user-controllable today (env var only), but if anyone ever exposes a `?return=` override the open-redirect surfaces. Already correct now; flag as a code-review tripwire.
+- Fix: Add a JSDoc warning + unit test asserting success_url starts with the canonical https://skintrackr.io host.
+
+### 17. 🟢 MEDIUM — addTransaction lacks rate-limit; can fan out into portfolio mutation loop
+- File: `backend/src/routes/transactionRoutes.js:9`
+- Attack: `clerkAuth` is broken (#1) so today this is unauthenticated and unlimited. Even when #1 is fixed: each POST triggers `updatePortfolioOnBuy` (DB upsert) + Steam price refresh. No `sensitiveLimiter`. Hostile user with a leaked token can write hundreds of transactions per second.
+- Fix: Attach `sensitiveLimiter` (already defined in `app.js`) on the transactions route mount.
+
+### 18. 🟢 MEDIUM — portfolioRoutes addToPortfolio + casePortfolio addCaseToPortfolio lack server-side amount cap
+- File: `backend/src/controllers/portfolioController.js:160-172`, `casePortfolioController.js:99-101`
+- Attack: `amount` validated only as truthy + positive; user can POST `amount: 1e18` and explode KPI calculations (`totalValue = currentPrice * 1e18` overflows JS Number, breaks history aggregation). Storage abuse via many small entries also unbounded — no per-user portfolio row cap on backend (tier-gating only checked on frontend, see #19).
+- Fix: Cap `amount <= 10000` per row; enforce tier-based row count cap via subscriptionService.
+
+### 19. 🟢 MEDIUM — Free-tier portfolio item count enforced only in frontend `tier-gating.js`
+- File: `backend/src/middleware/tier-gating.js:23-36` (defines `maxPortfolioItems: 20` for Free) — but no route in `app.js` calls `requireTier` on add-to-portfolio. CLAUDE.md line under §"Tier bypass" calls this out as a known gap.
+- Attack: Free-tier user POSTs unlimited rows to `/api/v1/portfolio`, sidestepping the €6.99 Lite paywall.
+- Fix: Wire `requireTier('free')` + a count check in `addToPortfolio`, OR enforce `subscriptionService.checkPortfolioQuota(userId)` inside the controller.
+
+### 20. 🟢 MEDIUM — Stripe customer-portal cancel/reactivate not idempotency-key-guarded
+- File: `backend/src/controllers/subscriptionController.js:208,282`
+- Attack: Double-click on UI fires two `stripe.subscriptions.update` calls in <100ms. Stripe handles dedup if request body is identical, but the DB upsert at line 212-221 races — a partial write can leave `cancelAtPeriodEnd` and `currentPeriodEnd` out of sync.
+- Fix: Pass Stripe `{ idempotencyKey: \`cancel-${userId}-${sub.stripeSubId}\` }` and wrap the DB update + Stripe call in a transaction.
+
+### 21. 🟢 MEDIUM — adminMetricsRoutes/range accepts arbitrary date strings (DoS via huge range)
+- File: `backend/src/routes/adminMetricsRoutes.js:285-342`
+- Attack: Admin endpoint, so trust is high, but `start=1970-01-01&end=2099-12-31` triggers five `COUNT(*)` queries over the full PriceHistory + AuditLog tables. PriceHistory alone is millions of rows. Locks an admin DB connection for minutes.
+- Fix: Clamp `endDate - startDate <= 90 days` and reject malformed input.
+
+### 22. 🟢 MEDIUM — Inngest functions get full prisma access without per-event auth
+- File: `backend/src/app.js:177-185`
+- Attack: Signing key verification at the edge gates the endpoint, but anyone with the signing key (Inngest dashboard users, leaked Render env) can fire arbitrary events. Background functions presumably write to user-scoped tables (PortfolioHistory, Alert). Compromise of the signing key = full DB write via Inngest event injection.
+- Fix: Validate event payload shape per function (Zod/Joi), never trust `event.data.userId` without re-confirming the user exists, log all Inngest-driven writes to auditLog.
+
+### 23. 🟢 MEDIUM — Portfolio history endpoint silently swallows errors and returns empty data
+- File: `backend/src/routes/portfolioHistoryRoutes.js:86-99`
+- Attack: Not directly exploitable, but a 500 in this endpoint masks DB issues that might hint at SQL errors / parameter injection attempts. The "fail open with zeros" behaviour means a parameter-injection probe gets identical-looking output to a legitimate empty-portfolio response, helping the attacker stay below the radar.
+- Fix: Log the structured error + return 500 with generic message; let the frontend choose to render zeros.
+
+### 24. 🟢 MEDIUM — Audit log retention + lookup uses unauthenticated raw queries on PriceHistory + PortfolioHistory
+- File: `backend/src/routes/healthRoutes.js:60-66`
+- Attack: `/cron-status` is unauthenticated and runs `SELECT MAX(date) FROM "PriceHistory"` and `"PortfolioHistory"` via `$queryRaw`. The SQL is hardcoded (no injection), but exposing aggregate freshness metrics anonymously tells an attacker exactly when the price-refresh cron last ran — useful for timing scraping attacks against the same Steam endpoint.
+- Fix: Move to `verifyClerkJwt` or the admin gate.
+
+### 25. 🟢 MEDIUM — Steam OpenID callback redirects to `${FRONTEND_BASE}${safeReturn}` with arbitrary error message
+- File: `backend/src/controllers/steamController.js:89`
+- Attack: On error, redirects to `/account?steam=error&reason=${encodeURIComponent(err.message)}`. `err.message` can contain newlines (Steam upstream errors), and while URL-encoded prevents header injection, the message renders in the frontend without escaping. Stored-XSS risk if frontend uses `dangerouslySetInnerHTML`. Verify frontend escapes the param.
+- Fix: Map err.message to an allow-listed reason code (e.g., `assertion_invalid`, `state_expired`, `upstream_500`) and pass the code, not the raw message.
+
+---
+
+**Severity counts: 3 CRITICAL · 11 HIGH · 11 MEDIUM (25 total, cap reached).**
+
+Top-3 most urgent:
+1. **#1** — IDOR on /api/v1/transactions; ANY logged-in user can read all transactions. Fix today by swapping `clerkAuth` → `verifyClerkJwt` in `transactionRoutes.js`.
+2. **#2** — Steam OpenID state secret fallback; sets up Steam-account takeover the moment the env var is omitted in prod. Fail closed in `steamController.js`.
+3. **#19** — Free-tier portfolio cap only enforced in frontend; direct revenue impact (€6.99/€9.99 paywall bypass).
+
