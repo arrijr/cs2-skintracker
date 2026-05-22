@@ -94,23 +94,36 @@ export async function getWatchlist(token?: string) {
   });
 }
 
-export async function addToWatchlist(skinId: number) {
+// All watchlist mutations require auth — the JWT must be passed in. Previously
+// these helpers omitted the Authorization header entirely, so every call from
+// `PortfolioAdd` (et al.) silently 401'd before the request ever reached the
+// controller.
+export async function addToWatchlist(skinId: number, priceAlert?: number, token?: string) {
   return fetchJson(apiUrl('/api/v1/watchlist'), {
     method: 'POST',
-    body: JSON.stringify({ skinId })
+    body: JSON.stringify(priceAlert != null ? { skinId, priceAlert } : { skinId }),
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
   });
 }
 
-export async function removeFromWatchlist(skinId: number) {
+export async function removeFromWatchlist(skinId: number, token?: string) {
   return fetchJson(apiUrl(`/api/v1/watchlist/${skinId}`), {
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
   });
 }
 
-export async function updatePriceAlert(skinId: number, priceAlert: number) {
+export async function updatePriceAlert(skinId: number, priceAlert: number, token?: string) {
   return fetchJson(apiUrl(`/api/v1/watchlist/${skinId}`), {
     method: 'PATCH',
-    body: JSON.stringify({ priceAlert })
+    body: JSON.stringify({ priceAlert }),
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
   });
 }
 

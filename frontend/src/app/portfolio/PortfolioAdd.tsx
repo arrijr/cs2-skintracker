@@ -1,13 +1,14 @@
 "use client";
 import { useState } from "react";
 import SkinSearchBar from "../components/SkinSearchBar";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { addToWatchlist } from "@/lib/api";
 
 type Props = { onAdded?: () => void };
 
 export default function WatchlistAdd({ onAdded }: Props) {
   const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const [selectedSkin, setSelectedSkin] = useState<any>(null);
   const [priceAlert, setPriceAlert] = useState<number | "">("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +20,12 @@ export default function WatchlistAdd({ onAdded }: Props) {
     setLoading(true);
     setError(null);
     try {
-      await addToWatchlist(selectedSkin.id, priceAlert === "" ? undefined : Number(priceAlert));
+      const token = await getToken({ template: "backend" });
+      await addToWatchlist(
+        selectedSkin.id,
+        priceAlert === "" ? undefined : Number(priceAlert),
+        token ?? undefined
+      );
       setSelectedSkin(null);
       setPriceAlert("");
       onAdded?.();
