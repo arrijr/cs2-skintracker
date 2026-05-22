@@ -15,16 +15,16 @@ const {
 // start (we hit a Render env-injection bug where ALLOWED_ORIGINS and these
 // fields were undefined even though the env-group listed them).
 //
-// AUDIENCE: the Clerk-Test JWT template `backend` was created with a TYPO
-// (`skintrackr` instead of `skintracker`, missing the second `e`). We accept
-// BOTH spellings during this transition so:
-//   - existing test JWTs (typo'd aud) continue to verify
-//   - future Clerk Live JWTs (correct spelling) will also verify
-// Once Clerk Live ships with the correct spelling everywhere, drop the typo
-// from this list.
+// AUDIENCE history: the brand is `SkinTrackr` (one `e`, no second), domain
+// `skintrackr.io`. The Clerk JWT template + Render env were CORRECTLY set
+// to `cs2-skintrackr-api-dev` from the start. A previous "fix" mistakenly
+// added an extra `e` (`skintracker`) to this fallback constant under the
+// belief that `skintracker` was the brand — that introduced the JWT
+// audience mismatch that took us 3 hours to diagnose. Reverted 2026-05-22:
+// brand is `skintrackr`, fallbacks reflect that, no aliases needed.
 const FALLBACK_ISSUER = "https://leading-bug-60.clerk.accounts.dev";
 const FALLBACK_JWKS_URL = "https://leading-bug-60.clerk.accounts.dev/.well-known/jwks.json";
-const FALLBACK_AUDIENCE = ["cs2-skintrackr-api-dev", "cs2-skintracker-api-dev", "cs2-skintracker-api"];
+const FALLBACK_AUDIENCE = ["cs2-skintrackr-api-dev", "cs2-skintrackr-api"];
 
 // Prüfe ob alle ENV-Variablen gesetzt sind
 if (!CLERK_JWKS_URL || !CLERK_ISSUER || !CLERK_AUDIENCE) {
