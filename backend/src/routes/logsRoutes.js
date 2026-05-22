@@ -3,7 +3,7 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
 import logger from "../utils/logger.js";
-import { clerkAuth } from "../middleware/clerkAuth.js";
+import { verifyClerkJwt } from "../middleware/verifyClerkJwt.js";
 
 const router = express.Router();
 
@@ -76,7 +76,7 @@ router.get('/health', (req, res) => {
 });
 
 // GET /api/logs/stats - Log statistics (admin only)
-router.get('/stats', clerkAuth, async (req, res) => {
+router.get('/stats', verifyClerkJwt, async (req, res) => {
   try {
     // Check if user is admin
     if (req.user?.role !== 'admin') {
@@ -113,7 +113,7 @@ router.get('/stats', clerkAuth, async (req, res) => {
 });
 
 // GET /api/logs/recent - Recent logs (admin only)
-router.get('/recent', clerkAuth, async (req, res) => {
+router.get('/recent', verifyClerkJwt, async (req, res) => {
   try {
     // Check if user is admin
     if (req.user?.role !== 'admin') {
