@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,8 @@ interface PortfolioSummary {
 }
 
 export default function PortfolioDashboard() {
-  const { isSignedIn, getToken } = useUser();
+  const { isSignedIn } = useUser();
+  const { getToken } = useAuth();
   const { tier } = useSubscription();
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);

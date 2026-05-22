@@ -278,15 +278,15 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
     }
     try {
       const token = await getToken({ template: "backend" });
-      const r = await fetchJson(apiUrl("/watchlist"), {
+      const r = await fetchJson<{ success?: boolean; already?: boolean; error?: string }>(apiUrl("/watchlist"), {
         method: "POST",
         body: JSON.stringify({ skinId: skin.id }),
         headers: { ...(token && { Authorization: `Bearer ${token}` }) },
       });
-      if (r.success) {
-        setWatchlistIds((p) => [...p, skin.id]);
-        toast.success("Added to watchlist");
-      } else toast.error(r.error || "Failed");
+      if (r?.success) {
+        setWatchlistIds((p) => (p.includes(skin.id) ? p : [...p, skin.id]));
+        toast.success(r.already ? "Already in watchlist" : "Added to watchlist");
+      } else toast.error(r?.error || "Failed");
     } catch {
       toast.error("Failed to add");
     }
@@ -304,7 +304,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
     }
     try {
       const token = await getToken({ template: "backend" });
-      const r = await fetchJson(apiUrl("/portfolio"), {
+      const r = await fetchJson<{ success?: boolean; id?: number; error?: string }>(apiUrl("/portfolio"), {
         method: "POST",
         body: JSON.stringify({
           skinId: skin.id,
@@ -314,10 +314,10 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
         }),
         headers: { ...(token && { Authorization: `Bearer ${token}` }) },
       });
-      if (r.success) {
-        setPortfolioIds((p) => [...p, skin.id]);
+      if (r?.success) {
+        setPortfolioIds((p) => (p.includes(skin.id) ? p : [...p, skin.id]));
         toast.success("Added to portfolio");
-      } else toast.error(r.error || "Failed");
+      } else toast.error(r?.error || "Failed");
     } catch {
       toast.error("Failed to add");
     }
