@@ -103,6 +103,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
   const [portfolioIds, setPortfolioIds] = useState<number[]>([]);
   const [alertModalOpen, setAlertModalOpen] = useState(false);
   const { createAlert } = useAlerts();
+  const [priceHistory, setPriceHistory] = useState<Array<{ date: string; price: number }> | null>(null);
 
   // Sprint 2 SEO event — fire once per SSR landing render.
   useEffect(() => {
@@ -130,6 +131,41 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
     return () => { cancelled = true; };
   }, [isSignedIn, getToken]);
 
+  // Fetch price history client-side. SSR `SkinDetail` does not embed history
+  // (kept fast for Vercel Hobby 10s ceiling), so we fetch the dedicated
+  // `/api/v1/skins/:id/history` endpoint here. Re-fetches when range changes.
+  useEffect(() => {
+    let cancelled = false;
+    const days = range === "24h" ? 1
+      : range === "7d" ? 7
+      : range === "30d" ? 30
+      : range === "90d" ? 90
+      : range === "1y" ? 365
+      : 9999;
+    (async () => {
+      try {
+        const r = await fetch(apiUrl(`/skins/${skin.id}/history?days=${days}`));
+        if (!r.ok) {
+          if (!cancelled) setPriceHistory([]);
+          return;
+        }
+        const json = await r.json();
+        if (cancelled) return;
+        const list = Array.isArray(json?.history)
+          ? json.history
+          : Array.isArray(json?.data)
+            ? json.data
+            : Array.isArray(json)
+              ? json
+              : [];
+        setPriceHistory(list);
+      } catch {
+        if (!cancelled) setPriceHistory([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [skin.id, range]);
+
   const skinImageUrl = useMemo(() => {
     return skin.imageUrl || skin.image_url || skin.itemImage || skin.itemimage || null;
   }, [skin]);
@@ -148,13 +184,16 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
   const change30 =
     skin.priceMedian30d != null && price != null ? ((price - skin.priceMedian30d) / skin.priceMedian30d) * 100 : null;
 
-  // Filter history by range
+  // Filter history by range. Prefers client-fetched `priceHistory` (real DB
+  // rows from `/skins/:id/history`); falls back to any embedded SSR history
+  // for forward-compat if the server reader ever starts populating it.
   const filteredHistory = useMemo(() => {
-    if (!skin.history) return [];
+    const source = priceHistory ?? skin.history ?? [];
+    if (source.length === 0) return [];
     const days = range === "24h" ? 1 : range === "7d" ? 7 : range === "30d" ? 30 : range === "90d" ? 90 : range === "1y" ? 365 : 9999;
     const cutoff = Date.now() - days * 86400000;
-    return skin.history.filter((h) => new Date(h.date).getTime() >= cutoff);
-  }, [skin.history, range]);
+    return source.filter((h) => new Date(h.date).getTime() >= cutoff);
+  }, [priceHistory, skin.history, range]);
 
   // Synthetic order book from buy/offer data (until backend exposes real book)
   const synthOrderBook = useMemo(() => {
