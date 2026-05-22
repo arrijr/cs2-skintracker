@@ -90,12 +90,10 @@ export const updatePriceAlert = async (req, res) => {
       return res.status(404).json({ error: "Watchlist entry not found" });
     }
 
-    // Max 1 price alert per user
-    const hasAlert = await prisma.watchlist.findFirst({
-      where: { userId, priceAlert: { not: null }, skinId: { not: skinId } }
-    });
-    if (priceAlert && hasAlert)
-      return res.status(400).json({ error: "Only 1 price alert allowed per user." });
+    // NOTE: Tier-based alert quotas (Free=2 / Lite=15 / Pro=unlimited) are
+    // enforced in alertController via TIER_QUOTA. The old "1 alert per user"
+    // hard limit that lived here was a leftover from the pre-tier era and
+    // contradicted both the UI (one bell per row) and the pricing page.
 
     await prisma.watchlist.update({
       where: { id: entry.id },
