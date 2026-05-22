@@ -17,6 +17,7 @@
     "fetch-prices": "node scripts/fetch-prices.js",
     "script:backfill-priceupdatedat": "node scripts/backfillPriceUpdatedAt.js",
     "script:backfill-caseskins": "node scripts/backfillCaseSkins.js",
+    "script:backfill-knife-slugs": "node scripts/backfillKnifeWeaponSlugs.js",
     "render:deploy": "node scripts/render-deploy.js",
     "render:start": "node scripts/render-start.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --testPathPatterns=src/__tests__",

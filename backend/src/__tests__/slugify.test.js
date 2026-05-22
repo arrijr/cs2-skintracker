@@ -53,7 +53,15 @@ describe('weaponSlugFor', () => {
     expect(weaponSlugFor('★ StatTrak™ Karambit | Fade (Factory New)')).toBe('karambit');
   });
 
-  it('returns "unknown" when no pipe present', () => {
+  it('returns "unknown" when no pipe present (non-star item)', () => {
     expect(weaponSlugFor('Operation Hydra Case')).toBe('unknown');
+  });
+
+  it('extracts vanilla-knife slug when no pipe present (★ prefix)', () => {
+    expect(weaponSlugFor('★ Karambit')).toBe('karambit');
+    expect(weaponSlugFor('★ Bayonet')).toBe('bayonet');
+    expect(weaponSlugFor('★ Butterfly Knife')).toBe('butterfly-knife');
+    expect(weaponSlugFor('★ M9 Bayonet')).toBe('m9-bayonet');
+    expect(weaponSlugFor('★ StatTrak™ Karambit')).toBe('karambit');
   });
 });

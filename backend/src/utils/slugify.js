@@ -31,11 +31,27 @@ export function slugify(input) {
  * Extract the weapon slug from a marketHashName.
  *   "AK-47 | Redline (FT)"           → "ak-47"
  *   "★ StatTrak™ Karambit | Fade"   → "karambit"
+ *   "★ Karambit"                     → "karambit"   (vanilla knife, no skin)
+ *   "★ Sport Gloves"                 → "sport-gloves"
  *   "Operation Hydra Case"           → "unknown"
  */
 export function weaponSlugFor(marketHashName) {
   if (!marketHashName || typeof marketHashName !== 'string') return 'unknown';
-  if (!marketHashName.includes('|')) return 'unknown';
+
+  // Knife / glove vanilla items have no '|' — the whole string after ★ is the
+  // weapon type. Without this branch they all collapse to 'unknown' and break
+  // every knife pillar page.
+  const hasStar = marketHashName.startsWith('★');
+  if (!marketHashName.includes('|')) {
+    if (!hasStar) return 'unknown';
+    const head = marketHashName
+      .replace(/^★\s*/, '')
+      .replace(/^StatTrak™?\s*/i, '')
+      .replace(/^Souvenir\s*/i, '')
+      .trim();
+    return slugify(head) || 'unknown';
+  }
+
   // Take everything before the first pipe
   let head = marketHashName.split('|')[0].trim();
   // Strip ★, StatTrak™, Souvenir prefixes
