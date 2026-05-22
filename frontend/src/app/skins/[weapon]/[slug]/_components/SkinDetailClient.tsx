@@ -109,7 +109,8 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
   const [watchlistIds, setWatchlistIds] = useState<number[]>([]);
   const [portfolioIds, setPortfolioIds] = useState<number[]>([]);
   const [alertModalOpen, setAlertModalOpen] = useState(false);
-  const { createAlert } = useAlerts();
+  const { alerts, createAlert } = useAlerts();
+  const alertCountForThisSkin = alerts.filter((a: any) => a.skinId === skin.id).length;
   const [priceHistory, setPriceHistory] = useState<Array<{ date: string; price: number }> | null>(null);
   const [variantsByWear, setVariantsByWear] = useState<Record<string, VariantRow> | null>(null);
 
@@ -684,63 +685,69 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
             </Card>
           </div>
 
-          {/* RIGHT: sidebar */}
+          {/* RIGHT: sidebar — real-data widgets only.
+              RecentActivity / Stickers / PatternIndex remain commented out
+              until backend supplies that data (Phase 2 / Steam-listing API).
+              AlertBanner and Case-Link both reference live data and are
+              promoted here from the body-footer to fill the sidebar column. */}
           <div className="flex flex-col gap-5">
-            {/* TODO: re-enable when backend supplies real recent activity events */}
-            {/*
-            <Card className="bg-slate-900/70 backdrop-blur border-slate-700/40 p-5">
-              <h3 className="font-display text-base font-semibold text-white mb-2">Recent activity</h3>
-              <RecentActivity events={[]} />
-            </Card>
-            */}
+            {/* User's alert count for this specific skin. Component renders a
+                CTA when count===0, a "X alerts active" badge otherwise. */}
+            <AlertBanner count={alertCountForThisSkin} />
 
-            {/* TODO: re-enable when backend supplies real sticker data */}
-            {/*
-            <Card className="bg-slate-900/70 backdrop-blur border-slate-700/40 p-5">
-              <Stickers stickers={[]} />
-            </Card>
-            */}
+            {/* Case-link card — shown only when this skin originates from a
+                Case (skin.caseInfo populated). Was previously a body-footer,
+                moved here so the sidebar column isn't empty. */}
+            {skin.caseInfo && (
+              <Link
+                href={`/cases/${caseToSlug(skin.caseInfo.name)}`}
+                className="flex items-center justify-between p-4 rounded-xl bg-slate-900/70 backdrop-blur border border-slate-700/40 hover:border-slate-600/60 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+                    {skin.caseInfo.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white truncate">{skin.caseInfo.name}</div>
+                    <div className="text-xs text-slate-400">Source case</div>
+                  </div>
+                </div>
+                <ExternalLink className="h-4 w-4 text-slate-400 group-hover:text-white transition-colors flex-shrink-0" />
+              </Link>
+            )}
 
-            {/* TODO: re-enable when backend supplies real pattern-index data */}
-            {/*
+            {/* Quick links — view variants table, view multi-source pricing.
+                Both live in the body below, but a sidebar shortcut helps
+                long-scroll users on mobile + desktop. */}
             <Card className="bg-slate-900/70 backdrop-blur border-slate-700/40 p-5">
-              <PatternIndex
-                primary={{ num: 447, label: "Common" }}
-                note="Standard pattern · no notable rare seeds"
-                examples={[
-                  { num: 447, label: "Common" },
-                  { num: 179, label: "Rare", rare: true },
-                  { num: 231, label: "Common" },
-                ]}
-              />
+              <h3 className="font-display text-sm font-semibold text-white mb-3">Compare</h3>
+              <div className="flex flex-col gap-2">
+                <a
+                  href="#wears"
+                  className="text-xs text-slate-400 hover:text-fuchsia-400 transition-colors flex items-center gap-2"
+                >
+                  → All wear variants (FN · MW · FT · WW · BS)
+                </a>
+                <a
+                  href="#prices"
+                  className="text-xs text-slate-400 hover:text-fuchsia-400 transition-colors flex items-center gap-2"
+                >
+                  → Cross-market prices (Steam · Skinport · CSFloat)
+                </a>
+                {skin.marketHashName && (
+                  <a
+                    href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-slate-400 hover:text-fuchsia-400 transition-colors flex items-center gap-2"
+                  >
+                    → Open on Steam Market ↗
+                  </a>
+                )}
+              </div>
             </Card>
-            */}
-
-            {/* TODO: re-enable when backend supplies real alert counts */}
-            {/* <AlertBanner count={0} /> */}
           </div>
         </div>
-
-        {/* Case link footer */}
-        {skin.caseInfo && (
-          <div className="mt-6">
-            <Link
-              href={`/cases/${caseToSlug(skin.caseInfo.name)}`}
-              className="flex items-center justify-between p-4 rounded-xl bg-slate-900/70 backdrop-blur border border-slate-700/40 hover:border-slate-600/60 transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                  {skin.caseInfo.name.charAt(0)}
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-white">{skin.caseInfo.name}</div>
-                  <div className="text-xs text-slate-400">Source case for this skin</div>
-                </div>
-              </div>
-              <ExternalLink className="h-4 w-4 text-slate-400 group-hover:text-white transition-colors" />
-            </Link>
-          </div>
-        )}
       </div>
     </div>
   );
