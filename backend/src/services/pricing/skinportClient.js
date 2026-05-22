@@ -45,6 +45,33 @@ export async function fetchSkinportItem(
   marketHashName,
   { fetchImpl = fetch, eurToUsd = 1.08, maxAttempts = DEFAULT_MAX_ATTEMPTS } = {}
 ) {
+  const map = await fetchSkinportItemsMap({ fetchImpl, eurToUsd, maxAttempts });
+  return map.get(marketHashName) ?? null;
+}
+
+/**
+ * Fetch the full Skinport feed and return the raw array.
+ *
+ * Each item shape (verified against live API 2026-05-22):
+ *   {
+ *     market_hash_name: string,
+ *     currency: 'EUR',
+ *     suggested_price: number | null,  // EUR
+ *     min_price: number | null,        // EUR (cheapest listing)
+ *     max_price: number | null,        // EUR
+ *     mean_price: number | null,       // EUR (average listing)
+ *     median_price: number | null,     // EUR (median listing)
+ *     quantity: number,                // current listings count
+ *     created_at: number,              // unix ts
+ *     updated_at: number,              // unix ts
+ *     item_page: string,
+ *     market_page: string
+ *   }
+ *
+ * NOTE: feed does NOT include 7d/30d sales counts. Volume data only via the
+ * gated /sales endpoint (auth required) — out of scope here.
+ */
+export async function fetchSkinportItems({ fetchImpl = fetch, maxAttempts = DEFAULT_MAX_ATTEMPTS } = {}) {
   let lastError = null;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     let res;
@@ -75,8 +102,17 @@ export async function fetchSkinportItem(
     }
 
     const data = await res.json();
-    const map = parseSkinportItems(data, { eurToUsd });
-    return map.get(marketHashName) ?? null;
+    if (!Array.isArray(data)) throw new Error('Skinport response not an array');
+    return data;
   }
   throw new Error(lastError ?? 'unknown skinport error');
+}
+
+/**
+ * Same as `fetchSkinportItems` but pre-parsed into the legacy Map<mhn, {askUsd,...}>
+ * shape used by `fetchSkinportItem`. Kept internal to avoid breaking existing callers.
+ */
+async function fetchSkinportItemsMap({ fetchImpl = fetch, eurToUsd = 1.08, maxAttempts = DEFAULT_MAX_ATTEMPTS } = {}) {
+  const data = await fetchSkinportItems({ fetchImpl, maxAttempts });
+  return parseSkinportItems(data, { eurToUsd });
 }

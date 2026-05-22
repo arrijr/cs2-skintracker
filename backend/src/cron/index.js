@@ -6,13 +6,15 @@ import { spawn } from "node:child_process";
 import checkPriceAlerts from "./priceAlertJob.js";
 import { calculateAndStorePortfolioValues } from "../services/portfolioHistoryService.js";
 import runPortfolioHistoryCron from "./portfolioHistoryCron.js";
-import { updateSteamWebAPIData } from "./steamWebAPIDataUpdate.js";
-import { dailySteamWebAPIDataUpdate } from "./dailySteamWebAPIDataUpdate.js";
+// Dead SteamWebAPI.com crons removed 2026-05-22 — vendor API was decommissioned,
+// causing every run to no-op while leaving sold7d/30d/priceMedian7d/30d/90d NULL
+// across the whole catalogue. Backfill now comes from Skinport (see below).
 import { dailyCasePriceHistory } from "./dailyCasePriceHistory.js";
 import { dailySkinPriceHistory } from "./dailySkinPriceHistory.js";
 import { dailySkinQuantityHistory } from "./dailySkinQuantityHistory.js";
 import { runCatalogSync } from "../services/catalog/catalogSyncJob.js";
 import { runPriceRefresh } from "../services/pricing/priceRefreshJob.js";
+import { runSkinportBulkBackfill } from "./skinportBulkBackfill.js";
 import logger from "../utils/logger.js";
 
 // {/* 02:00 UTC → z.B. 04:00 Berlin im Sommer */}
@@ -56,33 +58,13 @@ cron.schedule("0 0,12 * * *", async () => {
   console.log("[CRON] 12-hourly portfolio history done.");
 });
 
-// {/* 03:00 UTC */} SteamWebAPI.com Daten aktualisieren (täglich)
-cron.schedule("0 3 * * *", async () => {
-  console.log("[CRON] Starting SteamWebAPI.com data update...");
-  await updateSteamWebAPIData();
-  console.log("[CRON] SteamWebAPI.com data update done.");
-});
+// 03:00 + 06:00 UTC SteamWebAPI.com crons removed 2026-05-22 (vendor decommissioned).
 
 // {/* alle 30 Minuten */} Price Alerts prüfen
 cron.schedule("*/30 * * * *", async () => {
   console.log("[CRON] Checking price alerts...");
   await checkPriceAlerts();
   console.log("[CRON] Alerts check done.");
-});
-
-// {/* täglich um 06:00 UTC */} Daily SteamWebAPI.com data update
-cron.schedule("0 6 * * *", async () => {
-  console.log("[CRON] Starting daily SteamWebAPI.com data update...");
-  try {
-    const result = await dailySteamWebAPIDataUpdate();
-    if (result.success) {
-      console.log("[CRON] Daily SteamWebAPI data update completed successfully");
-    } else {
-      console.log("[CRON] Daily SteamWebAPI data update completed with errors:", result.error);
-    }
-  } catch (error) {
-    console.error("[CRON] Error in daily SteamWebAPI data update:", error);
-  }
 });
 
 // {/* täglich um 06:30 UTC */} Daily Case Price History
@@ -149,5 +131,19 @@ cron.schedule("30 3 * * *", async () => {
     logger.info("[CRON] Price refresh done", { summary });
   } catch (err) {
     logger.error("[CRON] Price refresh failed", { error: err.message });
+  }
+}, { timezone: "UTC" });
+
+// {/* 04:00 UTC daily */} Skinport bulk backfill — one HTTP call covers the full
+// catalogue (~20k items in ~1 min). Populates priceMin/Max/Median7d/Median30d
+// and priceUpdatedAt for every skin we can match. Decoupled from the slow
+// Steam Market refresh above so we always have *something* fresh.
+cron.schedule("0 4 * * *", async () => {
+  logger.info("[CRON] Skinport bulk backfill starting");
+  try {
+    const summary = await runSkinportBulkBackfill();
+    logger.info("[CRON] Skinport bulk backfill done", { summary });
+  } catch (err) {
+    logger.error("[CRON] Skinport bulk backfill failed", { error: err.message });
   }
 }, { timezone: "UTC" });
