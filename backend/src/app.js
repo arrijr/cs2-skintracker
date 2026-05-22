@@ -165,14 +165,24 @@ app.use("/api/v1/notifications", notificationsRoutes);
 // Inngest webhook endpoint — receives cron triggers + manual events. (ADR-004)
 // In dev (no signing key) Inngest CLI handles auth via local dev server (http://127.0.0.1:8288).
 // In prod, INNGEST_SIGNING_KEY verifies webhook signatures.
-app.use(
-  "/api/inngest",
-  inngestServe({
-    client: inngest,
-    functions: inngestFunctions,
-    signingKey: process.env.INNGEST_SIGNING_KEY,
-  })
-);
+//
+// Safety: if NODE_ENV=production but the signing key is missing, refuse to
+// mount the handler at all rather than serving an unauthenticated background-
+// job trigger endpoint. Failing closed is better than silently accepting
+// unsigned requests.
+if (process.env.NODE_ENV === 'production' && !process.env.INNGEST_SIGNING_KEY) {
+  console.error('[INNGEST] FATAL: INNGEST_SIGNING_KEY missing in production; refusing to mount /api/inngest');
+  app.use('/api/inngest', (_req, res) => res.status(503).json({ error: 'Inngest not configured' }));
+} else {
+  app.use(
+    "/api/inngest",
+    inngestServe({
+      client: inngest,
+      functions: inngestFunctions,
+      signingKey: process.env.INNGEST_SIGNING_KEY,
+    })
+  );
+}
 
 // 404
 app.use((req, res) => {

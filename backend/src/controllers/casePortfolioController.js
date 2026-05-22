@@ -77,7 +77,8 @@ const getCasePortfolio = async (req, res) => {
     console.error('Error fetching case portfolio:', error);
     res.status(500).json({ 
       error: 'Failed to fetch case portfolio',
-      details: error.message 
+      ...(process.env.NODE_ENV !== 'production' && { details: error.message })
+
     });
   }
 };
@@ -180,7 +181,8 @@ const addCaseToPortfolio = async (req, res) => {
     console.error('Error adding case to portfolio:', error);
     res.status(500).json({ 
       error: 'Failed to add case to portfolio',
-      details: error.message 
+      ...(process.env.NODE_ENV !== 'production' && { details: error.message })
+
     });
   }
 };
@@ -216,7 +218,8 @@ const removeCaseFromPortfolio = async (req, res) => {
     console.error('Error removing case from portfolio:', error);
     res.status(500).json({ 
       error: 'Failed to remove case from portfolio',
-      details: error.message 
+      ...(process.env.NODE_ENV !== 'production' && { details: error.message })
+
     });
   }
 };
@@ -269,7 +272,8 @@ const updateCasePortfolio = async (req, res) => {
     console.error('Error updating case portfolio:', error);
     res.status(500).json({ 
       error: 'Failed to update case portfolio',
-      details: error.message 
+      ...(process.env.NODE_ENV !== 'production' && { details: error.message })
+
     });
   }
 };

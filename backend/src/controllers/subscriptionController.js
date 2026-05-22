@@ -125,9 +125,11 @@ export const createCheckoutSession = async (req, res) => {
       errorCode: error.code,
     });
 
+    // Do NOT leak Stripe error details to clients — they routinely include
+    // price IDs, customer IDs, and key-prefix metadata that should stay
+    // server-side. Server log already captured `error.message` above.
     return res.status(500).json({
       error: 'Failed to create checkout session',
-      detail: error.message
     });
   }
 };
