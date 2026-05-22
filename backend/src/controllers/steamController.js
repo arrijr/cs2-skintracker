@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import defaultPrisma from '../prisma/prismaClient.js';
 import logger from '../utils/logger.js';
 import {
@@ -12,7 +13,37 @@ import { importSkinMatches } from '../services/steam/portfolioImporter.js';
 
 const BACKEND_BASE = process.env.STEAM_OPENID_RETURN_BASE_URL || 'http://localhost:5000';
 const FRONTEND_BASE = process.env.FRONTEND_URL || 'http://localhost:3000';
-const STATE_SECRET = process.env.STEAM_OPENID_STATE_SECRET || 'dev-state-secret-replace-in-prod';
+
+// SECURITY (2026-05-22 audit, finding #2): Steam OpenID state secret used a
+// public hardcoded fallback ('dev-state-secret-replace-in-prod'). If
+// STEAM_OPENID_STATE_SECRET was missing in prod (still TODO on CEO checklist
+// §5b at audit time), an attacker could forge a `state` JWT with arbitrary
+// `userId`, complete the Steam OpenID round-trip themselves, and have
+// `connectCallback` write THEIR steamId onto the victim's account — full
+// account-takeover of the Steam link and enables inventory exfiltration via
+// `/inventory/preview`.
+//
+// New behaviour:
+//   - production:   throw at module load if env var is missing (fail closed)
+//   - non-prod:     log loud warning + use random per-process fallback so
+//                   forged state JWTs can't survive a restart and devs
+//                   can't accidentally ship the same predictable secret
+const ENV_STATE_SECRET = process.env.STEAM_OPENID_STATE_SECRET;
+if (!ENV_STATE_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'FATAL: STEAM_OPENID_STATE_SECRET env var required in production. ' +
+        'Without it, the Steam OpenID state JWT is forgeable and the Steam ' +
+        'connect flow is vulnerable to account-takeover.'
+    );
+  }
+  console.warn(
+    '[steam] STEAM_OPENID_STATE_SECRET unset — using random per-process fallback. ' +
+      'NEVER ship to production without setting this env var.'
+  );
+}
+const STATE_SECRET =
+  ENV_STATE_SECRET || `dev-only-${crypto.randomBytes(32).toString('hex')}`;
 
 // Frontend paths the post-connect redirect is allowed to land on. Anything
 // not on this list collapses to the safe default. Prevents open-redirect
