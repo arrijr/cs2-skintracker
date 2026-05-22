@@ -177,7 +177,15 @@ export async function runPriceRefresh({ prismaClient = defaultPrisma, sleepImpl 
     ],
     take: MAX_SKINS_PER_RUN,
   });
-  const cases = await prismaClient.case.findMany({ select: { id: true, name: true } });
+  // Cases: small catalog (~100 items) but they used to be wedged BETWEEN
+  // skins + marketItems in this array, so if the run was killed mid-loop
+  // (Render timeout / memory) cases never got reached. Pull cases FIRST
+  // and order by stalest-lastUpdated so unpriced ones (lastUpdated=seed-date)
+  // win every run until they all have a price.
+  const cases = await prismaClient.case.findMany({
+    select: { id: true, name: true },
+    orderBy: [{ lastUpdated: { sort: 'asc', nulls: 'first' } }],
+  });
   const marketItems = await prismaClient.marketItem.findMany({
     where: { isActive: true },
     orderBy: [
@@ -188,9 +196,12 @@ export async function runPriceRefresh({ prismaClient = defaultPrisma, sleepImpl 
     select: { id: true, marketHashName: true, consecutive404: true },
   });
 
+  // Order: cases FIRST (small, must always complete), then stalest skins,
+  // then market items. If something kills the run mid-way, at least every
+  // case got a fresh price.
   const all = [
-    ...skins.map((s) => ({ ...s, itemType: 'skin' })),
     ...cases.map((c) => ({ id: c.id, marketHashName: c.name, itemType: 'case' })),
+    ...skins.map((s) => ({ ...s, itemType: 'skin' })),
     ...marketItems.map((m) => ({ ...m, itemType: 'market_item' })),
   ];
 

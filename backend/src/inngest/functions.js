@@ -85,13 +85,22 @@ export const priceRefresh = inngest.createFunction(
         take: MAX_SKINS,
         select: { id: true, marketHashName: true },
       });
-      const all = skins.map((s) => ({ ...s, itemType: 'skin' }));
+      // Cases first, then skins, then marketItems — small case catalog (~100)
+      // used to wedge between skins (5k) and marketItems (1500) and starve when
+      // Render killed mid-run. Putting cases first guarantees they always
+      // complete in a single chunk-batch (~13 chunks at 8 items/chunk).
+      const all = [];
       if (!skinsOnly) {
         // Case.lastUpdated is NOT NULL (has @default(now())), so null branch is invalid.
         const cases = await prisma.case.findMany({
           where: { lastUpdated: { lt: fourHoursAgo } },
+          orderBy: [{ lastUpdated: { sort: 'asc', nulls: 'first' } }],
           select: { id: true, name: true },
         });
+        all.push(...cases.map((c) => ({ id: c.id, marketHashName: c.name, itemType: 'case' })));
+      }
+      all.push(...skins.map((s) => ({ ...s, itemType: 'skin' })));
+      if (!skinsOnly) {
         const marketItems = await prisma.marketItem.findMany({
           where: {
             isActive: true,
@@ -104,10 +113,7 @@ export const priceRefresh = inngest.createFunction(
           take: MAX_MARKET_ITEMS,
           select: { id: true, marketHashName: true, consecutive404: true },
         });
-        all.push(
-          ...cases.map((c) => ({ id: c.id, marketHashName: c.name, itemType: 'case' })),
-          ...marketItems.map((m) => ({ ...m, itemType: 'market_item' }))
-        );
+        all.push(...marketItems.map((m) => ({ ...m, itemType: 'market_item' })));
       }
       return maxItems != null ? all.slice(0, maxItems) : all;
     });
