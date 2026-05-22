@@ -23,10 +23,15 @@ function buildSteamAuthUrl(userId) {
 
 // Legacy: GET /connect/redirect — kept for back-compat. The frontend now uses
 // POST /connect/start (with Authorization header) to avoid leaking the JWT in
-// the URL. This route still requires Clerk auth via the middleware.
+// the URL. This route still requires Clerk auth via the middleware. As of the
+// 2026-05-22 security audit we no longer accept `?token=` in verifyClerkJwt,
+// so this route is reachable only via an Authorization header on the GET,
+// which browser-initiated top-level navigations cannot set. In practice
+// nothing should hit this anymore; we log to confirm before removing.
 export async function connectRedirect(req, res) {
   const userId = req.userId;
   if (!userId) return res.status(401).json({ error: 'auth required' });
+  logger.warn('[steam] legacy /connect/redirect called', { userId });
   return res.redirect(302, buildSteamAuthUrl(userId));
 }
 

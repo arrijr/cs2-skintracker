@@ -54,21 +54,25 @@ function getKey(header, cb) {
 export async function verifyClerkJwt(req, res, next) {
   try {
     const auth = req.headers.authorization || "";
-    let token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-    if (!token && typeof req.query.token === 'string' && req.query.token) {
-      token = req.query.token;
-    }
+    const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
 
-    console.log("[JWT VERIFY] Debug info:", {
-      hasAuth: !!auth,
-      hasToken: !!token,
-      tokenLength: token?.length,
-      tokenStart: token?.substring(0, 20) + "...",
-      issuer: issuer,
-      audience: audience,
-      jwksUrl: jwksUrl,
-      hasClient: !!client
-    });
+    // Note: previously also accepted `?token=` query param so the GET-redirect
+    // Steam OpenID flow could carry the JWT in the URL. That route is now
+    // legacy (POST /connect/start replaces it) and putting JWTs in query
+    // strings leaks them into Render/Vercel/Sentry logs, browser history,
+    // referer headers. Header-only from here on.
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[JWT VERIFY] Debug info:', {
+        hasAuth: !!auth,
+        hasToken: !!token,
+        tokenLength: token?.length,
+        issuer,
+        audience,
+        jwksUrl,
+        hasClient: !!client,
+      });
+    }
 
     if (!token) {
       return res.status(401).json({ 
@@ -127,12 +131,13 @@ export async function verifyClerkJwt(req, res, next) {
               actualClaims = { aud: p.aud, iss: p.iss, sub: p.sub };
             }
           } catch (_) { /* ignore decode errors */ }
+          // Do NOT log token bytes. actualClaims is base64-decoded unverified
+          // payload — already public metadata in the JWT, safe to log.
           console.error("[JWT VERIFY] failed:", err?.message, {
             expectedIssuer: issuer,
             expectedAudience: audience,
             actualClaims,
             errorType: err.name,
-            tokenStart: token?.substring(0, 20) + "..."
           });
           return res.status(401).json({ 
             ok: false, 
@@ -141,26 +146,27 @@ export async function verifyClerkJwt(req, res, next) {
           });
         }
         
-        console.log("[JWT VERIFY] success:", {
-          sub: payload?.sub,
-          aud: payload?.aud,
-          iss: payload?.iss
-        });
-        
+        if (process.env.NODE_ENV !== 'production') {
+          console.log("[JWT VERIFY] success:", {
+            sub: payload?.sub,
+            aud: payload?.aud,
+            iss: payload?.iss,
+          });
+        }
+
         // Nutzlast für Controller verfügbar machen
         req.clerkJwt = payload;
-        
+
         // Extract user ID from JWT payload via DB lookup
         const clerkUserId = payload?.sub;
         if (clerkUserId) {
           const user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
           if (!user) {
-            console.error("[JWT VERIFY] User not found for clerkId:", clerkUserId);
+            console.error("[JWT VERIFY] User not found for clerkId");
             return res.status(401).json({ error: 'User not found' });
           }
           req.userId = user.id;
           req.auth = { userId: user.id };
-          console.log("[JWT VERIFY] Resolved userId:", req.userId, "for clerk:", clerkUserId);
         }
 
         next();
