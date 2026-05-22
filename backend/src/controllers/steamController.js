@@ -28,22 +28,34 @@ const FRONTEND_BASE = process.env.FRONTEND_URL || 'http://localhost:3000';
 //   - non-prod:     log loud warning + use random per-process fallback so
 //                   forged state JWTs can't survive a restart and devs
 //                   can't accidentally ship the same predictable secret
+// SECURITY: previously this threw at module load when STEAM_OPENID_STATE_SECRET
+// was missing in production. That brought down the entire backend (verified
+// 2026-05-22: env-var injection on Render is flaky and the throw kept
+// triggering even after the env was set service-level). The crash blocked
+// EVERY page (portfolio, dashboard, profile, items) — a 5-minute Steam
+// account-takeover risk became a multi-hour outage of every authed feature.
+//
+// Compromise: don't crash. ALWAYS generate a per-process random fallback if
+// the env var is missing. Log a loud WARN so it shows in Render logs without
+// killing the process. Existing in-flight Steam state JWTs invalidate on
+// each restart (user would need to retry the connect flow) but no
+// account-takeover is possible because the secret isn't predictable.
+//
+// The original audit finding remains valid — fix it by SETTING the env var
+// reliably, not by re-enabling the fail-closed throw. Tracker: CEO checklist
+// §5b "STEAM_OPENID_STATE_SECRET required in prod".
+import crypto from 'node:crypto';
 const ENV_STATE_SECRET = process.env.STEAM_OPENID_STATE_SECRET;
 if (!ENV_STATE_SECRET) {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error(
-      'FATAL: STEAM_OPENID_STATE_SECRET env var required in production. ' +
-        'Without it, the Steam OpenID state JWT is forgeable and the Steam ' +
-        'connect flow is vulnerable to account-takeover.'
-    );
-  }
+  const where = process.env.NODE_ENV === 'production' ? 'PRODUCTION' : 'dev';
   console.warn(
-    '[steam] STEAM_OPENID_STATE_SECRET unset — using random per-process fallback. ' +
-      'NEVER ship to production without setting this env var.'
+    `[steam] ⚠️  STEAM_OPENID_STATE_SECRET unset in ${where} — using random per-process fallback. ` +
+      'Steam OpenID state JWTs invalidate on every restart. Set this env var to a stable 32-byte hex string ' +
+      'to make sessions survive restarts. No account-takeover risk (the random fallback is unpredictable).'
   );
 }
 const STATE_SECRET =
-  ENV_STATE_SECRET || `dev-only-${crypto.randomBytes(32).toString('hex')}`;
+  ENV_STATE_SECRET || `auto-${crypto.randomBytes(32).toString('hex')}`;
 
 // Frontend paths the post-connect redirect is allowed to land on. Anything
 // not on this list collapses to the safe default. Prevents open-redirect
