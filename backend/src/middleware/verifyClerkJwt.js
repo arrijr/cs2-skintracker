@@ -11,12 +11,20 @@ const {
   NODE_ENV,
 } = process.env;
 
-// Fallback für Development - aus dem Screenshot.
-// IMPORTANT: audience spelling is `skintracker` (NOT `skintrackr`). Mismatch
-// will reject every JWT silently. Prod audience = `cs2-skintracker-api`.
+// Fallback values used when the corresponding env var isn't set at process
+// start (we hit a Render env-injection bug where ALLOWED_ORIGINS and these
+// fields were undefined even though the env-group listed them).
+//
+// AUDIENCE: the Clerk-Test JWT template `backend` was created with a TYPO
+// (`skintrackr` instead of `skintracker`, missing the second `e`). We accept
+// BOTH spellings during this transition so:
+//   - existing test JWTs (typo'd aud) continue to verify
+//   - future Clerk Live JWTs (correct spelling) will also verify
+// Once Clerk Live ships with the correct spelling everywhere, drop the typo
+// from this list.
 const FALLBACK_ISSUER = "https://leading-bug-60.clerk.accounts.dev";
 const FALLBACK_JWKS_URL = "https://leading-bug-60.clerk.accounts.dev/.well-known/jwks.json";
-const FALLBACK_AUDIENCE = "cs2-skintracker-api-dev";
+const FALLBACK_AUDIENCE = ["cs2-skintrackr-api-dev", "cs2-skintracker-api-dev", "cs2-skintracker-api"];
 
 // Prüfe ob alle ENV-Variablen gesetzt sind
 if (!CLERK_JWKS_URL || !CLERK_ISSUER || !CLERK_AUDIENCE) {
@@ -30,7 +38,11 @@ if (!CLERK_JWKS_URL || !CLERK_ISSUER || !CLERK_AUDIENCE) {
 
 const jwksUrl = CLERK_JWKS_URL || FALLBACK_JWKS_URL;
 const issuer = CLERK_ISSUER || FALLBACK_ISSUER;
-const audience = CLERK_AUDIENCE || FALLBACK_AUDIENCE;
+// Accept the env value AND all known transitional spellings — jwt.verify
+// matches if the token's `aud` claim equals any string in the array.
+const audience = CLERK_AUDIENCE
+  ? [CLERK_AUDIENCE, ...FALLBACK_AUDIENCE.filter((a) => a !== CLERK_AUDIENCE)]
+  : FALLBACK_AUDIENCE;
 
 const client = jwksUrl ? jwksClient({
   jwksUri: jwksUrl,
