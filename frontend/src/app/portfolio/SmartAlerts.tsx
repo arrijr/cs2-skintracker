@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Bell, AlertTriangle, TrendingUp, TrendingDown, Settings, Zap, Shield, Info } from "lucide-react";
 import Tooltip from "../components/Tooltip";
 
@@ -173,8 +173,12 @@ export default function SmartAlerts({ portfolio, history, isPremium = false }: P
     return newAlerts;
   }, [technicalIndicators, portfolioHealth]);
 
-  // Update alerts when generated alerts change
-  useState(() => {
+  // Update alerts when generated alerts change. Previously this was
+  // `useState(() => setAlerts(...), [generatedAlerts])` which is a bug —
+  // useState accepts no dependency array, runs the initializer exactly
+  // once, and the alert list froze on first mount. useEffect is the
+  // correct primitive: re-run whenever the memoized generated set changes.
+  useEffect(() => {
     setAlerts(generatedAlerts);
   }, [generatedAlerts]);
 
