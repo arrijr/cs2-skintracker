@@ -49,8 +49,8 @@ export default function PurchaseAccordion({ purchases, onTransactionChange }: Om
                 <tr key={p.id} className="hover:bg-zinc-900">
                 <td className="py-1 px-2">{new Date(p.buyDate).toLocaleDateString()}</td>
                 <td className="py-1 px-2 text-right">{p.amount}</td>
-                <td className="py-1 px-2 text-right">{p.buyPrice?.toFixed(2) ?? "-"}</td>
-                <td className="py-1 px-2 text-right">{(p.amount * p.buyPrice).toFixed(2)}</td>
+                <td className="py-1 px-2 text-right">{p.buyPrice != null && Number.isFinite(p.buyPrice) ? p.buyPrice.toFixed(2) : "-"}</td>
+                <td className="py-1 px-2 text-right">{p.amount != null && p.buyPrice != null && Number.isFinite(p.amount * p.buyPrice) ? (p.amount * p.buyPrice).toFixed(2) : "-"}</td>
                 <td className="py-1 px-2 text-right">
                     <button
                         onClick={async () => {
