@@ -891,3 +891,5 @@ User-impact: the null-guard `.toFixed` sweep landed on JBZR but NOT on www.skint
 - OR: move `www.skintrackr.io` domain from cs2-skintracker to JBZR (which is already building every commit) and decommission cs2-skintracker.
 - OR: confirm one project is canonical, delete the other from Vercel.
 
+**Update 18:07 UTC:** Pattern confirmed deterministic. cs2-skintracker DID deploy the backend-only fix (94e9f49) and the docs-only commit (57ad1fb), but skipped the frontend-only feat (4e1fe40 — case detail UI refactor). The "Ignored Build Step" filter appears to skip pure frontend commits, which is the exact INVERSE of what it should do for a Next.js project. Pushing this docs commit to drag 4e1fe40 along.
+
