@@ -26,7 +26,8 @@ const toneClass = {
 } as const;
 
 export function KPICard({ label, value, delta, deltaLabel, icon, tone = "neutral", sub, spark }: KPICardProps) {
-  const isPos = (delta ?? 0) >= 0;
+  const hasDelta = delta != null && Number.isFinite(delta);
+  const isPos = hasDelta && delta >= 0;
   return (
     <Card className="relative overflow-hidden bg-slate-900/70 backdrop-blur border-slate-700/30 rounded-2xl">
       <CardContent className="p-5">
@@ -49,16 +50,16 @@ export function KPICard({ label, value, delta, deltaLabel, icon, tone = "neutral
         <div className="font-mono text-[28px] font-semibold tracking-[-0.025em] text-white tabular-nums leading-tight">
           {value}
         </div>
-        {(delta !== undefined || sub) && (
+        {(hasDelta || sub) && (
           <div
             className={cn(
               "font-mono text-xs mt-1.5 flex items-center gap-1.5",
-              delta !== undefined
+              hasDelta
                 ? isPos ? "text-emerald-400" : "text-rose-400"
                 : "text-slate-400"
             )}
           >
-            {delta !== undefined && (
+            {hasDelta && (
               <>
                 {isPos ? <TrendingUp className="h-3 w-3" aria-hidden="true" /> : <TrendingDown className="h-3 w-3" aria-hidden="true" />}
                 <span className="tabular-nums">
@@ -67,7 +68,7 @@ export function KPICard({ label, value, delta, deltaLabel, icon, tone = "neutral
                 {deltaLabel && <span className="text-slate-400 font-sans ml-0.5">{deltaLabel}</span>}
               </>
             )}
-            {!delta && sub && <span className="font-sans">{sub}</span>}
+            {!hasDelta && sub && <span className="font-sans">{sub}</span>}
           </div>
         )}
         {spark && spark.length > 1 && (

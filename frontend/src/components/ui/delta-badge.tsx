@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DeltaBadgeProps {
-  value: number; // percent, e.g. 4.27 = +4.27%
+  value: number | null | undefined; // percent, e.g. 4.27 = +4.27%
   size?: "xs" | "sm" | "md";
   showIcon?: boolean;
   suffix?: string; // e.g. "today", "all-time"
@@ -17,8 +17,9 @@ const sizeMap = {
 } as const;
 
 export function DeltaBadge({ value, size = "sm", showIcon = true, suffix, className }: DeltaBadgeProps) {
-  const isPositive = value > 0;
-  const isNegative = value < 0;
+  const hasValue = value != null && Number.isFinite(value);
+  const isPositive = hasValue && value > 0;
+  const isNegative = hasValue && value < 0;
   const sz = sizeMap[size];
   const color = isPositive
     ? "text-green-400"
@@ -30,8 +31,7 @@ export function DeltaBadge({ value, size = "sm", showIcon = true, suffix, classN
     <div className={cn("inline-flex items-center", sz.gap, sz.text, color, className)}>
       {showIcon && <Icon className={sz.icon} />}
       <span>
-        {isPositive ? "+" : ""}
-        {value.toFixed(2)}%
+        {hasValue ? `${isPositive ? "+" : ""}${value.toFixed(2)}%` : "—"}
       </span>
       {suffix && <span className="text-slate-400 ml-1">{suffix}</span>}
     </div>
