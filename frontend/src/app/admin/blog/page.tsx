@@ -15,16 +15,18 @@ export const metadata: Metadata = {
   description: 'Manage blog posts and content',
 };
 
+// Next.js 15: searchParams is async — must be awaited before access.
 interface AdminBlogPageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     category?: string;
     status?: string;
     search?: string;
-  };
+  }>;
 }
 
-export default function AdminBlogPage({ searchParams }: AdminBlogPageProps) {
+export default async function AdminBlogPage({ searchParams }: AdminBlogPageProps) {
+  const sp = await searchParams;
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
@@ -44,16 +46,16 @@ export default function AdminBlogPage({ searchParams }: AdminBlogPageProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
-          <AdminBlogFilters 
-            currentCategory={searchParams.category}
-            currentStatus={searchParams.status}
-            currentSearch={searchParams.search}
+          <AdminBlogFilters
+            currentCategory={sp.category}
+            currentStatus={sp.status}
+            currentSearch={sp.search}
           />
         </div>
-        
+
         <div className="lg:col-span-3">
           <Suspense fallback={<div>Loading blog posts...</div>}>
-            <AdminBlogList searchParams={searchParams} />
+            <AdminBlogList searchParams={sp} />
           </Suspense>
         </div>
       </div>

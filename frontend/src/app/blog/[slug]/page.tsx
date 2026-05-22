@@ -11,15 +11,17 @@ import { ShareButtons } from '@/components/blog/ShareButtons';
 import { BlogPostSchema } from '@/components/blog/BlogPostSchema';
 import MDXComponents from '@/components/blog/MDXComponents';
 
+// Next.js 15: params is async — must be awaited before access.
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   try {
-    const post = await getBlogPost(params.slug);
+    const { slug } = await params;
+    const post = await getBlogPost(slug);
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://skintrackr.io';
     
     return {
@@ -72,7 +74,8 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   try {
-    const post = await getBlogPost(params.slug);
+    const { slug } = await params;
+    const post = await getBlogPost(slug);
     
     // Increment view count (fire and forget)
     incrementViewCount(post.id).catch(console.error);

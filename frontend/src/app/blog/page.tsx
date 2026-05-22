@@ -35,24 +35,26 @@ export const metadata: Metadata = {
   },
 };
 
+// Next.js 15: searchParams is async — must be awaited before access.
 interface BlogPageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     category?: string;
     tag?: string;
     search?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
-  };
+  }>;
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
-  const page = parseInt(searchParams.page || '1');
-  const category = searchParams.category;
-  const tag = searchParams.tag;
-  const search = searchParams.search;
-  const sortBy = searchParams.sortBy || 'publishedAt';
-  const sortOrder = searchParams.sortOrder || 'desc';
+  const sp = await searchParams;
+  const page = parseInt(sp.page || '1');
+  const category = sp.category;
+  const tag = sp.tag;
+  const search = sp.search;
+  const sortBy = sp.sortBy || 'publishedAt';
+  const sortOrder = sp.sortOrder || 'desc';
 
   try {
     const { posts, pagination } = await getBlogPosts({
