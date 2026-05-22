@@ -123,17 +123,35 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
     // Only re-fire if the user navigates to a different skin.
   }, [skin.slug, skin.weaponSlug]);
 
-  // Load user lists
+  // Load user lists. Backend returns raw arrays (no `{success, data}` envelope).
+  // GET /watchlist     → [{ skinId, ... }, ...]
+  // GET /portfolio     → [{ skin: { id }, ... }, ...]  (aggregated by skinId)
+  // Previously this checked `w.success` / `p.success` which were always
+  // undefined against the raw array, so `inWatchlist` / `inPortfolio` never
+  // flipped — the buttons stayed labelled "Add to portfolio" / "Watchlist"
+  // even after a successful POST, making the action look like a no-op to the
+  // user.
   useEffect(() => {
     if (!isSignedIn) return;
     let cancelled = false;
     (async () => {
       try {
         const token = await getToken({ template: "backend" });
-        const [w, p] = await Promise.all([getWatchlist(token), getPortfolio(token)]);
+        const [w, p] = await Promise.all([
+          getWatchlist(token ?? undefined),
+          getPortfolio(token ?? undefined),
+        ]);
         if (cancelled) return;
-        if (w.success) setWatchlistIds(w.data.map((it: any) => it.skinId));
-        if (p.success) setPortfolioIds(p.data.map((it: any) => it.skinId));
+        if (Array.isArray(w)) {
+          setWatchlistIds(
+            w.map((it: any) => (typeof it?.skinId === "number" ? it.skinId : it?.skin?.id)).filter((v: any) => typeof v === "number")
+          );
+        }
+        if (Array.isArray(p)) {
+          setPortfolioIds(
+            p.map((it: any) => (typeof it?.skinId === "number" ? it.skinId : it?.skin?.id)).filter((v: any) => typeof v === "number")
+          );
+        }
       } catch { /* ignore */ }
     })();
     return () => { cancelled = true; };
