@@ -1,6 +1,7 @@
 import express from 'express';
 import marketSnapshotController from '../controllers/marketSnapshotController.js';
 import { triggerMarketSnapshotJob } from '../cron/marketSnapshotJob.js';
+import clerkAdminAuth from '../middleware/clerkAdminAuth.js';
 
 const router = express.Router();
 
@@ -33,7 +34,11 @@ router.get('/snapshots/stats', marketSnapshotController.getSnapshotStats);
 /**
  * Trigger market snapshot job manually (admin only)
  * POST /api/v1/snapshots/trigger
+ *
+ * Comment claimed "admin only" but no auth middleware was attached, so until
+ * 2026-05-22 anyone on the internet could kick off the daily snapshot job
+ * (heavy outbound traffic + DB writes). Gate behind clerkAdminAuth.
  */
-router.post('/snapshots/trigger', triggerMarketSnapshotJob);
+router.post('/snapshots/trigger', clerkAdminAuth, triggerMarketSnapshotJob);
 
 export default router;

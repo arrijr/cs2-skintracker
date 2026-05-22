@@ -1,9 +1,20 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
+import rateLimit from 'express-rate-limit';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+// View-count incrementer is unauthenticated by design (anonymous reads count).
+// Without a limiter, anyone can flood `POST /api/v1/blog/:id/view` to spam
+// DB writes + inflate counts. 60/min/IP is plenty for a real reader.
+const viewLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Public routes (no auth required)
 // GET /api/blog - Liste aller veröffentlichten Posts (mit Pagination, Filter)
@@ -96,8 +107,15 @@ router.get('/:slug', async (req, res) => {
       return res.status(404).json({ error: 'Blog post not found' });
     }
 
-    // Only return published posts to non-admin users
-    if (!post.isPublished && !req.user?.role === 'admin') {
+    // Only return published posts to non-admin users.
+    // PREVIOUS BUG: `!req.user?.role === 'admin'` was parsed as
+    // `(!req.user?.role) === 'admin'`, which is `boolean === string` → always
+    // false, so the gate always passed and every draft was readable by
+    // anyone who hit GET /api/v1/blog/:slug. requireAuth was not mounted on
+    // this route, so req.user was undefined regardless. Drafts are now
+    // 404'd to unauthenticated callers, and the admin draft view is the
+    // explicit /admin/:id endpoint below.
+    if (!post.isPublished) {
       return res.status(404).json({ error: 'Blog post not found' });
     }
 
@@ -314,7 +332,7 @@ router.patch('/:id/publish', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // POST /api/blog/:id/view - View Count erhöhen
-router.post('/:id/view', async (req, res) => {
+router.post('/:id/view', viewLimiter, async (req, res) => {
   try {
     const { id } = req.params;
 
