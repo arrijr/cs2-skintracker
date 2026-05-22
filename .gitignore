@@ -24,6 +24,14 @@ node_modules/
 # Claude Code local config + worktrees (may contain MCP tokens, never commit)
 .claude/
 
+# Obsidian: vault config IS committed (app.json, core-plugins, graph), but
+# per-user state (pane layout, search/graph cache) should never be committed.
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/workspaces.json
+.obsidian/cache
+.obsidian/plugins/*/data.json
+
 # OS specific
 .DS_Store
 

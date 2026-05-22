@@ -1,0 +1,29 @@
+{
+  "alwaysUpdateLinks": true,
+  "newLinkFormat": "shortest",
+  "useMarkdownLinks": false,
+  "showUnsupportedFiles": false,
+  "attachmentFolderPath": "docs/_attachments",
+  "userIgnoreFilters": [
+    "node_modules/",
+    ".next/",
+    ".git/",
+    ".vercel/",
+    ".turbo/",
+    "frontend/build/",
+    "frontend/dist/",
+    "frontend/.next/",
+    "frontend/coverage/",
+    "backend/dist/",
+    "backend/build/",
+    "backend/coverage/",
+    "backend/outputs/",
+    ".taskmaster/",
+    ".serena/",
+    ".cursor/",
+    "playwright-report/",
+    "test-results/"
+  ],
+  "promptDelete": true,
+  "trashOption": "system"
+}
