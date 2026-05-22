@@ -16,6 +16,7 @@
     "db:seed": "node scripts/seed.js",
     "fetch-prices": "node scripts/fetch-prices.js",
     "script:backfill-priceupdatedat": "node scripts/backfillPriceUpdatedAt.js",
+    "script:backfill-caseskins": "node scripts/backfillCaseSkins.js",
     "render:deploy": "node scripts/render-deploy.js",
     "render:start": "node scripts/render-start.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --forceExit --testPathPatterns=src/__tests__",
