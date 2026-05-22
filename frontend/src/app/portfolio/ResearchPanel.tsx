@@ -204,7 +204,11 @@ export default function ResearchPanel() {
                 <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                   <div>
                     <p className="text-slate-400">VolatilitÃ¤t (30d)</p>
-                    <p className="font-semibold text-white">{item.volatility.volatility.toFixed(2)}%</p>
+                    <p className="font-semibold text-white">
+                      {item.volatility?.volatility != null && Number.isFinite(item.volatility.volatility)
+                        ? `${item.volatility.volatility.toFixed(2)}%`
+                        : "—"}
+                    </p>
                   </div>
                   <div>
                     <p className="text-slate-400">Rarity Score</p>
@@ -217,7 +221,9 @@ export default function ResearchPanel() {
                   <div className="flex justify-between">
                     <span className="text-slate-400">30-Tage Spanne:</span>
                     <span className="font-medium text-slate-300">
-                      {item.volatility.minPrice.toFixed(2)}€ - {item.volatility.maxPrice.toFixed(2)}€
+                      {item.volatility?.minPrice != null && item.volatility?.maxPrice != null
+                        ? `${item.volatility.minPrice.toFixed(2)}€ - ${item.volatility.maxPrice.toFixed(2)}€`
+                        : "—"}
                     </span>
                   </div>
                 </div>
