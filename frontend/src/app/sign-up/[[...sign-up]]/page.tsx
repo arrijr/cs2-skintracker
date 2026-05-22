@@ -11,7 +11,9 @@ export default function Page() {
               colorText: '#f1f5f9',
               colorTextSecondary: '#94a3b8',
               colorBackground: 'rgb(15 23 42 / 0.5)',
-              colorInputBackground: 'rgb(15 23 42 / 0.7)',
+              // Brighter input background — was rgb(15 23 42 / 0.7), now slate-700/40-ish
+              // so fields stand out clearly against the slate-900/50 card.
+              colorInputBackground: 'rgb(51 65 85 / 0.4)',
               colorInputText: '#f1f5f9',
             },
             elements: {
@@ -19,8 +21,10 @@ export default function Page() {
               formButtonPrimary: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-sm normal-case',
               headerTitle: 'text-white',
               headerSubtitle: 'text-slate-400',
-              socialButtonsBlockButton: 'bg-slate-800/50 border-slate-700 hover:bg-slate-700',
-              formFieldInput: 'bg-slate-900/70 border-slate-700 text-white',
+              // Brighter Google/social buttons — was bg-slate-800/50, now bg-slate-800/80.
+              socialButtonsBlockButton: 'bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-white',
+              // Brighter email/password input — was bg-slate-900/70, now bg-slate-800/60.
+              formFieldInput: 'bg-slate-800/60 border border-slate-700/50 text-white placeholder:text-slate-400',
               footerActionLink: 'text-fuchsia-400 hover:text-fuchsia-300',
             },
           }}
