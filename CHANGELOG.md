@@ -1,5 +1,63 @@
 # Changelog
 
+## [0.3.0](https://github.com/arrijr/cs2-skintracker/compare/v0.2.0...v0.3.0) (2026-05-22)
+
+
+### Features
+
+* **cron:** add steamListingCounts job to backfill Skin.offerVolume ([d934c89](https://github.com/arrijr/cs2-skintracker/commit/d934c893952b923251d13664d9981c66926e4219))
+* **cron:** schedule steamListingCounts at 05:00 UTC daily ([05bd5b4](https://github.com/arrijr/cs2-skintracker/commit/05bd5b48eba0a8fc9a381d4eadefd89f31ce01fe))
+* **cron:** swap dead SteamWebAPI cron for Skinport bulk backfill ([dff1a58](https://github.com/arrijr/cs2-skintracker/commit/dff1a583c6dd9ebcd5e0790b519dff94c831e651))
+* **pricing:** add fetchAllListingCounts scraper for Steam Market ([2457b0e](https://github.com/arrijr/cs2-skintracker/commit/2457b0ede2dc9bcf97a46f887be8115682a9529f))
+* **skin-detail:** Liquidity tile → "On market" listings count + disable Skinport cron ([84c2284](https://github.com/arrijr/cs2-skintracker/commit/84c22840382d8419233825e51de1de6bc61d63b0))
+* **skin-detail:** populate sidebar with AlertBanner + Case-Link + Compare-jumps ([9584fdb](https://github.com/arrijr/cs2-skintracker/commit/9584fdb0b07793087a6240540d3be77c5f95dde9))
+* **skins:** add /api/v1/skins/presets endpoint (wears + rarities) ([ea3c757](https://github.com/arrijr/cs2-skintracker/commit/ea3c757c7d028deeb2b991ef5ba6dc5d5b83014c))
+* **skins:** derive 30D high/low + price medians from PriceHistory on /skins/:slug ([e1e7855](https://github.com/arrijr/cs2-skintracker/commit/e1e785561d741f97682ae8fad0f8c6845636901c))
+
+
+### Bug Fixes
+
+* **auth:** accept both audience spellings (typo + correct) during Clerk transition ([77f8f52](https://github.com/arrijr/cs2-skintracker/commit/77f8f52404d416cbf013ad5456b97c862e45314e))
+* **auth:** log actual JWT aud/iss/sub on verify failure for debugging ([ae3c6ca](https://github.com/arrijr/cs2-skintracker/commit/ae3c6caca38cb521d023517689231090858e88b2))
+* **auth:** request backend-template JWT instead of default Clerk token ([00b9b13](https://github.com/arrijr/cs2-skintracker/commit/00b9b13d4d9701f7cadff5b76b9ef854e81cc50b))
+* **blog:** await async params/searchParams (Next 15) ([6b76b78](https://github.com/arrijr/cs2-skintracker/commit/6b76b7802273ec2bd8d7cb37e7d9873d7ea600cf))
+* **blog:** replace empty SelectItem value with "all" sentinel ([64f888a](https://github.com/arrijr/cs2-skintracker/commit/64f888a7e912900b5c68000a663da8746179f9df))
+* **case-portfolio:** wire Trash button to DELETE endpoint, hide Edit ([6b5f6da](https://github.com/arrijr/cs2-skintracker/commit/6b5f6dae6a93824fdd030eb03b488ec036298934))
+* **cors:** hardcoded fallback for prod origins + diagnostic logging ([ccd828f](https://github.com/arrijr/cs2-skintracker/commit/ccd828f3a811661c63a189fad839f9c2a9c90902))
+* **portfolio:** attach Clerk JWT to /portfolio/cases fetch ([8bc06c2](https://github.com/arrijr/cs2-skintracker/commit/8bc06c2951915ea03e53894a2f211e2659e5fac2))
+* **portfolio:** import getToken from useAuth, not useUser ([5ca4f4a](https://github.com/arrijr/cs2-skintracker/commit/5ca4f4a0c302fa8b46918260535d1e6dc7360a1b))
+* **portfolio:** pass real watchlist to PortfolioTable ([13983b7](https://github.com/arrijr/cs2-skintracker/commit/13983b729c36d53d5f717cb25e95815e62b0b531))
+* **portfolio:** remove token requirement from LastUpdatedChip ([b9aa9f8](https://github.com/arrijr/cs2-skintracker/commit/b9aa9f8d7ac7c23d2d96922bf854fd39340bebb8))
+* **portfolio:** replace bogus useState() with useEffect() in SmartAlerts ([c62639d](https://github.com/arrijr/cs2-skintracker/commit/c62639dd17369006ee70e76e8cdb5fabef8da826))
+* **portfolio:** show EUR not USD in PortfolioTable rows ([c7305a2](https://github.com/arrijr/cs2-skintracker/commit/c7305a226eddbfb74237766fe2a70dd6aa87a5bb))
+* **pricing:** treat Skinport min_price as EUR (not cents) ([98969bc](https://github.com/arrijr/cs2-skintracker/commit/98969bc12255ec28f3454e94662e56af3e2679dd))
+* **security:** close unauth admin job + blog draft leak + view-count DoS ([c866593](https://github.com/arrijr/cs2-skintracker/commit/c86659352d5beec7c22d0aaabcb7a187a1230772))
+* **security:** disable legacy register/login + remove hardcoded admin backdoor ([ec4b53c](https://github.com/arrijr/cs2-skintracker/commit/ec4b53cb90ae665a7c522d2cb2834c697a0b10df))
+* **security:** fail closed on Inngest + stop leaking error.message in prod ([122bc1d](https://github.com/arrijr/cs2-skintracker/commit/122bc1d937aa0c67637e7fef02be5b6154c1fb94))
+* **security:** gate /api/v1/admin/update-skin-data behind admin auth + prod safety ([4408edf](https://github.com/arrijr/cs2-skintracker/commit/4408edfa34225469497f7cd62833ee0ffe1daf52))
+* **security:** preserve raw body on Stripe webhook for signature verification ([7c9399d](https://github.com/arrijr/cs2-skintracker/commit/7c9399db9582446df116d8b2400fc4a964a79cc3))
+* **security:** rate-limit + sanitize anonymous frontend log ingest ([b61de76](https://github.com/arrijr/cs2-skintracker/commit/b61de7600edcd68cac03bf61ad00009366507d84))
+* **security:** stop accepting JWT in ?token= query + reduce token logging ([2fbb2c5](https://github.com/arrijr/cs2-skintracker/commit/2fbb2c53aa2847ce9db806d87a5babf2cea6ef20))
+* **skin-detail:** make wear thumbnails clickable Links to other variants ([66831c9](https://github.com/arrijr/cs2-skintracker/commit/66831c9a652ee5f557a5b8e1a32e8acbff9a818e))
+* **skin-detail:** parse raw array from GET /watchlist and /portfolio ([3ce13bf](https://github.com/arrijr/cs2-skintracker/commit/3ce13bf962d66aafdc0b4786b4d3d548bb45cb24))
+* **skins:** root /skins falls through to legacy router when no weapon query ([fa3b4c8](https://github.com/arrijr/cs2-skintracker/commit/fa3b4c837830df5f3ca3474d43e77be569415968))
+* **stripe:** handle checkout.session.completed webhook event ([9bffc32](https://github.com/arrijr/cs2-skintracker/commit/9bffc325c5df3b29a72131945136ae61980bfcaa))
+* **stripe:** surface checkout failures via toast instead of silent log ([eaae725](https://github.com/arrijr/cs2-skintracker/commit/eaae725bef217d553ff6c13abb42dfad92476fad))
+* **ui:** comprehensive UI/UX audit sprint + CORS hotfix ([#15](https://github.com/arrijr/cs2-skintracker/issues/15)) ([d29201f](https://github.com/arrijr/cs2-skintracker/commit/d29201f0a3d24587896e290ff2574144ba295814))
+* **watchlist:** pass JWT token through addToWatchlist helpers ([c7a159c](https://github.com/arrijr/cs2-skintracker/commit/c7a159c5330fc878364e6c525e30d5b468b386f2))
+* **watchlist:** remove global 1-alert-per-user hard limit ([7816d3c](https://github.com/arrijr/cs2-skintracker/commit/7816d3ceac487cd06c81b8d81584ec50f6131d00))
+
+
+### Performance
+
+* **cron:** cap priceRefresh to 2000 stalest+popular skins per run ([3303b67](https://github.com/arrijr/cs2-skintracker/commit/3303b677bb854e7b3fb47a4f0c046edc51b3ed09))
+
+
+### Documentation
+
+* convert remaining MD-style internal links to Obsidian wikilinks ([f1896e6](https://github.com/arrijr/cs2-skintracker/commit/f1896e6ebf968d6ee09cb24a9d19af323468aa8a))
+* **session:** autonomous 1h CEO-audit log — 110 findings, 14 fixes shipped ([6aceb87](https://github.com/arrijr/cs2-skintracker/commit/6aceb877ae55e57a3b167c156751a43853d70ed1))
+
 ## [0.2.0](https://github.com/arrijr/cs2-skintracker/compare/v0.1.0...v0.2.0) (2026-05-21)
 
 
