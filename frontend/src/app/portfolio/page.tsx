@@ -255,7 +255,7 @@ export default function PortfolioPage() {
                 ) : (
                   <PortfolioTable
                     skins={portfolioSkins}
-                    watchlist={[]}
+                    watchlist={watchlist}
                     onDataChange={() => mutate()}
                     activeFilter={null}
                   />
