@@ -5,6 +5,15 @@ import { nextDeadState } from './deadItemTracker.js';
 
 const REFRESH_DELAY_MS = 3000;
 
+// Steam Market direct refresh is rate-limited to ~3s/call → ~28k items/day max.
+// We have 16,829 skins + cases + market_items; a single pass takes ~14h and
+// only ~13% of rows get touched per day. To keep priceUpdatedAt fresh on the
+// items users actually look at, we cap each run at MAX_SKINS_PER_RUN and order
+// by [priceUpdatedAt ASC NULLS FIRST, sold30d DESC] so stalest + most-traded
+// rows refresh first. Skinport bulk backfill (cron at 04:00 UTC) handles the
+// long tail.
+const MAX_SKINS_PER_RUN = 2000;
+
 /**
  * Write the outcome of a single fetchPrice() call back to the DB.
  * `item` shape: { id, itemType, marketHashName, consecutive404? }
@@ -151,7 +160,18 @@ export async function refreshItemPrice(item, { prismaClient = defaultPrisma, fet
  * Iterate all active items and refresh prices. 3s spacing between requests.
  */
 export async function runPriceRefresh({ prismaClient = defaultPrisma, sleepImpl = (ms) => new Promise((r) => setTimeout(r, ms)), maxItems, offset = 0 } = {}) {
-  const skins = await prismaClient.skin.findMany({ select: { id: true, marketHashName: true } });
+  // Skins: cap to MAX_SKINS_PER_RUN, ordered stalest-and-most-popular first.
+  // Postgres treats NULLs as larger than any value by default for ASC, so
+  // priceUpdatedAt ASC alone would put NULL rows LAST. We want never-priced
+  // skins refreshed first → use `[{ priceUpdatedAt: { sort: 'asc', nulls: 'first' } }, { sold30d: 'desc' }]`.
+  const skins = await prismaClient.skin.findMany({
+    select: { id: true, marketHashName: true },
+    orderBy: [
+      { priceUpdatedAt: { sort: 'asc', nulls: 'first' } },
+      { sold30d: { sort: 'desc', nulls: 'last' } },
+    ],
+    take: MAX_SKINS_PER_RUN,
+  });
   const cases = await prismaClient.case.findMany({ select: { id: true, name: true } });
   const marketItems = await prismaClient.marketItem.findMany({
     where: { isActive: true },
@@ -164,7 +184,7 @@ export async function runPriceRefresh({ prismaClient = defaultPrisma, sleepImpl 
     ...marketItems.map((m) => ({ ...m, itemType: 'market_item' })),
   ];
 
-  // Apply offset + maxItems for chunked runs
+  // Apply offset + maxItems for chunked runs (used by tests / manual triggers).
   const slice = maxItems != null
     ? all.slice(offset, offset + maxItems)
     : all.slice(offset);
