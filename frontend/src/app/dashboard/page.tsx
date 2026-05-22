@@ -22,6 +22,7 @@ import { TopHoldings } from "./components/TopHoldings";
 import { AllocationDonut } from "./components/AllocationDonut";
 import MarketPulse from "./components/MarketPulse";
 import MarketEvents from "./components/MarketEvents";
+import { MarketHUDStrip } from "./components/MarketHUDStrip";
 import { SteamConnectCTA } from "@/components/SteamConnectCTA";
 
 export default function Dashboard() {
@@ -140,6 +141,13 @@ export default function Dashboard() {
         />
       ) : (
         <div className="space-y-6">
+          {/* MARKET HUD STRIP — CS-themed live pulse bar */}
+          <MarketHUDStrip
+            activeAlerts={activeAlerts}
+            portfolio={flatPortfolio}
+            lastUpdated={kpis?.lastUpdated ?? null}
+          />
+
           {/* HERO */}
           <PortfolioHero
             totalValue={totalValue}
