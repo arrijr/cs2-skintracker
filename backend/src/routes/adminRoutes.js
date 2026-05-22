@@ -1,16 +1,29 @@
 import express from 'express';
 import prisma from '../prisma/prismaClient.js';
 import fetch from 'node-fetch';
+import clerkAdminAuth from '../middleware/clerkAdminAuth.js';
 
 const router = express.Router();
+
+// All admin routes require admin-level Clerk JWT (role==='admin' in DB).
+// Mounted globally so future endpoints added below inherit the same gate.
+router.use(clerkAdminAuth);
 
 // Update skin data immediately
 router.post('/update-skin-data', async (req, res) => {
   try {
-    console.log('🚀 Starting immediate skin data update...');
-    
+    // Production safety: refuse external writes by default; require explicit
+    // env opt-in. Matches the gate already used in adminController jobs.
+    if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_ADMIN_WRITES_IN_PROD) {
+      return res.status(403).json({
+        error: 'Manual skin data update is disabled in production for safety.'
+      });
+    }
+
+    console.log('[admin/update-skin-data] adminId=%s', req.user?.id);
+
     const STEAMWEBAPI_KEY = process.env.STEAMWEBAPI_KEY;
-    
+
     if (!STEAMWEBAPI_KEY) {
       return res.status(500).json({ error: 'STEAMWEBAPI_KEY not found' });
     }
