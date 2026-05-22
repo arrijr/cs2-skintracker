@@ -89,6 +89,13 @@ interface SkinDetailClientProps {
   initialWear: string | null;
 }
 
+// Wear variant row returned by `/api/v1/skins/by-id/:id/variants`.
+interface VariantRow {
+  wear: string | null;
+  slug: string | null;
+  priceLatest: number | null;
+}
+
 export default function SkinDetailClient({ skin, initialWear }: SkinDetailClientProps) {
   const router = useRouter();
   const { isSignedIn, getToken } = useAuth();
@@ -104,6 +111,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
   const [alertModalOpen, setAlertModalOpen] = useState(false);
   const { createAlert } = useAlerts();
   const [priceHistory, setPriceHistory] = useState<Array<{ date: string; price: number }> | null>(null);
+  const [variantsByWear, setVariantsByWear] = useState<Record<string, VariantRow> | null>(null);
 
   // Sprint 2 SEO event — fire once per SSR landing render.
   useEffect(() => {
@@ -165,6 +173,41 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
     })();
     return () => { cancelled = true; };
   }, [skin.id, range]);
+
+  // Fetch wear variants for the hero thumbnail navigation. `WearComparisonTable`
+  // does the same fetch further down the page — the duplicate request is
+  // acceptable (5-min HTTP cache on backend) and lets the hero thumbnails act
+  // as a quick wear switcher without waiting for the table to scroll into view.
+  useEffect(() => {
+    let cancelled = false;
+    const baseId = skin.variantOf ?? skin.id;
+    (async () => {
+      try {
+        const r = await fetch(apiUrl(`/skins/by-id/${baseId}/variants`));
+        if (!r.ok) {
+          if (!cancelled) setVariantsByWear({});
+          return;
+        }
+        const list: VariantRow[] = await r.json();
+        if (cancelled) return;
+        // Pick the variant per wear that matches the current item's StatTrak
+        // flag, so clicking FN from a StatTrak Field-Tested page lands on
+        // StatTrak Factory New (not the non-ST sibling).
+        const wantStattrak = !!skin.isStattrak;
+        const map: Record<string, VariantRow> = {};
+        for (const v of list) {
+          if (!v.wear || !v.slug) continue;
+          const looksStattrak = v.slug.startsWith("stattrak-") || v.slug.includes("stattrak");
+          if (looksStattrak !== wantStattrak) continue;
+          if (!map[v.wear]) map[v.wear] = v;
+        }
+        setVariantsByWear(map);
+      } catch {
+        if (!cancelled) setVariantsByWear({});
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [skin.id, skin.variantOf, skin.isStattrak]);
 
   const skinImageUrl = useMemo(() => {
     return skin.imageUrl || skin.image_url || skin.itemImage || skin.itemimage || null;
@@ -357,21 +400,45 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
                 )}
               </div>
 
-              {/* Wear thumbnails (when wear info available) */}
+              {/* Wear thumbnails. Click navigates to the same skin at a
+                  different wear via `/skins/by-id/:id/variants`. Disabled
+                  (rendered as div) when the variant doesn't exist for the
+                  current StatTrak flag. */}
               {skin.wear && (
                 <div className="flex gap-2">
-                  {["FN", "MW", "FT", "WW", "BS"].map((w) => {
+                  {(["FN", "MW", "FT", "WW", "BS"] as const).map((w) => {
                     const active = WEAR_SHORT[skin.wear ?? ""] === w;
+                    const longName = Object.entries(WEAR_SHORT).find(([, s]) => s === w)?.[0];
+                    const variant = longName && variantsByWear ? variantsByWear[longName] : undefined;
+                    const hasTarget = !active && !!variant?.slug;
+                    const className = cn(
+                      "w-16 h-12 rounded-lg border flex items-center justify-center text-[10px] font-bold transition-colors",
+                      active
+                        ? "border-purple-500/50 text-white cursor-default"
+                        : hasTarget
+                          ? "border-slate-700/50 text-slate-400 hover:border-purple-500/40 hover:text-white cursor-pointer"
+                          : "border-slate-800/50 text-slate-600 cursor-not-allowed opacity-60"
+                    );
+                    const style = active ? { boxShadow: "0 0 0 1px rgba(168,85,247,0.4)" } : undefined;
+                    if (hasTarget && variant?.slug) {
+                      return (
+                        <Link
+                          key={w}
+                          href={`/skins/${skin.weaponSlug}/${variant.slug}`}
+                          aria-label={`View ${longName}`}
+                          className={className}
+                          style={style}
+                        >
+                          {w}
+                        </Link>
+                      );
+                    }
                     return (
                       <div
                         key={w}
-                        className={cn(
-                          "w-16 h-12 rounded-lg border flex items-center justify-center text-[10px] font-bold text-slate-400 cursor-default transition-colors",
-                          active
-                            ? "border-purple-500/50 text-white"
-                            : "border-slate-700/50 hover:border-slate-600"
-                        )}
-                        style={active ? { boxShadow: "0 0 0 1px rgba(168,85,247,0.4)" } : undefined}
+                        aria-label={longName ? `${longName} (unavailable)` : w}
+                        className={className}
+                        style={style}
                       >
                         {w}
                       </div>
