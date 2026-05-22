@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { Bell, Check, AlertTriangle, TrendingUp, TrendingDown, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -41,6 +41,7 @@ interface NotificationsDropdownProps {
 export function NotificationsDropdown(props: NotificationsDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Live fetch only when caller didn't pass explicit notifications (Storybook/tests).
   const { isSignedIn } = useUser();
@@ -54,9 +55,45 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
   );
 
   const fetched: Notification[] = (data as any)?.items ?? (Array.isArray(data) ? (data as any) : []);
-  const notifications: Notification[] = props.notifications ?? fetched;
+
+  // Client-side read tracking — the backend POST /mark-all-read is a no-op today
+  // (AlertEvent has no `read` column; see backend/src/routes/notificationsRoutes.js
+  // line 51 hardcodes `read: false`). Mirror read-state locally and override the
+  // rendered list so the badge actually clears when the user clicks "Mark all read".
+  // Persisted across remounts via sessionStorage.
+  const [locallyReadIds, setLocallyReadIds] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set();
+    try {
+      const raw = window.sessionStorage.getItem('notif:readIds');
+      if (!raw) return new Set();
+      return new Set(JSON.parse(raw) as string[]);
+    } catch {
+      return new Set();
+    }
+  });
+
+  const baseList: Notification[] = props.notifications ?? fetched;
+  const notifications: Notification[] = useMemo(
+    () => baseList.map((n) => (locallyReadIds.has(n.id) ? { ...n, read: true } : n)),
+    [baseList, locallyReadIds]
+  );
 
   const onMarkAllRead = props.onMarkAllRead ?? (async () => {
+    // Optimistic: flip every currently-visible id to read so the badge clears
+    // immediately, even though the backend doesn't persist a read flag yet.
+    const ids = baseList.map((n) => n.id);
+    setLocallyReadIds((prev) => {
+      const next = new Set(prev);
+      ids.forEach((id) => next.add(id));
+      try {
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem('notif:readIds', JSON.stringify(Array.from(next)));
+        }
+      } catch {
+        // sessionStorage unavailable (private mode / quota) — fine, in-memory state still works.
+      }
+      return next;
+    });
     try {
       const token = await getToken({ template: 'backend' });
       await fetchJson(apiUrl('/api/v1/notifications/mark-all-read'), {
@@ -64,7 +101,7 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
     } catch {
-      // ignore — no-op endpoint
+      // ignore — endpoint may be no-op or transiently failing.
     }
     mutate();
   });
@@ -84,6 +121,13 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
       document.removeEventListener("keydown", onEsc);
     };
   }, [open]);
+
+  // Imperative navigation — bypasses any race between setOpen(false) unmounting
+  // the dropdown and Next.js Link's click handler firing.
+  const goTo = (href: string) => {
+    setOpen(false);
+    router.push(href);
+  };
 
   return (
     <div className="relative" ref={ref}>
@@ -110,8 +154,9 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
             </span>
             {unread > 0 && (
               <button
+                type="button"
                 onClick={() => {
-                  onMarkAllRead?.();
+                  void onMarkAllRead?.();
                   setOpen(false);
                 }}
                 className="text-xs text-slate-400 hover:text-white inline-flex items-center gap-1 transition-colors"
@@ -149,9 +194,13 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
                   return (
                     <li key={n.id}>
                       {n.href ? (
-                        <Link href={n.href} className="block hover:bg-slate-800/40 transition-colors" onClick={() => setOpen(false)}>
+                        <button
+                          type="button"
+                          onClick={() => goTo(n.href!)}
+                          className="block w-full text-left hover:bg-slate-800/40 transition-colors"
+                        >
                           {body}
-                        </Link>
+                        </button>
                       ) : (
                         body
                       )}
@@ -162,13 +211,13 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
             )}
           </div>
 
-          <Link
-            href="/alerts"
-            onClick={() => setOpen(false)}
-            className="block px-4 py-2.5 text-center text-xs font-semibold text-purple-300 hover:text-purple-200 hover:bg-slate-800/40 border-t border-slate-700/40 transition-colors"
+          <button
+            type="button"
+            onClick={() => goTo('/alerts')}
+            className="block w-full px-4 py-2.5 text-center text-xs font-semibold text-purple-300 hover:text-purple-200 hover:bg-slate-800/40 border-t border-slate-700/40 transition-colors"
           >
             View all alerts →
-          </Link>
+          </button>
         </div>
       )}
     </div>
