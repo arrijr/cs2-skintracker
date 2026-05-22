@@ -641,3 +641,81 @@ See Agent A/B/C/D findings sections above. ~45 polish items: mojibake characters
 - **Polish issues closed**: 0 of 45 (deferred)
 
 5 critical issues remain — all need either DB seed data, Stripe/Clerk env config, or product decisions (not code-fixable autonomously).
+
+---
+
+## Post-audit work (same-day continuation)
+
+After the 1h audit, user asked for CEO-style autonomous execution of remaining items.
+
+### Phase α — Approved items (3 commits)
+
+| # | Commit | Description |
+|---|--------|-------------|
+| 1 | `cba1c8a4` | release-please PR #16 squash-merged → **v0.3.0** tag + GitHub Release auto-created |
+| 2 | `7fe9491` | `backend/scripts/backfillCaseSkins.js` + npm `script:backfill-caseskins`. Fetches bymykel CSGO-API crates feed, matches 42/42 cases by name, 2206 drops to upsert |
+| 3 | `b5e0121` | Steam OpenID `returnPath` threaded through signed state JWT. Onboarding step 2 no longer drops users to /account — they return to their start path (`/onboarding?step=2`, `/account`, `/profile`, `/dashboard` — allow-list enforced) |
+
+### Phase β — CEO walkthrough (2 commits + 1 dashboard task)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Verify `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding` on Vercel | ✅ done by user | Confirmed |
+| Brand-spelling fallback fix | ✅ commit `58a3dd7` | User caught: brand is `SkinTrackr` (no 2nd e). Earlier "fix" had introduced wrong `skintracker` spelling into FALLBACK_AUDIENCE. Reverted to brand-only spellings. JWT-template + Render env were correct all along. |
+| Stripe Live products + price IDs | ⏸️ **deferred 1 week** (user wants to do other work first) |
+
+### Phase γ — CEO autonomous wave (10+ commits)
+
+User said "mach was du empfiehlst — du bist ceo". Sequential execution:
+
+**Wave A: Run CaseSkin backfill** — ✅
+- `npm run script:backfill-caseskins --dry-run` → 42/42 cases match, 2206 drops planned, 0 skipped
+- Real run: 2206 CaseSkin rows upserted in DB
+- Verified live: `GET /api/v1/cases/chroma-2-case` now returns `drops: [...45 entries]` (was empty)
+- **All /cases/[slug] pages now render real drop tables + non-NaN EV**
+
+**Wave B: Demo-data labeling** — ✅ commit `8a21caf`
+- 4 components with `Math.random()` or hardcoded mock arrays get amber "DEMO DATA" badge in card header
+- Files: `AdvancedCharts.tsx`, `MarketIntelligence.tsx`, `TransactionAnalytics.tsx`, `dashboard/components/MarketEvents.tsx`
+- Subtle "Phase 2" disclosure text on bigger cards
+- Honest disclosure for paying users until real data wired
+
+**Wave C: Important-tier audit-findings (8 commits, 2 parallel agents)**
+
+| Commit | Area | Description |
+|--------|------|-------------|
+| `decaf78` | portfolio | Remove dead `activeFilter` state + hardcoded `null` prop (PortfolioAllocation chart not rendered) |
+| `6ce641b` | portfolio | `/portfolio/cases` migrated to AppShell + slate-950 design system + Breadcrumbs |
+| `aa7c0c2` | account | Steam disconnect now requires confirmation Dialog (matches BillingTab cancel pattern) |
+| `8065e6b` | pricing | FAQ adds "What about refunds?" entry with link to /legal/refund (§ 355 BGB) |
+| `2dd121a` | seo | Knife `weaponSlug='unknown'` fixed — `slugify` helper now handles bare `★ Karambit`-style vanilla-knife names. 40 rows backfilled via `npm run script:backfill-knife-slugs`. 20 unique knife pillar pages now work (`/skins/karambit`, `/skins/bayonet`, etc.) |
+| `630ba29` | seo | `/items` + `/cases` added to sitemap.ts (were missing — SEO loss) |
+| `ff8b5be` | cases | Cases catalog: `formatCurrency` → `formatEUR` (was USD); "All Cases" toggle now actually filters (was dead) |
+| `007b445` | alerts | `alertController.createAlert` rejects non-positive-integer skinId/caseId |
+
+**Wave D: Run knife-slug backfill** — ✅
+- 40 vanilla-knife rows updated (★ Bayonet/Karambit/M9-Bayonet/etc.)
+- SEO impact: knife-family pillar pages now indexable + populated
+
+### Final tallies (post-audit + all phases combined)
+
+- **Total commits this session**: 30+
+- **DB-level migrations executed**: 2 (CaseSkin: 2206 rows, KnifeSlug: 40 rows)
+- **Critical bugs closed**: 13 + 4 + 3 = 20 of 18 found (some discovered & fixed simultaneously)
+- **Important issues closed**: 7 + 8 = 15 of 47 (32%)
+- **Polish issues closed**: 0 + 4 = 4 of 45 (Demo badges count as polish)
+
+### Status (end of session)
+
+- ✅ v0.3.0 tag live on GitHub
+- ✅ Case detail pages all populated with real drop data
+- ✅ Knife pillar pages SEO-functional
+- ✅ Skin detail Liquidity tile renamed "On market" (waits on next 05:00 UTC cron tick for first data)
+- ✅ Backend Skinport cron disabled (per product "Zukunftsmusik")
+- ✅ Steam Market listing-count cron scheduled (daily 05:00 UTC)
+- ✅ JWT audience fixed (brand-spelling restored)
+- ✅ Stripe webhook handles checkout.session.completed
+- ✅ Dashboard mock-data labeled "DEMO DATA"
+- ⏸️ Stripe Live setup (1 week deferred)
+- ⏸️ Clerk Live keys (deferred with Stripe Live)
+- 🟡 35 important + 41 polish items still open
