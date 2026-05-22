@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Search, Plus } from 'lucide-react';
 import Image from 'next/image';
 import axios from 'axios';
+import { apiUrl } from '@/lib/api';
 
 interface SkinCardPickerProps {
   onSelect: (skinId: number) => void;
@@ -25,8 +26,6 @@ interface Skin {
   rarity?: string;
   priceLatest?: number;
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 export default function SkinCardPicker({ onSelect, onClose }: SkinCardPickerProps) {
   const [skins, setSkins] = useState<Skin[]>([]);
@@ -49,7 +48,7 @@ export default function SkinCardPicker({ onSelect, onClose }: SkinCardPickerProp
         params.append('search', search);
       }
 
-      const response = await axios.get(`${API_BASE_URL}/skins?${params.toString()}`);
+      const response = await axios.get(apiUrl(`/api/v1/skins?${params.toString()}`));
       setSkins(response.data.data || []);
     } catch (err) {
       console.error('Error fetching skins:', err);

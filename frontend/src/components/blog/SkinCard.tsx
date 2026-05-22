@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { skinDetailHref } from '@/lib/skin-urls';
+import { apiUrl } from '@/lib/api';
 
 interface SkinCardProps {
   id: string;
@@ -36,7 +37,7 @@ export function SkinCard({ id }: SkinCardProps) {
     const fetchSkin = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/skins/${id}`);
+        const response = await fetch(apiUrl(`/api/v1/skins/${id}`));
         
         if (!response.ok) {
           throw new Error('Skin not found');

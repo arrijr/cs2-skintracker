@@ -8,6 +8,7 @@ import { useUser } from '@clerk/nextjs';
 import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { analytics } from '@/lib/analytics';
+import { apiUrl } from '@/lib/api';
 
 export interface Subscription {
   id: number;
@@ -58,7 +59,7 @@ export function useSubscription() {
     try {
       const token = await getToken({ template: 'backend' });
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/status`,
+        apiUrl('/api/v1/subscriptions/status'),
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -88,7 +89,7 @@ export function useSubscription() {
     try {
       const token = await getToken({ template: 'backend' });
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/checkout`,
+        apiUrl('/api/v1/subscriptions/checkout'),
         {
           method: 'POST',
           headers: {
@@ -116,7 +117,7 @@ export function useSubscription() {
   const cancel = async () => {
     const token = await getToken({ template: 'backend' });
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/cancel`,
+      apiUrl('/api/v1/subscriptions/cancel'),
       { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -127,7 +128,7 @@ export function useSubscription() {
   const reactivate = async () => {
     const token = await getToken({ template: 'backend' });
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/reactivate`,
+      apiUrl('/api/v1/subscriptions/reactivate'),
       { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
     );
     if (!res.ok) {
@@ -147,7 +148,7 @@ export function useSubscription() {
   const openPortal = async () => {
     const token = await getToken({ template: 'backend' });
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/portal`,
+      apiUrl('/api/v1/subscriptions/portal'),
       { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

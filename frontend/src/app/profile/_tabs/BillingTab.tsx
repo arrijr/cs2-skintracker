@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { useSubscription } from '@/hooks/useSubscription';
 import { analytics } from '@/lib/analytics';
+import { apiUrl } from '@/lib/api';
 
 type Tier = 'free' | 'lite' | 'pro';
 
@@ -132,7 +133,7 @@ export function BillingTab() {
     try {
       const token = await getToken({ template: 'backend' });
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/portfolio/export?format=csv`,
+        apiUrl('/api/v1/portfolio/export?format=csv'),
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) {

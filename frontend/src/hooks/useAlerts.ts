@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth, useUser } from '@clerk/nextjs';
+import { apiUrl } from '@/lib/api';
 
 export interface Alert {
   id: number;
@@ -24,8 +25,6 @@ export function useAlerts() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-
   const fetchAlerts = useCallback(async (signal?: AbortSignal) => {
     if (!isSignedIn) {
       setAlerts([]);
@@ -35,7 +34,7 @@ export function useAlerts() {
     try {
       setIsLoading(true);
       const token = await getToken({ template: 'backend' });
-      const res = await fetch(`${apiUrl}/api/v1/alerts`, {
+      const res = await fetch(apiUrl('/api/v1/alerts'), {
         headers: { Authorization: `Bearer ${token}` },
         signal,
       });
@@ -49,7 +48,7 @@ export function useAlerts() {
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, getToken, isSignedIn]);
+  }, [getToken, isSignedIn]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -60,7 +59,7 @@ export function useAlerts() {
 
   const createAlert = async (data: Partial<Alert>) => {
     const token = await getToken({ template: 'backend' });
-    const res = await fetch(`${apiUrl}/api/v1/alerts`, {
+    const res = await fetch(apiUrl('/api/v1/alerts'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(data),
@@ -74,7 +73,7 @@ export function useAlerts() {
 
   const updateAlert = async (id: number, data: Partial<Alert>) => {
     const token = await getToken({ template: 'backend' });
-    const res = await fetch(`${apiUrl}/api/v1/alerts/${id}`, {
+    const res = await fetch(apiUrl(`/api/v1/alerts/${id}`), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(data),
@@ -88,7 +87,7 @@ export function useAlerts() {
 
   const deleteAlert = async (id: number) => {
     const token = await getToken({ template: 'backend' });
-    const res = await fetch(`${apiUrl}/api/v1/alerts/${id}`, {
+    const res = await fetch(apiUrl(`/api/v1/alerts/${id}`), {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });

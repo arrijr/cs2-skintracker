@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { steamImageSrc } from "@/lib/image-proxy";
+import { apiUrl } from "@/lib/api";
 
 interface DetailItem {
   id: number;
@@ -45,9 +46,8 @@ const CATEGORY_TINT: Record<DetailItem['category'], string> = {
 };
 
 async function fetchItem(id: string): Promise<DetailItem | null> {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
   try {
-    const res = await fetch(`${base}/api/v1/market-items/${encodeURIComponent(id)}`, { cache: 'no-store' });
+    const res = await fetch(apiUrl(`/api/v1/market-items/${encodeURIComponent(id)}`), { cache: 'no-store' });
     if (res.status === 404) return null;
     if (!res.ok) return null;
     return (await res.json()) as DetailItem;

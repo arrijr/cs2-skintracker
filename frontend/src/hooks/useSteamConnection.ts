@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { apiUrl } from "@/lib/api";
 
 export interface SteamStatus {
   connected: boolean;
@@ -39,7 +40,6 @@ export interface CustomCostBasis { skinId: number; buyPrice: number | null; buyD
 
 export function useSteamConnection() {
   const { getToken } = useAuth();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const [status, setStatus] = useState<SteamStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +48,7 @@ export function useSteamConnection() {
     try {
       setLoading(true);
       const token = await getToken({ template: 'backend' });
-      const res = await fetch(`${apiUrl}/api/v1/steam/status`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(apiUrl('/api/v1/steam/status'), { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setStatus(await res.json());
       setError(null);
@@ -57,7 +57,7 @@ export function useSteamConnection() {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, getToken]);
+  }, [getToken]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -65,7 +65,7 @@ export function useSteamConnection() {
     // Use POST /connect/start with Authorization header so the Clerk JWT
     // never appears in the URL / referer / proxy access logs (Task 4).
     const token = await getToken({ template: 'backend' });
-    const res = await fetch(`${apiUrl}/api/v1/steam/connect/start`, {
+    const res = await fetch(apiUrl('/api/v1/steam/connect/start'), {
       method: 'POST',
       headers: { Authorization: `Bearer ${token ?? ''}` },
     });
@@ -75,21 +75,21 @@ export function useSteamConnection() {
     }
     const { url } = await res.json();
     window.location.href = url;
-  }, [apiUrl, getToken]);
+  }, [getToken]);
 
   const disconnect = useCallback(async () => {
     const token = await getToken({ template: 'backend' });
-    const res = await fetch(`${apiUrl}/api/v1/steam/disconnect`, {
+    const res = await fetch(apiUrl('/api/v1/steam/disconnect'), {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     await refresh();
-  }, [apiUrl, getToken, refresh]);
+  }, [getToken, refresh]);
 
   const preview = useCallback(async (): Promise<PreviewResult> => {
     const token = await getToken({ template: 'backend' });
-    const res = await fetch(`${apiUrl}/api/v1/steam/inventory/preview`, {
+    const res = await fetch(apiUrl('/api/v1/steam/inventory/preview'), {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     });
@@ -98,11 +98,11 @@ export function useSteamConnection() {
       throw new Error(body.error || `HTTP ${res.status}`);
     }
     return await res.json();
-  }, [apiUrl, getToken]);
+  }, [getToken]);
 
   const importNow = useCallback(async (mode: CostBasisMode, custom?: Array<{ skinId: number; buyPrice: number | null; buyDate: string | null }>) => {
     const token = await getToken({ template: 'backend' });
-    const res = await fetch(`${apiUrl}/api/v1/steam/inventory/import`, {
+    const res = await fetch(apiUrl('/api/v1/steam/inventory/import'), {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ costBasisMode: mode, custom }),
@@ -114,7 +114,7 @@ export function useSteamConnection() {
     const data = await res.json();
     await refresh();
     return data as { created: number; matched: number; skipped: number };
-  }, [apiUrl, getToken, refresh]);
+  }, [getToken, refresh]);
 
   /**
    * Re-fetch the user's Steam inventory and reconcile against existing
@@ -123,7 +123,7 @@ export function useSteamConnection() {
    */
   const resync = useCallback(async () => {
     const token = await getToken({ template: 'backend' });
-    const res = await fetch(`${apiUrl}/api/v1/steam/inventory/resync`, {
+    const res = await fetch(apiUrl('/api/v1/steam/inventory/resync'), {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     });
@@ -138,7 +138,7 @@ export function useSteamConnection() {
       removed: number;
       totals: { steamSkins: number; activeImported: number };
     };
-  }, [apiUrl, getToken, refresh]);
+  }, [getToken, refresh]);
 
   return { status, loading, error, refresh, connect, disconnect, preview, importNow, resync };
 }

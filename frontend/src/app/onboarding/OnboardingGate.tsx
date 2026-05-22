@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, useUser } from "@clerk/nextjs";
+import { apiUrl } from "@/lib/api";
 
 /**
  * Mounts inside the landing page (`/`).
@@ -27,9 +28,7 @@ export function OnboardingGate() {
     (async () => {
       try {
         const token = await getToken({ template: "backend" });
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await fetch(`${apiUrl}/api/v1/users/me`, {
+        const res = await fetch(apiUrl("/api/v1/users/me"), {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {

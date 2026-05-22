@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { apiUrl } from '@/lib/api';
 
 interface WearRow {
   wear: string;
@@ -25,12 +26,7 @@ export function WearComparisonTable({
 
   useEffect(() => {
     let cancelled = false;
-    const apiBase =
-      process.env.NEXT_PUBLIC_API_URL ||
-      (typeof window !== 'undefined' && window.location.hostname.includes('skintrackr.io')
-        ? 'https://api.skintrackr.io'
-        : 'http://localhost:5000');
-    fetch(`${apiBase}/api/v1/skins/by-id/${baseId}/variants`)
+    fetch(apiUrl(`/api/v1/skins/by-id/${baseId}/variants`))
       .then((r) => (r.ok ? r.json() : []))
       .then((json: WearRow[]) => {
         if (!cancelled) setVariants(json);

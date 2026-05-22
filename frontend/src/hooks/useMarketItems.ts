@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { apiUrl } from '@/lib/api';
 
 export type MarketItemCategory = 'sticker' | 'agent' | 'patch' | 'graffiti' | 'music_kit' | 'collectible' | 'key';
 export type SortKey = 'name' | 'price' | 'volume';
@@ -44,7 +45,6 @@ export interface UseMarketItemsResult {
 }
 
 export function useMarketItems(params: UseMarketItemsParams): UseMarketItemsResult {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
   const [items, setItems] = useState<MarketItem[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,8 +59,9 @@ export function useMarketItems(params: UseMarketItemsParams): UseMarketItemsResu
     if (params.pageSize && params.pageSize !== 24) search.set('pageSize', String(params.pageSize));
     if (params.sort && params.sort !== 'name') search.set('sort', params.sort);
     if (params.order && params.order !== 'asc') search.set('order', params.order);
-    return `${apiUrl}/api/v1/market-items${search.toString() ? '?' + search.toString() : ''}`;
-  }, [apiUrl, params.category, params.q, params.page, params.pageSize, params.sort, params.order]);
+    const qs = search.toString();
+    return apiUrl(`/api/v1/market-items${qs ? '?' + qs : ''}`);
+  }, [params.category, params.q, params.page, params.pageSize, params.sort, params.order]);
 
   const fetchItems = useCallback(async () => {
     controllerRef.current?.abort();

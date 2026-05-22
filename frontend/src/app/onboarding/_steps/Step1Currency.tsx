@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Euro, DollarSign, Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { analytics } from "@/lib/analytics";
+import { apiUrl } from "@/lib/api";
 
 type Currency = "EUR" | "USD";
 
@@ -31,14 +32,12 @@ export function Step1Currency({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
   async function handleContinue() {
     setSaving(true);
     setError(null);
     try {
       const token = await getToken({ template: "backend" });
-      const res = await fetch(`${apiUrl}/api/v1/users/me`, {
+      const res = await fetch(apiUrl("/api/v1/users/me"), {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

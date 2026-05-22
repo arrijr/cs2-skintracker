@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingDown, TrendingUp } from 'lucide-react';
+import { apiUrl } from '@/lib/api';
 
 interface PriceDataPoint {
   date: string;
@@ -45,7 +46,7 @@ export default function SkinPriceHistoryChart({
       try {
         setIsLoading(true);
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/skins/${skinId}/price-history?days=${days}`
+          apiUrl(`/api/v1/skins/${skinId}/price-history?days=${days}`)
         );
 
         if (!res.ok) {

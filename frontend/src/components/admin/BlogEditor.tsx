@@ -29,6 +29,7 @@ import { serializeMdx, MDXRemote } from '@/lib/mdx';
 import MDXComponents from '@/components/blog/MDXComponents';
 import SkinCardPicker from '@/components/admin/SkinCardPicker';
 import ImageUpload from '@/components/admin/ImageUpload';
+import { apiUrl } from '@/lib/api';
 
 interface BlogEditorProps {
   initialPost?: BlogPost;
@@ -40,8 +41,6 @@ const CATEGORIES = [
   'Updates', 
   'Case Statistics'
 ];
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 export default function BlogEditor({ initialPost }: BlogEditorProps) {
   const router = useRouter();
@@ -138,7 +137,7 @@ export default function BlogEditor({ initialPost }: BlogEditorProps) {
 
       let response;
       if (isEditing) {
-        response = await fetch(`${API_BASE_URL}/blog/${initialPost!.id}`, {
+        response = await fetch(apiUrl(`/api/v1/blog/${initialPost!.id}`), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -147,7 +146,7 @@ export default function BlogEditor({ initialPost }: BlogEditorProps) {
           body: JSON.stringify(postData),
         });
       } else {
-        response = await fetch(`${API_BASE_URL}/blog`, {
+        response = await fetch(apiUrl('/api/v1/blog'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

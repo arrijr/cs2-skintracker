@@ -18,6 +18,7 @@ import UpgradeModal from './UpgradeModal';
 import { useSubscription } from '@/hooks/useSubscription';
 import { KPICard } from '@/components/ui/kpi-card';
 import { tokens } from '@/lib/design-tokens';
+import { apiUrl } from '@/lib/api';
 
 interface Position {
   skinId: number;
@@ -60,7 +61,7 @@ export default function PortfolioDashboard() {
     const fetchPortfolio = async () => {
       try {
         const token = await getToken({ template: 'backend' });
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/portfolio/summary`, {
+        const res = await fetch(apiUrl('/api/v1/portfolio/summary'), {
           headers: {
             Authorization: `Bearer ${token}`
           }

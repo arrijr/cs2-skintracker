@@ -1,7 +1,6 @@
 // frontend/src/lib/blog.ts
 import { BlogPost, BlogPostListResponse } from './mdx';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { apiUrl } from './api';
 
 export async function getBlogPosts(params?: {
   page?: number;
@@ -22,7 +21,7 @@ export async function getBlogPosts(params?: {
   if (params?.sortBy) searchParams.set('sortBy', params.sortBy);
   if (params?.sortOrder) searchParams.set('sortOrder', params.sortOrder);
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/blog?${searchParams}`);
+  const response = await fetch(apiUrl(`/api/v1/blog?${searchParams}`));
   
   if (!response.ok) {
     throw new Error('Failed to fetch blog posts');
@@ -32,7 +31,7 @@ export async function getBlogPosts(params?: {
 }
 
 export async function getBlogPost(slug: string): Promise<BlogPost> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/blog/${slug}`);
+  const response = await fetch(apiUrl(`/api/v1/blog/${slug}`));
   
   if (!response.ok) {
     if (response.status === 404) {
@@ -50,7 +49,7 @@ export async function getBlogPostById(id: number, token?: string): Promise<BlogP
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/blog/admin/${id}`, {
+  const response = await fetch(apiUrl(`/api/v1/blog/admin/${id}`), {
     headers,
   });
   
@@ -65,7 +64,7 @@ export async function getBlogPostById(id: number, token?: string): Promise<BlogP
 }
 
 export async function incrementViewCount(postId: number): Promise<void> {
-  await fetch(`${API_BASE_URL}/api/v1/blog/${postId}/view`, {
+  await fetch(apiUrl(`/api/v1/blog/${postId}/view`), {
     method: 'POST',
   });
 }
@@ -81,7 +80,7 @@ export async function createBlogPost(data: {
   featuredImage?: string;
   isPublished?: boolean;
 }, token: string): Promise<BlogPost> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/blog`, {
+  const response = await fetch(apiUrl('/api/v1/blog'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -107,7 +106,7 @@ export async function updateBlogPost(id: number, data: {
   featuredImage?: string;
   isPublished?: boolean;
 }, token: string): Promise<BlogPost> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/blog/${id}`, {
+  const response = await fetch(apiUrl(`/api/v1/blog/${id}`), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -124,7 +123,7 @@ export async function updateBlogPost(id: number, data: {
 }
 
 export async function deleteBlogPost(id: number, token: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/blog/${id}`, {
+  const response = await fetch(apiUrl(`/api/v1/blog/${id}`), {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -137,7 +136,7 @@ export async function deleteBlogPost(id: number, token: string): Promise<void> {
 }
 
 export async function publishBlogPost(id: number, isPublished: boolean, token: string): Promise<BlogPost> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/blog/${id}/publish`, {
+  const response = await fetch(apiUrl(`/api/v1/blog/${id}/publish`), {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -179,7 +178,7 @@ export async function getAllBlogPosts(params?: {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/blog/admin/all?${searchParams}`, {
+  const response = await fetch(apiUrl(`/api/v1/blog/admin/all?${searchParams}`), {
     headers,
   });
   

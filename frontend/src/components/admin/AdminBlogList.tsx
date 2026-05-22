@@ -11,6 +11,7 @@ import { Edit, Trash2, Eye, EyeOff, Calendar, User, BarChart3 } from 'lucide-rea
 import { formatDate } from '@/lib/utils';
 import { BlogPost } from '@/lib/blog';
 import axios from 'axios';
+import { apiUrl } from '@/lib/api';
 
 interface AdminBlogListProps {
   searchParams: {
@@ -20,8 +21,6 @@ interface AdminBlogListProps {
     search?: string;
   };
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 export default function AdminBlogList({ searchParams }: AdminBlogListProps) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -50,7 +49,7 @@ export default function AdminBlogList({ searchParams }: AdminBlogListProps) {
         params.append('published', 'false');
       }
 
-      const response = await axios.get(`${API_BASE_URL}/blog/admin`, {
+      const response = await axios.get(apiUrl('/api/v1/blog/admin'), {
         params,
         headers: {
           Authorization: `Bearer ${localStorage.getItem('clerk-session-token')}`,
@@ -72,7 +71,7 @@ export default function AdminBlogList({ searchParams }: AdminBlogListProps) {
     if (!confirm('Are you sure you want to delete this blog post?')) return;
 
     try {
-      await axios.delete(`${API_BASE_URL}/blog/${id}`, {
+      await axios.delete(apiUrl(`/api/v1/blog/${id}`), {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('clerk-session-token')}`,
         },
@@ -88,7 +87,7 @@ export default function AdminBlogList({ searchParams }: AdminBlogListProps) {
 
   const handleTogglePublish = async (id: number, isPublished: boolean) => {
     try {
-      await axios.patch(`${API_BASE_URL}/blog/${id}/publish`, 
+      await axios.patch(apiUrl(`/api/v1/blog/${id}/publish`),
         { isPublished: !isPublished },
         {
           headers: {

@@ -6,6 +6,7 @@ import { ProgressBar } from "./_components/ProgressBar";
 import { Step1Currency } from "./_steps/Step1Currency";
 import { Step2Steam } from "./_steps/Step2Steam";
 import { Step3Alert } from "./_steps/Step3Alert";
+import { apiUrl } from "@/lib/api";
 
 type Step = 1 | 2 | 3;
 
@@ -53,8 +54,6 @@ function OnboardingInner() {
   const { user, isLoaded, isSignedIn } = useUser();
   const { getToken } = useAuth();
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
   // Derive step from query string; fall back to 1.
   const initialStep = useMemo<Step>(() => {
     const raw = parseInt(params.get("step") ?? "1", 10);
@@ -77,7 +76,7 @@ function OnboardingInner() {
   const finish = useCallback(async () => {
     try {
       const token = await getToken({ template: "backend" });
-      await fetch(`${apiBase}/api/v1/users/me/onboarded`, {
+      await fetch(apiUrl("/api/v1/users/me/onboarded"), {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -87,7 +86,7 @@ function OnboardingInner() {
       console.warn("[onboarding] failed to stamp completion:", e);
     }
     router.push("/dashboard");
-  }, [apiBase, getToken, router]);
+  }, [getToken, router]);
 
   if (!isLoaded) {
     return <OnboardingSkeleton />;

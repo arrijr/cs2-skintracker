@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { setActiveCurrency } from '@/lib/num';
+import { apiUrl } from '@/lib/api';
 
 type CurrencyCode = 'EUR' | 'USD' | 'GBP';
 
@@ -38,7 +39,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     try {
       const token = await getToken({ template: 'backend' });
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/me`,
+        apiUrl('/api/v1/users/me'),
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (res.ok) {

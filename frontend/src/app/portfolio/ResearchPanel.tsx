@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, BarChart3, TrendingUp, TrendingDown, Zap } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import UpgradeModal from './UpgradeModal';
+import { apiUrl } from '@/lib/api';
 
 interface ResearchItem {
   skinId: number;
@@ -48,7 +49,7 @@ export default function ResearchPanel() {
     const fetchResearch = async () => {
       try {
         const token = await getToken({ template: 'backend' });
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/research/portfolio`, {
+        const res = await fetch(apiUrl('/api/v1/research/portfolio'), {
           headers: {
             Authorization: `Bearer ${token}`
           }

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { AffiliateLink } from '@/components/skins/AffiliateLink';
+import { apiUrl } from '@/lib/api';
 
 interface Source {
   source: string;
@@ -39,12 +40,7 @@ export function MultiSourcePriceTable({ skinSlug }: { skinSlug: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    const apiBase =
-      process.env.NEXT_PUBLIC_API_URL ||
-      (typeof window !== 'undefined' && window.location.hostname.includes('skintrackr.io')
-        ? 'https://api.skintrackr.io'
-        : 'http://localhost:5000');
-    fetch(`${apiBase}/api/v1/skins/${encodeURIComponent(skinSlug)}/prices`)
+    fetch(apiUrl(`/api/v1/skins/${encodeURIComponent(skinSlug)}/prices`))
       .then((r) => (r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)))
       .then((json: PriceResult) => {
         if (!cancelled) setData(json);
