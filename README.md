@@ -269,3 +269,4 @@ Contributing
 - Conventional Commits (`feat:`, `fix:`, `docs:`…)
 - On non-main branches set RUN_SCHEDULER=false.
 - Never commit secrets. Add new env keys to README + /docs/API.md.
+<!-- last touched: 2026-05-22 cases redesign -->
