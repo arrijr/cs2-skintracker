@@ -10,10 +10,21 @@ import { toast } from 'sonner';
 import { analytics } from '@/lib/analytics';
 import { apiUrl } from '@/lib/api';
 
+export type BillingCycle = 'monthly' | 'annual';
+export type SubscriptionStatus =
+  | 'active'
+  | 'inactive'
+  | 'canceled'
+  | 'pending'
+  | 'past_due'
+  | 'trialing'
+  | 'incomplete';
+
 export interface Subscription {
   id: number;
   tier: 'free' | 'lite' | 'pro';
-  status: 'active' | 'inactive' | 'canceled' | 'pending';
+  status: SubscriptionStatus;
+  cycle?: BillingCycle | null;
   stripeSubId?: string | null;
   stripeCustomerId?: string | null;
   currentPeriodStart?: string | null;
@@ -30,6 +41,7 @@ const FREE_FALLBACK: Subscription = {
   id: 0,
   tier: 'free',
   status: 'inactive',
+  cycle: null,
   stripeSubId: null,
   stripeCustomerId: null,
   currentPeriodStart: null,
@@ -162,6 +174,8 @@ export function useSubscription() {
     isLoading,
     error,
     tier: subscription?.tier || 'free',
+    status: subscription?.status ?? 'inactive',
+    cycle: subscription?.cycle ?? null,
     isActive: subscription?.status === 'active',
     canAccessResearch: subscription?.canAccessResearch || false,
     renewalDate: subscription?.renewalDate ?? subscription?.currentPeriodEnd ?? null,

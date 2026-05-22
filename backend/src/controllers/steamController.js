@@ -132,9 +132,22 @@ export async function preview(req, res, { prismaClient = defaultPrisma } = {}) {
   if (!userId) return res.status(401).json({ error: 'auth required' });
   const user = await prismaClient.user.findUnique({ where: { id: userId }, select: { steamId: true } });
   if (!user?.steamId) return res.status(400).json({ error: 'Steam account not connected' });
+  // console.log (not logger) so the line always appears in Render's stdout
+  // even when winston rate-limits or DB transport fails.
+  console.log('[steamController.preview] start', { userId, steamId: user.steamId });
+  const startedAt = Date.now();
   try {
     const items = await fetchInventory(user.steamId);
+    const matchStartedAt = Date.now();
     const result = await matchInventory(items, { prismaClient });
+    console.log('[steamController.preview] ok', {
+      userId,
+      items: items.length,
+      matched: result.matched.length,
+      skipped: result.skipped.length,
+      fetchMs: matchStartedAt - startedAt,
+      matchMs: Date.now() - matchStartedAt,
+    });
     return res.json({
       totals: {
         fetched: items.length,
@@ -145,8 +158,24 @@ export async function preview(req, res, { prismaClient = defaultPrisma } = {}) {
       skipped: result.skipped,
     });
   } catch (err) {
-    logger.error('Steam preview failed', { userId, error: err.message });
-    return res.status(502).json({ error: err.message });
+    const elapsedMs = Date.now() - startedAt;
+    // Map upstream Steam failures to clearer HTTP codes so the frontend can
+    // show a helpful message instead of a generic "502 Bad Gateway".
+    //   private inventory       → 409 Conflict (config issue, user fixable)
+    //   Steam rate-limited      → 503 Service Unavailable (transient)
+    //   Steam refused / 400/5xx → 502 Bad Gateway (upstream broken)
+    let status = 502;
+    if (/private/i.test(err.message)) status = 409;
+    else if (/rate-limit/i.test(err.message)) status = 503;
+    console.error('[steamController.preview] fail', {
+      userId,
+      steamId: user.steamId,
+      status,
+      elapsedMs,
+      error: err.message,
+    });
+    logger.error('Steam preview failed', { userId, status, error: err.message });
+    return res.status(status).json({ error: err.message });
   }
 }
 

@@ -47,6 +47,8 @@ export function BillingTab() {
   const {
     subscription,
     tier,
+    status,
+    cycle,
     isActive,
     renewalDate,
     cancelAtPeriodEnd,
@@ -66,13 +68,48 @@ export function BillingTab() {
 
   const stripeSubId = subscription?.stripeSubId ?? null;
 
-  const renewalLabel = renewalDate
-    ? new Date(renewalDate).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : null;
+  // German locale per user profile. Intl.DateTimeFormat avoids re-instantiating
+  // the formatter on every render (locale + options are stable).
+  const dateFormatter = new Intl.DateTimeFormat('de-DE', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  const renewalLabel = renewalDate ? dateFormatter.format(new Date(renewalDate)) : null;
+
+  const cycleLabel =
+    cycle === 'annual' ? 'Jährlich' : cycle === 'monthly' ? 'Monatlich' : null;
+
+  // Status pill copy — kept short, color-coded. Past-due gets amber to nudge
+  // the user toward the Customer Portal without being alarmist.
+  const statusPill = (() => {
+    if (status === 'past_due') {
+      return {
+        label: 'Past due',
+        className:
+          'bg-amber-500/15 text-amber-300 border border-amber-500/30',
+      };
+    }
+    if (status === 'canceled') {
+      return {
+        label: 'Canceled',
+        className: 'bg-slate-700/40 text-slate-300 border border-slate-600/40',
+      };
+    }
+    if (status === 'incomplete' || status === 'pending') {
+      return {
+        label: 'Incomplete',
+        className: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',
+      };
+    }
+    if (isActive) {
+      return {
+        label: 'Active',
+        className: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30',
+      };
+    }
+    return null;
+  })();
 
   const handlePortal = async () => {
     setBusy('portal');
@@ -179,53 +216,68 @@ export function BillingTab() {
     <div className="space-y-6">
       {/* Current plan */}
       <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-        <h3 className="text-lg font-semibold text-white">Subscription</h3>
-        <p className="mt-1 text-sm text-slate-400">
-          Your current plan, renewal cycle, and billing portal.
-        </p>
-
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-              Current plan
-            </div>
-            <div className="mt-1.5 flex items-center gap-2">
-              <TierPill tier={tier as Tier} />
-              {isActive && tier !== 'free' && (
-                <Badge className="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                  Active
-                </Badge>
-              )}
-              {cancelAtPeriodEnd && (
-                <Badge variant="outline" className="text-amber-300 border-amber-500/40 bg-amber-500/10">
-                  Cancels {renewalLabel ?? 'soon'}
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          {tier !== 'free' && renewalLabel && (
-            <div className="text-right">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                {cancelAtPeriodEnd ? 'Ends' : 'Renews'}
-              </div>
-              <div className="mt-1 text-sm text-slate-200 font-medium tabular-nums">
-                {renewalLabel}
-              </div>
-            </div>
-          )}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h3 className="text-lg font-semibold text-white">Current plan</h3>
+          <TierPill tier={tier as Tier} />
         </div>
+        <div className="mt-4 border-t border-slate-800" />
 
-        {tier === 'free' && (
+        {tier !== 'free' ? (
+          <>
+            <dl className="mt-5 space-y-3 text-sm">
+              {cycleLabel && (
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-slate-400">Cycle</dt>
+                  <dd className="text-slate-200 font-medium">{cycleLabel}</dd>
+                </div>
+              )}
+              {renewalLabel && (
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-slate-400">
+                    {cancelAtPeriodEnd ? 'Cancels on' : 'Renews on'}
+                  </dt>
+                  <dd className="text-slate-200 font-medium tabular-nums">
+                    {renewalLabel}
+                  </dd>
+                </div>
+              )}
+              {statusPill && (
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-slate-400">Status</dt>
+                  <dd>
+                    <Badge className={statusPill.className}>
+                      {statusPill.label}
+                    </Badge>
+                  </dd>
+                </div>
+              )}
+            </dl>
+
+            {cancelAtPeriodEnd && renewalLabel && (
+              <div
+                role="status"
+                className="mt-5 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-200"
+              >
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                <span>
+                  Your subscription will end on{' '}
+                  <span className="font-medium text-amber-100">{renewalLabel}</span>.
+                  Reactivate to continue.
+                </span>
+              </div>
+            )}
+          </>
+        ) : (
           <div className="mt-5 relative overflow-hidden rounded-xl border border-pink-500/30 bg-gradient-to-br from-fuchsia-500/10 via-transparent to-pink-500/10 p-5">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center">
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1">
-                <div className="font-semibold text-white">Upgrade to Pro</div>
+                <div className="font-semibold text-white">Free plan</div>
                 <p className="mt-1 text-sm text-slate-300">
-                  Full price history, research panels, CSV export, and unlimited alerts.
+                  Upgrade to Pro for full price history, research panels, CSV export,
+                  and unlimited alerts.
                 </p>
               </div>
             </div>

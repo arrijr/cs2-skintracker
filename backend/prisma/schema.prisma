@@ -24,6 +24,7 @@ model User {
   stripeCustomerId        String?   @unique
   stripeSubscriptionId    String?   @unique
   subscriptionStatus      String?   // active | canceled | past_due | trialing | null
+  billingCycle            String?   // monthly | annual | null (free tier)
   currentPeriodStart      DateTime?
   currentPeriodEnd        DateTime?
   cancelAtPeriodEnd       Boolean   @default(false)

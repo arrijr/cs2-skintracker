@@ -29,6 +29,7 @@ export const subscriptionService = {
         userId: user.id,
         tier,
         status: user.subscriptionStatus || (isPaid ? 'active' : 'inactive'),
+        cycle: user.billingCycle ?? null,
         stripeCustomerId: user.stripeCustomerId ?? null,
         stripeSubId: user.stripeSubscriptionId ?? null,
         currentPeriodStart: user.currentPeriodStart ?? null,
@@ -55,10 +56,20 @@ export const subscriptionService = {
       // Extract user ID, tier, and billing cycle from metadata
       const userId = parseInt(stripeSubscription.metadata?.userId || 0);
       const tier = stripeSubscription.metadata?.tier || 'lite';
-      // billingCycle is logged for now — future tier-aware UI can persist it
-      // (would require a new `billingCycle` column on User; out of scope this
-      // sprint).
-      const billingCycle = stripeSubscription.metadata?.billingCycle || 'monthly';
+      // billingCycle persisted on User.billingCycle so BillingTab can surface
+      // it without re-querying Stripe. Defaults to metadata, but falls back
+      // to the price item's `recurring.interval` ('month' | 'year') because
+      // Stripe Portal-initiated cycle changes don't update our metadata.
+      const intervalFromItem =
+        stripeSubscription.items?.data?.[0]?.price?.recurring?.interval ?? null;
+      const cycleFromInterval =
+        intervalFromItem === 'year'
+          ? 'annual'
+          : intervalFromItem === 'month'
+            ? 'monthly'
+            : null;
+      const billingCycle =
+        stripeSubscription.metadata?.billingCycle || cycleFromInterval || 'monthly';
 
       if (!userId) {
         logger.error('No userId in Stripe metadata', { stripeSubId: stripeSubscription.id });
@@ -74,6 +85,7 @@ export const subscriptionService = {
           stripeCustomerId: stripeSubscription.customer ?? undefined,
           stripeSubscriptionId: stripeSubscription.id ?? undefined,
           subscriptionStatus: stripeSubscription.status ?? null,
+          billingCycle,
           currentPeriodStart: stripeSubscription.current_period_start
             ? new Date(stripeSubscription.current_period_start * 1000)
             : null,
@@ -125,6 +137,7 @@ export const subscriptionService = {
           tier: 'free',
           subscriptionStatus: 'canceled',
           cancelAtPeriodEnd: false,
+          billingCycle: null,
           stripeSubscriptionId: null,
         }
       });
