@@ -3,7 +3,15 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link2, Link2Off, RefreshCw, Zap, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Link2, Link2Off, RefreshCw, Zap, ShieldCheck, Sparkles, AlertTriangle } from "lucide-react";
 import { useSteamConnection } from "@/hooks/useSteamConnection";
 import { ImportPreviewModal } from "./ImportPreviewModal";
 import { analytics } from "@/lib/analytics";
@@ -13,7 +21,22 @@ export function SteamConnectSection() {
   const searchParams = useSearchParams();
   const [showImport, setShowImport] = useState(false);
   const [resyncing, setResyncing] = useState(false);
+  const [showDisconnect, setShowDisconnect] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [notice, setNotice] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
+
+  const handleDisconnect = async () => {
+    setDisconnecting(true);
+    try {
+      await disconnect();
+      setShowDisconnect(false);
+      setNotice({ kind: 'success', text: 'Steam account disconnected.' });
+    } catch (e) {
+      setNotice({ kind: 'error', text: e instanceof Error ? e.message : 'Disconnect failed.' });
+    } finally {
+      setDisconnecting(false);
+    }
+  };
 
   const handleResync = async () => {
     if (resyncing) return;
@@ -163,7 +186,7 @@ export function SteamConnectSection() {
         <div className="mt-5 flex flex-wrap gap-3 justify-end pt-4 border-t border-slate-800">
           <Button
             variant="outline"
-            onClick={disconnect}
+            onClick={() => setShowDisconnect(true)}
             className="border-slate-700 bg-slate-900/60 text-slate-300 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/40 gap-2"
           >
             <Link2Off className="h-4 w-4" /> Disconnect
@@ -188,6 +211,49 @@ export function SteamConnectSection() {
       </div>
 
       {showImport && <ImportPreviewModal onClose={() => setShowImport(false)} />}
+
+      {/* Disconnect confirmation */}
+      <Dialog open={showDisconnect} onOpenChange={(o) => !disconnecting && setShowDisconnect(o)}>
+        <DialogContent className="bg-slate-900 border border-slate-800 text-white rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-400" aria-hidden="true" />
+              Disconnect Steam account?
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              You&apos;ll lose access to inventory import and resync, but your imported
+              portfolio rows stay. You can reconnect Steam anytime.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDisconnect(false)}
+              disabled={disconnecting}
+              className="border-slate-700 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDisconnect}
+              disabled={disconnecting}
+              className="bg-red-500/10 border border-red-500/40 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+            >
+              {disconnecting ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+                  Disconnecting…
+                </>
+              ) : (
+                <>
+                  <Link2Off className="w-4 h-4 mr-2" aria-hidden="true" />
+                  Confirm disconnect
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
