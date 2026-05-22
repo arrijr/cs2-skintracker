@@ -6,6 +6,7 @@ import {
   getSkinById,
   getSkinPrices,
   getSkinVariants,
+  getSimilarSkins,
   getCaseBySlug,
   getSkinPresets,
 } from '../controllers/skinDetailController.js';
@@ -26,6 +27,7 @@ caseRouter.get('/:slug', (req, res) => getCaseBySlug(req, res));
 // router first. The `next()` calls below let those numeric requests fall
 // through to the legacy router instead of being intercepted as slugs.
 router.get('/by-id/:id/variants', (req, res) => getSkinVariants(req, res));
+router.get('/by-id/:id/similar',  (req, res) => getSimilarSkins(req, res));
 router.get('/by-id/:id',          (req, res) => getSkinById(req, res));
 router.get('/slugs',              (req, res) => listSkinSlugs(req, res));
 router.get('/presets',            (req, res) => getSkinPresets(req, res));

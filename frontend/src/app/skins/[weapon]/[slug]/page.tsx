@@ -13,6 +13,7 @@ import { getSkinBySlug } from '@/lib/skins-server';
 import SkinDetailClient from './_components/SkinDetailClient';
 import { MultiSourcePriceTable } from './_components/MultiSourcePriceTable';
 import { WearComparisonTable } from './_components/WearComparisonTable';
+import { SimilarSkinsGrid } from './_components/SimilarSkinsGrid';
 import { SkinFAQ } from './_components/SkinFAQ';
 import { SkinProductSchema } from '@/components/skins/SkinProductSchema';
 
@@ -107,6 +108,7 @@ export default async function SkinDetailPage({ params, searchParams }: PageProps
               CSFloat caches; subsequent hits hit 5min in-memory backend cache. */}
           <MultiSourcePriceTable skinSlug={skin.slug} />
           <WearComparisonTable weaponSlug={skin.weaponSlug} baseId={skin.variantOf ?? skin.id} />
+          <SimilarSkinsGrid skinId={skin.id} />
           <SkinFAQ skin={skin} />
         </div>
       </main>

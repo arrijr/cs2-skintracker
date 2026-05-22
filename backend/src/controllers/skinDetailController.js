@@ -184,6 +184,54 @@ export async function getCaseBySlug(req, res, { prismaClient = defaultPrisma } =
   return res.json({ ...rest, slug, drops: caseSkins });
 }
 
+// Similar-skin recommendations: same weapon, same rarity, within ±30% of the
+// base skin's price. Sorted by sold30d so users see liquid alternatives.
+// Returns up to 6 rows. Excludes the base skin itself + rows without a slug
+// (those can't be linked anyway).
+export async function getSimilarSkins(req, res, { prismaClient = defaultPrisma } = {}) {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid id' });
+
+  const base = await prismaClient.skin.findUnique({
+    where: { id },
+    select: { id: true, weaponSlug: true, rarity: true, priceLatest: true },
+  });
+  if (!base) return res.status(404).json({ error: 'not found' });
+
+  // Without a price, the ±30% band collapses → return [].
+  // Without a weapon or rarity, we cannot define "similar" → also [].
+  if (base.priceLatest == null || !base.weaponSlug || !base.rarity) {
+    return res.json([]);
+  }
+
+  const lo = base.priceLatest * 0.7;
+  const hi = base.priceLatest * 1.3;
+
+  const rows = await prismaClient.skin.findMany({
+    where: {
+      id: { not: base.id },
+      weaponSlug: base.weaponSlug,
+      rarity: base.rarity,
+      slug: { not: null },
+      priceLatest: { gte: lo, lte: hi },
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      weaponSlug: true,
+      imageUrl: true,
+      wear: true,
+      rarity: true,
+      priceLatest: true,
+      sold30d: true,
+    },
+    take: 6,
+    orderBy: [{ sold30d: 'desc' }, { priceLatest: 'asc' }],
+  });
+  return res.json(rows);
+}
+
 export async function getSkinVariants(req, res, { prismaClient = defaultPrisma } = {}) {
   const id = parseInt(req.params.id, 10);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid id' });
