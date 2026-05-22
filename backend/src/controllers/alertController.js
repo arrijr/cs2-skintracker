@@ -61,10 +61,16 @@ export async function createAlert(req, res) {
     });
   }
 
-  // Validate type-specific FK requirements + existence
+  // Validate type-specific FK requirements + existence.
+  // skinId / caseId must be positive integers — negatives and zeros bypass
+  // the existence check on some DB drivers and create dangling alerts.
+  const isPositiveInt = (v) => Number.isInteger(v) && v > 0;
   if (type === 'case_ev') {
     if (caseId == null) {
       return res.status(400).json({ error: 'case_ev alert requires caseId' });
+    }
+    if (!isPositiveInt(caseId)) {
+      return res.status(400).json({ error: 'caseId must be a positive integer' });
     }
     const exists = await prisma.case.findUnique({ where: { id: caseId }, select: { id: true } });
     if (!exists) return res.status(404).json({ error: `case ${caseId} not found` });
@@ -72,6 +78,9 @@ export async function createAlert(req, res) {
     // price_threshold, volatility, float_tier all require skinId
     if (skinId == null) {
       return res.status(400).json({ error: `${type} alert requires skinId` });
+    }
+    if (!isPositiveInt(skinId)) {
+      return res.status(400).json({ error: 'skinId must be a positive integer' });
     }
     const exists = await prisma.skin.findUnique({ where: { id: skinId }, select: { id: true } });
     if (!exists) return res.status(404).json({ error: `skin ${skinId} not found` });
