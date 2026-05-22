@@ -56,6 +56,14 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 
+// IMPORTANT: Stripe webhook signature verification needs the RAW request body.
+// `express.json()` consumes the body stream and replaces it with parsed JSON,
+// which breaks `stripe.webhooks.constructEvent`. Mount a raw-body parser ONLY
+// on the webhook path and let everything else use JSON. Express runs the
+// first matching middleware in registration order, so this must come before
+// `app.use(express.json())`.
+app.use('/api/v1/subscriptions/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 
 // Rate limiting for sensitive endpoints
