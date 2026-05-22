@@ -277,7 +277,7 @@ if (caseName.includes("knife") || caseName.includes("gloves")) {
 - **Performance**: API response times
 
 ## Related Documentation
-- [Skin Detail Page](../features/skin-detail-page.md)
-- [Case System](../features/case-system.md)
-- [API Documentation](../API.md)
-- [Architecture Overview](../ARCHITECTURE.md)
+- [[skin-detail-page|Skin Detail Page]]
+- [[case-system|Case System]]
+- [[API|API Documentation]]
+- [[ARCHITECTURE|Architecture Overview]]

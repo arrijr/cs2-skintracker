@@ -438,10 +438,10 @@ LIMIT 7;
 
 ## Related Documentation
 
-- [ARCHITECTURE.md](../ARCHITECTURE.md) - System architecture overview
-- [API.md](../API.md) - Complete API documentation
-- [CHANGELOG.md](../CHANGELOG.md) - Change history
-- [DATA_MODEL.md](../DATA_MODEL.md) - Database schema details
+- [[ARCHITECTURE]] - System architecture overview
+- [[API]] - Complete API documentation
+- [[docs/CHANGELOG|CHANGELOG]] - Change history
+- [[DATA_MODEL]] - Database schema details (TODO: target file missing)
 
 ---
 

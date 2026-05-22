@@ -287,7 +287,7 @@ Returns all skins from a specific case/collection.
 5. Check backend logs on Render
 
 ## Related Documentation
-- [API Documentation](../API.md)
-- [Architecture Overview](../ARCHITECTURE.md)
-- [Case System](../features/case-system.md)
-- [Enhanced Skins Filters](../features/enhanced-skins-filters.md)
+- [[API|API Documentation]]
+- [[ARCHITECTURE|Architecture Overview]]
+- [[case-system|Case System]]
+- [[enhanced-skins-filters|Enhanced Skins Filters]]

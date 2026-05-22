@@ -6,11 +6,11 @@ Log of significant architecture decisions. Each ADR documents what we decided, w
 
 | # | Title | Status | Date |
 |---|-------|--------|------|
-| [001](./ADR-001-deduplicate-skin-records.md) | Deduplicate legacy Skin records | Accepted | 2026-05-11 |
-| [002](./ADR-002-image-hosting-strategy.md) | Image hosting and proxy strategy | Accepted (Phase 1) · Phase 2 Deferred | 2026-05-11 |
-| [003](./ADR-003-filter-state-url-encoding.md) | Filter state URL encoding | Accepted | 2026-05-11 |
-| [004](./ADR-004-background-job-infrastructure.md) | Background job infrastructure | Accepted (retrospective) | 2026-05-10 |
-| [005](./ADR-005-price-scraping-strategy.md) | Steam Market price scraping strategy | Accepted | 2026-05-12 |
+| [[ADR-001-deduplicate-skin-records\|001]] | Deduplicate legacy Skin records | Accepted | 2026-05-11 |
+| [[ADR-002-image-hosting-strategy\|002]] | Image hosting and proxy strategy | Accepted (Phase 1) · Phase 2 Deferred | 2026-05-11 |
+| [[ADR-003-filter-state-url-encoding\|003]] | Filter state URL encoding | Accepted | 2026-05-11 |
+| [[ADR-004-background-job-infrastructure\|004]] | Background job infrastructure | Accepted (retrospective) | 2026-05-10 |
+| [[ADR-005-price-scraping-strategy\|005]] | Steam Market price scraping strategy | Accepted | 2026-05-12 |
 
 ## When to write an ADR
 
@@ -24,6 +24,6 @@ Skip ADRs for: framework choices already locked in, library upgrades, refactors 
 
 ## Format
 
-Use [`ADR-XXX-kebab-case-title.md`](./ADR-001-deduplicate-skin-records.md) as the template. Sections: Context, Decision, Options Considered, Trade-off Analysis, Consequences, Action Items.
+Use [[ADR-001-deduplicate-skin-records|`ADR-XXX-kebab-case-title.md`]] as the template. Sections: Context, Decision, Options Considered, Trade-off Analysis, Consequences, Action Items.
 
 Bump `Status` when superseded or deprecated; never delete an ADR.

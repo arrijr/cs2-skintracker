@@ -314,7 +314,7 @@ Users can navigate to different collections by visiting skins of different weapo
 5. Verify CORS headers
 
 ## Related Documentation
-- [Skin Detail Page](../features/skin-detail-page.md)
-- [Case Section Component](../features/case-section-component.md)
-- [API Documentation](../API.md)
-- [Architecture Overview](../ARCHITECTURE.md)
+- [[skin-detail-page|Skin Detail Page]]
+- [[case-section-component|Case Section Component]]
+- [[API|API Documentation]]
+- [[ARCHITECTURE|Architecture Overview]]
