@@ -859,3 +859,35 @@ Top-3 most urgent:
 2. **#2** — Steam OpenID state secret fallback; sets up Steam-account takeover the moment the env var is omitted in prod. Fail closed in `steamController.js`.
 3. **#19** — Free-tier portfolio cap only enforced in frontend; direct revenue impact (€6.99/€9.99 paywall bypass).
 
+---
+
+## Post-session: Vercel split-brain (2026-05-22 17:38 UTC)
+
+Discovered during post-deploy verification of the null-guard `.toFixed` sweep:
+
+**Problem.** The repo `arrijr/cs2-skintracker` has two Vercel projects connected:
+- `cs2-skintracker` (prj_AGLYU568…) — owns prod domain `www.skintrackr.io`
+- `cs2-skintracker-jbzr` (prj_HOsdwMHa…) — owns only `*.vercel.app` subdomains
+
+Both auto-deploy from `main`, but `cs2-skintracker` started **intermittently skipping** commits today. JBZR built every push. Pattern from GitHub deployments timeline:
+
+| Push (UTC) | SHA | cs2-skintracker | JBZR |
+|------------|-----|-----------------|------|
+| 14:33 | f0f9b0f | ✅ | ✅ |
+| 14:49 | acb524e | ✅ | — |
+| 15:09 | a04dae2 | ❌ skipped | ✅ |
+| 16:33 | 76c3dc7 | ✅ | ✅ |
+| 17:05 | edc9bc0 | ❌ skipped | ✅ |
+| 17:23 | f4990b2 | ❌ skipped | ✅ |
+
+User-impact: the null-guard `.toFixed` sweep landed on JBZR but NOT on www.skintrackr.io. Production `/cases` still served bundle `page-785989ff51770305.js` with the unsafe `priceChange24h.toFixed(2)` callsite — exactly what crashed for the user.
+
+**Action.** Pushed empty commit `5fb2e3b` at 17:38 UTC to nudge cs2-skintracker. If empty commits don't trigger Vercel webhook (possible — Vercel may filter "no tree diff" commits), follow up with a real file touch.
+
+**Root-cause hypothesis.** Vercel project `cs2-skintracker` has an "Ignored Build Step" command configured in the dashboard that's returning exit 0 (skip) for certain commits. Possibly a script comparing changed paths against a list, with a subtle bug. Need to inspect Project Settings → Git → Ignored Build Step in the Vercel UI (no API exposure).
+
+**Mitigations to consider:**
+- Disable Ignored Build Step on cs2-skintracker (always build).
+- OR: move `www.skintrackr.io` domain from cs2-skintracker to JBZR (which is already building every commit) and decommission cs2-skintracker.
+- OR: confirm one project is canonical, delete the other from Vercel.
+
