@@ -23,18 +23,20 @@ export function BlogFilters({ currentCategory, currentSearch, currentTag }: Blog
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Radix Select forbids empty-string values, so the "All categories" option
+  // uses the "all" sentinel. Convert it back to a missing param before routing.
   const updateFilters = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    
-    if (value) {
+
+    if (value && value !== 'all') {
       params.set(key, value);
     } else {
       params.delete(key);
     }
-    
+
     // Reset to page 1 when filtering
     params.set('page', '1');
-    
+
     router.push(`/blog?${params.toString()}`);
   };
 
@@ -50,15 +52,15 @@ export function BlogFilters({ currentCategory, currentSearch, currentTag }: Blog
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium mb-2 block">Category</label>
-            <Select 
-              value={currentCategory || ''} 
+            <Select
+              value={currentCategory || 'all'}
               onValueChange={(value) => updateFilters('category', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All categories</SelectItem>
+                <SelectItem value="all">All categories</SelectItem>
                 {CATEGORIES.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
