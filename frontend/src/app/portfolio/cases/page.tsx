@@ -20,6 +20,7 @@ import Link from "next/link";
 import { apiUrl, fetchJson } from "@/lib/api";
 import { formatUSD, safeToFixed } from "@/lib/num";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { AppShell } from "@/components/layout/AppShell";
 
 interface CasePortfolioEntry {
   id: number;
@@ -125,7 +126,7 @@ export default function CasePortfolioPage() {
   const getPLColor = (pl: number) => {
     if (pl > 0) return 'text-green-400';
     if (pl < 0) return 'text-red-400';
-    return 'text-gray-400';
+    return 'text-slate-400';
   };
 
   const getPLIcon = (pl: number) => {
@@ -136,64 +137,70 @@ export default function CasePortfolioPage() {
 
   if (loading) {
     return (
-      <div className="dashboard-bg text-white p-2 sm:p-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-700 rounded w-1/4 mb-6"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-700 rounded"></div>
-              ))}
-            </div>
+      <AppShell eyebrow="Portfolio" title="Cases" description="Loading…" maxWidth="7xl">
+        <Breadcrumbs
+          items={[
+            { label: "Portfolio", href: "/portfolio" },
+            { label: "Cases" },
+          ]}
+          className="mb-6"
+        />
+        <div className="animate-pulse space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-28 rounded-2xl bg-slate-800/40 border border-slate-700/50" />
+            ))}
           </div>
+          <div className="h-72 rounded-2xl bg-slate-800/40 border border-slate-700/50" />
         </div>
-      </div>
+      </AppShell>
     );
   }
 
   if (error) {
     return (
-      <div className="dashboard-bg text-white p-2 sm:p-4">
-        <div className="max-w-7xl mx-auto">
-          <Card className="border-red-500/50">
-            <CardContent className="p-6 text-center">
-              <div className="text-red-400 mb-2">Error loading case portfolio</div>
-              <div className="text-gray-400">{error}</div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <AppShell eyebrow="Portfolio" title="Cases" maxWidth="7xl">
+        <Breadcrumbs
+          items={[
+            { label: "Portfolio", href: "/portfolio" },
+            { label: "Cases" },
+          ]}
+          className="mb-6"
+        />
+        <Card className="bg-slate-900/70 backdrop-blur border border-red-500/30 rounded-2xl">
+          <CardContent className="p-6 text-center">
+            <div className="text-red-400 mb-2">Error loading case portfolio</div>
+            <div className="text-slate-400">{error}</div>
+          </CardContent>
+        </Card>
+      </AppShell>
     );
   }
 
   return (
-    <div className="dashboard-bg text-white p-2 sm:p-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Breadcrumbs */}
-        <Breadcrumbs 
-          items={[
-            { label: "Portfolio", href: "/portfolio" },
-            { label: "Cases" }
-          ]} 
-          className="mb-6"
-        />
+    <AppShell
+      eyebrow="Portfolio"
+      title="Cases"
+      description="Track your case investments and performance"
+      maxWidth="7xl"
+    >
+      <Breadcrumbs
+        items={[
+          { label: "Portfolio", href: "/portfolio" },
+          { label: "Cases" },
+        ]}
+        className="mb-6"
+      />
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Case Portfolio</h1>
-          <p className="text-lg text-gray-400">
-            Track your case investments and performance
-          </p>
-        </div>
-
+      <div className="space-y-6">
         {/* Portfolio Stats */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card>
+            <Card className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-400">Total Value</p>
+                    <p className="text-sm text-slate-400">Total Value</p>
                     <p className="text-2xl font-bold text-white">
                       {formatUSD(stats.totalValue)}
                     </p>
@@ -203,11 +210,11 @@ export default function CasePortfolioPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-400">Total Cost</p>
+                    <p className="text-sm text-slate-400">Total Cost</p>
                     <p className="text-2xl font-bold text-white">
                       {formatUSD(stats.totalCost)}
                     </p>
@@ -217,11 +224,11 @@ export default function CasePortfolioPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-400">Unrealized P&L</p>
+                    <p className="text-sm text-slate-400">Unrealized P&L</p>
                     <div className={`flex items-center gap-1 ${getPLColor(stats.totalUnrealizedPL)}`}>
                       {getPLIcon(stats.totalUnrealizedPL)}
                       <p className="text-2xl font-bold">
@@ -237,18 +244,18 @@ export default function CasePortfolioPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-400">Total Cases</p>
+                    <p className="text-sm text-slate-400">Total Cases</p>
                     <p className="text-2xl font-bold text-white">
                       {stats.totalCases}
                     </p>
                   </div>
                   <Package className="w-8 h-8 text-orange-400" />
                 </div>
-                <div className="text-sm text-gray-400">
+                <div className="text-sm text-slate-400">
                   {stats.totalAmount} units
                 </div>
               </CardContent>
@@ -257,9 +264,9 @@ export default function CasePortfolioPage() {
         )}
 
         {/* Portfolio Entries */}
-        <Card>
+        <Card className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex items-center justify-between text-white">
               <div className="flex items-center gap-2">
                 <Package className="w-5 h-5" />
                 Your Cases ({portfolio.length})
@@ -278,11 +285,11 @@ export default function CasePortfolioPage() {
                 {portfolio.map((entry) => (
                   <div 
                     key={entry.id} 
-                    className="p-4 bg-gray-800/30 border border-gray-700/50 rounded-lg hover:bg-gray-800/50 transition-colors"
+                    className="p-4 bg-slate-800/30 border border-slate-700/50 rounded-xl hover:bg-slate-800/50 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gray-700 rounded flex items-center justify-center">
+                        <div className="w-12 h-12 bg-slate-700 rounded flex items-center justify-center">
                           {entry.case.imageUrl ? (
                             <img 
                               src={entry.case.imageUrl} 
@@ -290,7 +297,7 @@ export default function CasePortfolioPage() {
                               className="w-10 h-10 object-contain"
                             />
                           ) : (
-                            <Package className="w-6 h-6 text-gray-400" />
+                            <Package className="w-6 h-6 text-slate-400" />
                           )}
                         </div>
                         
@@ -319,7 +326,7 @@ export default function CasePortfolioPage() {
                             {formatUSD(entry.unrealizedPL)} ({entry.unrealizedPLPercent > 0 ? '+' : ''}{safeToFixed(entry.unrealizedPLPercent, 2)}%)
                           </span>
                         </div>
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-slate-400">
                           Avg: {formatUSD(entry.buyPrice)} • Current: {formatUSD(entry.currentValue)}
                         </div>
                       </div>
@@ -342,9 +349,9 @@ export default function CasePortfolioPage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium mb-2">No cases in portfolio</h3>
-                <p className="text-gray-400 mb-4">
+                <Package className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+                <h3 className="text-lg font-medium mb-2 text-white">No cases in portfolio</h3>
+                <p className="text-slate-400 mb-4">
                   Start building your case portfolio by adding cases
                 </p>
                 <Button asChild>
@@ -358,6 +365,6 @@ export default function CasePortfolioPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AppShell>
   );
 }
