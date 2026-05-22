@@ -44,7 +44,9 @@ export function KPICard({ label, value, delta, deltaLabel, icon, tone = "neutral
             </span>
           )}
         </div>
-        <div className="font-display text-[28px] font-semibold tracking-[-0.02em] text-white tabular-nums leading-tight">
+        {/* CS HUD-style big number — font-mono tabular-nums for that scoreboard /
+            terminal feel. Stays on slate-950 + brand baseline. */}
+        <div className="font-mono text-[28px] font-semibold tracking-[-0.025em] text-white tabular-nums leading-tight">
           {value}
         </div>
         {(delta !== undefined || sub) && (
