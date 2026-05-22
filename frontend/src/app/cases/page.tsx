@@ -142,18 +142,24 @@ export default function CasesPage() {
     }
   };
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + 'M';
-    } else if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K';
-    }
+  // Null-tolerant — many Case rows have null `remaining`/`dropped`/`unboxed`/
+  // `marketCap` because we never seeded those columns. Without the guard,
+  // `null.toLocaleString()` throws TypeError during render and crashes the
+  // whole /cases page client-side (caught earlier as production stack trace).
+  const formatNumber = (num: number | null | undefined) => {
+    if (num == null || !Number.isFinite(num)) return '—';
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
     return num.toLocaleString();
   };
 
   // Currency is EUR-base (Steam Market is scraped in EUR); formatEUR honours
-  // the user's selected display currency from CurrencyContext.
-  const formatCurrency = (amount: number) => formatEUR(amount);
+  // the user's selected display currency from CurrencyContext. Same null-guard
+  // pattern — `Case.price` is null for cases we never refreshed.
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (amount == null || !Number.isFinite(amount)) return '—';
+    return formatEUR(amount);
+  };
 
 
   const getPriceChangeColor = (change: number) => {
