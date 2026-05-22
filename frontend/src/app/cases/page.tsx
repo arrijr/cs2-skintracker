@@ -2,6 +2,7 @@
 // {/* Case Overview Page - Comprehensive case statistics and market data */}
 "use client";
 import { useState, useEffect, useMemo } from "react";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -77,20 +78,33 @@ export default function CasesPage() {
     fetchCases();
   }, []);
 
-  // Fetch user's case portfolio
+  // Fetch user's case portfolio. Only runs for signed-in users — otherwise
+  // would 401 noisily in console. Passes Authorization header so backend
+  // doesn't reject with 401 + INVALID_JWT (this was a real production bug,
+  // same pattern as the /portfolio/cases page fix in 8bc06c2).
+  const { isSignedIn, getToken } = useAuth();
   useEffect(() => {
+    if (!isSignedIn) {
+      setUserCasePortfolio([]);
+      return;
+    }
+    let cancelled = false;
     const fetchUserPortfolio = async () => {
       try {
-        const data = await apiFetch('/api/v1/case-portfolio');
-        const caseIds = data.portfolio.map((entry: any) => entry.case.id);
+        const token = await getToken({ template: 'backend' });
+        const data = await apiFetch('/api/v1/case-portfolio', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (cancelled) return;
+        const caseIds = (data?.portfolio || []).map((entry: any) => entry?.case?.id).filter((id: any) => typeof id === 'number');
         setUserCasePortfolio(caseIds);
       } catch {
-        // User might not be logged in, ignore error
+        // Stay silent — non-critical highlighting feature.
       }
     };
-
     fetchUserPortfolio();
-  }, []);
+    return () => { cancelled = true; };
+  }, [isSignedIn, getToken]);
 
   // Filter and sort cases
   const filteredAndSortedCases = useMemo(() => {
