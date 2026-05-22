@@ -61,7 +61,6 @@ export default function PortfolioPage() {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useUser();
   const { getToken } = useAuth();
-  const [activeFilter, setActiveFilter] = useState<{ type: string; value: string; values?: string[] } | null>(null);
   const [showPremiumBanner, setShowPremiumBanner] = useState(true);
 
   // Authentifizierte Hooks
@@ -257,7 +256,6 @@ export default function PortfolioPage() {
                     skins={portfolioSkins}
                     watchlist={watchlist}
                     onDataChange={() => mutate()}
-                    activeFilter={null}
                   />
                 )}
               </CardContent>
