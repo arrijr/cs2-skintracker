@@ -2,13 +2,14 @@
 // {/* Case Portfolio Page - Manage case investments */}
 "use client";
 import { useState, useEffect } from "react";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Plus, 
-  Package, 
-  TrendingUp, 
+import {
+  Plus,
+  Package,
+  TrendingUp,
   TrendingDown,
   DollarSign,
   Calendar,
@@ -16,7 +17,7 @@ import {
   Edit
 } from "lucide-react";
 import Link from "next/link";
-import { apiFetch } from "@/lib/api";
+import { apiUrl, fetchJson } from "@/lib/api";
 import { formatUSD, safeToFixed } from "@/lib/num";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
@@ -53,18 +54,36 @@ interface PortfolioStats {
 }
 
 export default function CasePortfolioPage() {
+  const { isSignedIn, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const [portfolio, setPortfolio] = useState<CasePortfolioEntry[]>([]);
   const [stats, setStats] = useState<PortfolioStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      setLoading(false);
+      setError('Sign in to view your case portfolio');
+      return;
+    }
+
     const fetchPortfolio = async () => {
       try {
         setLoading(true);
-        const data = await apiFetch('/case-portfolio');
-        setPortfolio(data.portfolio);
-        setStats(data.stats);
+        setError(null);
+        const token = await getToken({ template: "backend" });
+        const data = await fetchJson<{ portfolio: CasePortfolioEntry[]; stats: PortfolioStats }>(
+          apiUrl('/api/v1/case-portfolio'),
+          {
+            headers: {
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+          }
+        );
+        setPortfolio(data.portfolio ?? []);
+        setStats(data.stats ?? null);
       } catch (err) {
         setError('Failed to load case portfolio');
         console.error('Error fetching case portfolio:', err);
@@ -74,7 +93,7 @@ export default function CasePortfolioPage() {
     };
 
     fetchPortfolio();
-  }, []);
+  }, [isLoaded, isSignedIn, getToken]);
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
