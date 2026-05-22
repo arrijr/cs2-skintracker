@@ -442,12 +442,16 @@ export default function CasesPage() {
                         </span>
                       </td>
                       <td className="text-right py-4 px-4">
-                        <div className={`flex items-center justify-end gap-1 ${getPriceChangeColor(caseItem.priceChange24h)}`}>
-                          {getPriceChangeIcon(caseItem.priceChange24h)}
-                          <span className="text-sm font-medium">
-                            {caseItem.priceChange24h > 0 ? '+' : ''}{caseItem.priceChange24h.toFixed(2)}%
-                          </span>
-                        </div>
+                        {caseItem.priceChange24h != null && Number.isFinite(caseItem.priceChange24h) ? (
+                          <div className={`flex items-center justify-end gap-1 ${getPriceChangeColor(caseItem.priceChange24h)}`}>
+                            {getPriceChangeIcon(caseItem.priceChange24h)}
+                            <span className="text-sm font-medium">
+                              {caseItem.priceChange24h > 0 ? '+' : ''}{caseItem.priceChange24h.toFixed(2)}%
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-slate-500">—</span>
+                        )}
                       </td>
                     </tr>
                   ))}
