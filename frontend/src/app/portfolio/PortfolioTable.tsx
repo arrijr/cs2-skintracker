@@ -8,6 +8,7 @@ import clsx from "clsx";
 import Tooltip from "../components/Tooltip";
 import { safeLower, safeIncludes, safeLocaleCompare } from "@/lib/strings";
 import { skinDetailHref } from "@/lib/skin-urls";
+import { formatEUR } from "@/lib/num";
 
 type Skin = {
   id: number;
@@ -349,7 +350,7 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
                   <span className="text-zinc-400 text-xs">Avg. Buy</span>
                   <div className="font-mono">
                     {typeof entry.avgPrice === "number"
-                      ? entry.avgPrice.toFixed(2) + " $"
+                      ? formatEUR(entry.avgPrice)
                       : "-"}
                   </div>
                 </div>
@@ -357,7 +358,7 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
                   <span className="text-zinc-400 text-xs">Market</span>
                   <div className="font-mono">
                     {typeof entry.skin.marketPrice === "number"
-                      ? entry.skin.marketPrice.toFixed(2) + " $"
+                      ? formatEUR(entry.skin.marketPrice)
                       : "-"}
                   </div>
                 </div>
