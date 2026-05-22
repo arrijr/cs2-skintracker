@@ -38,6 +38,9 @@ export interface SkinDetail {
   sold7d: number | null;
   sold30d: number | null;
   variantOf: number | null;
+  // Backend `getSkinBySlug` derives this from CaseSkin → Case relation.
+  // Null when the skin doesn't drop from any case (souvenirs, knives w/o case, etc.).
+  caseInfo: { id: number; name: string } | null;
 }
 
 // Hard 9s timeout — sits just under Vercel Hobby's 10s function ceiling.

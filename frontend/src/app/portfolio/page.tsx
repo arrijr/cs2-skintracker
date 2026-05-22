@@ -30,6 +30,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PortfolioSummaryStrip } from "./_components/PortfolioSummaryStrip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Link2, Plus } from "lucide-react";
+import { SteamConnectCTA } from "@/components/SteamConnectCTA";
 
 
 // {/* Authentifizierte Hooks */}
@@ -203,6 +204,9 @@ export default function PortfolioPage() {
         <div className="flex justify-end mb-4">
           <LastUpdatedChip onRefresh={() => mutate()} />
         </div>
+
+      {/* Steam onboarding CTA — visible until first inventory import */}
+      <SteamConnectCTA />
 
       {/* Portfolio Chart Section */}
       <Card className="bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl">

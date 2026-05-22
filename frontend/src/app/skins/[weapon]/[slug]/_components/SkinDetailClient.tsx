@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, Bell, Plus, Heart, ExternalLink, Star, ArrowLeft, Clock } from "lucide-react";
+import { TrendingUp, TrendingDown, Bell, Plus, Heart, ExternalLink, Star, ArrowLeft, Clock, Package } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { apiUrl, fetchJson, getPortfolio, getWatchlist } from "@/lib/api";
 import type { SkinDetail } from "@/lib/skins-server";
@@ -392,6 +392,19 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-[0.18em] border border-amber-400/40 bg-amber-400/12 text-amber-300">
                     ★ Special
                   </span>
+                )}
+                {/* Source-case badge — promoted from the body-footer card so
+                    users see the case origin immediately near the rarity chip.
+                    Clickable, leads to the case detail page. */}
+                {skin.caseInfo && (
+                  <Link
+                    href={`/cases/${caseToSlug(skin.caseInfo.name)}`}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-[0.18em] border border-fuchsia-500/40 bg-fuchsia-500/12 text-fuchsia-300 hover:bg-fuchsia-500/20 hover:border-fuchsia-400/60 transition-colors"
+                    aria-label={`From ${skin.caseInfo.name}`}
+                  >
+                    <Package className="h-3 w-3" />
+                    From: {skin.caseInfo.name}
+                  </Link>
                 )}
                 {skin.collection && (
                   <span className="ml-auto text-xs text-slate-400">{skin.collection}</span>

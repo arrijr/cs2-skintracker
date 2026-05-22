@@ -22,6 +22,7 @@ import { TopHoldings } from "./components/TopHoldings";
 import { AllocationDonut } from "./components/AllocationDonut";
 import MarketPulse from "./components/MarketPulse";
 import MarketEvents from "./components/MarketEvents";
+import { SteamConnectCTA } from "@/components/SteamConnectCTA";
 
 export default function Dashboard() {
   const { isSignedIn, isLoaded } = useUser();
@@ -193,6 +194,9 @@ export default function Dashboard() {
               sub={activeAlerts > 0 ? "price + volume triggers" : "Set your first alert"}
             />
           </div>
+
+          {/* STEAM CONNECT CTA — only shows until first import is complete */}
+          <SteamConnectCTA />
 
           {/* MOVERS + ALLOCATION (2:1) */}
           <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 items-start">

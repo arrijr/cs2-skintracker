@@ -85,8 +85,23 @@ export async function getSkinBySlug(req, res, { prismaClient = defaultPrisma } =
   if (!slug) return res.status(400).json({ error: 'slug required' });
   const skin = await prismaClient.skin.findUnique({
     where: { slug },
+    include: {
+      caseSkins: {
+        include: { case: { select: { id: true, name: true } } },
+        take: 1,
+      },
+    },
   });
   if (!skin) return res.status(404).json({ error: 'not found' });
+
+  // Normalize first source case (if any) onto the response as `caseInfo`.
+  // The skin detail UI promotes this into the hero strip — keeping the
+  // payload small means just the id + name (no drop chance / rarity here).
+  const firstCaseSkin = skin.caseSkins?.[0];
+  skin.caseInfo = firstCaseSkin?.case
+    ? { id: firstCaseSkin.case.id, name: firstCaseSkin.case.name }
+    : null;
+  delete skin.caseSkins;
 
   // Derive 30-day stats from PriceHistory snapshots. The daily cron only
   // writes Skin.priceLatest + sold24h; aggregates like priceMin/Max and
