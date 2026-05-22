@@ -526,15 +526,22 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
               )}
             </div>
 
-            {/* Stat tiles */}
+            {/* Stat tiles. `offerVolume` = current Steam Market listings count
+                (Stückzahl auf dem Markt), fed by the daily steamListingCounts
+                cron. `sold24h` is the 24h trade count from priceoverview.
+                `high30` derives from PriceHistory MAX over the last 30 days. */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
               <StatTile label="Median" value={skin.priceMedian != null ? `€${fmtEUR(skin.priceMedian)}` : "—"} />
               <StatTile label="30D high" value={high30 != null ? `€${fmtEUR(high30)}` : "—"} sub="all-time tracked" />
-              <StatTile label="Vol 24h" value={skin.sold24h != null ? `${skin.sold24h}` : "—"} sub="trades" />
               <StatTile
-                label="Liquidity"
-                value={skin.hoursToSold != null ? (skin.hoursToSold < 12 ? "High" : skin.hoursToSold < 36 ? "Medium" : "Low") : "—"}
-                sub={skin.hoursToSold != null ? `${skin.hoursToSold.toFixed(1)}h median sell` : undefined}
+                label="Sold 24h"
+                value={skin.sold24h != null ? skin.sold24h.toLocaleString("en-GB") : "—"}
+                sub="trades"
+              />
+              <StatTile
+                label="On market"
+                value={skin.offerVolume != null ? skin.offerVolume.toLocaleString("en-GB") : "—"}
+                sub="listings"
               />
             </div>
 
