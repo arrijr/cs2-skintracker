@@ -47,7 +47,7 @@ export default function ResearchPanel() {
 
     const fetchResearch = async () => {
       try {
-        const token = await getToken();
+        const token = await getToken({ template: 'backend' });
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/research/portfolio`, {
           headers: {
             Authorization: `Bearer ${token}`

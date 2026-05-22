@@ -47,7 +47,7 @@ export function useSteamConnection() {
   const refresh = useCallback(async () => {
     try {
       setLoading(true);
-      const token = await getToken();
+      const token = await getToken({ template: 'backend' });
       const res = await fetch(`${apiUrl}/api/v1/steam/status`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setStatus(await res.json());
@@ -64,7 +64,7 @@ export function useSteamConnection() {
   const connect = useCallback(async () => {
     // Use POST /connect/start with Authorization header so the Clerk JWT
     // never appears in the URL / referer / proxy access logs (Task 4).
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     const res = await fetch(`${apiUrl}/api/v1/steam/connect/start`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token ?? ''}` },
@@ -78,7 +78,7 @@ export function useSteamConnection() {
   }, [apiUrl, getToken]);
 
   const disconnect = useCallback(async () => {
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     const res = await fetch(`${apiUrl}/api/v1/steam/disconnect`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
@@ -88,7 +88,7 @@ export function useSteamConnection() {
   }, [apiUrl, getToken, refresh]);
 
   const preview = useCallback(async (): Promise<PreviewResult> => {
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     const res = await fetch(`${apiUrl}/api/v1/steam/inventory/preview`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -101,7 +101,7 @@ export function useSteamConnection() {
   }, [apiUrl, getToken]);
 
   const importNow = useCallback(async (mode: CostBasisMode, custom?: Array<{ skinId: number; buyPrice: number | null; buyDate: string | null }>) => {
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     const res = await fetch(`${apiUrl}/api/v1/steam/inventory/import`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -122,7 +122,7 @@ export function useSteamConnection() {
    * (non-imported) rows are never touched.
    */
   const resync = useCallback(async () => {
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     const res = await fetch(`${apiUrl}/api/v1/steam/inventory/resync`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },

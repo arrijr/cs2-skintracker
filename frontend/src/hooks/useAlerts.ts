@@ -34,7 +34,7 @@ export function useAlerts() {
     }
     try {
       setIsLoading(true);
-      const token = await getToken();
+      const token = await getToken({ template: 'backend' });
       const res = await fetch(`${apiUrl}/api/v1/alerts`, {
         headers: { Authorization: `Bearer ${token}` },
         signal,
@@ -59,7 +59,7 @@ export function useAlerts() {
   }, [fetchAlerts, isLoaded]);
 
   const createAlert = async (data: Partial<Alert>) => {
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     const res = await fetch(`${apiUrl}/api/v1/alerts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -73,7 +73,7 @@ export function useAlerts() {
   };
 
   const updateAlert = async (id: number, data: Partial<Alert>) => {
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     const res = await fetch(`${apiUrl}/api/v1/alerts/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -87,7 +87,7 @@ export function useAlerts() {
   };
 
   const deleteAlert = async (id: number) => {
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     const res = await fetch(`${apiUrl}/api/v1/alerts/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
