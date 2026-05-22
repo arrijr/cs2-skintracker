@@ -398,6 +398,53 @@ export const handleWebhook = async (req, res) => {
 
     // Handle different event types
     switch (event.type) {
+      case 'checkout.session.completed':
+        {
+          // Fires immediately after the user completes Stripe Checkout.
+          // We rely on `customer.subscription.created` for the canonical
+          // sync, but that event lacks our `metadata.userId` (Stripe copies
+          // session metadata onto the subscription only when explicitly
+          // configured). Retrieve the subscription and inject our metadata
+          // so updateSubscriptionFromStripe can find the user.
+          const session = event.data.object;
+          const userId = session.metadata?.userId;
+          const tier = session.metadata?.tier;
+          const billingCycle = session.metadata?.billingCycle;
+
+          if (!userId) {
+            logger.warn('checkout.session.completed missing userId metadata', {
+              sessionId: session.id,
+            });
+            break;
+          }
+
+          if (session.subscription) {
+            const stripeSub = await stripe.subscriptions.retrieve(
+              session.subscription
+            );
+            // Merge session metadata into the subscription object so
+            // updateSubscriptionFromStripe can resolve the user.
+            stripeSub.metadata = {
+              ...(stripeSub.metadata || {}),
+              userId: String(userId),
+              ...(tier ? { tier } : {}),
+              ...(billingCycle ? { billingCycle } : {}),
+            };
+            await subscriptionService.updateSubscriptionFromStripe(stripeSub);
+            logger.info('Subscription synced from checkout.session.completed', {
+              userId,
+              sessionId: session.id,
+              stripeSubId: session.subscription,
+            });
+          } else {
+            logger.warn('checkout.session.completed without subscription id', {
+              sessionId: session.id,
+              userId,
+            });
+          }
+          break;
+        }
+
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
         {
