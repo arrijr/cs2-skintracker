@@ -4,7 +4,6 @@ import { RefreshCw, Clock } from "lucide-react";
 import { apiUrl, fetchJson } from "@/lib/api";
 
 type Props = {
-  token: string | null;
   onRefresh?: () => void;
 };
 
@@ -13,7 +12,7 @@ type LastUpdatedData = {
   source: 'health' | 'portfolio' | 'fallback';
 };
 
-export default function LastUpdatedChip({ token, onRefresh }: Props) {
+export default function LastUpdatedChip({ onRefresh }: Props) {
   const [lastUpdated, setLastUpdated] = useState<LastUpdatedData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,8 +22,6 @@ export default function LastUpdatedChip({ token, onRefresh }: Props) {
   const AUTOREFRESH_ENABLED = process.env.NEXT_PUBLIC_PORTFOLIO_AUTOREFRESH === 'true'; // Default OFF
 
   const loadLastUpdated = async () => {
-    if (!token) return;
-
     setLoading(true);
     setError(null);
 
@@ -79,7 +76,7 @@ export default function LastUpdatedChip({ token, onRefresh }: Props) {
   // Load on mount
   useEffect(() => {
     loadLastUpdated();
-  }, [token]);
+  }, []);
 
   if (!CHIP_ENABLED) {
     return null;
