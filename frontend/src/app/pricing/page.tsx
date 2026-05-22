@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -323,7 +324,7 @@ export default function PricingPage() {
         <div className="mt-20 max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-white text-center mb-8">Frequently asked questions</h2>
           <div className="space-y-4">
-            {[
+            {([
               {
                 q: 'Can I cancel anytime?',
                 a: 'Yes. You can cancel your subscription anytime in your account settings. The cancellation takes effect at the end of the current billing period.',
@@ -340,7 +341,23 @@ export default function PricingPage() {
                 q: 'Is there a free trial?',
                 a: 'The Free tier is unlimited and forever free. Lite and Pro do not currently offer a trial, but you can cancel anytime.',
               },
-            ].map((item) => (
+              {
+                q: 'What about refunds?',
+                a: (
+                  <>
+                    EU consumers have a 14-day right of withdrawal under German consumer law (§ 355 BGB).
+                    See the full{' '}
+                    <Link
+                      href="/legal/refund"
+                      className="text-fuchsia-400 hover:text-fuchsia-300 underline underline-offset-2"
+                    >
+                      Refund Policy
+                    </Link>
+                    {' '}for the exact procedure and exceptions.
+                  </>
+                ),
+              },
+            ] as { q: string; a: React.ReactNode }[]).map((item) => (
               <Card key={item.q} className="bg-slate-900/50 border border-slate-800 rounded-2xl">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-white mb-2">{item.q}</h3>
