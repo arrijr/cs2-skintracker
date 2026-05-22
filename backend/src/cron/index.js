@@ -14,7 +14,12 @@ import { dailySkinPriceHistory } from "./dailySkinPriceHistory.js";
 import { dailySkinQuantityHistory } from "./dailySkinQuantityHistory.js";
 import { runCatalogSync } from "../services/catalog/catalogSyncJob.js";
 import { runPriceRefresh } from "../services/pricing/priceRefreshJob.js";
-import { runSkinportBulkBackfill } from "./skinportBulkBackfill.js";
+import { runSteamListingCounts } from "./steamListingCounts.js";
+// Skinport bulk-backfill cron is deliberately UNregistered for now —
+// product decision is to ship Steam-only data first and integrate Skinport
+// in a later phase. The import + schedule are kept commented so we can
+// re-enable in one line once we want it. See backend/src/cron/skinportBulkBackfill.js.
+// import { runSkinportBulkBackfill } from "./skinportBulkBackfill.js";
 import logger from "../utils/logger.js";
 
 // {/* 02:00 UTC → z.B. 04:00 Berlin im Sommer */}
@@ -134,16 +139,31 @@ cron.schedule("30 3 * * *", async () => {
   }
 }, { timezone: "UTC" });
 
-// {/* 04:00 UTC daily */} Skinport bulk backfill — one HTTP call covers the full
-// catalogue (~20k items in ~1 min). Populates priceMin/Max/Median7d/Median30d
-// and priceUpdatedAt for every skin we can match. Decoupled from the slow
-// Steam Market refresh above so we always have *something* fresh.
-cron.schedule("0 4 * * *", async () => {
-  logger.info("[CRON] Skinport bulk backfill starting");
+// {/* 05:00 UTC daily */} Steam Market listing-counts → Skin.offerVolume.
+// Runs after priceRefresh (03:30 UTC) with a ~1.5h buffer to let the slow
+// per-item Steam Market scrape finish before the bulk search-endpoint scrape
+// starts. Total runtime ~3min for the scrape + DB writes.
+cron.schedule("0 5 * * *", async () => {
+  logger.info("[CRON] Steam listing-counts starting");
   try {
-    const summary = await runSkinportBulkBackfill();
-    logger.info("[CRON] Skinport bulk backfill done", { summary });
+    const summary = await runSteamListingCounts();
+    logger.info("[CRON] Steam listing-counts done", { summary });
   } catch (err) {
-    logger.error("[CRON] Skinport bulk backfill failed", { error: err.message });
+    logger.error("[CRON] Steam listing-counts failed", { error: err.message });
   }
 }, { timezone: "UTC" });
+
+// {/* 04:00 UTC daily */} Skinport bulk backfill — DEFERRED.
+// Reason: product wants Steam-only data sources first, Skinport integration
+// is "Zukunftsmusik" (future phase). The cron file + helper stay in repo
+// so we can re-enable with one uncomment when the product is ready.
+//
+// cron.schedule("0 4 * * *", async () => {
+//   logger.info("[CRON] Skinport bulk backfill starting");
+//   try {
+//     const summary = await runSkinportBulkBackfill();
+//     logger.info("[CRON] Skinport bulk backfill done", { summary });
+//   } catch (err) {
+//     logger.error("[CRON] Skinport bulk backfill failed", { error: err.message });
+//   }
+// }, { timezone: "UTC" });
