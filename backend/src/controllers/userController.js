@@ -85,17 +85,30 @@ export const syncUser = async (req, res) => {
   }
 };
 
-// REGISTER (Legacy - kept for compatibility)
+// REGISTER / LOGIN are legacy stubs from the pre-Clerk era. They are still
+// mounted in userRoutes.js because some E2E tests reference them, but they
+// must NEVER be reachable in production because:
+//   - register() creates a User row with a synthetic clerkUserId, bypassing
+//     Clerk's signup flow entirely.
+//   - login() did not validate the password (the comment said "Clerk handles
+//     it" but no Clerk verification actually ran). It also contained a
+//     hardcoded admin backdoor: `email === 'test@test.de' || user.id === 1`
+//     would inflate the response payload to `role: 'admin'`. While the
+//     response role doesn't directly grant DB privileges (the real admin
+//     gate is `req.user.role` from clerkAdminAuth → DB lookup), any caller
+//     who naively trusted this response (or used it to populate a client
+//     "isAdmin" flag) would be misled.
+// Both handlers are now hard-disabled outside of NODE_ENV=test.
 export const register = async (req, res) => {
-  const { email, password } = req.body;
+  if (process.env.NODE_ENV !== 'test') {
+    return res.status(410).json({ error: 'Endpoint removed. Sign up via Clerk.' });
+  }
+  const { email } = req.body;
   try {
-    // Check if user already exists
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) return res.status(400).json({ error: 'User already exists' });
-
-    // Note: Password hashing removed - handled by Clerk
     await prisma.user.create({
-      data: { email, clerkUserId: 'temp_' + Date.now() } // Temporary until Clerk sync
+      data: { email, clerkUserId: 'temp_' + Date.now() }
     });
     res.json({ message: 'Registration successful' });
   } catch (err) {
@@ -103,38 +116,16 @@ export const register = async (req, res) => {
   }
 };
 
-// LOGIN
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  if (process.env.NODE_ENV !== 'test') {
+    return res.status(410).json({ error: 'Endpoint removed. Sign in via Clerk.' });
+  }
+  const { email } = req.body;
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-    // Note: Password validation removed - handled by Clerk
-    const valid = true; // Placeholder - Clerk handles authentication
-    if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
-
-    // Determine user role (admin for test@test.de, otherwise from DB or default)
-    let userRole = user.role || 'user';
-    if (email === 'test@test.de' || user.id === 1) {
-      userRole = 'admin';
-      console.log(`🔧 Admin role assigned to: ${email}`);
-    }
-
-    // {/* FIX: ensure determined role goes into JWT and response */}
-    // Note: JWT generation removed - handled by Clerk
-    const token = 'clerk_handled'; // Placeholder - Clerk handles token generation
-
-    // Return user without passwordHash
     const { passwordHash, ...safeUser } = user;
-
-    // {/* include effective role in response */}
-    res.json({ 
-      token, 
-      user: { 
-        ...safeUser, 
-        role: userRole          // <-- ebenfalls zurückgeben
-      } 
-    });
+    res.json({ token: 'clerk_handled', user: { ...safeUser, role: user.role || 'user' } });
   } catch (err) {
     res.status(500).json({ error: 'Login failed' });
   }
