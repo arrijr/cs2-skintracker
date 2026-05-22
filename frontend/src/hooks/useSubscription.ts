@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useAuth } from '@clerk/nextjs';
+import { toast } from 'sonner';
 import { analytics } from '@/lib/analytics';
 
 export interface Subscription {
@@ -81,26 +82,35 @@ export function useSubscription() {
     tier: 'lite' | 'pro',
     billingCycle: 'monthly' | 'annual' = 'monthly'
   ) => {
-    const token = await getToken({ template: 'backend' });
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/checkout`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ tier, billingCycle }),
-      }
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const { url } = await res.json();
-    if (!url) throw new Error('No checkout URL returned');
-    analytics.track({
-      name: 'checkout_started',
-      properties: { tier, billing: billingCycle },
-    });
-    window.location.href = url;
+    // Centralized error UX: any failure between auth, POST, JSON, or missing
+    // URL surfaces as a sonner toast so the click is never silent. Errors
+    // are still re-thrown so callers can clear loading state.
+    try {
+      const token = await getToken({ template: 'backend' });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/subscriptions/checkout`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ tier, billingCycle }),
+        }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const { url } = await res.json();
+      if (!url) throw new Error('No checkout URL returned');
+      analytics.track({
+        name: 'checkout_started',
+        properties: { tier, billing: billingCycle },
+      });
+      window.location.href = url;
+    } catch (err) {
+      console.error('Checkout failed:', err);
+      toast.error('Could not start checkout. Please contact support.');
+      throw err;
+    }
   };
 
   const cancel = async () => {

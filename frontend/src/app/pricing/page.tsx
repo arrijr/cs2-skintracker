@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Star, Zap, Shield, Crown } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { analytics } from '@/lib/analytics';
+import { toast } from 'sonner';
 
 type BillingCycle = 'monthly' | 'annual';
 
@@ -121,6 +122,10 @@ export default function PricingPage() {
       await checkout(planId, billingCycle);
     } catch (err) {
       console.error('Checkout failed:', err);
+      // User-facing feedback: previously the click was silent (only logged
+      // to console), so a failed POST /subscriptions/checkout (e.g. missing
+      // STRIPE_PRICE env var → 500) looked like nothing happened.
+      toast.error('Could not start checkout. Please contact support.');
       setLoadingTier(null);
     }
   };
