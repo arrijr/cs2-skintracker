@@ -189,6 +189,42 @@ export const subscriptionService = {
   },
 
   /**
+   * Portfolio item caps per tier.
+   * Free=25, Lite=200, Pro=999 (per pricing matrix / CLAUDE.md).
+   * Used by `addToPortfolio` controller to enforce tier quota on the BACKEND
+   * (audit finding #19 / Fix #3, 2026-05-22 — frontend tier-gating alone is
+   * trivially bypassable via curl).
+   */
+  PORTFOLIO_LIMITS: {
+    free: 25,
+    lite: 200,
+    pro: 999,
+  },
+
+  /**
+   * Check whether `userId` can add another Portfolio row.
+   * Returns `{ allowed: true, tier, count, limit }` on success or
+   * `{ allowed: false, tier, count, limit }` when over the quota.
+   *
+   * @param {number} userId - DB user id
+   * @param {Object} prismaClient - Prisma client (injected for tests)
+   * @returns {Promise<{allowed: boolean, tier: string, count: number, limit: number}>}
+   */
+  async canAddPortfolioItem(userId, prismaClient) {
+    const prisma = prismaClient || (await import('../prisma/prismaClient.js')).default;
+    const sub = await this.getOrCreateSubscription(userId);
+    const tier = sub.tier || 'free';
+    const limit = this.PORTFOLIO_LIMITS[tier] ?? this.PORTFOLIO_LIMITS.free;
+    const count = await prisma.portfolio.count({ where: { userId } });
+    return {
+      allowed: count < limit,
+      tier,
+      count,
+      limit,
+    };
+  },
+
+  /**
    * Get feature flags for a tier
    * @param {string} tier - Tier name
    * @returns {Object} Feature flags

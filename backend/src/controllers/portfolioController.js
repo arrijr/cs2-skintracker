@@ -171,6 +171,22 @@ export const addToPortfolio = async (req, res) => {
       });
     }
 
+    // SECURITY (2026-05-22 audit, finding #19 / Fix #3): enforce per-tier
+    // portfolio row cap on the BACKEND. Previously only the frontend tier-
+    // gating enforced this, so a Free user could `curl POST /portfolio` an
+    // unlimited number of rows and side-step the €6.99 Lite paywall.
+    // Caps: Free=25, Lite=200, Pro=999 (subscriptionService.PORTFOLIO_LIMITS).
+    const quota = await subscriptionService.canAddPortfolioItem(userId, prisma);
+    if (!quota.allowed) {
+      return res.status(402).json({
+        error: 'tier_limit_exceeded',
+        limit: quota.limit,
+        tier: quota.tier,
+        count: quota.count,
+        message: `Your ${quota.tier} plan is limited to ${quota.limit} portfolio items. Upgrade to add more.`,
+      });
+    }
+
     const entry = await prisma.portfolio.create({
       data: {
         userId,
