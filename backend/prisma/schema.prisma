@@ -169,6 +169,9 @@ model Alert {
   isActive        Boolean   @default(true)
   cooldownMinutes Int       @default(60)
   lastTriggeredAt DateTime?
+  // Edge-trigger dedup: engine only fires on false→true transition.
+  // null = never evaluated; treated as false (so the first match still fires).
+  lastConditionState Boolean?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   events          AlertEvent[]
@@ -182,12 +185,14 @@ model AlertEvent {
   alertId     Int
   alert       Alert     @relation(fields: [alertId], references: [id], onDelete: Cascade)
   triggeredAt DateTime  @default(now())
+  readAt      DateTime? // null = unread; set by /notifications/mark-all-read or /:id/read
   payload     Json
   delivered   String[]
   failed      String[]
   errorLog    String?
 
   @@index([alertId, triggeredAt])
+  @@index([alertId, readAt])
 }
 
 model Portfolio {

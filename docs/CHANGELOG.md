@@ -4,6 +4,50 @@ All notable changes to the CS2 Skin Tracker project will be documented in this f
 
 ## [Unreleased]
 
+## [2026-05-22] - Notifications System Audit + Fix
+
+Full audit and overhaul of the notification pipeline (engine → delivery → UI → schema). See [`docs/superpowers/research/2026-05-22-notifications-audit-fix.md`](superpowers/research/2026-05-22-notifications-audit-fix.md) for the complete report.
+
+### Fixed (P0 — blocked functionality)
+- **CRITICAL**: Inngest function `priceAlertsCheck` imported a non-existent file (`../cron/priceAlertsCheck.js` instead of `priceAlertJob.js`); silent `.catch(() => null)` swallowed the error and returned `{ skipped: true }` on every run. On Vercel (no node-cron), this meant alerts **never fired in production**. (`inngest/functions.js`)
+- **CRITICAL**: `getTierFromUser` ignored `User.tier`, only reading `isPremium` boolean. Paying Lite-tier subscribers were silently capped at the Free quota (2 alerts) instead of 15. (`alertController.js`)
+- **CRITICAL**: `mark-all-read` endpoint was a literal no-op stub (`return res.status(200).json({ok:true})` with no DB write). `AlertEvent` had no `readAt` column. Bell-icon UI showed every notification as unread forever. (`notificationsRoutes.js`)
+- **CRITICAL**: Notification body lookup used `payload.price ?? payload.triggerPrice ?? payload.value` — none of which any evaluator emits. Every in-app notification fell through to the generic "matched your alert criteria" copy. Fix: lookup `payload.currentPrice ?? payload.casePrice`. (`notificationsRoutes.js`)
+
+### Fixed (P1 — correctness + UX)
+- Edge-trigger dedup added — alert parked above threshold no longer re-fires every cooldown window (24h plateau = 24 emails). New `Alert.lastConditionState Boolean?` column tracks last evaluation state; engine only fires on false→true transition. (`alertEngine.js`)
+- Email transport now lazy-init with explicit env-guard; missing `EMAIL_USER`/`EMAIL_PASS` throws a specific error instead of cryptic SMTP-535.
+- Email body rendering — `JSON.stringify(payload)` dump replaced with structured key:value rows (`renderPayload()`) with €/% formatting and a plain-text alternative.
+- `pushAlerts` toggle in `NotificationsTab` was writing to a DB column with no reader. Replaced with "Coming soon" badge until Web Push API ships in Sprint 3.
+- `AlertCard` now shows the bell icon for `in_app` channel (previously only `email` was visible).
+- `alerts/page.tsx` mutations (`onToggle`, `onDelete`) now show Sonner success/error toasts; previously threw unhandled promise rejections.
+- `NotificationsDropdown` mark-all-read is now optimistic + reconciles on error; new per-item mark-on-click via `POST /notifications/:id/read`.
+
+### Added
+- Migration `20260522000000_alert_event_read_at` — adds `AlertEvent.readAt DateTime?` + index `(alertId, readAt)`.
+- Migration `20260522010000_alert_last_condition_state` — adds `Alert.lastConditionState Boolean?` for edge-trigger dedup.
+- `POST /api/v1/notifications/:id/read` — new endpoint for per-item read marking; accepts both raw (`42`) and prefixed (`alert-event-42`) IDs.
+- `shouldFire(lastConditionState, isTriggered)` exported helper in `alertEngine.js` for testable edge-trigger logic.
+- 19 new unit tests in `notifications.test.js` covering `getTierFromUser`, `renderPayload`, `sendAlertEmail` env-guard, `notificationBody` rendering, and `shouldFire`.
+- `scripts/smoke-notifications.mjs` — 12 smoke tests against live DB validating engine + delivery + read-state + edge-trigger.
+
+### Changed
+- `notificationsRoutes.js` rewritten — real mark-all-read with `updateMany`, fail-open with `logger.error` instead of swallowing via `console.error`, href prefers Sprint-2 weapon-slug URLs over legacy `/skins/:id` 308-redirects.
+- `emailService.js` — `sendPriceAlertEmail` (dead code) removed; `sendAlertEmail` now uses lazy transporter + structured rendering + plain-text alt + proper logger.
+
+### Infrastructure
+- Migration ledger drift repaired — 9 migrations were marked unapplied in `_prisma_migrations` despite their schema changes existing in the live DB (manual Supabase SQL Console application). Resolved via `prisma migrate resolve --applied <name>` per migration, then `prisma migrate deploy` for the 2 new ones.
+
+### Known Issues (carried over, not addressed in this session)
+- Schema ≠ Live DB drift discovered: DB has `APIKey`/`APILog` tables not in schema, `MarketSnapshot` has `createdAt`/`updatedAt` in DB but not in schema, `Skin.slug` UNIQUE in schema but not in DB. Tracked in [[06-Tech-Debt]] #11.
+- 3 toast libraries mounted in parallel (shadcn, sonner, react-hot-toast). shadcn unused. Tracked in #12.
+- Email transport still on Nodemailer/Gmail SMTP. Resend migration pending per CEO checklist §6. Tracked in #13.
+
+### Pending (CEO action)
+- `git push origin main` to deploy to Vercel.
+- Set `EMAIL_USER` + `EMAIL_PASS` (Gmail App Password) in Vercel env — or migrate to Resend.
+- Confirm Inngest `price-alerts-check` function targets current Vercel URL.
+
 ## [2025-10-14] - Data Loss Prevention & Integrity System
 
 ### Fixed

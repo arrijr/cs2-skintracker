@@ -93,6 +93,13 @@ export async function deliverAlert({ alert, result }) {
   return { delivered, failed };
 }
 
+// Edge-trigger predicate: fire only when the alert was NOT in the triggered
+// state on the previous run. `null` (never evaluated) counts as not-triggered,
+// so the first match still fires.
+export function shouldFire(lastConditionState, isTriggered) {
+  return isTriggered === true && lastConditionState !== true;
+}
+
 export async function runAllAlerts() {
   const alerts = await prisma.alert.findMany({
     where: { isActive: true },
@@ -100,15 +107,32 @@ export async function runAllAlerts() {
   });
   const results = [];
   for (const alert of alerts) {
-    // Cooldown check
+    // Cooldown check — still applies as a floor on top of edge-trigger
+    // so rapid oscillation around the threshold can't spam.
     if (alert.lastTriggeredAt) {
       const ageMs = Date.now() - alert.lastTriggeredAt.getTime();
       if (ageMs < alert.cooldownMinutes * 60 * 1000) continue;
     }
+
     const result = await evaluateAlert(alert);
-    if (result?.triggered) {
+    if (!result) continue;
+
+    const isTriggered = result.triggered === true;
+
+    // Edge-trigger: only fire on false→true transition. A price parked above
+    // the threshold won't keep emailing the user every cooldown window.
+    if (shouldFire(alert.lastConditionState, isTriggered)) {
       const delivery = await deliverAlert({ alert, result });
       results.push({ alert, result, delivery });
+    }
+
+    // Persist current state for the next run so the transition check works.
+    // Skip if unchanged to keep the write volume low.
+    if (alert.lastConditionState !== isTriggered) {
+      await prisma.alert.update({
+        where: { id: alert.id },
+        data: { lastConditionState: isTriggered },
+      });
     }
   }
   return results;

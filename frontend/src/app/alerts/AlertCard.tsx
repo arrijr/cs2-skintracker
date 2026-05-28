@@ -49,6 +49,9 @@ export function AlertCard({ alert, onToggle, onDelete }: AlertCardProps) {
               {alert.channels.includes('email') && (
                 <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> email</span>
               )}
+              {alert.channels.includes('in_app') && (
+                <span className="flex items-center gap-1"><Bell className="h-3 w-3" /> in-app</span>
+              )}
               {alert.lastTriggeredAt && (
                 <span>last fired {new Date(alert.lastTriggeredAt).toLocaleString()}</span>
               )}

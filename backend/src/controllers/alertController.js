@@ -4,13 +4,17 @@ import logger from '../utils/logger.js';
 // Quotas per tier. CEO strategy 2026-05-20: Free bumped 1 → 2 alerts so
 // new users get a real "aha moment" before hitting the paywall. Lite 5 →
 // 15 to match the new €6.99 positioning. Pro stays unlimited.
-const TIER_QUOTA = { free: 2, lite: 15, pro: 999 };
+export const TIER_QUOTA = { free: 2, lite: 15, pro: 999 };
 const VALID_TYPES = ['price_threshold', 'volatility', 'float_tier', 'case_ev'];
 // in_app = bell notification via AlertEvent rows + frontend SWR poll
 const VALID_CHANNELS = ['email', 'in_app'];
 
-function getTierFromUser(user) {
-  // TODO: when Lite tier is distinct in DB, return 'lite' for those users.
+export function getTierFromUser(user) {
+  // `User.tier` ('free' | 'lite' | 'pro') is the source of truth; `isPremium`
+  // is the legacy boolean kept around for Stripe-billing checks. Without this
+  // lookup, Lite subscribers were silently capped at Free's 2-alert quota.
+  const tier = user?.tier;
+  if (tier === 'free' || tier === 'lite' || tier === 'pro') return tier;
   return user?.isPremium ? 'pro' : 'free';
 }
 

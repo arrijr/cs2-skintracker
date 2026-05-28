@@ -1,9 +1,9 @@
 # CS2 Skin Tracker — Dokumentations-Hub
 
 **Projekt**: CS2 Skin Tracker — Freemium SaaS für CS2 Skin-Preise  
-**Status**: Sprint 2 abgeschlossen ✅ | Sprint 3 laufend 🔄  
+**Status**: Sprint 2 abgeschlossen ✅ | Notifications Production-Ready ✅ | Sprint 3 laufend 🔄  
 **Live**: https://backend-three-theta-44.vercel.app  
-**Letzte Aktualisierung**: Mai 2026
+**Letzte Aktualisierung**: 2026-05-22 (Notifications Audit + Fix — siehe [[superpowers/research/2026-05-22-notifications-audit-fix]])
 
 ---
 

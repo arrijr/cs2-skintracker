@@ -174,13 +174,10 @@ export const priceAlertsCheck = inngest.createFunction(
   async ({ step, logger: l }) => {
     return await step.run('evaluate-alerts', async () => {
       // Lazy-import: avoids loading alert service when this function isn't invoked.
-      const { checkPriceAlerts } = await import('../cron/priceAlertsCheck.js').catch(() => ({
-        checkPriceAlerts: null,
-      }));
-      if (!checkPriceAlerts) {
-        l.warn('checkPriceAlerts service not found, skipping');
-        return { skipped: true };
-      }
+      // (Path was `../cron/priceAlertsCheck.js` — file is actually `priceAlertJob.js`.
+      // Silent catch hid the typo for months and the function was returning
+      // `{ skipped: true }` on every run, so alerts never fired on Vercel.)
+      const { checkPriceAlerts } = await import('../cron/priceAlertJob.js');
       const result = await checkPriceAlerts();
       return result ?? { ok: true };
     });

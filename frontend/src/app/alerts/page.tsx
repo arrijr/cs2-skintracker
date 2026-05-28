@@ -1,8 +1,8 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bell } from "lucide-react";
 import { useAlerts } from "@/hooks/useAlerts";
 import { AlertCard } from "./AlertCard";
 import { CreateAlertModal } from "./CreateAlertModal";
@@ -65,8 +65,22 @@ export default function AlertsPage() {
             <AlertCard
               key={alert.id}
               alert={alert}
-              onToggle={(id, isActive) => updateAlert(id, { isActive } as Partial<typeof alert>)}
-              onDelete={deleteAlert}
+              onToggle={async (id, isActive) => {
+                try {
+                  await updateAlert(id, { isActive } as Partial<typeof alert>);
+                  toast.success(isActive ? 'Alert resumed' : 'Alert paused');
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : 'Failed to update alert');
+                }
+              }}
+              onDelete={async (id) => {
+                try {
+                  await deleteAlert(id);
+                  toast.success('Alert deleted');
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : 'Failed to delete alert');
+                }
+              }}
             />
           ))}
         </div>

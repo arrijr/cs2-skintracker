@@ -19,12 +19,19 @@
 | `STRIPE_WEBHOOK_SECRET` | `whsec_...` | `whsec_...` | Stripe Webhook Signatur |
 | `FRONTEND_URL` | `http://localhost:3000` | `https://skintrackr.com` | Redirect URLs |
 | `ALLOWED_ORIGINS` | localhost:3000 | Vercel-URLs | CORS Whitelist |
+| **`EMAIL_USER`** | Gmail-Adresse | Gmail-Adresse | Email-Sender für Alert-Notifications. Wird vom lazy-init Nodemailer-Transport in `emailService.js` geprüft — fehlend = klarer Error statt SMTP-535 (Sprint 2026-05-22) |
+| **`EMAIL_PASS`** | Gmail App Password | Gmail App Password | Nicht das normale Gmail-Passwort! Gmail-Basic-Auth seit 2022 deprecated. App Passwords unter myaccount.google.com → Security → 2-Step → App Passwords. Resend-Migration geplant (CEO-Checklist §6) |
+| `STEAM_OPENID_STATE_SECRET` | beliebig | starker Random-String | HMAC-Signing für Steam OpenID State-JWT |
+| `INNGEST_EVENT_KEY` | Inngest Dashboard | Inngest Dashboard | Inngest-Webhook-Auth |
+| `INNGEST_SIGNING_KEY` | Inngest Dashboard | Inngest Dashboard | Inngest-Function-Auth |
 
 ### Dev-Only (vor GA entfernen!)
 | Variable | Beschreibung |
 |----------|-------------|
 | `DEV_TEST_TOKEN` | Bypass für Pro-Tier Testing |
 | `DEV_FREE_TOKEN` | Bypass für Free-Tier Testing |
+| `DEV_BYPASS_AUTH` | `=1` aktiviert Clerk-Auth-Bypass auf user.id=1 (nur wenn Clerk-Env-Vars fehlen, NUR dev). Standardmäßig OFF |
+| `NODE_TLS_REJECT_UNAUTHORIZED` | `=0` deaktiviert TLS-Cert-Validation (nur Arthur's Corp-MITM-Dev-Netzwerk). **NIEMALS in Prod** |
 
 ---
 
@@ -84,5 +91,37 @@ stripe listen --forward-to localhost:5000/api/v1/subscriptions/webhook
 - STRIPE_SECRET_KEY: ✅ gesetzt
 - ALLOWED_ORIGINS: ✅ gesetzt
 - Stripe Webhook: ✅ registriert (`whsec_...`)
+- **EMAIL_USER**: ⏳ ausstehend (notwendig für Alert-Notifications-Email-Pfad)
+- **EMAIL_PASS**: ⏳ ausstehend (Gmail App Password)
+- **INNGEST_EVENT_KEY** + **INNGEST_SIGNING_KEY**: bei Inngest-Anbindung prüfen
 
 **Deployment**: `git push main` → Vercel auto-deploy
+
+---
+
+## Inngest Setup
+
+**Funktionen** (alle in `backend/src/inngest/functions.js`):
+
+| Function ID | Cron | Beschreibung |
+|-------------|------|-------------|
+| `catalog-sync` | `30 2 * * *` | Daily 02:30 UTC — bymykel Katalog-Sync |
+| `price-refresh` | `30 3,9,15,21 * * *` | 4×/Tag — Steam Market Preis-Refresh |
+| `price-alerts-check` | `0 * * * *` | Stündlich — Alert-Engine ausführen |
+| `portfolio-history-snapshot` | `0 0 * * *` | Daily 00:00 UTC — Portfolio-Wert Snapshot |
+| `refresh-multi-source-prices` | `0 4 * * *` | Daily 04:00 UTC — Skinport + CSFloat Cache warm |
+
+**Setup**:
+1. Inngest-Account auf inngest.com erstellen
+2. App registrieren, Event-Key + Signing-Key in Vercel-Env setzen
+3. App URL: `https://backend-three-theta-44.vercel.app/api/inngest`
+4. Functions werden automatisch im Inngest-Dashboard discovered
+5. `price-alerts-check` Function muss enabled sein, sonst feuern Alerts nicht
+
+**Manueller Trigger**:
+```js
+import { inngest } from './client.js';
+await inngest.send({ name: 'alerts/check' });
+```
+
+**Test-Pfad lokal**: node-cron in `app.js:13` läuft alle 30 min unabhängig von Inngest. Vercel-Serverless hat **kein** node-cron — dort ist Inngest die einzige Trigger-Quelle.

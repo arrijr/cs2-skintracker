@@ -51,6 +51,30 @@ Keine Migrationen nötig
 - `useSubscription`: `getToken` von `useAuth()` statt `useUser()`
 - Stripe Checkout: `loadStripe().redirectToCheckout()` statt direkter URL
 
+## Notifications Audit + Fix ✅ Abgeschlossen (2026-05-22)
+
+Vollständig: [[superpowers/research/2026-05-22-notifications-audit-fix]]
+
+**Auslöser**: User-Request "Ich will, dass Du mithilfe von Agents die Notifications überprüfst, ob die alle funktionieren, ob es Bugs gibt".
+
+**Vorgehen**: 3 parallele Audit-Agents über Backend, Frontend, API+Schema. 12 Bugs identifiziert (4 P0 blockers, 8 P1).
+
+**Hauptergebnis**: Vor dem Fix feuerten Alerts in Produktion **faktisch nie** (Inngest hatte einen toten Import) und die "Mark all read"-Funktion war ein UI-Stub ohne DB-Persistenz.
+
+**Schema-Changes**:
+- `AlertEvent.readAt DateTime?` (Migration `20260522000000_alert_event_read_at`)
+- `Alert.lastConditionState Boolean?` (Migration `20260522010000_alert_last_condition_state`)
+
+**Test-Coverage**:
+- 35 Unit-Tests (`alerts.test.js` + neu `notifications.test.js`)
+- 12 Smoke-Tests (`scripts/smoke-notifications.mjs`) gegen Live-Supabase
+
+**Migrations-Ledger-Drift gelöst**: 9 alte Migrationen waren in `_prisma_migrations` nicht getrackt, obwohl die Spalten in der DB existierten (manuelle Supabase SQL-Console-Einspielung). Per `prisma migrate resolve --applied` repariert.
+
+**Status**: Code im Working Tree (uncommitted). Migrationen auf Live-DB angewandt. Lokaler E2E-Test grün. Pending: `git push` + Email-Env in Vercel.
+
+---
+
 ## Sprint 3 🔄 Laufend
 
 | Aufgabe | Status |
@@ -60,6 +84,8 @@ Keine Migrationen nötig
 | Landing Page | Ausstehend |
 | Reddit Launch Post | Ausstehend |
 | Stripe Checkout end-to-end testen | In Arbeit |
+| Notifications: `git push` + Email-Env setzen | Ausstehend (post-Audit) |
+| Inngest Dashboard: `price-alerts-check` Function prüfen | Ausstehend (post-Audit) |
 
 ## Sprint 4 (geplant)
 

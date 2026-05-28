@@ -67,6 +67,24 @@ function formatChange(n: number | null): { label: string; cls: string } | null {
   return { label: `${sign}${n.toFixed(2)}%`, cls };
 }
 
+// Relative-time formatter for the "Last updated" stamp in the hero — accepts
+// an ISO date string and returns either "just now", "Xm ago", "Xh ago", or
+// "Xd ago". Snapshot is taken at render time on the server, so for cached
+// pages it reflects the moment the page was last regenerated.
+function formatRelativeUpdate(iso: string | null): string {
+  if (!iso) return '';
+  const then = new Date(iso).getTime();
+  if (!Number.isFinite(then)) return '';
+  const diffMs = Date.now() - then;
+  const m = Math.floor(diffMs / 60_000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
+
 export default async function CaseDetailPage({ params }: Props) {
   const { slug } = await params;
   const c = await getCaseBySlug(slug);
@@ -153,6 +171,12 @@ export default async function CaseDetailPage({ params }: Props) {
           {c.isDiscontinued && (
             <div className="mt-4 inline-flex rounded-md border border-amber-700/50 bg-amber-900/20 px-3 py-1 text-xs font-medium text-amber-300">
               Discontinued — supply tightening
+            </div>
+          )}
+
+          {c.lastUpdated && (
+            <div className="mt-3 text-xs text-slate-500">
+              Price updated {formatRelativeUpdate(c.lastUpdated)} · Source: Steam Market
             </div>
           )}
         </div>

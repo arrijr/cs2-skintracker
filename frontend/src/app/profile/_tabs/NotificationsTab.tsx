@@ -108,20 +108,27 @@ export function NotificationsTab() {
           icon={<Mail className="w-4 h-4 text-slate-400" aria-hidden="true" />}
           id="emailAlerts"
           title="Email alerts"
-          description="Price moves, alert triggers, and weekly portfolio digests."
+          description="Triggered alerts arrive in your inbox."
           checked={data.emailAlerts}
           pending={pending.emailAlerts}
           onChange={(v) => onToggle('emailAlerts', v)}
         />
-        <ToggleRow
-          icon={<Bell className="w-4 h-4 text-slate-400" aria-hidden="true" />}
-          id="pushAlerts"
-          title="Push notifications"
-          description="In-browser pings for live price events."
-          checked={data.pushAlerts}
-          pending={pending.pushAlerts}
-          onChange={(v) => onToggle('pushAlerts', v)}
-        />
+        {/* In-app notifications are always on (the bell icon in the header).
+            Per-alert opt-out lives on each Alert row in /alerts. */}
+        <div className="flex items-start justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4 opacity-70">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-800/60 border border-slate-800">
+              <Bell className="w-4 h-4 text-slate-400" aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-white">Browser push notifications</p>
+              <p className="mt-0.5 text-xs text-slate-400">Live pings without keeping the tab open.</p>
+            </div>
+          </div>
+          <span className="shrink-0 inline-flex items-center rounded-md border border-slate-700 bg-slate-800/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            Coming soon
+          </span>
+        </div>
       </div>
 
       <div aria-live="polite" className="mt-5 min-h-[0]">

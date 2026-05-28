@@ -13,6 +13,7 @@
 | `/skins/[skinId]` | `app/skins/[skinId]/page.tsx` | öffentlich | Skin-Detail: Preise, Preishistorie-Chart, Varianten, Case-Info |
 | `/portfolio` | `app/portfolio/page.tsx` | Clerk | Portfolio-Management: Tabelle, Charts, KPIs, Premium-Features |
 | `/watchlist` | `app/watchlist/page.tsx` | Clerk | Watchlist mit Preisalarmen |
+| `/alerts` | `app/alerts/page.tsx` | Clerk | Alert-Verwaltung (price_threshold, volatility, float_tier, case_ev). Toggle pause/active, Channel-Anzeige (email + in_app). Quote per Tier: Free=2, Lite=15, Pro=999 |
 | `/cases` | `app/cases/page.tsx` | öffentlich | Case-Browser |
 | `/cases/[id]` | `app/cases/[id]/page.tsx` | öffentlich | Case-Detail |
 | `/admin` | `app/admin/page.tsx` | Admin-Rolle | Admin-Panel: Metriken, Job-Steuerung, Logs |

@@ -1,7 +1,7 @@
 # CS2 Skin Tracker - Claude Working Memory
 
-**Last Updated**: May 8, 2026 (Testing Session)  
-**Status**: Sprint 1 Complete ✅ | Sprint 2 Testing IN PROGRESS 🔄 | Branch: `sprint2-testing`
+**Last Updated**: May 22, 2026 (Notifications Audit + Fix)  
+**Status**: Sprint 2 Complete ✅ | Sprint 0 Cash-Ready ✅ | Sprint 1 Steam Import ✅ | Notifications Production-Ready ✅ | Branch: `main`
 
 ---
 
@@ -239,6 +239,23 @@ Research at `docs/superpowers/research/`:
 - [x] `alertEngine` now handles `in_app` channel — no-op deliverer (AlertEvent row IS the notification). Previously was marking every in_app delivery as failed.
 - [x] `accountChangeLimiter` reordered behind `verifyClerkJwt` with `keyGenerator: user:${req.userId}` — shared NAT no longer hits collective limit.
 - [x] `backend/logs/error.log` untracked via `git rm --cached` — `*.log` was already in `.gitignore` but the file was committed before the rule.
+
+**Notifications Audit + Fix (2026-05-22)**:
+Research: `docs/superpowers/research/2026-05-22-notifications-audit-fix.md`. 3 parallele Audit-Agents fanden 12 Bugs (4 P0, 8 P1). 35 Unit + 12 Smoke-Tests gegen Live-Supabase grün.
+- [x] **P0**: Inngest-Funktion `priceAlertsCheck` importierte nicht-existente `../cron/priceAlertsCheck.js` — `.catch(()=>null)` schluckte den Fehler und gab `{skipped:true}` zurück. Auf Vercel (kein node-cron) feuerten Alerts **nie** in Produktion. `inngest/functions.js:153` Pfad korrigiert + silent-catch entfernt.
+- [x] **P0**: Lite-Tier unerreichbar — `getTierFromUser` las nur `User.isPremium` boolean, ignorierte `User.tier`. Zahlende Lite-Kunden auf Free-Quote (2 Alerts) gekappt statt 15. `alertController.js:14` repariert.
+- [x] **P0**: `mark-all-read` Theater — Endpoint war literal `return res.status(200).json({ok:true})` ohne DB-Write. AlertEvent hatte kein `readAt`-Feld. Migration `20260522000000_alert_event_read_at` fügt Spalte + Index hinzu, Route schreibt jetzt echt. Bonus: `POST /api/v1/notifications/:id/read` neu für per-item mark-on-click.
+- [x] **P0**: Bell-Body Payload-Lookup suchte `payload.price/triggerPrice/value` — keine Evaluator-Payload emittiert diese Keys (tatsächlich: `currentPrice`, `casePrice`). Jede in-app Notif fiel auf generische Copy zurück. `notificationsRoutes.js:38` repariert + href bevorzugt Sprint-2 Slug-URL.
+- [x] **P1**: Edge-Trigger Dedup — Alert über €100 feuerte jeden Cooldown-Window erneut solange Preis oben blieb (24h-Plateau = 24 Mails). Neue Spalte `Alert.lastConditionState` + `shouldFire()` Helper. Feuert nur auf false→true Transition. Migration `20260522010000_alert_last_condition_state`. User-choice: 4 Optionen angeboten, "Hard edge-trigger" gewählt.
+- [x] **P1**: Email Service — Nodemailer-Transport hardcoded ohne Env-Guard. Fehlende `EMAIL_USER`/`EMAIL_PASS` → kryptischer SMTP-535. Lazy-Init Transporter wirft jetzt expliziten "EMAIL_USER and EMAIL_PASS" Error. Body-Rendering: `JSON.stringify(payload)` Dump → strukturierte Key:Value-Rows mit €/% Formatting, Plain-Text-Alt für Deliverability.
+- [x] **P1**: `pushAlerts` Dead-UI — Toggle in NotificationsTab schrieb DB-Column, die nirgendwo gelesen wurde. Replaced mit "Coming soon" Badge bis Web Push API in Sprint 3 kommt.
+- [x] **P1**: AlertCard zeigte nur Email-Channel-Icon, nicht `in_app`. Bell-Icon ergänzt.
+- [x] **P1**: `alerts/page.tsx` Mutations warfen unhandled rejections. Sonner Toast-Wrap auf onToggle/onDelete.
+- [x] **P1**: NotificationsDropdown — optimistic mark-all-read + per-item mark-on-click. Auf Klick fired POST `/notifications/${id}/read`, SWR-Cache updated sofort.
+- [x] Migrations-Ledger-Drift gefunden: 9 alte Migrationen waren in `_prisma_migrations` als "not applied" markiert, obwohl Spalten in der DB existierten (vermutlich manuell via Supabase SQL Console eingespielt). `prisma migrate resolve --applied <name>` für die 9 alten, dann `prisma migrate deploy` für die 2 neuen.
+- [ ] **Pre-existing Schema-Drift** entdeckt (Out-of-Scope, neuer Tech-Debt-Eintrag): DB hat `APIKey`+`APILog` Tables die im Prisma-Schema fehlen, `MarketSnapshot` hat `createdAt`/`updatedAt` im DB aber nicht im Schema, `Skin.slug` UNIQUE-Constraint im Schema aber nicht im DB. Braucht eigene Aufräum-Session.
+- [ ] **CEO-Aktion offen**: `git push origin main` + `EMAIL_USER`+`EMAIL_PASS` in Vercel-Env setzen (oder Resend-Migration §6) + Inngest-Dashboard prüfen ob `price-alerts-check` Function auf aktuelle Vercel-URL pointet.
+
 **Sprint 2 — Multi-Source Pricing + Programmatic SEO (2026-05-20)**:
 Plan: `docs/superpowers/plans/2026-05-20-sprint2-multi-source-seo.md` (21 tasks, ~8 dev-days budget).
 Research: `2026-05-20-seo-audit.md` (22/100 score, SSR conversion non-negotiable), `2026-05-20-seo-strategy.md` (URL pattern + 3 page templates), `2026-05-20-competitor-seo.md` (multi-market wedge + 10 quick-win keywords).

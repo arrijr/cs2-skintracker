@@ -13,7 +13,9 @@
 | `useSkins` | `hooks/useSkins.ts` | `{skins, pagination, isLoading, error, updateFilters, goToPage}` | SWR mit 10s Timeout, 3 Retries |
 | `useSkinsPresets` | `hooks/useSkins.ts` | `{wears, rarities, categories, filters}` | Filter-Dropdown-Werte |
 | `useSkinsSearch` | `hooks/useSkins.ts` | `{results, isLoading, hasResults}` | Autocomplete ab 2 Zeichen |
-| `use-toast` | `hooks/use-toast.ts` | Toast-State | |
+| `use-toast` | `hooks/use-toast.ts` | Toast-State | shadcn-Variante, derzeit ungenutzt — sonst sonner |
+| `useAlerts` | `hooks/useAlerts.ts` | `{alerts, isLoading, error, createAlert, updateAlert, deleteAlert, refresh}` | `/api/v1/alerts` CRUD, wirft auf Error (Caller müssen toasten) |
+| `useSteamConnection` | `hooks/useSteamConnection.ts` | `{status, connect, disconnect, preview, importNow, resync}` | Steam OpenID + Inventory-Import |
 
 **State Management**: Kein globaler Store (kein Redux/Zustand). Lokaler React State + SWR Cache. `ErrorContext` für globales Error-Banner.
 
@@ -59,6 +61,16 @@
 - `EnhancedFilterSidebar.tsx` — Filter-Panel
 - `EnhancedSkinCard.tsx` / `ModernSkinCard.tsx` — Karten-Varianten
 - `EnhancedSkinGrid.tsx` — Grid-Layout
+
+### Notifications & Alerts
+- `components/NotificationsDropdown.tsx` — Bell-Icon im Header (`AppHeader`). SWR `/api/v1/notifications` mit 60s polling. Optimistic mark-all-read + per-item mark-on-click via `/notifications/:id/read`. Zeigt rote Badge wenn unread > 0.
+- `app/alerts/page.tsx` — Alert-Liste mit CreateAlertModal. Sonner-Toasts auf onToggle/onDelete.
+- `app/alerts/AlertCard.tsx` — Einzelner Alert-Card. Zeigt Channel-Icons (Mail + Bell für `email` und `in_app`).
+- `app/alerts/CreateAlertModal.tsx` — Modal zum Anlegen (Type-Dropdown, Channel-Checkboxes, type-spezifische Config-Felder).
+- `app/profile/_tabs/NotificationsTab.tsx` — Email-Toggle (optimistic) + "Coming soon" Badge für Browser-Push (Sprint 3).
+
+### Toast Layer
+> ⚠️ **3 Libs parallel mounted** in `app/layout.tsx`: shadcn `<Toaster />`, sonner `<SonnerToaster />`, react-hot-toast `<HotToaster />`. Aktuelle Convention: **sonner** für neue Code-Pfade. shadcn ist dead code, react-hot-toast nur in `ErrorContext`. Konsolidierung in [[06-Tech-Debt]] #12.
 
 ### UI Primitives (`components/ui/`)
 30+ shadcn/Radix Komponenten: alert, badge, button, card, dialog, dropdown-menu, input, select, skeleton, table, tabs, toast, tooltip, etc.

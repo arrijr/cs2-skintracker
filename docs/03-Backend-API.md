@@ -96,6 +96,43 @@
 
 ---
 
+## /api/v1/alerts
+
+| Method | Path | Auth | Beschreibung |
+|--------|------|------|-------------|
+| GET | / | verifyClerkJwt | Alle Alerts des Users (mit skin + case relation) |
+| POST | / | verifyClerkJwt | Alert anlegen (body: type, skinId?, caseId?, config, channels, cooldownMinutes?). Tier-Quote enforced |
+| PATCH | /:id | verifyClerkJwt | Update config/channels/isActive/cooldownMinutes. Bei isActive→true wird Quote erneut geprüft |
+| DELETE | /:id | verifyClerkJwt | Alert löschen (cascade auf AlertEvent) |
+| GET | /:id/events | verifyClerkJwt | Letzte 50 Events dieses Alerts |
+
+**Alert Types**: `price_threshold`, `volatility`, `float_tier`, `case_ev`
+**Channels**: `email`, `in_app` (Discord 2026-05-20 entfernt)
+**Quotas**: Free=2, Lite=15, Pro=999
+
+**Engine**:
+- Trigger: Inngest Cron `0 * * * *` (stündlich) + node-cron lokal alle 30 min
+- Edge-Trigger Dedup (seit 2026-05-22): feuert nur auf false→true Transition via `Alert.lastConditionState`
+- Cooldown: zusätzlich `Alert.cooldownMinutes` (default 60) als Floor
+
+---
+
+## /api/v1/notifications
+
+| Method | Path | Auth | Beschreibung |
+|--------|------|------|-------------|
+| GET | / | verifyClerkJwt | Letzte 50 AlertEvents des Users (last 30 days), shape: `{id, kind, title, body, href, ts, read}` |
+| POST | /mark-all-read | verifyClerkJwt | Alle unread Events des Users → `readAt = now()`. Returnt `{ok, updated}` |
+| POST | /:id/read | verifyClerkJwt | Einzelnes Event als read markieren. Akzeptiert raw ID (`42`) und prefixed (`alert-event-42`) |
+
+**Schema**: Sourced aus `AlertEvent.readAt`. `read: false` heißt `readAt IS NULL`.
+
+**Frontend**:
+- `NotificationsDropdown` (Bell-Icon im Header): SWR polled `/notifications` alle 60s, optimistic mark-all-read auf Button-Click, per-item mark-on-click auf Item-Click
+- Generischer body-Fallback nur wenn weder `payload.currentPrice` noch `payload.casePrice` gesetzt sind
+
+---
+
 ## /api/v1/transactions
 
 | Method | Path | Auth | |

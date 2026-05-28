@@ -1,28 +1,86 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
+import logger from '../utils/logger.js';
 
-// Configure transport (e.g. Gmail)
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER, // from .env
-    pass: process.env.EMAIL_PASS
+// Lazy-init: do NOT call `nodemailer.createTransport` at module load, because
+// SMTP auth would silently 5xx every send if env vars were missing. We build
+// the transport on first use and throw a loud, specific error so the upstream
+// delivery layer can record it on the AlertEvent row (instead of a generic
+// "Invalid login: 535-5.7.8" failure that doesn't say "wrong env var").
+let _transporter = null;
+function getTransporter() {
+  if (_transporter) return _transporter;
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS;
+  if (!user || !pass) {
+    throw new Error(
+      'Email transport not configured — set EMAIL_USER and EMAIL_PASS (Gmail App Password). ' +
+        'In CI/tests, mock sendAlertEmail instead of calling it.'
+    );
   }
-});
-
-// Function to send price alert email
-export async function sendPriceAlertEmail(to, skinName, price, priceAlert, steamUrl = "") {
-  const info = await transporter.sendMail({
-    from: `"CS2 Skin Tracker" <${process.env.EMAIL_USER}>`,
-    to,
-    subject: `🔔 Price Alert for ${skinName}!`,
-    text: `The price for "${skinName}" is now at €${price} (your alert: €${priceAlert}). Check it now in the app!`,
-    html: `<p>The price for <b>${skinName}</b> is now <b>€${price}</b> (your alert: <b>€${priceAlert}</b>).</p>
-           <p><a href="${steamUrl || 'https://steamcommunity.com/market/'}">View on Steam Market</a></p>`
+  _transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user, pass },
   });
-  console.log("Mail sent: %s", info.messageId);
+  return _transporter;
+}
+
+// Keys whose value is a Euro-denominated price across all evaluator payloads.
+// price_threshold: currentPrice, threshold. volatility: currentPrice, pastPrice.
+// float_tier: currentPrice, maxPrice. case_ev: casePrice, expectedValue.
+const PRICE_KEYS = new Set([
+  'currentPrice', 'pastPrice', 'maxPrice', 'casePrice', 'expectedValue', 'threshold',
+]);
+// Keys whose value is a percentage.
+const PERCENT_KEYS = new Set([
+  'changePercent', 'thresholdPercent', 'evMargin', 'marginThreshold',
+]);
+
+// Render the structured evaluator payload as a small key:value list instead of
+// dumping `JSON.stringify` into the body (which leaked internal field names
+// like `wearMatches: true` straight to the user).
+export function renderPayload(payload) {
+  if (!payload || typeof payload !== 'object') return '';
+  const rows = Object.entries(payload)
+    .filter(([k]) => k !== 'reason') // internal-only short-circuit reasons
+    .map(([k, v]) => {
+      const label = k
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (c) => c.toUpperCase());
+      let value;
+      if (typeof v === 'number' && PRICE_KEYS.has(k)) {
+        value = `€${Number(v).toFixed(2)}`;
+      } else if (typeof v === 'number' && PERCENT_KEYS.has(k)) {
+        value = `${Number(v).toFixed(2)}%`;
+      } else if (typeof v === 'number') {
+        value = Number.isInteger(v) ? String(v) : Number(v).toFixed(2);
+      } else {
+        value = String(v);
+      }
+      return { label, value };
+    });
+  return rows;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+  );
 }
 
 export async function sendAlertEmail({ to, subject, alertType, skinName, payload }) {
+  const rows = renderPayload(payload);
+  const rowsHtml = Array.isArray(rows)
+    ? rows
+        .map(
+          ({ label, value }) =>
+            `<tr><td style="padding:4px 12px 4px 0;color:#94a3b8;">${escapeHtml(label)}</td><td style="padding:4px 0;color:#fff;font-weight:600;">${escapeHtml(value)}</td></tr>`
+        )
+        .join('')
+    : '';
+  const rowsText = Array.isArray(rows)
+    ? rows.map(({ label, value }) => `  ${label}: ${value}`).join('\n')
+    : '';
+
   const html = `
     <div style="font-family: -apple-system, system-ui, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #0f172a; color: #fff;">
       <div style="background: linear-gradient(135deg, #a855f7, #ec4899); padding: 16px; border-radius: 8px 8px 0 0;">
@@ -31,8 +89,8 @@ export async function sendAlertEmail({ to, subject, alertType, skinName, payload
       <div style="background: #1e293b; padding: 24px; border-radius: 0 0 8px 8px;">
         <h2 style="color: #fff; margin-top: 0;">${escapeHtml(subject)}</h2>
         <p style="color: #cbd5e1;"><strong>Type:</strong> ${escapeHtml(alertType)}</p>
-        ${skinName ? `<p style="color: #cbd5e1;"><strong>Skin:</strong> ${escapeHtml(skinName)}</p>` : ''}
-        <pre style="background: #0f172a; padding: 16px; border-radius: 6px; color: #a78bfa; overflow-x: auto;">${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
+        ${skinName ? `<p style="color: #cbd5e1;"><strong>Item:</strong> ${escapeHtml(skinName)}</p>` : ''}
+        ${rowsHtml ? `<table style="margin-top:12px;border-collapse:collapse;width:100%;">${rowsHtml}</table>` : ''}
         <a href="https://skintrackr.com/alerts" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; text-decoration: none; border-radius: 6px;">Manage alerts</a>
       </div>
       <p style="color: #64748b; font-size: 12px; margin-top: 16px; text-align: center;">
@@ -40,18 +98,30 @@ export async function sendAlertEmail({ to, subject, alertType, skinName, payload
       </p>
     </div>
   `;
-  return transporter.sendMail({
-    from: `"skintrackr.com" <${process.env.EMAIL_USER}>`,
-    to,
-    subject: `[skintrackr] ${subject}`,
-    html,
-    headers: {
-      'List-Unsubscribe': '<mailto:unsubscribe@skintrackr.com>, <https://skintrackr.com/account>',
-      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-    },
-  });
-}
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const text =
+    `${subject}\n\n` +
+    `Type: ${alertType}\n` +
+    (skinName ? `Item: ${skinName}\n` : '') +
+    (rowsText ? `\n${rowsText}\n` : '') +
+    `\nManage alerts: https://skintrackr.com/alerts\n`;
+
+  try {
+    return await getTransporter().sendMail({
+      from: `"skintrackr.com" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: `[skintrackr] ${subject}`,
+      html,
+      text,
+      headers: {
+        'List-Unsubscribe': '<mailto:unsubscribe@skintrackr.com>, <https://skintrackr.com/account>',
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
+    });
+  } catch (err) {
+    // Surface the cause clearly so the delivery layer's AlertEvent.errorLog
+    // contains an actionable message instead of nodemailer's raw stack.
+    logger.warn('sendAlertEmail failed', { to, alertType, reason: err.message });
+    throw err;
+  }
 }

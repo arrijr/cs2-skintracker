@@ -101,10 +101,36 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
     } catch {
-      // ignore — endpoint may be no-op or transiently failing.
+      // ignore — endpoint persists `readAt` since 2026-05-22, but transient
+      // failures shouldn't bubble: sessionStorage above keeps the UI consistent.
     }
     mutate();
   });
+
+  // Per-item mark-on-click. Fires when the user follows a notification link
+  // so single notifications can be cleared without the bulk "mark all" action.
+  // Adds to sessionStorage AND posts to /notifications/:id/read.
+  const markOneRead = async (id: string) => {
+    setLocallyReadIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      try {
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem('notif:readIds', JSON.stringify(Array.from(next)));
+        }
+      } catch { /* noop */ }
+      return next;
+    });
+    try {
+      const token = await getToken({ template: 'backend' });
+      await fetchJson(apiUrl(`/api/v1/notifications/${id}/read`), {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+    } catch {
+      // Silent — next SWR poll reconciles.
+    }
+  };
 
   const unread = notifications.filter((n) => !n.read).length;
 
@@ -123,8 +149,10 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
   }, [open]);
 
   // Imperative navigation — bypasses any race between setOpen(false) unmounting
-  // the dropdown and Next.js Link's click handler firing.
-  const goTo = (href: string) => {
+  // the dropdown and Next.js Link's click handler firing. Also marks the
+  // clicked notification as read in the background.
+  const goTo = (href: string, notifId?: string) => {
+    if (notifId) void markOneRead(notifId);
     setOpen(false);
     router.push(href);
   };
@@ -196,7 +224,7 @@ export function NotificationsDropdown(props: NotificationsDropdownProps) {
                       {n.href ? (
                         <button
                           type="button"
-                          onClick={() => goTo(n.href!)}
+                          onClick={() => goTo(n.href!, n.id)}
                           className="block w-full text-left hover:bg-slate-800/40 transition-colors"
                         >
                           {body}
