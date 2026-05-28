@@ -55,91 +55,19 @@ export const getPriceHistory = async (req, res) => {
     });
     
     console.log(`[DEBUG] Found ${history.length} price history entries for skin ${skinId} in range ${range}`);
-    
-    // If no price history exists, try to generate some sample data
+
+    // No price history → return empty. We used to generate Math.random()-based
+    // fake data here, which made the chart look populated for skins we'd never
+    // actually tracked. That hid real data-collection gaps and misled users
+    // about price trends. Honest empty-state > realistic-looking fakes.
     if (history.length === 0) {
-      console.log(`[DEBUG] No price history found, generating sample data for skin ${skinId}`);
-      
-      // Get current skin price
-      const skin = await prisma.skin.findUnique({
-        where: { id: parseInt(skinId) },
-        select: { 
-          priceMedian: true, 
-          priceAvg: true, 
-          priceLatest: true,
-          priceMedian24h: true,
-          priceMedian7d: true,
-          priceMedian30d: true
-        }
-      });
-      
-      if (skin) {
-        const currentPrice = skin.priceLatest || skin.priceMedian || skin.priceAvg;
-        if (currentPrice && currentPrice > 0) {
-          // Generate realistic sample data based on range
-          const sampleHistory = [];
-          const today = new Date();
-          const days = range === 'all' ? 365 : range === '1y' ? 365 : 
-                      range === '90d' ? 90 : range === '30d' ? 30 : 7;
-          
-          // Use historical prices if available for more realistic data
-          const price24h = skin.priceMedian24h || currentPrice;
-          const price7d = skin.priceMedian7d || currentPrice;
-          const price30d = skin.priceMedian30d || currentPrice;
-          
-          for (let i = days - 1; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            
-            // Create realistic price progression
-            let price;
-            if (i >= 30) {
-              // Use 30d price as base for older data
-              price = price30d;
-            } else if (i >= 7) {
-              // Interpolate between 30d and 7d
-              const progress = (i - 7) / 23;
-              price = price7d + (price30d - price7d) * progress;
-            } else if (i >= 1) {
-              // Interpolate between 7d and 24h
-              const progress = (i - 1) / 6;
-              price = price24h + (price7d - price24h) * progress;
-            } else {
-              // Use current price for today
-              price = currentPrice;
-            }
-            
-            // Add small daily variation (±2%)
-            const variation = (Math.random() - 0.5) * 0.04;
-            price = price * (1 + variation);
-            
-            // Ensure price doesn't go below 0.01
-            price = Math.max(0.01, price);
-            
-            sampleHistory.push({
-              date: date.toISOString().split('T')[0],
-              price: Math.round(price * 100) / 100
-            });
-          }
-          
-          console.log(`[DEBUG] Generated ${sampleHistory.length} sample price history entries for range ${range}`);
-          return res.json({
-            success: true,
-            data: sampleHistory,
-            history: sampleHistory,
-            range,
-            source: 'generated',
-            totalDays: days
-          });
-        }
-      }
-      
+      console.log(`[DEBUG] No price history found for skin ${skinId} — returning empty (no synthetic fallback)`);
       return res.json({
         success: true,
         data: [],
         history: [],
         range,
-        source: 'none'
+        source: 'none',
       });
     }
     

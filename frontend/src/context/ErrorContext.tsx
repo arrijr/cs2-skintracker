@@ -4,7 +4,7 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { setErrorContext } from "@/lib/http";
 
 interface ErrorState {

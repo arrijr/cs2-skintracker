@@ -25,8 +25,6 @@ import Providers from "./providers";
 import { PostHogProvider } from "./providers/PostHogProvider";
 import AppHeader from "./components/AppHeader";
 import BuildInfo from "./components/BuildInfo";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as HotToaster } from "react-hot-toast";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import ErrorBanner from "@/components/ErrorBanner";
 import { ErrorProvider } from "@/context/ErrorContext";
@@ -107,34 +105,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {/* Build Info - dev only */}
               <BuildInfo className="max-w-md" />
 
-              {/* Toast Notifications */}
-              <Toaster />
-              <SonnerToaster richColors />
-              <HotToaster
-                position="top-right"
-                toastOptions={{
-                  duration: 4000,
-                  style: {
-                    background: "#1f2937",
-                    color: "#f9fafb",
-                    border: "1px solid #374151",
-                  },
-                  success: {
-                    style: {
-                      background: "#065f46",
-                      color: "#f0fdf4",
-                      border: "1px solid #10b981",
-                    },
-                  },
-                  error: {
-                    style: {
-                      background: "#7f1d1d",
-                      color: "#fef2f2",
-                      border: "1px solid #ef4444",
-                    },
-                  },
-                }}
-              />
+              {/* Toast Notifications — Sonner only.
+                  Removed shadcn Toaster + react-hot-toast HotToaster on 2026-05-28
+                  (three mounted simultaneously was clobbering each other and
+                  HotToaster used off-brand zinc colors that clashed with the
+                  slate theme). All callsites use `import { toast } from "sonner"`. */}
+              <SonnerToaster richColors position="top-right" />
             </Providers>
           </ErrorProvider>
         </body>

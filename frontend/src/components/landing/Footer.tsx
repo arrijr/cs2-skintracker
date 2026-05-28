@@ -37,7 +37,7 @@ export default function Footer() {
             <div className="lg:col-span-2 space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-brand-green to-brand-blue rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-fuchsia-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg shadow-fuchsia-900/40">
                     <span className="text-white font-bold text-sm">CS</span>
                   </div>
                   <span className="text-white font-bold text-xl">SKINTRACKR</span>
@@ -97,7 +97,7 @@ export default function Footer() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   size="lg" 
-                  className="bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 text-lg font-semibold btn-enhanced"
+                  className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white px-8 py-4 text-lg font-semibold btn-enhanced shadow-lg shadow-fuchsia-900/40"
                   asChild
                 >
                   <Link href="/sign-up">
