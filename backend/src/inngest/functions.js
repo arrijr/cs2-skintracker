@@ -41,9 +41,17 @@ export const catalogSync = inngest.createFunction(
 // 3s spacing (still polite to Steam). Inngest persists state between steps; if a step
 // fails (rate-limit, network), it retries automatically.
 const PRICE_CHUNK_SIZE = 50; // ~50 items × 3s = ~2.5 min per step (fits 60s? No — use 8)
-// Render free plan ~100s request timeout. Worst case per item ≈ 5s (3s spacing + fetch + retry).
-// 8 × 5s = 40s per step, comfortably under 100s even with a 429 Retry-After mid-chunk.
-const PRICE_ITEMS_PER_STEP = 8;
+// Render Starter plan ~750s request timeout (free plan was 100s and the
+// service spins down anyway, so neither value mattered in practice).
+// Bumped chunk size from 8 → 20 on 2026-05-28 because PriceHistory data was
+// growing at only 25-30 rows/day — diagnosed root cause was Render free-tier
+// service spin-down BETWEEN step.run invocations. Each cron fire wakes the
+// service, runs one chunk (8 items × 3s = 24s), service idles waiting for
+// Inngest to invoke the next step, Render shuts it down, next step times out
+// on cold start. Bigger chunks mean fewer cold-start risk windows per run.
+// At 20 items × 3.5s avg = ~70s per chunk, still well under Inngest's
+// default step timeout but does 2.5× more work per service-wake.
+const PRICE_ITEMS_PER_STEP = 20;
 const PRICE_SPACING_MS = 3000;
 
 export const priceRefresh = inngest.createFunction(
