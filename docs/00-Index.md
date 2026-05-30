@@ -36,7 +36,7 @@
 | Architektur | [[System-Design]] | Detail-Design, Diagramme |
 | ADRs | [[docs/superpowers/adrs/README\|ADR-Index]] | Architektur-Entscheidungen (001–005) |
 | Launch | [[docs/launch/checklist\|Launch-Kit]] | Checklist · Posts · Discords · Demo-Script |
-| Sessions | [[2026-05-22-ceo-autonomous-audit]] | Autonome Arbeits-Sessions |
+| Sessions | [[2026-05-30-price-pipeline-fix]] · [[2026-05-22-ceo-autonomous-audit]] | Autonome Arbeits-Sessions |
 | Archiv | [[docs/archive/README\|Archiv]] | Historische / abgelöste Docs |
 
 ---
