@@ -154,7 +154,7 @@ See **[[guides/Development-Workflow]]** for details.
 ## 🛠️ Important Context for Claude Sessions
 
 **Token Budget**: Using ~127k of 200k  
-**Obsidian**: Repo root IS the vault. Config in `.obsidian/` (committed). First-time: open repo as vault → Settings → Community Plugins → turn off Restricted Mode → install **Dataview** (already registered in `community-plugins.json`). Per-user files (`workspace.json`, cache) are gitignored.  
+**Obsidian**: Repo root IS the vault (`.obsidian/` committed). Vault-Home [[docs/00-Index]], Konventionen [[docs/CONVENTIONS]] (wo Doku hingehört — Root behält nur `README`/`CHANGELOG`/`CLAUDE`). First-time: open repo as vault → Settings → Community Plugins → turn off Restricted Mode → install **Dataview** (registered in `community-plugins.json`; [[docs/Dashboard]] braucht es). Per-user files (`workspace.json`, cache) are gitignored. Cleanup 2026-05-30: 7 `$f`-Stubs gelöscht, 27 Root-Docs → `docs/{archive,features,ops,02-Sprint2}/` ([[2026-05-30-obsidian-vault-cleanup]]).  
 **Environment**: Dev (localhost:5000) → Production (Vercel)  
 **Secrets Management**: All in .env, never in code  
 
