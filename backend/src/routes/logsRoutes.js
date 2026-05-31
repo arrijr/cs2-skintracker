@@ -75,93 +75,12 @@ router.get('/health', (req, res) => {
   });
 });
 
-// GET /api/logs/stats - Log statistics (admin only)
-router.get('/stats', verifyClerkJwt, async (req, res) => {
-  try {
-    // Check if user is admin
-    if (req.user?.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin access required' });
-    }
-
-    // Get log statistics from database
-    const stats = await prisma.auditLog.groupBy({
-      by: ['level'],
-      _count: {
-        level: true,
-      },
-      where: {
-        createdAt: {
-          gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
-        },
-      },
-    });
-
-    res.json({
-      stats,
-      period: '24h',
-      timestamp: new Date().toISOString(),
-    });
-    
-  } catch (error) {
-    logger.error('Failed to get log stats', error, {
-      userId: req.userId,
-      ip: req.ip,
-    });
-    
-    res.status(500).json({ error: 'Failed to get log statistics' });
-  }
-});
-
-// GET /api/logs/recent - Recent logs (admin only)
-router.get('/recent', verifyClerkJwt, async (req, res) => {
-  try {
-    // Check if user is admin
-    if (req.user?.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin access required' });
-    }
-
-    const limit = parseInt(req.query.limit) || 50;
-    const level = req.query.level;
-
-    const where = {
-      createdAt: {
-        gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
-      },
-    };
-
-    if (level) {
-      where.level = level;
-    }
-
-    const logs = await prisma.auditLog.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take: Math.min(limit, 100), // Max 100 logs
-      select: {
-        id: true,
-        level: true,
-        message: true,
-        metadata: true,
-        userId: true,
-        ipAddress: true,
-        createdAt: true,
-      },
-    });
-
-    res.json({
-      logs,
-      count: logs.length,
-      timestamp: new Date().toISOString(),
-    });
-    
-  } catch (error) {
-    logger.error('Failed to get recent logs', error, {
-      userId: req.userId,
-      ip: req.ip,
-    });
-    
-    res.status(500).json({ error: 'Failed to get recent logs' });
-  }
-});
+// NOTE (2026-05-31, audit finding #12): the GET /stats and GET /recent admin
+// endpoints were removed. They were dead code — gated on `req.user?.role`
+// which `verifyClerkJwt` never sets (it sets `req.userId` + `req.auth`), so
+// they returned 403 unconditionally, AND referenced `prisma` without importing
+// it (ReferenceError if the gate ever passed). No frontend called them. If an
+// admin audit-log viewer is needed later, build it on `clerkAdminAuth` + the
+// shared prisma singleton, with the auditLog query properly scoped.
 
 export default router;
