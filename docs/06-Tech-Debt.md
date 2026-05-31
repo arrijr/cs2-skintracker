@@ -29,6 +29,17 @@ Vollständige Dokumentation: [[superpowers/research/2026-05-22-notifications-aud
 | - | `alerts/page.tsx` Mutations warfen unhandled rejections | Sonner Toast-Wrap |
 | - | NotificationsDropdown mark-as-read hatte silent failure | Optimistic mutate + per-item endpoint |
 
+## ✅ Resolved 2026-05-30 (Price-Pipeline Fix)
+
+Vollständige Doku: [[2026-05-30-price-pipeline-fix]]
+
+| War | Status |
+|-----|--------|
+| Wear-Varianten zeigten identische Preise (Parent-Seed, nie refresht) | 2391 Dupes genullt (SQL); 147 populäre per Hybrid frisch geholt → distinct |
+| `getPriceHistory` generierte `Math.random()` Fake-Daten bei leerer History | Ehrliche leere Antwort (`source: 'none'`), Fake-Generator entfernt |
+| `dailySkinPriceHistory` Cron lief nie zuverlässig (Render spin-down) | Ersetzt durch **pg_cron** in Postgres (jobid 1+2, 06:30/06:35 UTC) — autonom |
+| PriceHistory wuchs 25/Tag statt 2000 | Root-Cause Render-IPv6/spin-down diagnostiziert; GH-Actions-Fix gebaut (blocked auf Secret, siehe #14) |
+
 ## 🟡 Tech Debt (vor Scale)
 
 | # | Problem | Beschreibung |
@@ -44,8 +55,11 @@ Vollständige Dokumentation: [[superpowers/research/2026-05-22-notifications-aud
 | 9 | **test:watch kein Path-Filter** | Kann node_modules treffen |
 | 10 | **Doppelte Tier-Gating Middleware** | `tierGating.js` + `tier-gating.js` (Duplikat) |
 | 11 | **Schema ≠ Live-DB Drift** | `prisma migrate diff` (2026-05-22) deckte auf: DB hat `APIKey`+`APILog` Tables die im Schema fehlen, `MarketSnapshot` hat `createdAt`/`updatedAt` im DB aber nicht im Schema, `Skin.slug` UNIQUE + `User.stripeSubscriptionId` UNIQUE im Schema aber nicht im DB. Braucht eigene Aufräum-Session mit sauberen Drop-Migrations. |
-| 12 | **3 Toast-Libraries parallel mounted** | shadcn `<Toaster />`, sonner `<SonnerToaster />`, react-hot-toast `<HotToaster />` alle aktiv. shadcn ungenutzt. Konsolidieren auf sonner |
+| 12 | ~~3 Toast-Libraries parallel mounted~~ | ✅ fixed 2026-05-30 (`c3615fd`) — nur noch sonner, shadcn `Toaster` + react-hot-toast entfernt, `ErrorContext` migriert |
 | 13 | **Email-Transport Gmail SMTP** | Nodemailer + `EMAIL_USER`/`EMAIL_PASS`. CEO-Checklist §6 plant Resend-Migration. Gmail-Basic-Auth seit 2022 deprecated, braucht App-Password |
+| 14 | **Recurring Steam-Fetch blocked** | `priceRefresh` auf Inngest stirbt durch Render-Free-Spin-down (~25 statt 2000 Skins/Tag). GH-Actions-Workflow gebaut (`scheduled-price-refresh.yml`) aber `DATABASE_URL` Secret = direkte (IPv6-only) URL → P1001. **CEO:** Secret auf Session-Pooler-URL umstellen. Details: [[2026-05-30-price-pipeline-fix]] |
+| 15 | **Stray gitlink** | `.claude/worktrees/cranky-wilson-bb64cf` committed als Submodule ohne `.gitmodules` → `git submodule` Warnung in CI-cleanup. Entfernen via `git rm --cached` |
+| 16 | **Inngest priceRefresh redundant** | Nach GH-Actions-Fix doppelt sich der Steam-Refresh. Inngest-`priceRefresh` Function deaktivieren sobald GH-Actions-Schedule gesund läuft |
 
 ## ❓ Offene Fragen
 
