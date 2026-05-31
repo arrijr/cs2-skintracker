@@ -323,7 +323,7 @@ export async function resync(req, res, {
           userId,
           skinId: m.skinId,
           amount: m.amount,
-          buyPrice: null,
+          buyPrice: 0, // schema is NOT NULL; 0 = "cost basis not set" (see portfolioImporter)
           buyDate: now,
           importedFromSteamAt: now,
         },

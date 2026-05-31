@@ -10,7 +10,7 @@ const VALID_MODES = new Set(['empty', 'current_market', 'custom']);
  * - All created rows are marked importedFromSteamAt = now() so resync can identify them.
  *
  * costBasisMode:
- *   - 'empty':         buyPrice = null
+ *   - 'empty':         buyPrice = 0 (placeholder for "unknown / fill in later")
  *   - 'current_market': buyPrice = match.currentPrice (Skin.priceLatest at import time)
  *   - 'custom':        use `custom[]` lookup by skinId
  */
@@ -35,15 +35,21 @@ export async function importSkinMatches({ userId, matches, costBasisMode, custom
   for (const m of matches) {
     if (m.kind !== 'skin') continue;
 
-    let buyPrice = null;
+    // buyPrice is NOT NULL in the schema, but the import UI offers an
+    // "unknown / fill in later" path. Use 0 as the "cost basis not set"
+    // sentinel: the portfolio summary already treats 0 invested as 0% P&L
+    // (the `totalInvested > 0` guards), and users can backfill real values via
+    // bulk edit. This avoids a nullable-column migration + having to null-guard
+    // every `amount * buyPrice` sum across the portfolio/CSV/history code.
+    let buyPrice = 0;
     let buyDate = now;
 
     if (costBasisMode === 'current_market') {
-      buyPrice = (typeof m.currentPrice === 'number') ? m.currentPrice : null;
+      buyPrice = (typeof m.currentPrice === 'number') ? m.currentPrice : 0;
     } else if (costBasisMode === 'custom') {
       const c = customBySkinId.get(m.skinId);
       if (c) {
-        buyPrice = (typeof c.buyPrice === 'number') ? c.buyPrice : null;
+        buyPrice = (typeof c.buyPrice === 'number') ? c.buyPrice : 0;
         if (c.buyDate) buyDate = new Date(c.buyDate);
       }
     }

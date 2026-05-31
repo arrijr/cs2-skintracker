@@ -274,7 +274,7 @@ describe('importSkinMatches', () => {
     };
   }
 
-  it('creates a Portfolio row per skin match with buyPrice=null when mode=empty', async () => {
+  it('creates a Portfolio row per skin match with buyPrice=0 when mode=empty', async () => {
     const created = [];
     const fakePrisma = {
       portfolio: { create: jest.fn(async (args) => { created.push(args.data); return { id: created.length, ...args.data }; }) },
@@ -282,10 +282,12 @@ describe('importSkinMatches', () => {
     const matches = [makeMatch(), makeMatch({ skinId: 6, currentPrice: 99 })];
     const result = await importSkinMatches({ userId: 7, matches, costBasisMode: 'empty' }, { prismaClient: fakePrisma });
     expect(result.created).toBe(2);
-    expect(created[0]).toEqual(expect.objectContaining({ userId: 7, skinId: 5, amount: 2, buyPrice: null }));
+    // buyPrice is NOT NULL in the schema; the importer writes 0 as the
+    // "cost basis not set" sentinel for the empty/unknown path.
+    expect(created[0]).toEqual(expect.objectContaining({ userId: 7, skinId: 5, amount: 2, buyPrice: 0 }));
     expect(created[0].importedFromSteamAt).toBeInstanceOf(Date);
     expect(created[1].skinId).toBe(6);
-    expect(created[1].buyPrice).toBeNull();
+    expect(created[1].buyPrice).toBe(0);
   });
 
   it('uses currentPrice as buyPrice when mode=current_market', async () => {
@@ -314,7 +316,7 @@ describe('importSkinMatches', () => {
       data: expect.objectContaining({ skinId: 5, buyPrice: 8.0, buyDate: new Date('2025-01-15') }),
     }));
     expect(fakePrisma.portfolio.create).toHaveBeenNthCalledWith(2, expect.objectContaining({
-      data: expect.objectContaining({ skinId: 6, buyPrice: null }),
+      data: expect.objectContaining({ skinId: 6, buyPrice: 0 }),
     }));
   });
 
