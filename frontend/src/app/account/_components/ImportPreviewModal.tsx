@@ -1,17 +1,20 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Lock, ExternalLink, RefreshCw } from "lucide-react";
 import { useSteamConnection, type PreviewResult, type CostBasisMode, type CustomCostBasis } from "@/hooks/useSteamConnection";
 import { BulkEditCostBasis } from "./BulkEditCostBasis";
 
 interface Props {
   onClose: () => void;
+  /** Connected Steam ID — deep-links the user straight to their own privacy settings. */
+  steamId?: string | null;
 }
 
-export function ImportPreviewModal({ onClose }: Props) {
+export function ImportPreviewModal({ onClose, steamId }: Props) {
   const { preview, importNow } = useSteamConnection();
   const [data, setData] = useState<PreviewResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,14 +25,28 @@ export function ImportPreviewModal({ onClose }: Props) {
   const [importing, setImporting] = useState(false);
   const [done, setDone] = useState<{ created: number; matched: number; skipped: number } | null>(null);
 
+  const runPreview = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setData(null);
+    try { setData(await preview()); }
+    catch (e) { setError(e instanceof Error ? e.message : 'Preview failed'); }
+    finally { setLoading(false); }
+  }, [preview]);
+
   useEffect(() => {
-    (async () => {
-      try { setData(await preview()); }
-      catch (e) { setError(e instanceof Error ? e.message : 'Preview failed'); }
-      finally { setLoading(false); }
-    })();
+    runPreview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Steam splits profile privacy from inventory privacy — a public profile can
+  // still have a private inventory (backend maps that 403 → "...is private").
+  // Detect that specific failure so we can show a fix-it path instead of a
+  // dead-end red string the user can't act on.
+  const isPrivacyError = !!error && /private/i.test(error);
+  const steamPrivacyUrl = steamId
+    ? `https://steamcommunity.com/profiles/${steamId}/edit/settings`
+    : 'https://steamcommunity.com/my/edit/settings';
 
   async function handleImport() {
     setImporting(true);
@@ -57,7 +74,42 @@ export function ImportPreviewModal({ onClose }: Props) {
         </DialogHeader>
 
         {loading && <div className="space-y-2">{[0,1,2].map(i => <Skeleton key={i} className="h-12 rounded" />)}</div>}
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && (isPrivacyError ? (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <Lock className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <div>
+                <p className="font-medium text-amber-200">Dein Steam-Inventar ist privat</p>
+                <p className="text-sm text-amber-100/80 mt-1">
+                  Steam blockiert den Zugriff auf dein Inventar. Setze in den Steam-Privatsphäre-Einstellungen{" "}
+                  <strong>&bdquo;Inventar&ldquo; auf Öffentlich</strong> (und &bdquo;Spieldetails&ldquo; ebenfalls),
+                  warte kurz und versuche es erneut.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={steamPrivacyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 text-sm font-semibold text-white hover:from-purple-600 hover:to-pink-600"
+              >
+                <ExternalLink className="h-4 w-4" aria-hidden="true" /> Steam-Privatsphäre öffnen
+              </a>
+              <Button
+                variant="outline"
+                onClick={runPreview}
+                disabled={loading}
+                className="border-amber-500/40 bg-transparent text-amber-200 hover:bg-amber-500/10 hover:text-amber-100 gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
+                {loading ? 'Prüfe…' : 'Erneut versuchen'}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-red-400 text-sm">{error}</p>
+        ))}
 
         {done && (
           <div className="space-y-3">

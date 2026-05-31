@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ export function SteamConnectSection() {
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [notice, setNotice] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
+  const autoOpenedRef = useRef(false);
 
   const handleDisconnect = async () => {
     setDisconnecting(true);
@@ -62,6 +63,18 @@ export function SteamConnectSection() {
     if (s) refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  // Close the "connect ≠ import" gap: connecting Steam only stores the steamId —
+  // skins are created only by an explicit import. Right after a fresh connect,
+  // if the user has never imported, auto-open the import modal so the next step
+  // is obvious. Fires once; never re-opens after they import or close it.
+  useEffect(() => {
+    if (autoOpenedRef.current) return;
+    if (searchParams.get('steam') !== 'connected') return;
+    if (!status?.connected || status.lastImportedAt) return;
+    autoOpenedRef.current = true;
+    setShowImport(true);
+  }, [status, searchParams]);
 
   if (loading) {
     return (
@@ -135,7 +148,7 @@ export function SteamConnectSection() {
             </div>
           </div>
         </div>
-        {showImport && <ImportPreviewModal onClose={() => setShowImport(false)} />}
+        {showImport && <ImportPreviewModal steamId={status?.steamId ?? null} onClose={() => setShowImport(false)} />}
       </>
     );
   }
@@ -210,7 +223,7 @@ export function SteamConnectSection() {
         </div>
       </div>
 
-      {showImport && <ImportPreviewModal onClose={() => setShowImport(false)} />}
+      {showImport && <ImportPreviewModal steamId={status?.steamId ?? null} onClose={() => setShowImport(false)} />}
 
       {/* Disconnect confirmation */}
       <Dialog open={showDisconnect} onOpenChange={(o) => !disconnecting && setShowDisconnect(o)}>
