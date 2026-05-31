@@ -154,7 +154,7 @@ See **[[guides/Development-Workflow]]** for details.
 ## 🛠️ Important Context for Claude Sessions
 
 **Token Budget**: Using ~127k of 200k  
-**Obsidian**: Repo root IS the vault (`.obsidian/` committed). Vault-Home [[docs/00-Index]], Konventionen [[docs/CONVENTIONS]] (wo Doku hingehört — Root behält nur `README`/`CHANGELOG`/`CLAUDE`). First-time: open repo as vault → Settings → Community Plugins → turn off Restricted Mode → install **Dataview** (registered in `community-plugins.json`; [[docs/Dashboard]] braucht es). Per-user files (`workspace.json`, cache) are gitignored. Cleanup 2026-05-30: 7 `$f`-Stubs gelöscht, 27 Root-Docs → `docs/{archive,features,ops,02-Sprint2}/` ([[2026-05-30-obsidian-vault-cleanup]]).  
+**Obsidian (ALWAYS maintain — gilt für jede Session)**: Repo root IS the vault (`.obsidian/` committed). **Regel: jede neue/geänderte Projekt-Doku als Obsidian-Note in `docs/` gemäß [[docs/CONVENTIONS]] — nie ins Repo-Root, immer Wikilinks, immer von [[docs/00-Index]] + passender MOC verlinken, keine `$f`/Placeholder-Stubs committen.** First-time: open repo as vault → Settings → Community Plugins → turn off Restricted Mode → install **Dataview** (registered in `community-plugins.json`; [[docs/Dashboard]] braucht es). Per-user files (`workspace.json`, cache) are gitignored. Cleanup 2026-05-30: 7 `$f`-Stubs gelöscht, 27 Root-Docs → `docs/{archive,features,ops,02-Sprint2}/` ([[2026-05-30-obsidian-vault-cleanup]]).  
 **Environment**: Dev (localhost:5000) → Production (Vercel)  
 **Secrets Management**: All in .env, never in code  
 
