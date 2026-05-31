@@ -76,8 +76,19 @@ base-names ohne Wear ODER Skins mit 0 Markt-Volumen (Steam liefert nichts). "96%
 `GET /api/v1/skins/23290/history` → `source: database`, Punkte 22.05. $44.17 → 30.05. $44.13.
 Echte DB-Daten, kein Fake mehr.
 
+## Entscheidung (2026-05-30): Render Starter statt GitHub Actions
+User wählte **Render Starter ($7/mo)** statt des GitHub-Wegs — Grund: GH-Secret zeigt auf
+direkte IPv6-only Supabase-URL → P1001 (genau das Problem an das sich der User erinnerte).
+Render Starter löst zwei Dinge auf einmal:
+1. Service schläft nicht mehr ein → Inngest `priceRefresh` läuft wie designed (4×/Tag).
+2. Keine Cold-Starts mehr für **echte Besucher** (vorher ~30s erster Load nach Idle → SEO/Conversion-Killer).
+
+→ GitHub-Workflow `scheduled-price-refresh.yml` **entfernt** (commit `0b39491` auf main),
+redundant + spammte Failure-Mails. Recoverable aus git-Historie bei `f27f00d`.
+
 ## Offen
-- [ ] **CEO:** `DATABASE_URL` GH-Secret → Pooler-URL (entsperrt 2000 Skins/Tag automatisch).
-- [ ] Nach Secret-Fix: Inngest `priceRefresh` deaktivieren (redundant zu GH Actions).
+- [ ] **CEO:** Render Free → Starter upgraden (Dashboard → cs2-skintracker → Settings → Instance Type).
+- [ ] Nach Upgrade: verifizieren dass Inngest `priceRefresh` ~2000 Skins/Tag schreibt (DB-row-delta nach nächstem Cron 03:30/09:30/15:30/21:30 UTC).
 - [ ] Stray gitlink `.claude/worktrees/cranky-wilson-bb64cf` ohne `.gitmodules` → cleanup.
-- [ ] commit `230f9b7` bumpte Inngest chunk 8→20 (band-aid, jetzt durch GH-Actions abgelöst).
+- [ ] commit `230f9b7` bumpte Inngest chunk 8→20 (mit non-sleeping Render unkritisch, bleibt).
+- [ ] Feature-Branch `chore/obsidian-vault-cleanup` (diese Docs + Vault-Cleanup) nach main mergen.
