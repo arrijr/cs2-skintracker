@@ -88,7 +88,7 @@ const plans: Plan[] = [
       'Full price history',
       'CSV export',
       'Priority support',
-      'Multi-source pricing (Skinport + CSFloat — coming Sprint 2)',
+      'Multi-source pricing (Steam + Skinport + CSFloat)',
     ],
     highlight: true,
     ctaLabel: 'Upgrade to Pro',

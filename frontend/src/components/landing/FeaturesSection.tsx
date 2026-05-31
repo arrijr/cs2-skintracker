@@ -19,7 +19,7 @@ const features = [
     icon: FileText,
     title: "Tax-Ready Reports",
     description: "FIFO/LIFO cost basis, CSV export, capital-gains formatting. Built for tax season.",
-    badge: "Coming Month 3" as string | null,
+    badge: "Coming soon" as string | null,
   },
   {
     icon: Smartphone,
@@ -72,8 +72,8 @@ export default function FeaturesSection() {
                       <Sparkles className="h-3 w-3" />
                       Killer Feature
                     </Badge>
-                    <Badge variant="outline" className="border-amber-500/30 text-amber-400 bg-amber-500/10">
-                      Coming Month 2
+                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+                      Live
                     </Badge>
                   </div>
 
