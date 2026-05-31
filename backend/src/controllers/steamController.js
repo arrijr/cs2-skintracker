@@ -44,7 +44,11 @@ const FRONTEND_BASE = process.env.FRONTEND_URL || 'http://localhost:3000';
 // The original audit finding remains valid — fix it by SETTING the env var
 // reliably, not by re-enabling the fail-closed throw. Tracker: CEO checklist
 // §5b "STEAM_OPENID_STATE_SECRET required in prod".
-import crypto from 'node:crypto';
+// NOTE: `crypto` is already imported at the top of this file (line 1,
+// `import crypto from 'crypto'`). Do NOT re-import it here — a second
+// `import crypto from 'node:crypto'` is a duplicate identifier and crashes
+// the whole backend at boot with "Identifier 'crypto' has already been
+// declared" (took down prod 2026-05-31).
 const ENV_STATE_SECRET = process.env.STEAM_OPENID_STATE_SECRET;
 if (!ENV_STATE_SECRET) {
   const where = process.env.NODE_ENV === 'production' ? 'PRODUCTION' : 'dev';
