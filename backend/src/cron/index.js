@@ -128,8 +128,16 @@ cron.schedule("30 2 * * *", async () => {
   }
 }, { timezone: "UTC" });
 
-// {/* 03:30 UTC daily */} Price refresh (Steam Market → DB) — staggered to avoid 03:00 SteamWebAPI slot
-cron.schedule("30 3 * * *", async () => {
+// {/* 03:30 / 09:30 / 15:30 / 21:30 UTC */} Price refresh (Steam Market → DB).
+// PRIMARY price-refresh driver as of 2026-05-31. Was 1×/day (03:30); bumped to
+// 4×/day to match the (now-dead) Inngest schedule. node-cron runs IN the
+// always-on Render process (Starter plan, no spin-down), so this is reliable
+// without depending on Inngest Cloud sync — which stopped firing after the
+// 2026-05-31 redeploys (15:30 UTC run refreshed 0 skins). Each run caps at
+// MAX_SKINS_PER_RUN=2000 stalest + cases + 1000 market items (~2.5h at 3s
+// spacing), finishing well before the next 6h slot. See
+// docs/sessions/2026-05-30-price-pipeline-fix.md.
+cron.schedule("30 3,9,15,21 * * *", async () => {
   logger.info("[CRON] Price refresh starting");
   try {
     const summary = await runPriceRefresh();
