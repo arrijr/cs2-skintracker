@@ -2,13 +2,20 @@
 
 ## 🔴 Must-Fix vor Production GA
 
-| # | Problem | Datei | Fix |
-|---|---------|-------|-----|
-| 1 | **Clerk Audience-Validierung deaktiviert** | `verifyClerkJwt.js` ~Zeile 96 | `audience: [audience, ...]` auskommentiert — wieder aktivieren |
-| 2 | **Clerk Test-Keys aktiv** | `backend/.env`, `frontend/.env.local` | `pk_test_`/`sk_test_` → `pk_live_`/`sk_live_` in Vercel |
-| 3 | **DEV_TEST_TOKEN + DEV_FREE_TOKEN** | `backend/.env` | Entfernen vor GA |
-| 4 | **NODE_TLS_REJECT_UNAUTHORIZED=0** | `server.js` | Deaktiviert TLS global — gefährlich in Production |
-| 5 | **CORS lässt alle Origins durch** | `app.js` | `callback(null, true)` immer — Whitelist ist dekorativ |
+> **Re-verifiziert 2026-05-31** ([[2026-05-31-launch-readiness]]): 4 der 5 Einträge waren
+> **stale** — der Code wurde 20.-22.05. gefixt, aber dieses Doc nie aktualisiert. Nur #2
+> (Clerk Live-Keys) ist eine echte offene CEO-Aktion. Code-Risiko der anderen: **null.**
+
+| # | Problem | Status (2026-05-31 verifiziert) |
+|---|---------|-------|
+| 1 | ~~Clerk Audience-Validierung deaktiviert~~ | ✅ **aktiv** — `verifyClerkJwt.js:83` übergibt `audience` an die JWT-Verify, Array gebaut Z.43-45 |
+| 2 | **Clerk Test-Keys aktiv** | 🧑 **echte CEO-Aktion offen** — `pk_test_`/`sk_test_` → `pk_live_`/`sk_live_` in Vercel + `CLERK_AUDIENCE` auf prod |
+| 3 | ~~DEV_TEST_TOKEN + DEV_FREE_TOKEN als Backdoor~~ | ✅ **nicht in src** — nur in Tests + lokaler `.env`; Dev-Bypass hinter `DEV_BYPASS_AUTH=1` gated (sonst 401). CEO-Check: NICHT in Render-prod gesetzt |
+| 4 | ~~NODE_TLS_REJECT_UNAUTHORIZED=0~~ | ✅ **nicht im committed code** — nur lokale `.env` (gitignored). CEO-Check: NICHT in Render/Vercel-prod gesetzt |
+| 5 | ~~CORS lässt alle Origins durch~~ | ✅ **Whitelist aktiv** — `app.js:115-126` Allowlist + Vercel-Preview-Pattern, non-match → `callback(new Error)` (reject) |
+
+**Echtes offenes Security-Backlog:** Die 11 HIGH + 11 MEDIUM Findings aus dem
+[[2026-05-22-ceo-autonomous-audit]] (separate von dieser 🔴-Sektion) sind noch offen.
 
 ## ✅ Resolved 2026-05-22 (Notifications Audit + Fix)
 
@@ -48,7 +55,7 @@ Vollständige Doku: [[2026-05-30-price-pipeline-fix]]
 | 2 | **Portfolio-Aggregierungs-Bug** | `getPortfolioSummary` aggregiert nicht nach skinId — mehrfache Käufe = doppelte Positionen (✅ fixed 2026-05-20) |
 | 3 | **31 Playwright-Tests übersprungen** | localStorage Mock ≠ Clerk SDK. Braucht echte Clerk Test-Accounts/Fixtures |
 | 4 | **Kein UserSubscriptions-Modell** | Service nutzt `User.isPremium` als Tier-Proxy. Stripe customerId, subId, Period-Dates werden nicht persistiert |
-| 5 | **researchService Bug** | `getPortfolioResearch` referenziert `prisma.userSubscriptions` — Modell existiert nicht in Schema → Runtime-Error für Pro-User |
+| 5 | ~~researchService Bug~~ | ✅ **stale (2026-05-31)** — `prisma.userSubscriptions` lebt nur noch in Test-Files; `getPortfolioResearch` nutzt echte Modelle (`prisma.user`+`prisma.portfolio`). Kein Prod-Crash. Controller auf `req.userId` normalisiert (`995a59b`). Offen: `subscription.test.js` referenziert noch das tote Modell → Test failt (nicht Prod) |
 | 6 | **isPremium-Source** | Dashboard liest `isPremium` aus Clerk publicMetadata (nicht DB). Subscription-Hook liest aus DB-API. Zwei Quellen der Wahrheit |
 | 7 | **Verbose Debug-Logging** | Dutzende `🔍 [DEBUG]` Logs in Routes/Middleware — nicht production-ready |
 | 8 | **AdminRoutes PrismaClient** | `adminRoutes.js` + `adminMetricsRoutes.js` instantiieren `new PrismaClient()` statt Singleton |
@@ -58,7 +65,7 @@ Vollständige Doku: [[2026-05-30-price-pipeline-fix]]
 | 12 | ~~3 Toast-Libraries parallel mounted~~ | ✅ fixed 2026-05-30 (`c3615fd`) — nur noch sonner, shadcn `Toaster` + react-hot-toast entfernt, `ErrorContext` migriert |
 | 13 | **Email-Transport Gmail SMTP** | Nodemailer + `EMAIL_USER`/`EMAIL_PASS`. CEO-Checklist §6 plant Resend-Migration. Gmail-Basic-Auth seit 2022 deprecated, braucht App-Password |
 | 14 | **Recurring Steam-Fetch blocked** | `priceRefresh` auf Inngest stirbt durch Render-Free-Spin-down (~25 statt 2000 Skins/Tag). GH-Actions-Workflow gebaut (`scheduled-price-refresh.yml`) aber `DATABASE_URL` Secret = direkte (IPv6-only) URL → P1001. **CEO:** Secret auf Session-Pooler-URL umstellen. Details: [[2026-05-30-price-pipeline-fix]] |
-| 15 | **Stray gitlink** | `.claude/worktrees/cranky-wilson-bb64cf` committed als Submodule ohne `.gitmodules` → `git submodule` Warnung in CI-cleanup. Entfernen via `git rm --cached` |
+| 15 | ~~Stray gitlink~~ | ✅ **fixed 2026-05-31** — 3 getrackte gitlinks (`.claude/worktrees/{cranky-wilson-bb64cf,gracious-wu-81807c,vigorous-elbakyan-9e5103}`) via `git rm --cached` entfernt. `.claude/` war schon in `.gitignore` (Z.25), kommen nicht zurück |
 | 16 | **Inngest priceRefresh redundant** | Nach GH-Actions-Fix doppelt sich der Steam-Refresh. Inngest-`priceRefresh` Function deaktivieren sobald GH-Actions-Schedule gesund läuft |
 
 ## ❓ Offene Fragen
