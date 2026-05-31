@@ -14,7 +14,7 @@ import logger from '../utils/logger.js';
  */
 export const getPortfolioResearch = async (req, res) => {
   try {
-    const userId = req.auth?.userId;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });
@@ -33,7 +33,7 @@ export const getPortfolioResearch = async (req, res) => {
     return res.json(research);
   } catch (error) {
     logger.error('Failed to get portfolio research', {
-      userId: req.auth?.userId,
+      userId: req.userId,
       error: error.message
     });
 
@@ -49,7 +49,7 @@ export const getPortfolioResearch = async (req, res) => {
  */
 export const getSkinResearch = async (req, res) => {
   try {
-    const userId = req.auth?.userId;
+    const userId = req.userId;
     const { id: skinId } = req.params;
 
     if (!userId) {
@@ -69,7 +69,7 @@ export const getSkinResearch = async (req, res) => {
     return res.json(research);
   } catch (error) {
     logger.error('Failed to get skin research', {
-      userId: req.auth?.userId,
+      userId: req.userId,
       skinId: req.params.id,
       error: error.message
     });
