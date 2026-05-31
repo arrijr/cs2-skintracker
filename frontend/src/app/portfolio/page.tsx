@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/nextjs";
@@ -69,15 +69,9 @@ export default function PortfolioPage() {
   const { watchlist, isLoading: watchlistLoading, error: watchlistError, mutate: mutateWatchlist } = useAuthenticatedWatchlist();
   const { isPremium } = useUserRole();
 
-  // Auto-hide premium banner after 10 seconds
-  useEffect(() => {
-    if (isPremium && showPremiumBanner) {
-      const timer = setTimeout(() => {
-        setShowPremiumBanner(false);
-      }, 10000);
-      return () => clearTimeout(timer);
-    }
-  }, [isPremium, showPremiumBanner]);
+  // Premium banner persists until the user dismisses it manually (X button).
+  // The previous 10s auto-hide meant active Pro subscribers saw a brief flash
+  // then lost the banner before reading it — removed 2026-05-31.
 
   // {/* Remove from Watchlist */}
   async function handleRemoveWatchlist(skinId: number) {

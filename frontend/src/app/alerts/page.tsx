@@ -1,5 +1,7 @@
 "use client";
+import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +15,9 @@ import { EmptyBell } from "@/components/ui/empty-illustrations";
 export default function AlertsPage() {
   const { isSignedIn, isLoaded } = useUser();
   const { alerts, isLoading, error, createAlert, updateAlert, deleteAlert } = useAlerts();
+  // Lifted modal state so both the header action AND the empty-state CTA open
+  // the same Create-Alert dialog (controlled mode).
+  const [createOpen, setCreateOpen] = useState(false);
 
   if (!isLoaded) {
     return (
@@ -37,7 +42,7 @@ export default function AlertsPage() {
       title="Alerts"
       description="Get notified when your conditions trigger."
       maxWidth="5xl"
-      actions={<CreateAlertModal onCreate={createAlert} />}
+      actions={<CreateAlertModal onCreate={createAlert} open={createOpen} onOpenChange={setCreateOpen} />}
     >
       {isLoading && (
         <div className="space-y-3">
@@ -56,6 +61,7 @@ export default function AlertsPage() {
           illustration={<EmptyBell size={120} />}
           title="No alerts yet"
           description="Create your first alert to get notified about price changes, volatility, or case-EV inversions."
+          primaryCta={{ label: 'Create your first alert', onClick: () => setCreateOpen(true), icon: Plus }}
         />
       )}
 
