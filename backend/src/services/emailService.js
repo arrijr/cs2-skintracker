@@ -13,14 +13,29 @@ function getTransporter() {
   const pass = process.env.EMAIL_PASS;
   if (!user || !pass) {
     throw new Error(
-      'Email transport not configured — set EMAIL_USER and EMAIL_PASS (Gmail App Password). ' +
-        'In CI/tests, mock sendAlertEmail instead of calling it.'
+      'Email transport not configured — set EMAIL_USER + EMAIL_PASS. For a custom ' +
+        'SMTP provider (e.g. All-Inkl / kasserver) also set EMAIL_HOST + EMAIL_PORT; ' +
+        'without EMAIL_HOST it defaults to Gmail. In CI/tests, mock sendAlertEmail.'
     );
   }
-  _transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user, pass },
-  });
+  // Generic SMTP when EMAIL_HOST is set (All-Inkl: host like wXXXXXXX.kasserver.com,
+  // port 587 STARTTLS or 465 SSL). Falls back to Gmail service if no host given.
+  const host = process.env.EMAIL_HOST;
+  if (host) {
+    const port = parseInt(process.env.EMAIL_PORT || '587', 10);
+    _transporter = nodemailer.createTransport({
+      host,
+      port,
+      // 465 ⇒ implicit TLS; 587 ⇒ STARTTLS. Allow explicit override via EMAIL_SECURE.
+      secure: process.env.EMAIL_SECURE ? process.env.EMAIL_SECURE === 'true' : port === 465,
+      auth: { user, pass },
+    });
+  } else {
+    _transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user, pass },
+    });
+  }
   return _transporter;
 }
 
@@ -84,17 +99,17 @@ export async function sendAlertEmail({ to, subject, alertType, skinName, payload
   const html = `
     <div style="font-family: -apple-system, system-ui, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #0f172a; color: #fff;">
       <div style="background: linear-gradient(135deg, #a855f7, #ec4899); padding: 16px; border-radius: 8px 8px 0 0;">
-        <h1 style="margin: 0; font-size: 24px;">⚡ skintrackr.com Alert</h1>
+        <h1 style="margin: 0; font-size: 24px;">⚡ skintrackr.io Alert</h1>
       </div>
       <div style="background: #1e293b; padding: 24px; border-radius: 0 0 8px 8px;">
         <h2 style="color: #fff; margin-top: 0;">${escapeHtml(subject)}</h2>
         <p style="color: #cbd5e1;"><strong>Type:</strong> ${escapeHtml(alertType)}</p>
         ${skinName ? `<p style="color: #cbd5e1;"><strong>Item:</strong> ${escapeHtml(skinName)}</p>` : ''}
         ${rowsHtml ? `<table style="margin-top:12px;border-collapse:collapse;width:100%;">${rowsHtml}</table>` : ''}
-        <a href="https://skintrackr.com/alerts" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; text-decoration: none; border-radius: 6px;">Manage alerts</a>
+        <a href="https://skintrackr.io/alerts" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; text-decoration: none; border-radius: 6px;">Manage alerts</a>
       </div>
       <p style="color: #64748b; font-size: 12px; margin-top: 16px; text-align: center;">
-        skintrackr.com · <a href="https://skintrackr.com/account" style="color: #94a3b8;">manage preferences</a>
+        skintrackr.io · <a href="https://skintrackr.io/account" style="color: #94a3b8;">manage preferences</a>
       </p>
     </div>
   `;
@@ -104,17 +119,20 @@ export async function sendAlertEmail({ to, subject, alertType, skinName, payload
     `Type: ${alertType}\n` +
     (skinName ? `Item: ${skinName}\n` : '') +
     (rowsText ? `\n${rowsText}\n` : '') +
-    `\nManage alerts: https://skintrackr.com/alerts\n`;
+    `\nManage alerts: https://skintrackr.io/alerts\n`;
 
   try {
     return await getTransporter().sendMail({
-      from: `"skintrackr.com" <${process.env.EMAIL_USER}>`,
+      // EMAIL_FROM override lets you set a friendly From (e.g. a verified alias).
+      // Default = the authenticated mailbox — most SMTP providers (All-Inkl
+      // included) reject a From that isn't the auth user or an alias of it.
+      from: process.env.EMAIL_FROM || `"SkinTrackr" <${process.env.EMAIL_USER}>`,
       to,
       subject: `[skintrackr] ${subject}`,
       html,
       text,
       headers: {
-        'List-Unsubscribe': '<mailto:unsubscribe@skintrackr.com>, <https://skintrackr.com/account>',
+        'List-Unsubscribe': '<mailto:unsubscribe@skintrackr.io>, <https://skintrackr.io/account>',
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
       },
     });
