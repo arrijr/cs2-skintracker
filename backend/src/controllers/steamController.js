@@ -133,7 +133,15 @@ export async function connectCallback(req, res, { prismaClient = defaultPrisma, 
     return res.redirect(302, `${FRONTEND_BASE}${safeReturn}${sep}steam=connected`);
   } catch (err) {
     logger.error('Steam connect callback failed', { error: err.message });
-    return res.redirect(302, `${FRONTEND_BASE}/account?steam=error&reason=${encodeURIComponent(err.message)}`);
+    // Map to an allow-listed reason code — never reflect raw err.message into
+    // the redirect URL (can contain upstream Steam text / newlines, and the
+    // frontend renders the param). Full detail stays in the server log above.
+    const m = String(err?.message || '');
+    const reason = /state/i.test(m) ? 'state_expired'
+      : /assert|signature|verif/i.test(m) ? 'assertion_invalid'
+      : /timdevice|timeout|fetch|network|5\d\d/i.test(m) ? 'upstream_error'
+      : 'unknown';
+    return res.redirect(302, `${FRONTEND_BASE}/account?steam=error&reason=${reason}`);
   }
 }
 

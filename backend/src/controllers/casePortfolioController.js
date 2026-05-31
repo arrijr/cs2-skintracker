@@ -1,7 +1,6 @@
 // /backend/src/controllers/casePortfolioController.js — [Backend]
 // {/* Case Portfolio Controller - Handle case portfolio operations */}
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import prisma from '../prisma/prismaClient.js';
 
 /**
  * Get user's case portfolio
@@ -98,6 +97,12 @@ const addCaseToPortfolio = async (req, res) => {
 
     if (!caseId || !amount || !buyPrice) {
       return res.status(400).json({ error: 'Missing required fields: caseId, amount, buyPrice' });
+    }
+
+    // Server-side amount cap — prevents a crafted huge amount overflowing KPI math.
+    const amountNum = Number(amount);
+    if (!Number.isFinite(amountNum) || amountNum <= 0 || amountNum > 100000) {
+      return res.status(400).json({ error: 'amount must be a positive number ≤ 100000' });
     }
 
     // Check if case exists

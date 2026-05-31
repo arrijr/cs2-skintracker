@@ -41,9 +41,7 @@ export async function requireAuth(req, res, next) {
     console.error('Auth error:', error);
     
     return res.status(500).json({ 
-      error: 'Authentication failed',
-      details: process.env.NODE_ENV === 'development' ? error.message : 'Internal error'
-    });
+      error: 'Authentication failed'    });
   }
 }
 
@@ -64,8 +62,6 @@ export async function requireAdmin(req, res, next) {
     console.error('Admin auth error:', error);
     
     return res.status(500).json({ 
-      error: 'Authorization failed',
-      details: process.env.NODE_ENV === 'development' ? error.message : 'Internal error'
-    });
+      error: 'Authorization failed'    });
   }
 }

@@ -303,6 +303,16 @@ router.get("/range", async (req, res) => {
       });
     }
 
+    // Clamp the span: an unbounded range (e.g. 1970→2099) runs several COUNTs
+    // over PriceHistory (millions of rows) → slow query DoS even though the
+    // route is admin-gated. Max 90 days.
+    if (endDate - startDate > 90 * 24 * 60 * 60 * 1000) {
+      return res.status(400).json({
+        success: false,
+        error: 'Date range too large (max 90 days)'
+      });
+    }
+
     const [
       userGrowth,
       watchlistGrowth,

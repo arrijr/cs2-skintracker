@@ -1,10 +1,9 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../prisma/prismaClient.js';
 import rateLimit from 'express-rate-limit';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // View-count incrementer is unauthenticated by design (anonymous reads count).
 // Without a limiter, anyone can flood `POST /api/v1/blog/:id/view` to spam
@@ -38,18 +37,19 @@ router.get('/', async (req, res) => {
       isPublished: true,
       ...(category && { category }),
       ...(tag && { tags: { has: tag } }),
-      ...(search && {
+      ...(search && String(search).length <= 64 && {
         OR: [
           { title: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-          { content: { contains: search, mode: 'insensitive' } }
+          { description: { contains: search, mode: 'insensitive' } }
         ]
       })
     };
 
-    // Build orderBy clause
-    const orderBy = {};
-    orderBy[sortBy] = sortOrder;
+    // Build orderBy clause — allowlist field + direction to prevent Prisma
+    // orderBy injection via arbitrary ?sortBy= / ?sortOrder= query params.
+    const BLOG_SORT_FIELDS = ['publishedAt', 'createdAt', 'updatedAt', 'viewCount', 'title'];
+    const safeSortBy = BLOG_SORT_FIELDS.includes(sortBy) ? sortBy : 'createdAt';
+    const orderBy = { [safeSortBy]: sortOrder === 'asc' ? 'asc' : 'desc' };
 
     const [posts, total] = await Promise.all([
       prisma.blogPost.findMany({
@@ -403,18 +403,19 @@ router.get('/admin/all', requireAuth, requireAdmin, async (req, res) => {
       ...(category && { category }),
       ...(tag && { tags: { has: tag } }),
       ...(isPublished !== undefined && { isPublished: isPublished === 'true' }),
-      ...(search && {
+      ...(search && String(search).length <= 64 && {
         OR: [
           { title: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-          { content: { contains: search, mode: 'insensitive' } }
+          { description: { contains: search, mode: 'insensitive' } }
         ]
       })
     };
 
-    // Build orderBy clause
-    const orderBy = {};
-    orderBy[sortBy] = sortOrder;
+    // Build orderBy clause — allowlist field + direction to prevent Prisma
+    // orderBy injection via arbitrary ?sortBy= / ?sortOrder= query params.
+    const BLOG_SORT_FIELDS = ['publishedAt', 'createdAt', 'updatedAt', 'viewCount', 'title'];
+    const safeSortBy = BLOG_SORT_FIELDS.includes(sortBy) ? sortBy : 'createdAt';
+    const orderBy = { [safeSortBy]: sortOrder === 'asc' ? 'asc' : 'desc' };
 
     const [posts, total] = await Promise.all([
       prisma.blogPost.findMany({

@@ -1,7 +1,6 @@
 // /backend/src/controllers/caseController.js — [Backend]
 // {/* Case Controller - Handle case-related API endpoints */}
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import prisma from '../prisma/prismaClient.js';
 
 /**
  * Get all cases with optional filtering and sorting
@@ -76,8 +75,7 @@ const getAllCases = async (req, res) => {
   } catch (error) {
     console.error('Error fetching cases:', error);
     res.status(500).json({ 
-      error: 'Failed to fetch cases',
-      details: error.message 
+      error: 'Failed to fetch cases'
     });
   }
 };
@@ -250,8 +248,7 @@ const getCaseById = async (req, res) => {
   } catch (error) {
     console.error('Error fetching case:', error);
     res.status(500).json({ 
-      error: 'Failed to fetch case',
-      details: error.message 
+      error: 'Failed to fetch case'
     });
   }
 };
@@ -290,8 +287,7 @@ const getCaseSupply = async (req, res) => {
   } catch (error) {
     console.error('Error fetching case supply:', error);
     res.status(500).json({ 
-      error: 'Failed to fetch case supply',
-      details: error.message 
+      error: 'Failed to fetch case supply'
     });
   }
 };
@@ -330,8 +326,7 @@ const getCasePriceHistory = async (req, res) => {
   } catch (error) {
     console.error('Error fetching case price history:', error);
     res.status(500).json({ 
-      error: 'Failed to fetch case price history',
-      details: error.message 
+      error: 'Failed to fetch case price history'
     });
   }
 };
@@ -377,8 +372,7 @@ const getCaseSkins = async (req, res) => {
   } catch (error) {
     console.error('Error fetching case skins:', error);
     res.status(500).json({ 
-      error: 'Failed to fetch case skins',
-      details: error.message 
+      error: 'Failed to fetch case skins'
     });
   }
 };
@@ -471,8 +465,7 @@ const getCaseStats = async (req, res) => {
   } catch (error) {
     console.error('Error fetching case stats:', error);
     res.status(500).json({ 
-      error: 'Failed to fetch case statistics',
-      details: error.message 
+      error: 'Failed to fetch case statistics'
     });
   }
 };

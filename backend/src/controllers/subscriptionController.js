@@ -494,8 +494,10 @@ export const handleWebhook = async (req, res) => {
       signature: sig?.substring(0, 20) + '...'
     });
 
+    // Don't echo error.message — it can leak Stripe internals / stack hints to
+    // an unauthenticated caller probing the webhook. Logged above; respond generic.
     return res.status(400).json({
-      error: `Webhook Error: ${error.message}`
+      error: 'Webhook signature verification failed'
     });
   }
 };

@@ -1,9 +1,7 @@
 // [API] Quantity History — daily active listings (and volume) for bar chart on Skin Detail
 
 import marketSnapshotService from '../services/marketSnapshotService.js';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../prisma/prismaClient.js';
 
 /**
  * Get quantity history for a specific skin

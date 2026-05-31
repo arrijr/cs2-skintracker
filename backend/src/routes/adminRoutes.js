@@ -119,9 +119,9 @@ router.post('/update-skin-data', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error in skin data update:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update skin data'
     });
   }
 });

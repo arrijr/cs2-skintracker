@@ -143,18 +143,25 @@ export async function verifyClerkJwt(req, res, next) {
               actualClaims = { aud: p.aud, iss: p.iss, sub: p.sub };
             }
           } catch (_) { /* ignore decode errors */ }
-          // Do NOT log token bytes. actualClaims is base64-decoded unverified
-          // payload — already public metadata in the JWT, safe to log.
-          console.error("[JWT VERIFY] failed:", err?.message, {
-            expectedIssuer: issuer,
-            expectedAudience: audience,
-            actualClaims,
-            errorType: err.name,
-          });
-          return res.status(401).json({ 
-            ok: false, 
-            code: "INVALID_JWT", 
-            message: err?.message 
+          // Do NOT log token bytes. In production, also don't log the decoded
+          // claims — `actualClaims.sub` is a user identifier (PII), and noisy
+          // claim dumps in prod logs are a liability. Dev keeps the detail for
+          // debugging. The 401 response never echoes err.message (leaks JWT
+          // internals / issuer-audience hints to an unauthenticated caller).
+          if (process.env.NODE_ENV !== "production") {
+            console.error("[JWT VERIFY] failed:", err?.message, {
+              expectedIssuer: issuer,
+              expectedAudience: audience,
+              actualClaims,
+              errorType: err.name,
+            });
+          } else {
+            console.error("[JWT VERIFY] failed:", err?.name);
+          }
+          return res.status(401).json({
+            ok: false,
+            code: "INVALID_JWT",
+            message: "Invalid or expired token"
           });
         }
         

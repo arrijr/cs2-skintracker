@@ -18,29 +18,14 @@ router.get("/", (_req, res) => {
 // Build info endpoint
 router.get("/build-info", (_req, res) => {
   try {
-    const startTime = process.hrtime();
-    const uptime = process.uptime();
-    
+    // Public endpoint — keep it to a minimal liveness/version response. Do NOT
+    // expose gitCommit/gitBranch (lets an attacker target known CVEs for the
+    // exact code version), nodeVersion, pid, or memory internals (server recon).
     res.json({
       ok: true,
       version: process.env.APP_VERSION || '1.0.0',
-      buildTime: process.env.BUILD_TIME || new Date().toISOString(),
-      gitCommit: process.env.GIT_COMMIT || 'unknown',
-      gitBranch: process.env.GIT_BRANCH || 'main',
-      nodeVersion: process.version,
       environment: process.env.NODE_ENV || 'development',
-      lastDeploy: process.env.LAST_DEPLOY || new Date().toISOString(),
-      uptime: Math.floor(uptime).toString(),
-      memory: {
-        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
-        external: Math.round(process.memoryUsage().external / 1024 / 1024)
-      },
-      platform: {
-        os: process.platform,
-        arch: process.arch,
-        pid: process.pid
-      },
+      uptime: Math.floor(process.uptime()).toString(),
       ts: new Date().toISOString()
     });
   } catch (error) {

@@ -159,7 +159,9 @@ export const addToPortfolio = async (req, res) => {
     // Validation
     if (
       !skinId ||
-      !amount ||
+      !Number.isFinite(Number(amount)) ||
+      Number(amount) <= 0 ||
+      Number(amount) > 100000 || // server-side cap: prevents 1e18-style overflow of KPI math
       typeof buyPrice !== "number" ||
       isNaN(buyPrice) ||
       buyPrice <= 0 ||
