@@ -82,12 +82,12 @@ export function SteamConnectSection() {
         )}
         <div className="relative group">
           {/* Subtle gradient glow */}
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-fuchsia-500 to-pink-500 rounded-2xl opacity-30 group-hover:opacity-50 blur transition" />
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl opacity-30 group-hover:opacity-50 blur transition" />
           <div className="relative overflow-hidden rounded-2xl border border-pink-500/30 bg-slate-900/90 backdrop-blur p-6 md:p-8">
-            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/[0.06] via-transparent to-pink-500/[0.06] pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/[0.06] via-transparent to-pink-500/[0.06] pointer-events-none" />
             <div className="relative">
               <div className="flex items-start gap-4 mb-5">
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center shadow-lg shadow-pink-500/20">
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-pink-500/20">
                   <Sparkles className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
@@ -111,7 +111,7 @@ export function SteamConnectSection() {
                   <span className="text-slate-300">Read-only — we never trade or move items</span>
                 </div>
                 <div className="flex items-start gap-2 text-sm">
-                  <RefreshCw className="h-4 w-4 text-fuchsia-300 flex-shrink-0 mt-0.5" />
+                  <RefreshCw className="h-4 w-4 text-purple-300 flex-shrink-0 mt-0.5" />
                   <span className="text-slate-300">Auto-fill cost basis from price history</span>
                 </div>
               </div>
@@ -127,7 +127,7 @@ export function SteamConnectSection() {
                   connect();
                 }}
                 size="lg"
-                className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white gap-2 font-semibold"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white gap-2 font-semibold"
               >
                 <Link2 className="h-4 w-4" /> Connect Steam Account
               </Button>
@@ -153,7 +153,7 @@ export function SteamConnectSection() {
       <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-800/60 border border-slate-800">
-            <Link2 className="h-5 w-5 text-fuchsia-300" />
+            <Link2 className="h-5 w-5 text-purple-300" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
@@ -196,14 +196,14 @@ export function SteamConnectSection() {
               variant="outline"
               onClick={handleResync}
               disabled={resyncing}
-              className="border-slate-700 bg-slate-900/60 text-slate-200 hover:text-fuchsia-300 hover:bg-fuchsia-500/10 hover:border-fuchsia-500/40 gap-2"
+              className="border-slate-700 bg-slate-900/60 text-slate-200 hover:text-purple-300 hover:bg-purple-500/10 hover:border-purple-500/40 gap-2"
             >
               <RefreshCw className={`h-4 w-4 ${resyncing ? 'animate-spin' : ''}`} /> {resyncing ? 'Syncing...' : 'Resync'}
             </Button>
           )}
           <Button
             onClick={() => setShowImport(true)}
-            className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white gap-2"
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white gap-2"
           >
             <RefreshCw className="h-4 w-4" /> {status.lastImportedAt ? 'Re-import' : 'Import inventory'}
           </Button>

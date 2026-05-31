@@ -81,7 +81,7 @@ export function WearComparisonTable({
                   {v?.slug ? (
                     <Link
                       href={`/skins/${weaponSlug}/${v.slug}`}
-                      className="text-fuchsia-400 hover:text-fuchsia-300 text-xs"
+                      className="text-purple-400 hover:text-purple-300 text-xs"
                     >
                       View →
                     </Link>

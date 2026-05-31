@@ -219,7 +219,7 @@ export default function CasePortfolioPage() {
                       {formatUSD(stats.totalCost)}
                     </p>
                   </div>
-                  <Package className="w-8 h-8 text-fuchsia-400" />
+                  <Package className="w-8 h-8 text-purple-400" />
                 </div>
               </CardContent>
             </Card>

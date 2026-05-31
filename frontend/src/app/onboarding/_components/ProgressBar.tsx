@@ -22,7 +22,7 @@ export function ProgressBar({ step, onJump }: ProgressBarProps) {
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[0.7rem] font-display font-semibold uppercase tracking-[0.2em] text-fuchsia-300/80">
+        <p className="text-[0.7rem] font-display font-semibold uppercase tracking-[0.2em] text-purple-300/80">
           Step {step} of 3
         </p>
         <p className="text-xs text-slate-400">{labels[step]}</p>
@@ -31,7 +31,7 @@ export function ProgressBar({ step, onJump }: ProgressBarProps) {
       {/* Rail */}
       <div className="relative h-1.5 rounded-full bg-amber-500/10 overflow-hidden">
         <div
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-fuchsia-500 to-pink-500 transition-[width] duration-300"
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-pink-500 transition-[width] duration-300"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -50,7 +50,7 @@ export function ProgressBar({ step, onJump }: ProgressBarProps) {
               className={cn(
                 "flex items-center gap-2 transition-colors",
                 reached ? "text-slate-200" : "text-slate-400",
-                clickable && "hover:text-fuchsia-300 cursor-pointer",
+                clickable && "hover:text-purple-300 cursor-pointer",
                 !clickable && "cursor-default"
               )}
             >
@@ -58,7 +58,7 @@ export function ProgressBar({ step, onJump }: ProgressBarProps) {
                 className={cn(
                   "h-2 w-2 rounded-full",
                   reached
-                    ? "bg-gradient-to-br from-fuchsia-500 to-pink-500"
+                    ? "bg-gradient-to-br from-purple-500 to-pink-500"
                     : "bg-slate-700"
                 )}
               />

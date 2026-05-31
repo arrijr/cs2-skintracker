@@ -92,7 +92,7 @@ const plans: Plan[] = [
     ],
     highlight: true,
     ctaLabel: 'Upgrade to Pro',
-    gradient: 'from-fuchsia-500 to-pink-500',
+    gradient: 'from-purple-500 to-pink-500',
   },
 ];
 
@@ -136,12 +136,12 @@ export default function PricingPage() {
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <Badge variant="outline" className="mb-4 border-fuchsia-500/30 text-fuchsia-400 bg-fuchsia-500/10">
+          <Badge variant="outline" className="mb-4 border-purple-500/30 text-purple-400 bg-purple-500/10">
             Pricing
           </Badge>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
             Choose your{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
               trading plan
             </span>
           </h1>
@@ -213,13 +213,13 @@ export default function PricingPage() {
                 key={plan.id}
                 className={`relative bg-slate-900/50 backdrop-blur border rounded-2xl transition-all duration-300 ${
                   plan.highlight
-                    ? 'border-fuchsia-500/50 shadow-2xl shadow-fuchsia-500/20 lg:scale-105'
+                    ? 'border-purple-500/50 shadow-2xl shadow-purple-500/20 lg:scale-105'
                     : 'border-slate-800 hover:border-slate-700'
                 }`}
               >
                 {plan.highlight && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white px-4 py-1">
+                    <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1">
                       <Star className="h-3 w-3 mr-1" />
                       Most Popular
                     </Badge>
@@ -281,7 +281,7 @@ export default function PricingPage() {
                         ? 'bg-slate-700 hover:bg-slate-600 text-white'
                         : plan.id === 'lite'
                         ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white'
-                        : 'bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white'
+                        : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
                     }`}
                   >
                     {isLoading ? (
@@ -349,7 +349,7 @@ export default function PricingPage() {
                     See the full{' '}
                     <Link
                       href="/legal/refund"
-                      className="text-fuchsia-400 hover:text-fuchsia-300 underline underline-offset-2"
+                      className="text-purple-400 hover:text-purple-300 underline underline-offset-2"
                     >
                       Refund Policy
                     </Link>

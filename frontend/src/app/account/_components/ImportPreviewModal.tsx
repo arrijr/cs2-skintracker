@@ -63,7 +63,7 @@ export function ImportPreviewModal({ onClose }: Props) {
           <div className="space-y-3">
             <p className="text-green-300">✓ Created <strong>{done.created}</strong> Portfolio entries.</p>
             <p className="text-slate-300 text-sm">{done.matched} matched · {done.skipped} skipped</p>
-            <Button onClick={onClose} className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600">Done</Button>
+            <Button onClick={onClose} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">Done</Button>
           </div>
         )}
 
@@ -98,9 +98,9 @@ export function ImportPreviewModal({ onClose }: Props) {
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={onClose} className="border-slate-700 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white">Cancel</Button>
               {mode === 'custom' ? (
-                <Button onClick={() => setShowBulk(true)} className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600">Continue to bulk edit</Button>
+                <Button onClick={() => setShowBulk(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">Continue to bulk edit</Button>
               ) : (
-                <Button onClick={handleImport} disabled={importing} className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600">
+                <Button onClick={handleImport} disabled={importing} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
                   {importing ? 'Importing…' : 'Import'}
                 </Button>
               )}

@@ -204,7 +204,7 @@ export function Step3Alert({ onBack, onFinish }: Step3AlertProps) {
         ) : (
           <div className="mb-6">
             {/* Selected skin card */}
-            <div className="flex items-center gap-3 p-4 rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/5 mb-4">
+            <div className="flex items-center gap-3 p-4 rounded-xl border border-purple-500/30 bg-purple-500/5 mb-4">
               <div className="h-12 w-12 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {selected.imageUrl ? (
                   <Image
@@ -300,7 +300,7 @@ export function Step3Alert({ onBack, onFinish }: Step3AlertProps) {
           <Button
             onClick={selected && threshold > 0 ? handleCreate : handleSkipFinish}
             disabled={submitting}
-            className="order-1 sm:order-2 w-full sm:w-auto bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20 gap-2"
+            className="order-1 sm:order-2 w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20 gap-2"
           >
             {submitting
               ? "Creating…"

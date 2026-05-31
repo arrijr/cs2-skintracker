@@ -61,7 +61,7 @@ export function CookieBanner() {
               no selling your data.{" "}
               <Link
                 href="/legal/privacy"
-                className="text-fuchsia-400 underline-offset-2 hover:text-fuchsia-300 hover:underline"
+                className="text-purple-400 underline-offset-2 hover:text-purple-300 hover:underline"
               >
                 Privacy policy
               </Link>
@@ -72,7 +72,7 @@ export function CookieBanner() {
             <button
               type="button"
               onClick={accept}
-              className="rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-fuchsia-400 hover:to-pink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              className="rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-purple-400 hover:to-pink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             >
               Accept analytics
             </button>

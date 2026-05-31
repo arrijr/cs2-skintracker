@@ -22,7 +22,7 @@ type Tier = 'free' | 'lite' | 'pro';
 function TierPill({ tier }: { tier: Tier }) {
   if (tier === 'pro') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-pink-500/40 bg-gradient-to-r from-fuchsia-500/20 to-pink-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-pink-300">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-pink-500/40 bg-gradient-to-r from-purple-500/20 to-pink-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-pink-300">
         <Crown className="h-3 w-3" />
         Pro
       </span>
@@ -268,9 +268,9 @@ export function BillingTab() {
             )}
           </>
         ) : (
-          <div className="mt-5 relative overflow-hidden rounded-xl border border-pink-500/30 bg-gradient-to-br from-fuchsia-500/10 via-transparent to-pink-500/10 p-5">
+          <div className="mt-5 relative overflow-hidden rounded-xl border border-pink-500/30 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/10 p-5">
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1">
@@ -367,7 +367,7 @@ export function BillingTab() {
             <Button
               onClick={handleUpgrade}
               disabled={busy !== null}
-              className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
             >
               {busy === 'checkout' ? (
                 <>
@@ -389,7 +389,7 @@ export function BillingTab() {
       <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-800/60 border border-slate-800">
-            <FileDown className="h-5 w-5 text-fuchsia-300" aria-hidden="true" />
+            <FileDown className="h-5 w-5 text-purple-300" aria-hidden="true" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
@@ -409,7 +409,7 @@ export function BillingTab() {
           {tier === 'pro' ? (
             <Button
               disabled={!csvExportReady || busy !== null}
-              className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white disabled:opacity-60 disabled:cursor-not-allowed"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white disabled:opacity-60 disabled:cursor-not-allowed"
               onClick={handleExportCsv}
             >
               {busy === 'export' ? (
@@ -428,7 +428,7 @@ export function BillingTab() {
             <Button
               onClick={handleUpgrade}
               disabled={busy !== null}
-              className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
             >
               <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
               Upgrade to Pro

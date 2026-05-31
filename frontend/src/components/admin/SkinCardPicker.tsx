@@ -117,7 +117,7 @@ export default function SkinCardPicker({ onSelect, onClose }: SkinCardPickerProp
                   role="button"
                   tabIndex={0}
                   aria-label={`Select ${skin.name}`}
-                  className="cursor-pointer hover:shadow-md transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500"
+                  className="cursor-pointer hover:shadow-md transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                   onClick={() => handleSelectSkin(skin)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {

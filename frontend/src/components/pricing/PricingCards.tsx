@@ -75,7 +75,7 @@ export const PLANS: Plan[] = [
     highlight: true,
     ctaLabel: "Upgrade to Pro",
     ctaHref: "/pricing",
-    gradient: "from-fuchsia-500 to-pink-500",
+    gradient: "from-purple-500 to-pink-500",
   },
 ];
 

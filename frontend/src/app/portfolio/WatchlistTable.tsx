@@ -82,7 +82,7 @@ export default function WatchlistTable({ watchlist, onRemove, onUpdateAlert }: P
                 </td>
                 <td>
                   {href ? (
-                    <Link href={href} className="text-fuchsia-400 hover:underline">
+                    <Link href={href} className="text-purple-400 hover:underline">
                       {name}
                     </Link>
                   ) : (

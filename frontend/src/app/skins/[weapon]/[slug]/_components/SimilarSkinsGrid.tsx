@@ -111,7 +111,7 @@ export function SimilarSkinsGrid({ skinId }: { skinId: number }) {
                 >
                   {s.rarity ?? "—"}
                 </div>
-                <div className="text-sm font-semibold text-white truncate group-hover:text-fuchsia-300 transition-colors">
+                <div className="text-sm font-semibold text-white truncate group-hover:text-purple-300 transition-colors">
                   {s.name}
                 </div>
                 {s.wear && (

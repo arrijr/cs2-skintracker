@@ -123,7 +123,7 @@ export function EnhancedSkinCard({
         }}
         aria-label={skin.name}
         className={cn(
-          "group flex items-center gap-4 bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl p-3 cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500",
+          "group flex items-center gap-4 bg-slate-900/70 backdrop-blur border border-slate-700/30 rounded-2xl p-3 cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500",
           "hover:border-slate-600/60 hover:bg-slate-800/40",
           className
         )}
@@ -196,7 +196,7 @@ export function EnhancedSkinCard({
         }
       }}
       aria-label={skin.name}
-      className={cn("group relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500 rounded-2xl", className)}
+      className={cn("group relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl", className)}
     >
       {/* Outer rarity-tinted glow halo on hover */}
       <span

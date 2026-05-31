@@ -51,7 +51,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
         <Button
           asChild
           size="sm"
-          className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white"
+          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
         >
           <Link href="/sign-up">Sign up</Link>
         </Button>
@@ -94,7 +94,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
             variant="ghost"
             className="relative h-10 w-10 p-0 rounded-full hover:bg-transparent transition-all duration-200 group"
           >
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm ring-2 ring-pink-500/30 group-hover:ring-pink-500/70 group-hover:shadow-lg group-hover:shadow-pink-500/30 transition-all duration-200">
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm ring-2 ring-pink-500/30 group-hover:ring-pink-500/70 group-hover:shadow-lg group-hover:shadow-pink-500/30 transition-all duration-200">
               {getInitials()}
             </div>
           </Button>
@@ -105,7 +105,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
         >
           {/* User Info */}
           <DropdownMenuLabel className="flex items-center gap-3 p-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center text-white font-semibold ring-2 ring-pink-500/30">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold ring-2 ring-pink-500/30">
               {getInitials()}
             </div>
             <div className="flex-1 min-w-0">
@@ -213,7 +213,7 @@ export default function ProfileDropdown({ className = "" }: ProfileDropdownProps
             className="focus:bg-slate-800 focus:text-white data-[highlighted]:bg-slate-800 cursor-pointer"
           >
             <Link href="/onboarding" className="flex items-center gap-3 p-3">
-              <Sparkles className="h-4 w-4 text-fuchsia-300" />
+              <Sparkles className="h-4 w-4 text-purple-300" />
               <div>
                 <p className="font-medium text-slate-100">Re-run setup</p>
                 <p className="text-xs text-slate-400">

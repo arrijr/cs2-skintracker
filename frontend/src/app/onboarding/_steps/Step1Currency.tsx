@@ -65,7 +65,7 @@ export function Step1Currency({
       <div className="relative">
         {/* Hero */}
         <div className="flex items-start gap-4 mb-8">
-          <div className="hidden sm:flex w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500 items-center justify-center flex-shrink-0 shadow-lg shadow-pink-500/30">
+          <div className="hidden sm:flex w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 items-center justify-center flex-shrink-0 shadow-lg shadow-pink-500/30">
             <Sparkles className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -122,7 +122,7 @@ export function Step1Currency({
           <Button
             onClick={handleContinue}
             disabled={saving}
-            className="order-1 sm:order-2 w-full sm:w-auto bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20 gap-2"
+            className="order-1 sm:order-2 w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20 gap-2"
           >
             {saving ? "Saving…" : "Continue"}
             {!saving && <ArrowRight className="h-4 w-4" />}
@@ -157,7 +157,7 @@ function CurrencyOption({
       className={cn(
         "relative flex items-center gap-4 rounded-2xl border p-4 text-left transition-all",
         active
-          ? "border-fuchsia-500/60 bg-fuchsia-500/5 ring-1 ring-fuchsia-500/30"
+          ? "border-purple-500/60 bg-purple-500/5 ring-1 ring-purple-500/30"
           : "border-slate-800 bg-slate-900/40 hover:border-slate-700 hover:bg-slate-900/60"
       )}
     >
@@ -165,7 +165,7 @@ function CurrencyOption({
         className={cn(
           "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
           active
-            ? "bg-gradient-to-br from-fuchsia-500 to-pink-500 text-white"
+            ? "bg-gradient-to-br from-purple-500 to-pink-500 text-white"
             : "bg-slate-800 text-slate-300"
         )}
       >
@@ -179,7 +179,7 @@ function CurrencyOption({
         <p className="text-xs text-slate-400">{label}</p>
       </div>
       {active && (
-        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
           <Check className="h-3.5 w-3.5 text-white" />
         </div>
       )}

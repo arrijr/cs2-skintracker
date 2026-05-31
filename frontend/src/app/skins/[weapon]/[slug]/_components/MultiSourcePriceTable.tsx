@@ -108,7 +108,7 @@ export function MultiSourcePriceTable({ skinSlug }: { skinSlug: string }) {
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{SOURCE_LABELS[s.source] ?? s.source}</span>
                   {i === 0 && (
-                    <span className="text-[11px] bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white px-2 py-0.5 rounded-full">
+                    <span className="text-[11px] bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-0.5 rounded-full">
                       Cheapest
                     </span>
                   )}
@@ -121,7 +121,7 @@ export function MultiSourcePriceTable({ skinSlug }: { skinSlug: string }) {
                   href={s.url}
                   source={s.source}
                   skinSlug={skinSlug}
-                  className="text-fuchsia-400 hover:text-fuchsia-300 text-xs"
+                  className="text-purple-400 hover:text-purple-300 text-xs"
                 >
                   View →
                 </AffiliateLink>

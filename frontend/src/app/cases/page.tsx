@@ -88,7 +88,7 @@ function CaseCard({ c, inPortfolio }: { c: Case; inPortfolio: boolean }) {
   return (
     <Link
       href={`/cases/${caseToSlug(c.name)}`}
-      className="group relative flex flex-col rounded-2xl border border-slate-800 bg-slate-900/50 p-4 transition hover:border-slate-600 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500"
+      className="group relative flex flex-col rounded-2xl border border-slate-800 bg-slate-900/50 p-4 transition hover:border-slate-600 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
     >
       {/* Badges row top-right */}
       <div className="absolute right-3 top-3 flex flex-col items-end gap-1 z-10">
@@ -121,7 +121,7 @@ function CaseCard({ c, inPortfolio }: { c: Case; inPortfolio: boolean }) {
 
       {/* Name + price */}
       <div className="mt-3 flex-1 min-h-[3.5rem]">
-        <h3 className="text-sm font-semibold text-slate-100 line-clamp-2 group-hover:text-fuchsia-400 transition-colors">
+        <h3 className="text-sm font-semibold text-slate-100 line-clamp-2 group-hover:text-purple-400 transition-colors">
           {c.name}
         </h3>
       </div>
@@ -180,7 +180,7 @@ function Pagination({
             variant={it === page ? "default" : "outline"}
             size="sm"
             onClick={() => onPage(it)}
-            className={it === page ? "bg-fuchsia-600 hover:bg-fuchsia-700" : ""}
+            className={it === page ? "bg-purple-600 hover:bg-purple-700" : ""}
           >
             {it}
           </Button>
@@ -387,12 +387,12 @@ function CasesPageInner() {
                   onClick={() => updateQuery({ tab: t === "cases" ? null : t, page: null })}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
                     active
-                      ? "bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white shadow-lg shadow-fuchsia-900/30"
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-900/30"
                       : "bg-slate-900/50 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
                   }`}
                 >
                   {TAB_LABELS[t]}
-                  <span className={`ml-2 text-xs ${active ? "text-fuchsia-100" : "text-slate-500"}`}>
+                  <span className={`ml-2 text-xs ${active ? "text-purple-100" : "text-slate-500"}`}>
                     {counts[t]}
                   </span>
                 </button>

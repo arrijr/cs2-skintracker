@@ -25,7 +25,7 @@ export default function Page() {
               socialButtonsBlockButton: 'bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-white',
               // Brighter email/password input — was bg-slate-900/70, now bg-slate-800/60.
               formFieldInput: 'bg-slate-800/60 border border-slate-700/50 text-white placeholder:text-slate-400',
-              footerActionLink: 'text-fuchsia-400 hover:text-fuchsia-300',
+              footerActionLink: 'text-purple-400 hover:text-purple-300',
             },
           }}
         />

@@ -120,7 +120,7 @@ export default function SkinImage({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-lg group ${gradientBackground} hover:shadow-xl transition-all duration-300 ${onClick ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500' : ''} ${fill ? 'w-full h-full' : ''} ${className || ''}`}
+      className={`relative overflow-hidden rounded-lg group ${gradientBackground} hover:shadow-xl transition-all duration-300 ${onClick ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500' : ''} ${fill ? 'w-full h-full' : ''} ${className || ''}`}
       onClick={onClick}
       {...(onClick ? {
         role: 'button',

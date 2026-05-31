@@ -62,28 +62,28 @@ function ProfilePageInner() {
         <TabsList className="h-auto w-full justify-start gap-1 bg-slate-900/70 backdrop-blur border border-slate-800 p-1 overflow-x-auto rounded-2xl">
           <TabsTrigger
             value="account"
-            className="gap-2 min-h-[40px] px-4 rounded-xl text-slate-400 hover:text-white transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-fuchsia-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+            className="gap-2 min-h-[40px] px-4 rounded-xl text-slate-400 hover:text-white transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md"
           >
             <Settings className="w-4 h-4" aria-hidden="true" />
             <span>Account</span>
           </TabsTrigger>
           <TabsTrigger
             value="billing"
-            className="gap-2 min-h-[40px] px-4 rounded-xl text-slate-400 hover:text-white transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-fuchsia-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+            className="gap-2 min-h-[40px] px-4 rounded-xl text-slate-400 hover:text-white transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md"
           >
             <CreditCard className="w-4 h-4" aria-hidden="true" />
             <span>Billing</span>
           </TabsTrigger>
           <TabsTrigger
             value="notifications"
-            className="gap-2 min-h-[40px] px-4 rounded-xl text-slate-400 hover:text-white transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-fuchsia-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+            className="gap-2 min-h-[40px] px-4 rounded-xl text-slate-400 hover:text-white transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md"
           >
             <Bell className="w-4 h-4" aria-hidden="true" />
             <span>Notifications</span>
           </TabsTrigger>
           <TabsTrigger
             value="security"
-            className="gap-2 min-h-[40px] px-4 rounded-xl text-slate-400 hover:text-white transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-fuchsia-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+            className="gap-2 min-h-[40px] px-4 rounded-xl text-slate-400 hover:text-white transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md"
           >
             <Shield className="w-4 h-4" aria-hidden="true" />
             <span>Security</span>

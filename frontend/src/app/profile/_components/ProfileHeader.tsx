@@ -65,7 +65,7 @@ export function ProfileHeader() {
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 md:p-6 flex items-center gap-4">
       <span
-        className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center text-white font-display font-bold text-xl md:text-2xl shadow-lg shrink-0"
+        className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-display font-bold text-xl md:text-2xl shadow-lg shrink-0"
         aria-hidden="true"
       >
         {initials}
@@ -93,7 +93,7 @@ export function ProfileHeader() {
 function TierPill({ tier }: { tier: 'free' | 'lite' | 'pro' }) {
   if (tier === 'pro') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-pink-500/40 bg-gradient-to-r from-fuchsia-500/20 to-pink-500/20 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-pink-300">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-pink-500/40 bg-gradient-to-r from-purple-500/20 to-pink-500/20 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-pink-300">
         <Crown className="h-3 w-3" />
         Pro
       </span>

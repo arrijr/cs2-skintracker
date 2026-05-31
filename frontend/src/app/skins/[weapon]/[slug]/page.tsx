@@ -82,11 +82,11 @@ export default async function SkinDetailPage({ params, searchParams }: PageProps
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           {/* Breadcrumbs */}
           <nav className="mb-6 text-sm text-slate-400" aria-label="Breadcrumb">
-            <Link href="/" className="hover:text-fuchsia-400">Home</Link>
+            <Link href="/" className="hover:text-purple-400">Home</Link>
             <span className="mx-2">/</span>
-            <Link href="/skins" className="hover:text-fuchsia-400">Skins</Link>
+            <Link href="/skins" className="hover:text-purple-400">Skins</Link>
             <span className="mx-2">/</span>
-            <Link href={`/skins/${skin.weaponSlug}`} className="hover:text-fuchsia-400 capitalize">
+            <Link href={`/skins/${skin.weaponSlug}`} className="hover:text-purple-400 capitalize">
               {skin.weaponSlug.replace(/-/g, ' ')}
             </Link>
             <span className="mx-2">/</span>

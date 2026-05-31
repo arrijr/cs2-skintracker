@@ -125,7 +125,7 @@ export default async function CaseDetailPage({ params }: Props) {
         </div>
 
         <div className="min-w-0">
-          <Link href="/cases" className="text-sm text-slate-400 hover:text-fuchsia-400">
+          <Link href="/cases" className="text-sm text-slate-400 hover:text-purple-400">
             ← Back to all cases
           </Link>
           <h1 className="mt-2 text-3xl md:text-4xl font-bold text-slate-100">{c.name}</h1>
@@ -263,7 +263,7 @@ export default async function CaseDetailPage({ params }: Props) {
               </div>
             );
             return href ? (
-              <Link key={d.id} href={href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500 rounded-xl">
+              <Link key={d.id} href={href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-xl">
                 {inner}
               </Link>
             ) : (

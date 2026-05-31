@@ -399,7 +399,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
                 {skin.caseInfo && (
                   <Link
                     href={`/cases/${caseToSlug(skin.caseInfo.name)}`}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-[0.18em] border border-fuchsia-500/40 bg-fuchsia-500/12 text-fuchsia-300 hover:bg-fuchsia-500/20 hover:border-fuchsia-400/60 transition-colors"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-[0.18em] border border-purple-500/40 bg-purple-500/12 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400/60 transition-colors"
                     aria-label={`From ${skin.caseInfo.name}`}
                   >
                     <Package className="h-3 w-3" />
@@ -744,13 +744,13 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
               <div className="flex flex-col gap-2">
                 <a
                   href="#wears"
-                  className="text-xs text-slate-400 hover:text-fuchsia-400 transition-colors flex items-center gap-2"
+                  className="text-xs text-slate-400 hover:text-purple-400 transition-colors flex items-center gap-2"
                 >
                   → All wear variants (FN · MW · FT · WW · BS)
                 </a>
                 <a
                   href="#prices"
-                  className="text-xs text-slate-400 hover:text-fuchsia-400 transition-colors flex items-center gap-2"
+                  className="text-xs text-slate-400 hover:text-purple-400 transition-colors flex items-center gap-2"
                 >
                   → Cross-market prices (Steam · Skinport · CSFloat)
                 </a>
@@ -759,7 +759,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
                     href={`https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-slate-400 hover:text-fuchsia-400 transition-colors flex items-center gap-2"
+                    className="text-xs text-slate-400 hover:text-purple-400 transition-colors flex items-center gap-2"
                   >
                     → Open on Steam Market ↗
                   </a>

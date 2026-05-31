@@ -186,7 +186,7 @@ function ToggleRow({
         checked={checked}
         disabled={pending}
         onCheckedChange={(v) => onChange(v === true)}
-        className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-fuchsia-500 data-[state=checked]:to-pink-500 data-[state=unchecked]:bg-slate-800"
+        className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-purple-500 data-[state=checked]:to-pink-500 data-[state=unchecked]:bg-slate-800"
       />
     </div>
   );

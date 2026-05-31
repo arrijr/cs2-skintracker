@@ -294,7 +294,7 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange, ac
                         <Link
                           href={href}
                           onClick={(e) => e.stopPropagation()} // Verhindert Accordion-Toggle
-                          className="hover:text-fuchsia-400 transition-colors"
+                          className="hover:text-purple-400 transition-colors"
                         >
                           {entry.skin.name}
                         </Link>

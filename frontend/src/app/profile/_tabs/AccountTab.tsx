@@ -143,7 +143,7 @@ export function AccountTab() {
               value={data.displayName ?? ''}
               onChange={(e) => setData({ ...data, displayName: e.target.value })}
               placeholder="Your name"
-              className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-400 focus:border-fuchsia-500"
+              className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-400 focus:border-purple-500"
             />
           </div>
         </div>
@@ -211,7 +211,7 @@ export function AccountTab() {
           <Button
             onClick={save}
             disabled={saving}
-            className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-600 hover:to-pink-600 text-white"
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
           >
             {saving ? (
               <>

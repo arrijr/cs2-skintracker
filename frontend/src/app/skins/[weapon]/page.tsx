@@ -44,9 +44,9 @@ export default async function WeaponPillarPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <nav className="text-sm text-slate-400 mb-6">
-          <Link href="/" className="hover:text-fuchsia-400">Home</Link>
+          <Link href="/" className="hover:text-purple-400">Home</Link>
           <span className="mx-2">/</span>
-          <Link href="/skins" className="hover:text-fuchsia-400">Skins</Link>
+          <Link href="/skins" className="hover:text-purple-400">Skins</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-200 capitalize">{weaponLabel}</span>
         </nav>
@@ -61,7 +61,7 @@ export default async function WeaponPillarPage({ params }: Props) {
             <Link
               key={s.id}
               href={`/skins/${s.weaponSlug}/${s.slug}`}
-              className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 hover:border-fuchsia-500/40 transition"
+              className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 hover:border-purple-500/40 transition"
             >
               <div className="flex items-start gap-3">
                 {s.imageUrl && (

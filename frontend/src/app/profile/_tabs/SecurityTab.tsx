@@ -84,7 +84,7 @@ export function SecurityTab() {
                 headerTitle: 'text-white',
                 headerSubtitle: 'text-slate-400',
                 formButtonPrimary:
-                  'bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white',
+                  'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white',
                 formFieldLabel: 'text-slate-300',
                 formFieldInput: 'bg-slate-950 border-slate-800 text-slate-100',
                 badge: 'bg-slate-800 text-slate-300',

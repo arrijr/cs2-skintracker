@@ -59,7 +59,7 @@ export function Step2Steam({ onBack, onContinue }: Step2SteamProps) {
       <div className="relative">
         {/* Header */}
         <div className="flex items-start gap-4 mb-6">
-          <div className="hidden sm:flex w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500 items-center justify-center flex-shrink-0 shadow-lg shadow-pink-500/30">
+          <div className="hidden sm:flex w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 items-center justify-center flex-shrink-0 shadow-lg shadow-pink-500/30">
             <Gamepad2 className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -84,7 +84,7 @@ export function Step2Steam({ onBack, onContinue }: Step2SteamProps) {
             <span>Read-only — no trade access</span>
           </div>
           <div className="flex items-start gap-2">
-            <Check className="h-4 w-4 text-fuchsia-300 mt-0.5 flex-shrink-0" />
+            <Check className="h-4 w-4 text-purple-300 mt-0.5 flex-shrink-0" />
             <span>Editable cost basis</span>
           </div>
         </div>
@@ -110,7 +110,7 @@ export function Step2Steam({ onBack, onContinue }: Step2SteamProps) {
           <Button
             onClick={handleConnect}
             disabled={connecting}
-            className="w-full sm:w-auto bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20 gap-2 mb-6"
+            className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20 gap-2 mb-6"
           >
             <Gamepad2 className="h-4 w-4" />
             {connecting ? "Redirecting…" : "Connect Steam"}
@@ -144,7 +144,7 @@ export function Step2Steam({ onBack, onContinue }: Step2SteamProps) {
             onClick={handleContinue}
             className={
               connected
-                ? "order-1 sm:order-2 w-full sm:w-auto bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20 gap-2"
+                ? "order-1 sm:order-2 w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20 gap-2"
                 : "order-1 sm:order-2 w-full sm:w-auto border-slate-700 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white gap-2"
             }
           >

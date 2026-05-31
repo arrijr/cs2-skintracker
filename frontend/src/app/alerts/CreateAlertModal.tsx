@@ -408,7 +408,7 @@ export function CreateAlertModal({
             <Button
               onClick={handleSubmit}
               disabled={submitting || !validTarget}
-              className="w-full h-12 text-base bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20"
+              className="w-full h-12 text-base bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-semibold shadow-lg shadow-pink-500/20"
             >
               {submitting ? "Creating…" : "Set Price Alert"}
             </Button>

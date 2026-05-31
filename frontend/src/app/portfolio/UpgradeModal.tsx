@@ -63,7 +63,7 @@ export default function UpgradeModal({
         'Priority support',
       ],
       cta: 'Upgrade to Pro',
-      color: 'from-fuchsia-500 to-pink-500',
+      color: 'from-purple-500 to-pink-500',
     },
   };
 
