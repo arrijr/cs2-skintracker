@@ -112,3 +112,20 @@ tags: [plan, launch, revenue, security, polish]
 **Was ich autonom vorziehen KANN während du weg bist** (zero CEO-dependency, low-risk):
 T1.1 (researchService), T1.2 (Security), T3 stray-gitlink + branch-merge, Teile von T1.3 Polish.
 → Sag "mach autonom" und ich räum das weg bis 14:00. Sonst liegt alles bereit zum gemeinsamen Abarbeiten.
+
+---
+
+## ✅ Execution-Status (2026-05-31, autonomer Burst)
+- **T1.1 researchService** ✅ — Crash war stale; Controller auf `req.userId` gehärtet (`995a59b`).
+- **T1.2 Security-Must-Fix (5)** ✅ — alle stale/schon-gefixt, Doc synchronisiert.
+- **T3 Hygiene** ✅ — Branch gemerged, Gitlinks weg, Research-Docs getrackt.
+- **T1.3 Polish** ✅ (teilweise) — stale Copy, /alerts-CTA, Banner-Auto-Hide, /items-Skeleton.
+- **Brand-Gradient** ✅ — 40 Files auf Token-purple vereinheitlicht (`2213382`).
+- **Security-Backlog (Audit 22.05.)** ✅ — 12 echt-offene Findings gefixt (`096836a`) + #12 (`fe129a1`), live-verifiziert. Details: [[06-Tech-Debt]] "Resolved 2026-05-31".
+
+### Noch offen
+- **Cron-Verifikation** (Task #9) — 15:30 UTC erster sauberer always-on-Test.
+- **Tier 0** (Email/Stripe/Clerk) — CEO-Dashboard-Aktionen.
+- **AppShell-Konsolidierung + Dashboard-Typing** — brauchen App-Run/Browser-Verifikation, bewusst NICHT blind gemacht.
+- **Security #23/#24** — deferred (UX-Trade-off / Frontend-Dep).
+- **Brand-Frage offen falls fuchsia gewünscht** — dann `git revert 2213382` + design-tokens auf fuchsia.

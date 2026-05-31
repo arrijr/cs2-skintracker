@@ -36,6 +36,32 @@ Vollständige Dokumentation: [[superpowers/research/2026-05-22-notifications-aud
 | - | `alerts/page.tsx` Mutations warfen unhandled rejections | Sonner Toast-Wrap |
 | - | NotificationsDropdown mark-as-read hatte silent failure | Optimistic mutate + per-item endpoint |
 
+## ✅ Resolved 2026-05-31 (Security batch + polish + brand)
+
+Triaged the 2026-05-22 audit's 25 findings against current code: **all 3 CRITICAL
+already fixed**; closed the genuinely-open HIGH/MEDIUM cluster. Commits `096836a`
+(security), `fe129a1` (#12), `2213382` (brand), polish commits earlier.
+
+| Area | Fixed |
+|------|-------|
+| Info-disclosure | error.message/PII removed from: Stripe webhook resp, caseController (6×), auth+clerkAdminAuth middleware, adminRoutes, verifyClerkJwt (prod claims-log + 401 echo) |
+| Input DoS/injection | blog `orderBy` allowlist + search `content`-scan dropped + 64-char cap; portfolio+casePortfolio amount cap (≤100000, coercion-tolerant); adminMetrics /range 90-day clamp |
+| Hardening | steam callback → allow-listed reason codes (no raw err.message); /build-info trimmed (no gitCommit/pid/memory/nodeVersion); 4× `new PrismaClient()` → shared singleton |
+| Dead code (#12) | logsRoutes /stats + /recent removed (always-403 + missing prisma import, unused) |
+| Brand | 40 files fuchsia-* → purple-* (design-token canonical), drop gradient/accent drift |
+| Polish | stale "Coming Month 2/3" copy, /alerts empty-state CTA, portfolio banner auto-hide removed, /items skeleton → AppShell |
+
+Live-verified: backend health 200 post-deploy, /build-info trimmed, blog listing intact.
+
+**Still open security (deferred — judgment/CEO/frontend-dep):** #23 portfolioHistory
+fail-open (UX trade-off), #24 /cron-status unauth freshness leak (frontend chip
+dependency — verify before gating). Audit-doc: [[2026-05-22-ceo-autonomous-audit]].
+
+**Still open polish (need app-run / browser verification, not done blind):**
+AppShell consolidation (pricing, cases/[slug], skins/[weapon]/[slug]); dashboard/
+portfolio `PortfolioEntry` type duplication (the tsc errors; build tolerates via
+ignoreBuildErrors).
+
 ## ✅ Resolved 2026-05-30 (Price-Pipeline Fix)
 
 Vollständige Doku: [[2026-05-30-price-pipeline-fix]]
