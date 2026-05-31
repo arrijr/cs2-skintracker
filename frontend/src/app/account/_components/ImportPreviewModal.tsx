@@ -134,13 +134,21 @@ export function ImportPreviewModal({ onClose, steamId }: Props) {
                 { v: 'current_market', label: 'Use current market price (reset point)' },
                 { v: 'custom', label: 'Let me set it now (Bulk edit)' },
               ] as Array<{v: CostBasisMode; label: string}>).map(opt => (
-                <label key={opt.v} className="flex items-center gap-2 cursor-pointer">
+                <label
+                  key={opt.v}
+                  className={`flex items-center gap-2.5 cursor-pointer rounded-lg border px-3 py-2 transition ${
+                    mode === opt.v
+                      ? 'border-pink-500/60 bg-pink-500/10 text-white'
+                      : 'border-slate-800 bg-slate-950/40 text-slate-300 hover:border-slate-700'
+                  }`}
+                >
                   <input
                     type="radio"
                     name="cb"
                     value={opt.v}
                     checked={mode === opt.v}
                     onChange={() => setMode(opt.v)}
+                    className="h-4 w-4 shrink-0 accent-pink-500"
                   />
                   <span>{opt.label}</span>
                 </label>
