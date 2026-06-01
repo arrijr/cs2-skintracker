@@ -31,10 +31,13 @@ export function parseSkinportItems(items, { eurToUsd = 1.08 } = {}) {
     // produced "$0.23"-scale prices throughout the multi-source UI.
     const askEur = it.min_price;
     const suggestedEur = typeof it.suggested_price === 'number' ? it.suggested_price : null;
+    // EUR, NO conversion. The whole app is EUR-denominated (Steam scrape uses
+    // currency=3/EUR; the frontend renders €). The old `* eurToUsd` produced
+    // USD-labelled values that surfaced as inflated "$" figures on skin pages.
     map.set(it.market_hash_name, {
       marketHashName: it.market_hash_name,
-      askUsd: askEur * eurToUsd,
-      suggestedUsd: suggestedEur != null ? suggestedEur * eurToUsd : null,
+      askEur,
+      suggestedEur,
       affiliateUrl: buildAffiliateUrl(it.market_hash_name),
     });
   }

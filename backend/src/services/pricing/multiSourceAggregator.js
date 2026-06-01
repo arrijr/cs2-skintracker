@@ -6,7 +6,7 @@
  * Shape returned:
  *   {
  *     marketHashName,
- *     sources: [{ source, priceUsd, url, meta? }, ...],   // sorted cheapest first
+ *     sources: [{ source, priceEur, url, meta? }, ...],   // sorted cheapest first
  *     cheapestSource: 'steam'|'skinport'|'csfloat'|null,
  *     refreshedAt: ISO string,
  *   }
@@ -14,8 +14,10 @@
 import { fetchSkinportItem as defaultSkinport } from './skinportClient.js';
 import { fetchCsfloatItem as defaultCsfloat } from './csfloatClient.js';
 
-const STEAM_TX_FEE = 0.13; // Steam Community Market charges 13% on buyer side
-
+// All prices are EUR (the app-wide convention). Two prior bugs inflated/
+// mislabelled this as USD: a Steam ×1.13 "fee" markup and a Skinport EUR×1.08
+// conversion. Steam's listed price IS what the buyer pays (the 13% is the
+// seller's cut), so there is no buyer-side markup to add here.
 export async function aggregateMultiSourcePrice(
   skin,
   { skinportImpl = defaultSkinport, csfloatImpl = defaultCsfloat } = {}
@@ -23,27 +25,24 @@ export async function aggregateMultiSourcePrice(
   const refreshedAt = new Date().toISOString();
   const sources = [];
 
-  // Steam — local catalog data, no fetch
+  // Steam — local catalog data (EUR), no fetch
   if (skin.priceLatest != null) {
     sources.push({
       source: 'steam',
-      priceUsd: skin.priceLatest,
-      effectivePriceUsd: skin.priceLatest * (1 + STEAM_TX_FEE),
+      priceEur: skin.priceLatest,
       url: `https://steamcommunity.com/market/listings/730/${encodeURIComponent(skin.marketHashName)}`,
-      meta: { includesFee: true },
     });
   }
 
-  // Skinport
+  // Skinport (EUR cheapest live ask)
   try {
     const sp = await skinportImpl(skin.marketHashName);
-    if (sp?.askUsd != null) {
+    if (sp?.askEur != null) {
       sources.push({
         source: 'skinport',
-        priceUsd: sp.askUsd,
-        effectivePriceUsd: sp.askUsd,
+        priceEur: sp.askEur,
         url: sp.affiliateUrl,
-        meta: { suggestedUsd: sp.suggestedUsd ?? null },
+        meta: { suggestedEur: sp.suggestedEur ?? null },
       });
     }
   } catch (_e) {
@@ -51,22 +50,24 @@ export async function aggregateMultiSourcePrice(
   }
 
   // CSFloat
+  // NOTE: csfloatClient returns USD and currently 403s anonymously (broken), so
+  // it normally contributes nothing. If/when it is fixed, convert USD → EUR
+  // before pushing — do NOT compare its raw USD against the EUR rows. Tech debt.
   try {
     const cf = await csfloatImpl(skin.marketHashName);
     if (cf?.minPriceUsd != null) {
       sources.push({
         source: 'csfloat',
-        priceUsd: cf.minPriceUsd,
-        effectivePriceUsd: cf.minPriceUsd,
+        priceEur: cf.minPriceUsd,
         url: cf.affiliateUrl,
-        meta: { listingCount: cf.listingCount, minFloat: cf.minFloat },
+        meta: { listingCount: cf.listingCount, minFloat: cf.minFloat, currencyCaveat: 'usd' },
       });
     }
   } catch (_e) {
     // swallow
   }
 
-  sources.sort((a, b) => a.effectivePriceUsd - b.effectivePriceUsd);
+  sources.sort((a, b) => a.priceEur - b.priceEur);
 
   return {
     marketHashName: skin.marketHashName,
