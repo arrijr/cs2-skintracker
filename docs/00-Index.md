@@ -4,6 +4,7 @@
 **Status**: Sprint 2 abgeschlossen ✅ | Notifications Production-Ready ✅
 **Live**: https://backend-three-theta-44.vercel.app
 **Letzte Aktualisierung**: 2026-06-01 (Vault auf Stand gebracht; Cleanup — [[2026-05-30-obsidian-vault-cleanup]])
+**In Arbeit**: [[docs/superpowers/specs/2026-06-01-admin-panel-modernization-design|Admin-Panel-Modernisierung]] (P1 Reparatur → P2 Freischalten → P3 neue Surfaces) · [[docs/superpowers/specs/2026-06-01-portfolio-holdings-redesign-design|Portfolio-Holdings-Redesign]] (gruppiertes Card-Grid)
 
 > **Startseite des Vaults.** Jeder Bereich hat eine eigene Map-of-Content (MOC).
 > Wie Doku angelegt wird → [[CONVENTIONS]]. Auto-Übersichten → [[Dashboard]].
