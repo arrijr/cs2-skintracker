@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle, RefreshCw, BarChart3, Settings, FileText, Search, TrendingUp, BookOpen, Edit } from "lucide-react";
+import { Shield, Activity, Clock, Database, AlertTriangle, CheckCircle, XCircle, RefreshCw, BarChart3, Settings, FileText, Search, TrendingUp, BookOpen, Edit, Users } from "lucide-react";
 import BuildInfo from "../components/BuildInfo";
 import AdminMiniMetrics from "../components/AdminMiniMetrics";
 import { apiUrl, fetchJson } from "@/lib/api";
@@ -15,9 +15,10 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { safeToFixed } from "@/lib/num";
 import AdminControls from "../components/AdminControls";
+import UsersPanel from "../components/admin/UsersPanel";
 import { AppShell } from "@/components/layout/AppShell";
 
-type AdminTab = "overview" | "jobs" | "logs" | "controls" | "coverage";
+type AdminTab = "overview" | "jobs" | "logs" | "controls" | "coverage" | "users";
 
 interface AdminOverview {
   lastPriceUpdate: string | null;
@@ -222,7 +223,7 @@ export default function AdminPage() {
           {/* Tab Navigation */}
           <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as AdminTab)} className="w-full animate-slide-up">
             <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="grid w-max grid-cols-5 sm:w-full">
+            <TabsList className="grid w-max grid-cols-6 sm:w-full">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Overview
@@ -238,6 +239,10 @@ export default function AdminPage() {
               <TabsTrigger value="coverage" className="flex items-center gap-2">
                 <Search className="w-4 h-4" />
                 Coverage
+              </TabsTrigger>
+              <TabsTrigger value="users" className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Users
               </TabsTrigger>
               <TabsTrigger value="controls" className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
@@ -726,6 +731,10 @@ export default function AdminPage() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="users" className="space-y-6 mt-6">
+              <UsersPanel />
             </TabsContent>
 
             <TabsContent value="controls" className="space-y-6 mt-6">
