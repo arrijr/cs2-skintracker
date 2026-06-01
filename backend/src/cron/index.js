@@ -15,12 +15,13 @@ import { dailySkinQuantityHistory } from "./dailySkinQuantityHistory.js";
 import { runCatalogSync } from "../services/catalog/catalogSyncJob.js";
 import { runPriceRefresh } from "../services/pricing/priceRefreshJob.js";
 import { runSteamListingCounts } from "./steamListingCounts.js";
-// Skinport bulk-backfill cron is deliberately UNregistered for now —
-// product decision is to ship Steam-only data first and integrate Skinport
-// in a later phase. The import + schedule are kept commented so we can
-// re-enable in one line once we want it. See backend/src/cron/skinportBulkBackfill.js.
-// import { runSkinportBulkBackfill } from "./skinportBulkBackfill.js";
+// Skinport bulk-backfill: ENABLED 2026-05-31. Primary current-price source —
+// one HTTP call prices the whole catalogue in EUR (Skin.priceLatest). The Steam
+// per-item refresh only reaches ~700/16829 rows because of its 3s/call rate
+// limit; Skinport fills the rest. See backend/src/cron/skinportBulkBackfill.js.
+import { runSkinportBulkBackfill } from "./skinportBulkBackfill.js";
 import logger from "../utils/logger.js";
+import prisma from "../prisma/prismaClient.js";
 
 // {/* 02:00 UTC → z.B. 04:00 Berlin im Sommer */}
 // Preise updaten über dein robustes Script (separater Prozess = stabiler)
@@ -161,17 +162,35 @@ cron.schedule("0 5 * * *", async () => {
   }
 }, { timezone: "UTC" });
 
-// {/* 04:00 UTC daily */} Skinport bulk backfill — DEFERRED.
-// Reason: product wants Steam-only data sources first, Skinport integration
-// is "Zukunftsmusik" (future phase). The cron file + helper stay in repo
-// so we can re-enable with one uncomment when the product is ready.
-//
-// cron.schedule("0 4 * * *", async () => {
-//   logger.info("[CRON] Skinport bulk backfill starting");
-//   try {
-//     const summary = await runSkinportBulkBackfill();
-//     logger.info("[CRON] Skinport bulk backfill done", { summary });
-//   } catch (err) {
-//     logger.error("[CRON] Skinport bulk backfill failed", { error: err.message });
-//   }
-// }, { timezone: "UTC" });
+// {/* 04:00 UTC daily */} Skinport bulk backfill — ENABLED 2026-05-31.
+// Primary current-price source: one HTTP call prices the whole catalogue in
+// EUR (Skin.priceLatest). Scheduled before dailySkinPriceHistory (07:00) so
+// that job records a PriceHistory point for every freshly-priced skin.
+cron.schedule("0 4 * * *", async () => {
+  logger.info("[CRON] Skinport bulk backfill starting");
+  try {
+    const summary = await runSkinportBulkBackfill();
+    logger.info("[CRON] Skinport bulk backfill done", { summary });
+  } catch (err) {
+    logger.error("[CRON] Skinport bulk backfill failed", { error: err.message });
+  }
+}, { timezone: "UTC" });
+
+// One-shot on boot: if current-price coverage is low, run the Skinport backfill
+// once immediately so a fresh deploy populates the catalogue without waiting for
+// the 04:00 cron. Self-disables once coverage is healthy. Non-blocking (does not
+// hold up server start); errors are logged, never thrown.
+(async () => {
+  try {
+    const priced = await prisma.skin.count({ where: { priceLatest: { not: null } } });
+    if (priced < 5000) {
+      logger.info("[BOOT] Low price coverage — running Skinport backfill once", { priced });
+      const summary = await runSkinportBulkBackfill();
+      logger.info("[BOOT] Skinport backfill (boot) done", { summary });
+    } else {
+      logger.info("[BOOT] Price coverage healthy — skipping boot backfill", { priced });
+    }
+  } catch (err) {
+    logger.error("[BOOT] Skinport backfill (boot) failed", { error: err.message });
+  }
+})();

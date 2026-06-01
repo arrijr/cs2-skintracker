@@ -12,6 +12,8 @@
  * Skinport URL.
  */
 
+import zlib from 'node:zlib';
+
 const ENDPOINT = 'https://api.skinport.com/v1/items?app_id=730&currency=EUR&tradable=0';
 const TIMEOUT_MS = 15000;
 const DEFAULT_MAX_ATTEMPTS = 3;
@@ -80,7 +82,10 @@ export async function fetchSkinportItems({ fetchImpl = fetch, maxAttempts = DEFA
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     let res;
     try {
-      res = await fetchImpl(ENDPOINT, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+      res = await fetchImpl(ENDPOINT, {
+        headers: { 'Accept-Encoding': 'br, gzip, deflate' },
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
     } catch (e) {
       lastError = e.message;
       if (attempt < maxAttempts) await new Promise((r) => setTimeout(r, 1000 * attempt));
@@ -105,7 +110,23 @@ export async function fetchSkinportItems({ fetchImpl = fetch, maxAttempts = DEFA
       throw new Error(lastError);
     }
 
-    const data = await res.json();
+    // Node 18 (Render) undici does NOT auto-decompress Brotli, and Skinport
+    // REQUIRES Accept-Encoding: br. Read raw bytes and decompress by
+    // Content-Encoding so this works on Node 18 and Node 22 alike. Falls back
+    // to res.json() when the (mocked/test) response declares no encoding.
+    let data;
+    const enc = (res.headers?.get?.('content-encoding') || '').toLowerCase();
+    if (enc.includes('br') || enc.includes('gzip') || enc.includes('deflate')) {
+      const buf = Buffer.from(await res.arrayBuffer());
+      const text = enc.includes('br') ? zlib.brotliDecompressSync(buf).toString('utf8')
+        : enc.includes('gzip') ? zlib.gunzipSync(buf).toString('utf8')
+        : zlib.inflateSync(buf).toString('utf8');
+      data = JSON.parse(text);
+    } else if (typeof res.json === 'function') {
+      data = await res.json();
+    } else {
+      data = JSON.parse(Buffer.from(await res.arrayBuffer()).toString('utf8'));
+    }
     if (!Array.isArray(data)) throw new Error('Skinport response not an array');
     return data;
   }
