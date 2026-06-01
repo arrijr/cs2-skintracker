@@ -33,6 +33,10 @@ describe('admin route modules are mounted (handler reached, not 404)', () => {
     '/api/v1/admin/coverage/overview',
     '/api/v1/admin/coverage/segments',
     '/api/v1/admin/coverage/missing-skins',
+    '/api/v1/admin/users',
+    '/api/v1/admin/users/statistics',
+    '/api/v1/admin/users/search',
+    '/api/v1/admin/users/1',
   ];
   for (const path of mountedGet) {
     it(`GET ${path} is mounted (not 404)`, async () => {
@@ -50,6 +54,14 @@ describe('admin route modules are mounted (handler reached, not 404)', () => {
   for (const path of mountedPost) {
     it(`POST ${path} is mounted (not 404)`, async () => {
       const res = await request(app).post(path).send({ dryRun: true });
+      expect(res.status).not.toBe(404);
+    });
+  }
+
+  const mountedPatch = ['/api/v1/admin/users/1/tier', '/api/v1/admin/users/1/email-alerts'];
+  for (const path of mountedPatch) {
+    it(`PATCH ${path} is mounted (not 404)`, async () => {
+      const res = await request(app).patch(path).send({ tier: 'free', emailAlerts: true });
       expect(res.status).not.toBe(404);
     });
   }

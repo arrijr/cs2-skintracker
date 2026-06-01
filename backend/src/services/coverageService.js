@@ -1,51 +1,51 @@
 import prisma from "../prisma/prismaClient.js";
 
-// Coverage analysis service for data quality insights
+// Coverage analysis service for data quality insights.
+//
+// NOTE (2026-06-01, Phase 2 fix): this service was written against an imagined
+// schema. The real Skin model uses `priceUpdatedAt` (not `lastPriceUpdate`),
+// `weaponType` (not `category`), and the relation is `watchlist` (singular).
+// Queries now use the real columns; the API response still exposes the keys the
+// frontend expects (`category`, `lastPriceUpdate`) by mapping at the boundary.
 export class CoverageService {
   // Get overall price coverage statistics
   static async getOverallCoverage() {
     try {
-      // Total skins count
       const totalSkins = await prisma.skin.count();
-      
-      // Skins with recent prices (last 7 days)
+
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const skinsWithRecentPrices = await prisma.skin.count({
-        where: {
-          lastPriceUpdate: { gte: sevenDaysAgo }
-        }
+        where: { priceUpdatedAt: { gte: sevenDaysAgo } }
       });
-      
-      // Skins without any price history (30 days)
+
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const skinsWithoutHistory = await prisma.skin.count({
         where: {
           OR: [
-            { lastPriceUpdate: null },
-            { lastPriceUpdate: { lt: thirtyDaysAgo } }
+            { priceUpdatedAt: null },
+            { priceUpdatedAt: { lt: thirtyDaysAgo } }
           ]
         }
       });
-      
-      // Calculate coverage percentage
+
       const coveragePercentage = totalSkins > 0 ? (skinsWithRecentPrices / totalSkins) * 100 : 0;
-      
-      // Get median last price age
+
+      // Median last-price timestamp. Average two epoch-ms numerically (the old
+      // code added two Date objects → NaN on even-length sets).
       const skinsWithPrices = await prisma.skin.findMany({
-        where: { lastPriceUpdate: { not: null } },
-        select: { lastPriceUpdate: true },
-        orderBy: { lastPriceUpdate: 'asc' }
+        where: { priceUpdatedAt: { not: null } },
+        select: { priceUpdatedAt: true },
+        orderBy: { priceUpdatedAt: 'asc' }
       });
-      
+
       let medianAge = null;
       if (skinsWithPrices.length > 0) {
-        const sortedDates = skinsWithPrices.map(s => s.lastPriceUpdate).sort();
-        const mid = Math.floor(sortedDates.length / 2);
-        medianAge = sortedDates.length % 2 === 0 
-          ? (sortedDates[mid - 1] + sortedDates[mid]) / 2
-          : sortedDates[mid];
+        const ms = skinsWithPrices.map(s => new Date(s.priceUpdatedAt).getTime());
+        const mid = Math.floor(ms.length / 2);
+        const medMs = ms.length % 2 === 0 ? (ms[mid - 1] + ms[mid]) / 2 : ms[mid];
+        medianAge = new Date(medMs);
       }
-      
+
       return {
         totalSkins,
         skinsWithRecentPrices,
@@ -65,84 +65,39 @@ export class CoverageService {
   static async getCoverageBySegment(segmentType, page = 1, limit = 20) {
     try {
       const offset = (page - 1) * limit;
-      
-      // Get unique values for the segment
-      let segmentValues = [];
-      let segmentField = '';
-      
-      switch (segmentType) {
-        case 'weaponType':
-          segmentField = 'category';
-          segmentValues = await prisma.skin.findMany({
-            select: { category: true },
-            where: { category: { not: null } },
-            distinct: ['category']
-          });
-          break;
-        case 'rarity':
-          segmentField = 'rarity';
-          segmentValues = await prisma.skin.findMany({
-            select: { rarity: true },
-            where: { rarity: { not: null } },
-            distinct: ['rarity']
-          });
-          break;
-        case 'wear':
-          segmentField = 'wear';
-          segmentValues = await prisma.skin.findMany({
-            select: { wear: true },
-            where: { wear: { not: null } },
-            distinct: ['wear']
-          });
-          break;
-        default:
-          throw new Error('Invalid segment type');
-      }
-      
-      // Calculate coverage for each segment
+
+      // Map the UI segment name → the real Skin column.
+      const segmentField = CoverageService._segmentField(segmentType);
+
+      const segmentValues = await prisma.skin.findMany({
+        select: { [segmentField]: true },
+        where: { [segmentField]: { not: null } },
+        distinct: [segmentField]
+      });
+
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-      
+      const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+
       const segmentCoverage = await Promise.all(
         segmentValues.map(async (segment) => {
           const value = segment[segmentField];
-          
-          // Total skins in this segment
-          const totalInSegment = await prisma.skin.count({
-            where: { [segmentField]: value }
-          });
-          
-          // Skins with recent prices
-          const withRecentPrices = await prisma.skin.count({
-            where: {
-              [segmentField]: value,
-              lastPriceUpdate: { gte: sevenDaysAgo }
-            }
-          });
-          
-          // Skins without history
-          const withoutHistory = await prisma.skin.count({
-            where: {
-              [segmentField]: value,
-              OR: [
-                { lastPriceUpdate: null },
-                { lastPriceUpdate: { lt: thirtyDaysAgo } }
-              ]
-            }
-          });
-          
-          // Stale prices (> 48h)
-          const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
-          const stalePrices = await prisma.skin.count({
-            where: {
-              [segmentField]: value,
-              lastPriceUpdate: { lt: fortyEightHoursAgo }
-            }
-          });
-          
+
+          const [totalInSegment, withRecentPrices, withoutHistory, stalePrices] = await Promise.all([
+            prisma.skin.count({ where: { [segmentField]: value } }),
+            prisma.skin.count({ where: { [segmentField]: value, priceUpdatedAt: { gte: sevenDaysAgo } } }),
+            prisma.skin.count({
+              where: {
+                [segmentField]: value,
+                OR: [{ priceUpdatedAt: null }, { priceUpdatedAt: { lt: thirtyDaysAgo } }]
+              }
+            }),
+            prisma.skin.count({ where: { [segmentField]: value, priceUpdatedAt: { lt: fortyEightHoursAgo } } })
+          ]);
+
           const coverage = totalInSegment > 0 ? (withRecentPrices / totalInSegment) * 100 : 0;
           const stalePercentage = totalInSegment > 0 ? (stalePrices / totalInSegment) * 100 : 0;
-          
+
           return {
             segment: value,
             totalSkins: totalInSegment,
@@ -153,11 +108,10 @@ export class CoverageService {
           };
         })
       );
-      
-      // Sort by coverage percentage (ascending) and paginate
+
       const sortedCoverage = segmentCoverage.sort((a, b) => a.coveragePercentage - b.coveragePercentage);
       const paginatedCoverage = sortedCoverage.slice(offset, offset + limit);
-      
+
       return {
         segmentType,
         coverage: paginatedCoverage,
@@ -168,7 +122,6 @@ export class CoverageService {
           totalPages: Math.ceil(segmentCoverage.length / limit)
         }
       };
-      
     } catch (error) {
       console.error('Error getting coverage by segment:', error);
       throw error;
@@ -179,52 +132,44 @@ export class CoverageService {
   static async getTopMissingSkins(limit = 50) {
     try {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      
-      // Get skins without recent prices, ordered by relevance
-      // Relevance: skins that had prices historically OR are in watchlists
+
       const missingSkins = await prisma.skin.findMany({
         where: {
           OR: [
-            { lastPriceUpdate: null },
-            { lastPriceUpdate: { lt: sevenDaysAgo } }
+            { priceUpdatedAt: null },
+            { priceUpdatedAt: { lt: sevenDaysAgo } }
           ]
         },
         select: {
           id: true,
           name: true,
-          category: true,
+          weaponType: true,
           rarity: true,
           wear: true,
-          lastPriceUpdate: true,
+          priceUpdatedAt: true,
           priceAvg: true,
-          // Add watchlist count if available
-          _count: {
-            select: {
-              watchlists: true
-            }
-          }
+          _count: { select: { watchlist: true } }
         },
         orderBy: [
-          { priceAvg: 'desc' }, // Had prices historically
-          { _count: { watchlists: 'desc' } } // Popular in watchlists
+          { priceAvg: 'desc' },
+          { _count: { watchlist: 'desc' } }
         ],
         take: limit
       });
-      
+
       return missingSkins.map(skin => ({
         id: skin.id,
         name: skin.name,
-        category: skin.category,
+        category: skin.weaponType,             // API contract key
         rarity: skin.rarity,
         wear: skin.wear,
-        lastPriceUpdate: skin.lastPriceUpdate,
+        lastPriceUpdate: skin.priceUpdatedAt,  // API contract key
         hadPrice: skin.priceAvg !== null,
-        watchlistCount: skin._count.watchlists,
-        daysSinceUpdate: skin.lastPriceUpdate 
-          ? Math.floor((Date.now() - skin.lastPriceUpdate.getTime()) / (1000 * 60 * 60 * 24))
+        watchlistCount: skin._count.watchlist,
+        daysSinceUpdate: skin.priceUpdatedAt
+          ? Math.floor((Date.now() - new Date(skin.priceUpdatedAt).getTime()) / (1000 * 60 * 60 * 24))
           : null
       }));
-      
     } catch (error) {
       console.error('Error getting top missing skins:', error);
       throw error;
@@ -235,65 +180,46 @@ export class CoverageService {
   static async getSkinsForSegment(segmentType, segmentValue, page = 1, limit = 20) {
     try {
       const offset = (page - 1) * limit;
-      
-      let segmentField = '';
-      switch (segmentType) {
-        case 'weaponType':
-          segmentField = 'category';
-          break;
-        case 'rarity':
-          segmentField = 'rarity';
-          break;
-        case 'wear':
-          segmentField = 'wear';
-          break;
-        default:
-          throw new Error('Invalid segment type');
-      }
-      
+      const segmentField = CoverageService._segmentField(segmentType);
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      
-      // Get skins in this segment without recent prices
-      const skins = await prisma.skin.findMany({
-        where: {
-          [segmentField]: segmentValue,
-          OR: [
-            { lastPriceUpdate: null },
-            { lastPriceUpdate: { lt: sevenDaysAgo } }
-          ]
-        },
-        select: {
-          id: true,
-          name: true,
-          category: true,
-          rarity: true,
-          wear: true,
-          lastPriceUpdate: true,
-          priceAvg: true
-        },
-        orderBy: { name: 'asc' },
-        skip: offset,
-        take: limit
-      });
-      
-      // Get total count for pagination
-      const total = await prisma.skin.count({
-        where: {
-          [segmentField]: segmentValue,
-          OR: [
-            { lastPriceUpdate: null },
-            { lastPriceUpdate: { lt: sevenDaysAgo } }
-          ]
-        }
-      });
-      
+
+      const where = {
+        [segmentField]: segmentValue,
+        OR: [{ priceUpdatedAt: null }, { priceUpdatedAt: { lt: sevenDaysAgo } }]
+      };
+
+      const [skins, total] = await Promise.all([
+        prisma.skin.findMany({
+          where,
+          select: {
+            id: true,
+            name: true,
+            weaponType: true,
+            rarity: true,
+            wear: true,
+            priceUpdatedAt: true,
+            priceAvg: true
+          },
+          orderBy: { name: 'asc' },
+          skip: offset,
+          take: limit
+        }),
+        prisma.skin.count({ where })
+      ]);
+
       return {
         segmentType,
         segmentValue,
         skins: skins.map(skin => ({
-          ...skin,
-          daysSinceUpdate: skin.lastPriceUpdate 
-            ? Math.floor((Date.now() - skin.lastPriceUpdate.getTime()) / (1000 * 60 * 60 * 24))
+          id: skin.id,
+          name: skin.name,
+          category: skin.weaponType,
+          rarity: skin.rarity,
+          wear: skin.wear,
+          lastPriceUpdate: skin.priceUpdatedAt,
+          priceAvg: skin.priceAvg,
+          daysSinceUpdate: skin.priceUpdatedAt
+            ? Math.floor((Date.now() - new Date(skin.priceUpdatedAt).getTime()) / (1000 * 60 * 60 * 24))
             : null
         })),
         pagination: {
@@ -303,10 +229,20 @@ export class CoverageService {
           totalPages: Math.ceil(total / limit)
         }
       };
-      
     } catch (error) {
       console.error('Error getting skins for segment:', error);
       throw error;
+    }
+  }
+
+  // UI segment name → real Skin column. 'weaponType' UI value maps to the
+  // weaponType column (the old code wrongly used a non-existent `category`).
+  static _segmentField(segmentType) {
+    switch (segmentType) {
+      case 'weaponType': return 'weaponType';
+      case 'rarity': return 'rarity';
+      case 'wear': return 'wear';
+      default: throw new Error('Invalid segment type');
     }
   }
 }

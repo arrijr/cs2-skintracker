@@ -726,8 +726,13 @@ export const getMetricsDefinitions = async (req, res) => {
 // ADM-13: User Management
 export const getUsers = async (req, res) => {
   try {
-    const { search, status, role, emailAlerts, page = 1, limit = 20 } = req.query;
-    const filters = { search, status, role, emailAlerts };
+    const { search, role, tier, emailAlerts, page = 1, limit = 20 } = req.query;
+    const filters = {
+      search,
+      role,
+      tier,
+      ...(emailAlerts !== undefined && { emailAlerts: emailAlerts === 'true' }),
+    };
     
     const users = await UserManagementService.getUsers(filters, parseInt(page), parseInt(limit));
     res.json(users);
@@ -802,11 +807,11 @@ export const updateUserEmailAlerts = async (req, res) => {
   }
 };
 
-export const updateUserPremiumStatus = async (req, res) => {
+export const updateUserTier = async (req, res) => {
   try {
     const adminId = req.user.id;
     const { userId } = req.params;
-    const { isPremium } = req.body;
+    const { tier } = req.body;
     
     // Check production safety
     if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_ADMIN_WRITES_IN_PROD) {
@@ -815,11 +820,12 @@ export const updateUserPremiumStatus = async (req, res) => {
       });
     }
     
-    const updatedUser = await UserManagementService.updateUserPremiumStatus(userId, isPremium, adminId);
+    const updatedUser = await UserManagementService.updateUserTier(userId, tier, adminId);
     res.json(updatedUser);
   } catch (error) {
-    console.error('Error updating user premium status:', error);
-    res.status(500).json({ error: 'Failed to update user premium status' });
+    console.error('Error updating user tier:', error);
+    const invalid = error?.message === 'Invalid tier';
+    res.status(invalid ? 400 : 500).json({ error: invalid ? 'Invalid tier (use free|lite|pro)' : 'Failed to update user tier' });
   }
 };
 
@@ -835,8 +841,11 @@ export const getUserStatistics = async (req, res) => {
 
 export const searchUsers = async (req, res) => {
   try {
-    const { query, role, status, hasPortfolio } = req.query;
-    const filters = { role, status, hasPortfolio };
+    const { query, role, hasPortfolio } = req.query;
+    const filters = {
+      role,
+      ...(hasPortfolio !== undefined && { hasPortfolio: hasPortfolio === 'true' }),
+    };
     
     const users = await UserManagementService.searchUsers(query, filters);
     res.json(users);
