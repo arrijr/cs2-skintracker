@@ -5,8 +5,7 @@ import { apiUrl } from '@/lib/api';
 
 interface Source {
   source: string;
-  priceUsd: number;
-  effectivePriceUsd: number;
+  priceEur: number;
   url: string;
   meta?: Record<string, unknown>;
 }
@@ -96,8 +95,7 @@ export function MultiSourcePriceTable({ skinSlug }: { skinSlug: string }) {
         <thead>
           <tr className="text-slate-400 text-left border-b border-slate-800">
             <th className="pb-2">Market</th>
-            <th className="pb-2 text-right">Listed price</th>
-            <th className="pb-2 text-right">After fees</th>
+            <th className="pb-2 text-right">Price</th>
             <th className="pb-2"></th>
           </tr>
         </thead>
@@ -114,8 +112,7 @@ export function MultiSourcePriceTable({ skinSlug }: { skinSlug: string }) {
                   )}
                 </div>
               </td>
-              <td className="py-3 text-right">{s.priceUsd != null && Number.isFinite(s.priceUsd) ? `$${s.priceUsd.toFixed(2)}` : "—"}</td>
-              <td className="py-3 text-right text-slate-300">{s.effectivePriceUsd != null && Number.isFinite(s.effectivePriceUsd) ? `$${s.effectivePriceUsd.toFixed(2)}` : "—"}</td>
+              <td className="py-3 text-right">{s.priceEur != null && Number.isFinite(s.priceEur) ? `€${s.priceEur.toFixed(2)}` : "—"}</td>
               <td className="py-3 text-right">
                 <AffiliateLink
                   href={s.url}
@@ -131,7 +128,7 @@ export function MultiSourcePriceTable({ skinSlug }: { skinSlug: string }) {
         </tbody>
       </table>
       <p className="text-xs text-slate-400 mt-3">
-        Steam prices include the 13% Steam Market transaction fee; Skinport and CSFloat are net.
+        Prices in EUR — Skinport shows the cheapest live ask, Steam the lowest Market listing.
       </p>
     </section>
   );

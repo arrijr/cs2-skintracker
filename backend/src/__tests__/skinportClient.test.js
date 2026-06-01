@@ -8,10 +8,10 @@ describe('parseSkinportItems', () => {
       { market_hash_name: 'AK-47 | Redline (Field-Tested)', min_price: 13.95, suggested_price: 15.00, currency: 'EUR' },
       { market_hash_name: 'AWP | Asiimov (Field-Tested)',   min_price: 50.99, suggested_price: 53.00, currency: 'EUR' },
     ];
-    const out = parseSkinportItems(raw, { eurToUsd: 1.08 });
+    const out = parseSkinportItems(raw);
     expect(out.get('AK-47 | Redline (Field-Tested)')).toMatchObject({
-      askUsd: expect.closeTo(15.07, 1),
-      suggestedUsd: expect.closeTo(16.20, 1),
+      askEur: expect.closeTo(13.95, 2),
+      suggestedEur: expect.closeTo(15.00, 2),
     });
     expect(out.size).toBe(2);
   });
@@ -43,9 +43,9 @@ describe('fetchSkinportItem', () => {
         currency: 'EUR',
       }],
     }));
-    const result = await fetchSkinportItem('AK-47 | Redline (FT)', { fetchImpl, eurToUsd: 1.08 });
+    const result = await fetchSkinportItem('AK-47 | Redline (FT)', { fetchImpl });
     expect(result).toMatchObject({
-      askUsd: expect.closeTo(15.07, 1),
+      askEur: expect.closeTo(13.95, 2),
       affiliateUrl: expect.stringContaining('skinport.com'),
     });
   });

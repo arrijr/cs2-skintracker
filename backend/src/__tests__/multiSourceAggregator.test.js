@@ -3,12 +3,12 @@ import { aggregateMultiSourcePrice } from '../services/pricing/multiSourceAggreg
 
 describe('aggregateMultiSourcePrice', () => {
   it('returns sources ordered cheapest → most expensive', async () => {
-    const skinportImpl = jest.fn(async () => ({ askUsd: 14.50, affiliateUrl: 'https://skinport.com/item/x' }));
+    const skinportImpl = jest.fn(async () => ({ askEur: 14.50, affiliateUrl: 'https://skinport.com/item/x' }));
     const csfloatImpl  = jest.fn(async () => ({ minPriceUsd: 15.20, listingCount: 12, minFloat: 0.16, affiliateUrl: 'https://csfloat.com/search?q=x' }));
     const skin = { marketHashName: 'AK-47 | Redline (FT)', priceLatest: 16.00, slug: 'ak-47-redline-ft' };
     const out = await aggregateMultiSourcePrice(skin, { skinportImpl, csfloatImpl });
     expect(out.sources[0].source).toBe('skinport');
-    expect(out.sources[0].priceUsd).toBeCloseTo(14.50);
+    expect(out.sources[0].priceEur).toBeCloseTo(14.50);
     expect(out.cheapestSource).toBe('skinport');
     expect(out.sources).toHaveLength(3);
   });
