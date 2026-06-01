@@ -80,6 +80,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={clsx(
         "text-[11px] px-3 py-1 rounded-full border transition-colors",
         active ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-transparent"

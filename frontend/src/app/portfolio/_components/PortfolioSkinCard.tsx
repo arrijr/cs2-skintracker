@@ -36,7 +36,7 @@ export default function PortfolioSkinCard({ entry, maxPositionValue, isOpen, onT
     <div
       data-testid="skin-card"
       className={clsx(
-        "rounded-xl border bg-slate-900/60 p-3 transition-all duration-200",
+        "rounded-xl border bg-slate-900/70 p-3 transition-all duration-200",
         isOpen ? "col-span-full border-purple-500/60" : "border-slate-700/40 hover:border-slate-600/60",
       )}
     >

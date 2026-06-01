@@ -67,12 +67,17 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange }: 
   const { groups, noPriceBucket, maxPositionValue } = useMemo(() => groupPortfolio(filtered, tb.sortBy), [filtered, tb.sortBy]);
 
   const manyGroups = groups.length > AUTO_COLLAPSE_THRESHOLD;
-  const isCollapsed = (key: string) =>
-    key in collapsed ? collapsed[key] : (key === NO_PRICE_KEY ? true : manyGroups);
+  // Single source of truth for the default collapsed state (no-price bucket starts
+  // collapsed; weapon groups collapse only when there are many of them).
+  const defaultCollapsed = useCallback(
+    (key: string) => (key === NO_PRICE_KEY ? true : manyGroups),
+    [manyGroups],
+  );
+  const isCollapsed = (key: string) => (key in collapsed ? collapsed[key] : defaultCollapsed(key));
 
   const toggleCollapse = (key: string) =>
     setCollapsed((prev) => {
-      const next = { ...prev, [key]: !(key in prev ? prev[key] : (key === NO_PRICE_KEY ? true : manyGroups)) };
+      const next = { ...prev, [key]: !(key in prev ? prev[key] : defaultCollapsed(key)) };
       localStorage.setItem(COLLAPSE_KEY, JSON.stringify(next));
       return next;
     });
@@ -111,7 +116,7 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange }: 
         <div className="flex flex-col items-center justify-center py-12 text-slate-400">
           <h2 className="text-xl font-semibold mb-2 text-slate-200">No holdings for this filter</h2>
           <button
-            className="mt-2 text-sm text-purple-300 hover:text-purple-200"
+            className="mt-2 text-sm text-purple-300 hover:text-purple-200 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
             onClick={() => patch({ search: "", weapon: null, rarity: null, exterior: null })}
           >
             Clear filters

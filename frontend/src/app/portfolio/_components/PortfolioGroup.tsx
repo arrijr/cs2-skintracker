@@ -22,11 +22,12 @@ export default function PortfolioGroup({
 }: Props) {
   const isNoPrice = group.key === NO_PRICE_KEY;
   return (
-    <div className={clsx("rounded-xl border border-slate-700/40 overflow-hidden mb-2.5", isNoPrice && "opacity-80")}>
+    <div className={clsx("rounded-xl border border-slate-700/30 overflow-hidden mb-2.5", isNoPrice && "opacity-80")}>
       <button
         type="button"
         onClick={onToggleCollapse}
         aria-expanded={!collapsed}
+        aria-label={`${collapsed ? "Expand" : "Collapse"} ${group.label}`}
         className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-slate-800/40 hover:bg-slate-800/70 transition-colors text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
         {collapsed ? <ChevronRight className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
@@ -49,7 +50,7 @@ export default function PortfolioGroup({
       </button>
 
       {!collapsed && (
-        <div className="p-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2.5 bg-slate-950/40">
+        <div className="p-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2.5 bg-slate-800/40">
           {group.items.map((entry) => (
             <PortfolioSkinCard
               key={entry.skin.id}
