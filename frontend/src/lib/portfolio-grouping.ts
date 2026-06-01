@@ -105,3 +105,53 @@ export function sortEntries(entries: PortfolioEntry[], sortBy: SortKey): Portfol
       return copy.sort((a, b) => positionValue(b) - positionValue(a));
   }
 }
+
+export type PortfolioGroupData = {
+  key: string;
+  label: string;
+  items: PortfolioEntry[];
+  count: number;
+  value: number;       // Σ positionValue
+  costBasis: number;   // Σ costBasis of priced items
+  pl: number | null;   // group %; null when costBasis <= 0
+};
+
+export type GroupedPortfolio = {
+  groups: PortfolioGroupData[];
+  noPriceBucket: PortfolioGroupData | null;
+  maxPositionValue: number;
+};
+
+function buildGroup(key: string, label: string, items: PortfolioEntry[]): PortfolioGroupData {
+  let value = 0, basis = 0;
+  for (const e of items) {
+    if (hasMarketPrice(e)) { value += positionValue(e); basis += costBasis(e); }
+  }
+  const pl = basis > 0 ? ((value - basis) / basis) * 100 : null;
+  return { key, label, items, count: items.length, value, costBasis: basis, pl };
+}
+
+export function groupPortfolio(entries: PortfolioEntry[], sortBy: SortKey): GroupedPortfolio {
+  const priced: PortfolioEntry[] = [];
+  const noPrice: PortfolioEntry[] = [];
+  for (const e of entries) (hasMarketPrice(e) ? priced : noPrice).push(e);
+
+  const maxPositionValue = priced.reduce((m, e) => Math.max(m, positionValue(e)), 0);
+
+  const map = new Map<string, PortfolioEntry[]>();
+  for (const e of priced) {
+    const k = weaponGroupKey(e.skin);
+    const arr = map.get(k);
+    if (arr) arr.push(e); else map.set(k, [e]);
+  }
+
+  const groups = [...map.entries()]
+    .map(([k, items]) => buildGroup(k, k, sortEntries(items, sortBy)))
+    .sort((a, b) => b.value - a.value);
+
+  const noPriceBucket = noPrice.length
+    ? buildGroup(NO_PRICE_KEY, NO_PRICE_LABEL, sortEntries(noPrice, sortBy))
+    : null;
+
+  return { groups, noPriceBucket, maxPositionValue };
+}
