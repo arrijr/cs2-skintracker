@@ -3,6 +3,11 @@ import prisma from "../prisma/prismaClient.js";
 // Rate limiting: 1 run per 10 minutes per job per admin
 const RATE_LIMIT_MINUTES = 10;
 
+// TODO(tech-debt, Phase 2): job-status vocabulary split-brain — this file +
+// cron/marketSnapshotJob.js write 'done'; services/apiHealthService.js reads
+// 'done'; routes/adminMetricsRoutes.js reads 'completed'. Harmonise to the
+// schema's 'completed' across all readers+writers when the API-health UI lands.
+
 // Job execution service with safety features
 export class JobService {
   // Check if admin can run a specific job (rate limiting)

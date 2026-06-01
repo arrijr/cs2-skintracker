@@ -24,6 +24,9 @@ import transactionRoutes from "./routes/transactionRoutes.js";
 import healthRoutes from "./routes/healthRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import adminMetricsRoutes from "./routes/adminMetricsRoutes.js";
+import adminSystemRoutes from "./routes/admin/systemRoutes.js";
+import adminJobsRoutes from "./routes/admin/jobsRoutes.js";
+import adminCoverageRoutes from "./routes/admin/coverageRoutes.js";
 import logsRoutes from "./routes/logsRoutes.js";
 import marketSnapshotRoutes from "./routes/marketSnapshotRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
@@ -155,6 +158,11 @@ app.use("/api/v1/logs", logsRoutes);
 app.use("/api/v1", marketSnapshotRoutes);
 app.use("/api/v1/admin", adminLimiter, adminRoutes);
 app.use("/api/v1/admin/metrics", adminLimiter, adminMetricsRoutes);
+// Phase-1 focused admin modules (overview/logs/cache, jobs, coverage). Multiple
+// routers share the /api/v1/admin base path; each owns distinct sub-paths.
+app.use("/api/v1/admin", adminLimiter, adminSystemRoutes);
+app.use("/api/v1/admin", adminLimiter, adminJobsRoutes);
+app.use("/api/v1/admin", adminLimiter, adminCoverageRoutes);
 app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/subscriptions", subscriptionRoutes);
 app.use("/api/v1/research", researchRoutes);
