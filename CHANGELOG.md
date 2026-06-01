@@ -1,5 +1,112 @@
 # Changelog
 
+## [0.4.0](https://github.com/arrijr/cs2-skintracker/compare/v0.3.0...v0.4.0) (2026-06-01)
+
+
+### Features
+
+* **admin:** mount focused admin route modules (system/jobs/coverage) ([b630844](https://github.com/arrijr/cs2-skintracker/commit/b630844b9a5a5526a7baade6147d315fabf2d844))
+* **admin:** P2 frontend — Users management tab ([d13b3a4](https://github.com/arrijr/cs2-skintracker/commit/d13b3a47eef1ae10bc293b565a0a6f03875e9319))
+* **admin:** P3 Insights tab — honest monitoring on real data sources ([c46cf0d](https://github.com/arrijr/cs2-skintracker/commit/c46cf0dc5d93bb12ec86fb07bbfd285f0ab1029d))
+* **admin:** pure format/health helpers (formatDuration/toUiStatus/jobHealth) ([3debbdb](https://github.com/arrijr/cs2-skintracker/commit/3debbdb761c52202742dd26cc013f33c86d11b9c))
+* **billing:** surface cycle, status, renewal date + reactivate flow on BillingTab ([0f29042](https://github.com/arrijr/cs2-skintracker/commit/0f290424a263311847a5c5d670b53ba780f81ac2))
+* **cases:** add "Price updated Xm ago · Source: Steam Market" stamp to case hero ([725b913](https://github.com/arrijr/cs2-skintracker/commit/725b913dc63ff2dbf6dd06842c8dff8a0f5c4772))
+* **cases:** redesign /cases list as 5-tab card grid (Weapon Cases / Stickers / Souvenirs / Autographs / Music) ([293f62c](https://github.com/arrijr/cs2-skintracker/commit/293f62c4f56d5c22f64abb1936d0f3683f5b50ed))
+* **cases:** redesign case detail page — hero, history chart, card grid sorted by rarity ([4e1fe40](https://github.com/arrijr/cs2-skintracker/commit/4e1fe402788af23969719401d051ed47917fe925))
+* **dashboard:** give PortfolioHero a CS2-themed look (rarity stripe, HUD grid, mono numbers) ([010eb04](https://github.com/arrijr/cs2-skintracker/commit/010eb04a57198a865cfb6a590ffbc4fe1761371f))
+* **dashboard:** replace StatusTicker with MarketHUDStrip (CS-themed pulse bar) ([b902aa8](https://github.com/arrijr/cs2-skintracker/commit/b902aa80b75106d72e39500c05c06e47ec73fdc6))
+* **email:** make SMTP env-configurable (All-Inkl/any provider) + fix .com→.io ([ac6f6dd](https://github.com/arrijr/cs2-skintracker/commit/ac6f6dde7f4aafdf9f5773e4c53a711e65be2f43))
+* **history:** labelled approximate price-history (Skinport rolling-median seed) ([00556b2](https://github.com/arrijr/cs2-skintracker/commit/00556b2357588a952e92363debb64779ea9be19f))
+* **nav:** add Cases link to signed-in main navigation ([8ba363e](https://github.com/arrijr/cs2-skintracker/commit/8ba363ed065e271b94221a890ac883eba7e49f51))
+* **portfolio:** add collapsible PortfolioGroup section ([b9c6c65](https://github.com/arrijr/cs2-skintracker/commit/b9c6c6548420479124b0cb7fadf9cd246b917fb0))
+* **portfolio:** add filterEntries + sortEntries helpers ([d3269e1](https://github.com/arrijr/cs2-skintracker/commit/d3269e1e6e7272fed10ff0753a06b6427e33a386))
+* **portfolio:** add groupPortfolio aggregation with no-price bucket ([56c87ff](https://github.com/arrijr/cs2-skintracker/commit/56c87ff2120028b39b3aef468e065e522cd2b3d2))
+* **portfolio:** add PortfolioSkinCard (value-first card, inline lots) ([d83fdd3](https://github.com/arrijr/cs2-skintracker/commit/d83fdd385a3036167e02fa6c71dd007f3e17a1a2))
+* **portfolio:** add PortfolioToolbar (search/sort/filter chips) ([1870734](https://github.com/arrijr/cs2-skintracker/commit/187073430312d0d4f28f46d8aeb46d157d6d816f))
+* **portfolio:** add value/cost/PL + weapon-group-key helpers ([5361d7f](https://github.com/arrijr/cs2-skintracker/commit/5361d7f1bcb3aff443207928841bf01ccd9bf343))
+* **portfolio:** grouped, filterable card-grid Holdings view ([e7034b9](https://github.com/arrijr/cs2-skintracker/commit/e7034b9b6fefcd1ef3c7f1d4dd98a22b912d86e4))
+* **skin-detail:** add similar-skins grid below body ([0d66388](https://github.com/arrijr/cs2-skintracker/commit/0d66388d6ceaa67262884c2e88f11899842c15d9))
+* **skin-detail:** promote source-case to hero badge ([697a1ff](https://github.com/arrijr/cs2-skintracker/commit/697a1ffd9336af2754b32a3268b5c711e6a805e0))
+
+
+### Bug Fixes
+
+* **admin:** P2 backend — repair Coverage + User-Mgmt services, wire users routes ([39d43d9](https://github.com/arrijr/cs2-skintracker/commit/39d43d96c090e562fe0be1b40539b625b13b6b0b))
+* **admin:** wire-ready controller — real overview/jobs, auditLog userId/user, clearSteamCache, safe dry-run-only jobs ([f8fed87](https://github.com/arrijr/cs2-skintracker/commit/f8fed87d77b122713e78812fee1b8f0164423002))
+* **alerts:** reject non-positive-integer skinId/caseId in createAlert ([007b445](https://github.com/arrijr/cs2-skintracker/commit/007b445e8abe44d458f4ef32b3b6bb18462e9da7))
+* **auth:** drop wrong "skintracker" audience aliases — brand is "skintrackr" ([58a3dd7](https://github.com/arrijr/cs2-skintracker/commit/58a3dd7dbbcbf625865507b2f56a717aa745acf6))
+* **cases:** add Authorization header to /case-portfolio fetch + skip for signed-out ([76c3dc7](https://github.com/arrijr/cs2-skintracker/commit/76c3dc7f5a60db40575c5c2e194bfa5a63e5f39e))
+* **cases:** EUR currency + wire dead "All Cases" toggle ([ff8b5be](https://github.com/arrijr/cs2-skintracker/commit/ff8b5be9672ad57ffa8e8ddb73443734f472051c))
+* **cases:** null-guard .toFixed callsites in CasesPage ([fa9a153](https://github.com/arrijr/cs2-skintracker/commit/fa9a153a0d804f4fcd9d80aabcc4e8d99c91d0dd))
+* **cases:** null-guard formatNumber + formatCurrency to stop TypeError crash ([a04dae2](https://github.com/arrijr/cs2-skintracker/commit/a04dae235c18e52e05615cc6e712dcc5915b21fb))
+* **copy:** remove stale 'Coming Month 2/3' + 'coming Sprint 2' launch copy ([cba646c](https://github.com/arrijr/cs2-skintracker/commit/cba646c84333e325aea73db756e3f14795f2cec3))
+* **cron:** node-cron price-refresh 1x/day → 4x/day (reliable driver on always-on Render) ([ab3d113](https://github.com/arrijr/cs2-skintracker/commit/ab3d113669af785d3ac1fdae1f53726f9e455611))
+* **insight-cards:** null-guard .toFixed callsites in InsightCards ([be31877](https://github.com/arrijr/cs2-skintracker/commit/be318770cc03615e7386598f4f56858a4c2d913a))
+* **items:** wrap Suspense skeleton in AppShell to kill layout shift ([d8419f5](https://github.com/arrijr/cs2-skintracker/commit/d8419f5fe27b009720e85ed31388a66c3c8ae107))
+* **launch-polish:** 3-agent CEO audit P0 + high-impact items ([c3615fd](https://github.com/arrijr/cs2-skintracker/commit/c3615fd6d35b06ae404ced413f7f3f99add7d1d7))
+* **multi-source-price-table:** null-guard .toFixed in MultiSourcePriceTable ([f4990b2](https://github.com/arrijr/cs2-skintracker/commit/f4990b233ee6be1e728c967b63241239d2e0b5ab))
+* **notifications:** mark-all-read + view-all navigation actually work ([1994cd5](https://github.com/arrijr/cs2-skintracker/commit/1994cd54bb6f67a5dcbb5e187aa84293eb92fa6c))
+* **portfolio-dashboard:** null-guard .toFixed callsites in PortfolioDashboard ([bec054e](https://github.com/arrijr/cs2-skintracker/commit/bec054ec71509793fa2d7720d85840f6ffbbff8b))
+* **portfolio:** apply review findings ([846f534](https://github.com/arrijr/cs2-skintracker/commit/846f5342e57c60cc90a7771da3f2b7768acabd13))
+* **portfolio:** verify fixups ([1addab1](https://github.com/arrijr/cs2-skintracker/commit/1addab122f428ae2c39c0ff8dd287c1951a9bbe1))
+* **pricing:** enable Skinport bulk backfill as primary price source (Node-18-safe) ([7bf3140](https://github.com/arrijr/cs2-skintracker/commit/7bf3140ceb76cdd4c81503f5e27b75739209af4f))
+* **pricing:** enable Skinport bulk backfill as primary price source (Node-18-safe) ([ebfc032](https://github.com/arrijr/cs2-skintracker/commit/ebfc03268018b1744fb1d8c4bd4cae3eb5e6219a))
+* **pricing:** flag stale wear-variant rows for re-refresh — fixes same-price-across-wears bug ([397609e](https://github.com/arrijr/cs2-skintracker/commit/397609ee214bb56a45722b5afe24352772dfd618))
+* **pricing:** multi-source price table shows correct EUR, not inflated USD ([55e2d3a](https://github.com/arrijr/cs2-skintracker/commit/55e2d3a6a57c8253f23f77b350a9e5f800ee0672))
+* **pricing:** multi-source price table shows correct EUR, not inflated USD ([31f413e](https://github.com/arrijr/cs2-skintracker/commit/31f413e94454dab6ba549dcf7ea55d85806dc0b1))
+* **pricing:** prioritize + cap MarketItem refresh so stickers/agents/keys get prices ([f0f9b0f](https://github.com/arrijr/cs2-skintracker/commit/f0f9b0ff3cc57168b521c2c29ea5a2ff8b426f1a))
+* **pricing:** refresh cases BEFORE skins so they never starve mid-run ([94e9f49](https://github.com/arrijr/cs2-skintracker/commit/94e9f492932f4bed633c957d572b33e008c698e9))
+* **purchase-accordion:** null-guard .toFixed callsites in PurchaseAccordion ([d18f91b](https://github.com/arrijr/cs2-skintracker/commit/d18f91b77321ed85b82d1d816e4154ae7424f7b6))
+* **research-panel:** null-guard .toFixed callsites in ResearchPanel ([af8fb80](https://github.com/arrijr/cs2-skintracker/commit/af8fb808b6b4e70cac118a7a863e4ca2764c6152))
+* **research:** use req.userId (DB int) not req.auth?.userId in research controller ([995a59b](https://github.com/arrijr/cs2-skintracker/commit/995a59b94d33edab3d219d842076f431ec2b1310))
+* **security:** close confirmed-open audit findings (info-leak + input DoS) ([096836a](https://github.com/arrijr/cs2-skintracker/commit/096836a12791c26870d9513ff670d7d03164bc57))
+* **security:** enforce portfolio tier quota on backend addToPortfolio ([b36de52](https://github.com/arrijr/cs2-skintracker/commit/b36de5210a9fd3568857494b44f7980bde62833a))
+* **security:** fail closed on missing STEAM_OPENID_STATE_SECRET in prod ([e6ad68f](https://github.com/arrijr/cs2-skintracker/commit/e6ad68f532fdb3d5b30d0b62709c7ea3c2c7170f))
+* **security:** remove dead logsRoutes /stats + /recent admin endpoints (audit [#12](https://github.com/arrijr/cs2-skintracker/issues/12)) ([fe129a1](https://github.com/arrijr/cs2-skintracker/commit/fe129a10f152b9d5d0ba111cebb622864ee54d98))
+* **security:** swap clerkAuth to verifyClerkJwt on transaction routes ([acb524e](https://github.com/arrijr/cs2-skintracker/commit/acb524ee67dbfb76b0679621ecb1d29855040a4d))
+* **seo:** add /items to sitemap so the nav-linked page is indexable ([630ba29](https://github.com/arrijr/cs2-skintracker/commit/630ba29f6848ae4e48b770c0b4dbd10f6c2ae1ac))
+* **seo:** resolve knife weaponSlug='unknown' breaking pillar pages ([2dd121a](https://github.com/arrijr/cs2-skintracker/commit/2dd121aee0bf4f3b6ec9b2aa685c1ec36198de3b))
+* **steam:** guide private-inventory failures + auto-prompt import after connect ([0f918f0](https://github.com/arrijr/cs2-skintracker/commit/0f918f0804371dac73af529fc38d2bf07149a008))
+* **steam:** import 500 — buyPrice is NOT NULL but importer sent null ([61606e4](https://github.com/arrijr/cs2-skintracker/commit/61606e446ba2444ed7184ac6848f0e47244f5050))
+* **steam:** make cost-basis radio selection visible in import modal ([9abbe77](https://github.com/arrijr/cs2-skintracker/commit/9abbe77cfadc3316a272ea8fb3af8ef806a393c2))
+* **steam:** remove duplicate crypto import crashing backend boot ([9760061](https://github.com/arrijr/cs2-skintracker/commit/97600611a2db1fc712959b087f2caa6872682843))
+* **steam:** replace fail-closed STATE_SECRET throw with random fallback + warn — Render env injection is flaky ([edc9bc0](https://github.com/arrijr/cs2-skintracker/commit/edc9bc0346a92674b5ade4588f7a928c03a24c8e))
+* **steam:** thread returnPath through OpenID state JWT — preserve onboarding context ([b5e0121](https://github.com/arrijr/cs2-skintracker/commit/b5e0121197dc13bd4d18ea80aba23b3ecdb343bf))
+* **ui:** add refund FAQ entry linking to /legal/refund on pricing page ([8065e6b](https://github.com/arrijr/cs2-skintracker/commit/8065e6b303809ed30dc19e79109052c8afc66b43))
+* **ui:** null-guard .toFixed callsites in DeltaBadge + KPICard ([ba65b6f](https://github.com/arrijr/cs2-skintracker/commit/ba65b6f2ee04430e3732aa9cf20d681e47b36c5c))
+* **ui:** require confirmation before Steam disconnect ([aa7c0c2](https://github.com/arrijr/cs2-skintracker/commit/aa7c0c24320ee29648d87a8c00ade162d17bdf8b))
+* **ux:** inline CTA on /alerts empty state + stop portfolio banner auto-hide ([08ee7a9](https://github.com/arrijr/cs2-skintracker/commit/08ee7a98d7494a7af05d633b4752520128364a6e))
+
+
+### Performance
+
+* **pricing:** bump Inngest chunk size 8 → 20 to survive Render service spin-down ([230f9b7](https://github.com/arrijr/cs2-skintracker/commit/230f9b7e0476956ee476d0f5afd99d2a350ab780))
+
+
+### Refactor
+
+* **dashboard:** rename TerminalAreaChart to PortfolioValueChart and restyle on-brand ([6524b9c](https://github.com/arrijr/cs2-skintracker/commit/6524b9cec7ed2e4621d2bdd88c2a20d5a9d29e40))
+* **ui:** /portfolio/cases adopts AppShell + slate-950 design system ([6ce641b](https://github.com/arrijr/cs2-skintracker/commit/6ce641b183e054aa2bea585aca518756c0433317))
+* **ui:** remove dead activeFilter state from /portfolio ([decaf78](https://github.com/arrijr/cs2-skintracker/commit/decaf78582d73c96ba929ab5e670fc0109409369))
+
+
+### Documentation
+
+* **admin:** Phase-1 modernization spec + implementation plan ([4e08851](https://github.com/arrijr/cs2-skintracker/commit/4e0885105a48a0830436cc46cecf610db3db2bfe))
+* **claude:** make Obsidian maintenance an explicit always-rule for future sessions ([7741112](https://github.com/arrijr/cs2-skintracker/commit/77411128ebc89e7b5998a943d2e9aa201164e68a))
+* **plan:** launch-readiness roadmap — tiered open work for 14:00 session ([81c8e7c](https://github.com/arrijr/cs2-skintracker/commit/81c8e7c748f62b200f8072c2afdb7d3d64426671))
+* **portfolio:** holdings redesign spec + implementation plan ([137d93e](https://github.com/arrijr/cs2-skintracker/commit/137d93e645d50e27a6a200858da0e240798b60a8))
+* **pricing:** document price-pipeline fix + pg_cron snapshot setup ([58976ba](https://github.com/arrijr/cs2-skintracker/commit/58976ba04b193d74935516c0ebcc32d370fe5262))
+* **research:** track 3 SEO research docs referenced by vault index ([1d6d590](https://github.com/arrijr/cs2-skintracker/commit/1d6d59081fd25f639a14a5017c10ec4e49cf9afd))
+* **session:** document Vercel split-brain (cs2-skintracker silently skips commits) ([57ad1fb](https://github.com/arrijr/cs2-skintracker/commit/57ad1fb899737e547638e751107d124a500ce095))
+* **session:** note Vercel still skips pure-frontend commits ([125eae2](https://github.com/arrijr/cs2-skintracker/commit/125eae20bd1a91f42a24b9dc582aed9602a63156))
+* **session:** Phase delta — 18 commits, 11 of 12 user issues, 3 security critical closed ([a4f8708](https://github.com/arrijr/cs2-skintracker/commit/a4f8708f025c017e70adfb1959841338091f26d2))
+* **session:** post-audit phases (CaseSkin backfill, demo badges, important-tier sweep) ([7f3f7f2](https://github.com/arrijr/cs2-skintracker/commit/7f3f7f2bcbf725145004372d8227ee0c8932d02b))
+* **session:** record Render-Starter decision + GH-workflow removal ([ce136f2](https://github.com/arrijr/cs2-skintracker/commit/ce136f241e06c102d3de8d2b16f330db5ceeb6fd))
+* sync tech-debt + launch plan with 2026-05-31 autonomous batch ([26b6b01](https://github.com/arrijr/cs2-skintracker/commit/26b6b01dd6daaa03536c1d8c7b1715db615bbc6f))
+* **vault:** bring Obsidian index up to date (specs/plans + launch MOCs) ([eb121ee](https://github.com/arrijr/cs2-skintracker/commit/eb121ee67456f1e06dc9ee3212745f51f604034a))
+* **vault:** session note — Steam import + pricing/history overhaul (2026-06-01); linked from 00-Index ([8ea0dc3](https://github.com/arrijr/cs2-skintracker/commit/8ea0dc3dc778c8cb51db6d594d26201d501bf701))
+
 ## [0.3.0](https://github.com/arrijr/cs2-skintracker/compare/v0.2.0...v0.3.0) (2026-05-22)
 
 
