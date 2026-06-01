@@ -37,6 +37,7 @@ describe('admin route modules are mounted (handler reached, not 404)', () => {
     '/api/v1/admin/users/statistics',
     '/api/v1/admin/users/search',
     '/api/v1/admin/users/1',
+    '/api/v1/admin/insights',
   ];
   for (const path of mountedGet) {
     it(`GET ${path} is mounted (not 404)`, async () => {
