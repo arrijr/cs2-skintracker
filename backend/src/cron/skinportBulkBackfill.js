@@ -26,13 +26,7 @@ import defaultPrisma from '../prisma/prismaClient.js';
 import logger from '../utils/logger.js';
 import { fetchSkinportItems } from '../services/pricing/skinportClient.js';
 
-const DEFAULT_EUR_TO_USD = 1.08;
 const CHUNK_SIZE = 500;
-
-function eurToUsdSafe(eur, rate) {
-  if (typeof eur !== 'number' || !Number.isFinite(eur)) return null;
-  return +(eur * rate).toFixed(4);
-}
 
 /**
  * Run the Skinport bulk backfill.
@@ -44,7 +38,6 @@ function eurToUsdSafe(eur, rate) {
  */
 export async function runSkinportBulkBackfill({
   prismaClient = defaultPrisma,
-  eurToUsd = DEFAULT_EUR_TO_USD,
 } = {}) {
   const t0 = Date.now();
   logger.info('[skinport-backfill] starting');
@@ -76,22 +69,29 @@ export async function runSkinportBulkBackfill({
       continue;
     }
 
-    const priceMin = eurToUsdSafe(sp.min_price, eurToUsd);
-    const priceMax = eurToUsdSafe(sp.max_price, eurToUsd);
-    const priceMedian7d = eurToUsdSafe(sp.median_price, eurToUsd);
-    const priceMedian30d = eurToUsdSafe(sp.mean_price, eurToUsd);
+    // priceLatest = cheapest live ask (min_price). Skinport prices are EUR and
+    // the DB convention is EUR (Steam scrape uses currency=3/EUR; the frontend
+    // is EUR-native) — do NOT convert. If there is no live listing
+    // (min_price null) fall back to suggested_price ONLY when there is
+    // liquidity (quantity > 0); skip otherwise, because Skinport's
+    // suggested_price for zero-listing items can be wildly stale (e.g. €3926
+    // for an unlisted skin) and would poison portfolio valuations / P&L.
+    const min = typeof sp.min_price === 'number' ? sp.min_price : null;
+    const suggested = typeof sp.suggested_price === 'number' ? sp.suggested_price : null;
+    const qty = typeof sp.quantity === 'number' ? sp.quantity : 0;
+    const price = min != null ? min : (qty > 0 ? suggested : null);
+    if (price == null || !Number.isFinite(price) || price <= 0) {
+      skipped++;
+      continue;
+    }
 
-    // Build payload — only set non-null derived fields to avoid clobbering
-    // existing Steam-sourced data with NULLs.
-    const data = { priceUpdatedAt: now };
-    if (priceMin != null) data.priceMin = priceMin;
-    if (priceMax != null) data.priceMax = priceMax;
-    if (priceMedian7d != null) data.priceMedian7d = priceMedian7d;
-    if (priceMedian30d != null) data.priceMedian30d = priceMedian30d;
-
+    // Write ONLY priceLatest (+ timestamp). Intentionally NOT writing
+    // priceMin/Max/median7d/30d: those gate the on-the-fly PriceHistory-derived
+    // 30-day stats in skinDetailController, so populating them would silently
+    // relabel current Skinport listing min/max as "30D"/"all-time".
     updates.push({
       where: { id: skin.id },
-      data,
+      data: { priceLatest: +price.toFixed(2), priceUpdatedAt: now },
     });
   }
   logger.info('[skinport-backfill] derived updates', {
