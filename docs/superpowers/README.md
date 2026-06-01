@@ -16,6 +16,7 @@ Verwandt: [[docs/superpowers/adrs/README|ADR-Index]] · Research-Sektion im [[00
 | 2026-05-11 | [[docs/superpowers/specs/2026-05-11-steam-inventory-import\|Steam Inventory Import]] |
 | 2026-05-18 | [[docs/superpowers/specs/2026-05-18-profile-refactor-design\|Profile Refactor]] |
 | 2026-05-30 | [[docs/superpowers/specs/2026-05-30-obsidian-vault-cleanup\|Obsidian Vault Cleanup]] |
+| 2026-06-01 | [[docs/superpowers/specs/2026-06-01-admin-panel-modernization-design\|Admin-Panel-Modernisierung]] ⭐ neu |
 
 ## 🛠️ Pläne (Implementation)
 | Datum | Plan |
@@ -32,7 +33,8 @@ Verwandt: [[docs/superpowers/adrs/README|ADR-Index]] · Research-Sektion im [[00
 | 2026-05-18 | [[docs/superpowers/plans/2026-05-18-autonomous-polish-session\|Autonomous Polish Session]] |
 | 2026-05-20 | [[docs/superpowers/plans/2026-05-20-mobile-responsive-audit\|Mobile Responsive Audit]] |
 | 2026-05-20 | [[docs/superpowers/plans/2026-05-20-sprint2-multi-source-seo\|Sprint 2 Multi-Source SEO]] |
-| 2026-05-31 | [[docs/superpowers/plans/2026-05-31-launch-readiness\|Launch-Readiness]] ⭐ neu |
+| 2026-05-31 | [[docs/superpowers/plans/2026-05-31-launch-readiness\|Launch-Readiness]] |
+| 2026-06-01 | [[docs/superpowers/plans/2026-06-01-admin-panel-phase1\|Admin-Panel Phase 1 (Reparieren)]] ⭐ neu |
 
 ## 📋 Sprint-2 Reports
 [[docs/02-Sprint2/SPRINT_2_COMPLETION_REPORT\|Completion-Report]] ·
