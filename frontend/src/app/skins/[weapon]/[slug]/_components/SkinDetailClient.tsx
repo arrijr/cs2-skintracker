@@ -60,7 +60,7 @@ type Skin = SkinDetail & {
   buyOrderVolume?: number;
   offerVolume?: number;
   hoursToSold?: number;
-  history?: Array<{ date: string; price: number; quantity?: number }>;
+  history?: Array<{ date: string; price: number; quantity?: number; estimated?: boolean }>;
   caseInfo?: { name: string; id: number };
 };
 
@@ -111,7 +111,7 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
   const [alertModalOpen, setAlertModalOpen] = useState(false);
   const { alerts, createAlert } = useAlerts();
   const alertCountForThisSkin = alerts.filter((a: any) => a.skinId === skin.id).length;
-  const [priceHistory, setPriceHistory] = useState<Array<{ date: string; price: number }> | null>(null);
+  const [priceHistory, setPriceHistory] = useState<Array<{ date: string; price: number; estimated?: boolean }> | null>(null);
   const [variantsByWear, setVariantsByWear] = useState<Record<string, VariantRow> | null>(null);
 
   // Sprint 2 SEO event — fire once per SSR landing render.
@@ -671,7 +671,15 @@ export default function SkinDetailClient({ skin, initialWear }: SkinDetailClient
 
               <div className="mt-4 pb-6">
                 {filteredHistory.length > 0 ? (
-                  <SkinPriceChart data={filteredHistory.map((h) => ({ date: h.date, price: h.price }))} />
+                  <>
+                    <SkinPriceChart data={filteredHistory.map((h) => ({ date: h.date, price: h.price }))} />
+                    {filteredHistory.some((h) => (h as { estimated?: boolean }).estimated) && (
+                      <p className="text-[11px] text-amber-400/80 mt-3 leading-relaxed">
+                        ≈ Points before today are <strong>approximate Skinport rolling-window medians</strong> (est.), not real
+                        per-day prices. A real daily series is recorded from today forward.
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <EmptyState
                     icon={Clock}

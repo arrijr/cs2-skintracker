@@ -230,6 +230,7 @@ model PriceHistory {
   skinId  Int
   date    DateTime
   price   Float
+  source  String?  // null = real recorded point (daily cron / Steam refresh); 'skinport_est' = seeded rolling-window-median estimate (approximate, labelled in UI)
   skin    Skin     @relation(fields: [skinId], references: [id])
 
   @@unique([skinId, date])

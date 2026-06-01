@@ -130,11 +130,16 @@ export async function getSkinBySlug(req, res, { prismaClient = defaultPrisma } =
         skin.priceMedian7d = median(prices7);
       }
       // 24h: closest snapshot to 24h ago, used to compute price-change delta.
+      // Guard: only use it if that nearest pre-24h point is actually recent
+      // (<=48h old). With sparse/seeded-estimate anchors (e.g. a -7d point) the
+      // nearest pre-24h row can be a week+ old — using it would surface a 7d
+      // delta mislabelled as 24h.
       const cutoff24 = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const floor48 = new Date(Date.now() - 48 * 60 * 60 * 1000);
       const near24 = history30
         .filter((h) => new Date(h.date) <= cutoff24)
         .slice(-1)[0];
-      if (near24 && skin.priceMedian24h == null) {
+      if (near24 && new Date(near24.date) >= floor48 && skin.priceMedian24h == null) {
         skin.priceMedian24h = near24.price;
       }
     }

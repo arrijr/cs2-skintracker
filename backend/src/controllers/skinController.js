@@ -50,7 +50,8 @@ export const getPriceHistory = async (req, res) => {
       orderBy: { date: 'asc' },
       select: {
         date: true,
-        price: true
+        price: true,
+        source: true
       }
     });
     
@@ -74,7 +75,10 @@ export const getPriceHistory = async (req, res) => {
     // Format the history data
     const formattedHistory = history.map(entry => ({
       date: entry.date.toISOString().split('T')[0],
-      price: entry.price
+      price: entry.price,
+      // true = seeded Skinport rolling-window-median estimate (approximate),
+      // not a real recorded daily price. UI labels these distinctly.
+      estimated: entry.source === 'skinport_est'
     }));
     
     res.json({
