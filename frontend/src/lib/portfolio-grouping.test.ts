@@ -52,3 +52,52 @@ describe('weaponGroupKey', () => {
     expect(weaponGroupKey(entry({ skin: { weaponType: undefined, name: '' } as any }).skin)).toBe('Other');
   });
 });
+
+import { filterEntries, sortEntries } from './portfolio-grouping';
+
+describe('filterEntries', () => {
+  const ak = entry({ skin: { id: 1, name: 'AK-47 | Redline', weaponType: 'AK-47', rarity: 'Classified', exterior: 'Field-Tested', marketPrice: 10 } as any });
+  const awp = entry({ skin: { id: 2, name: 'AWP | Asiimov', weaponType: 'AWP', rarity: 'Covert', exterior: 'Minimal Wear', marketPrice: 90 } as any });
+  const all = [ak, awp];
+
+  it('matches search against the skin name (case-insensitive)', () => {
+    expect(filterEntries(all, { search: 'asii' })).toEqual([awp]);
+  });
+  it('filters by weapon (weaponType)', () => {
+    expect(filterEntries(all, { weapon: 'AK-47' })).toEqual([ak]);
+  });
+  it('filters by rarity and by exterior', () => {
+    expect(filterEntries(all, { rarity: 'Covert' })).toEqual([awp]);
+    expect(filterEntries(all, { exterior: 'Field-Tested' })).toEqual([ak]);
+  });
+  it('combines filters (AND)', () => {
+    expect(filterEntries(all, { weapon: 'AWP', rarity: 'Classified' })).toEqual([]);
+  });
+  it('empty/undefined filters return everything', () => {
+    expect(filterEntries(all, {})).toEqual(all);
+  });
+});
+
+describe('sortEntries', () => {
+  const cheap = entry({ amount: 1, avgPrice: 100, purchases: [{ id: 1, amount: 1, buyPrice: 100, buyDate: '2026-01-01' }], skin: { id: 1, name: 'B', marketPrice: 10 } as any });
+  const dear = entry({ amount: 1, avgPrice: 100, purchases: [{ id: 2, amount: 1, buyPrice: 100, buyDate: '2026-03-01' }], skin: { id: 2, name: 'A', marketPrice: 200 } as any });
+
+  it('value sorts by position value desc', () => {
+    expect(sortEntries([cheap, dear], 'value').map(e => e.skin.id)).toEqual([2, 1]);
+  });
+  it('name sorts alphabetically', () => {
+    expect(sortEntries([cheap, dear], 'name').map(e => e.skin.name)).toEqual(['A', 'B']);
+  });
+  it('performance sorts by PL desc, nulls last', () => {
+    const noPrice = entry({ skin: { id: 3, name: 'C', marketPrice: null } as any });
+    expect(sortEntries([cheap, dear, noPrice], 'performance').map(e => e.skin.id)).toEqual([2, 1, 3]);
+  });
+  it('recent sorts by latest purchase date desc', () => {
+    expect(sortEntries([cheap, dear], 'recent').map(e => e.skin.id)).toEqual([2, 1]);
+  });
+  it('does not mutate the input array', () => {
+    const input = [cheap, dear];
+    sortEntries(input, 'value');
+    expect(input.map(e => e.skin.id)).toEqual([1, 2]);
+  });
+});

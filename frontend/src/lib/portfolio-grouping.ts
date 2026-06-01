@@ -53,3 +53,55 @@ export function weaponGroupKey(skin: PortfolioSkin): string {
   const parsed = (skin.name ?? '').split('|')[0]?.trim();
   return parsed || 'Other';
 }
+
+import { safeIncludes, safeLocaleCompare } from '@/lib/strings';
+
+export type SortKey = 'value' | 'name' | 'performance' | 'recent';
+
+export type PortfolioFilter = {
+  search?: string;
+  weapon?: string | null;
+  rarity?: string | null;
+  exterior?: string | null;
+};
+
+export function filterEntries(entries: PortfolioEntry[], f: PortfolioFilter): PortfolioEntry[] {
+  const search = (f.search ?? '').trim();
+  return entries.filter((e) => {
+    if (search && !safeIncludes(e.skin.name, search)) return false;
+    if (f.weapon && weaponGroupKey(e.skin) !== f.weapon) return false;
+    if (f.rarity && (e.skin.rarity ?? '') !== f.rarity) return false;
+    if (f.exterior && (e.skin.exterior ?? '') !== f.exterior) return false;
+    return true;
+  });
+}
+
+function latestPurchaseTime(e: PortfolioEntry): number {
+  let max = 0;
+  for (const p of e.purchases ?? []) {
+    const t = new Date(p.buyDate).getTime();
+    if (Number.isFinite(t) && t > max) max = t;
+  }
+  return max;
+}
+
+export function sortEntries(entries: PortfolioEntry[], sortBy: SortKey): PortfolioEntry[] {
+  const copy = [...entries];
+  switch (sortBy) {
+    case 'name':
+      return copy.sort((a, b) => safeLocaleCompare(a.skin.name, b.skin.name));
+    case 'performance':
+      return copy.sort((a, b) => {
+        const pa = entryPL(a), pb = entryPL(b);
+        if (pa === null && pb === null) return 0;
+        if (pa === null) return 1;
+        if (pb === null) return -1;
+        return pb - pa;
+      });
+    case 'recent':
+      return copy.sort((a, b) => latestPurchaseTime(b) - latestPurchaseTime(a));
+    case 'value':
+    default:
+      return copy.sort((a, b) => positionValue(b) - positionValue(a));
+  }
+}
