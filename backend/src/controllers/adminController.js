@@ -6,47 +6,45 @@ import { DataQualityService } from "../services/dataQualityService.js";
 import { UserManagementService } from "../services/userManagementService.js";
 import { FeatureFlagsService } from "../services/featureFlagsService.js";
 import { BackfillService } from "../services/backfillService.js";
+import { formatDuration, toUiStatus } from "../utils/adminFormat.js";
+import { clearInventoryCache } from "../services/steam/steamInventoryClient.js";
 
 // ADM-1: Overview KPIs
 export const getOverview = async (req, res) => {
   try {
-    const [priceUpdateStats, portfolioSnapshotStats, alertStats] = await Promise.all([
-      // Last Price Update & Counts
-      prisma.$queryRaw`
-        SELECT 
-          MAX(priceUpdatedAt) as lastPriceUpdate,
-          COUNT(*) as pricesWritten24h,
-          ROUND((COUNT(*) * 100.0 / (SELECT COUNT(*) FROM "Skin")), 2) as priceCoverage
-        FROM "Skin" 
-        WHERE priceUpdatedAt >= NOW() - INTERVAL '24 hours'
-      `,
-      
-      // Portfolio Snapshot last run
-      prisma.portfolioHistory.findFirst({
-        orderBy: { date: 'desc' },
-        select: { date: true }
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const [maxAgg, total, written24h, snapshot, activeAlerts, events24h] = await Promise.all([
+      prisma.skin.aggregate({ _max: { priceUpdatedAt: true } }),
+      prisma.skin.count(),
+      prisma.skin.count({ where: { priceUpdatedAt: { gte: since } } }),
+      prisma.portfolioHistory.findFirst({ orderBy: { date: 'desc' }, select: { date: true } }),
+      prisma.alert.count({ where: { isActive: true } }),
+      prisma.alertEvent.findMany({
+        where: { triggeredAt: { gte: since } },
+        select: { delivered: true, failed: true },
       }),
-      
-      // Alert stats (simplified - would need actual alert table)
-      Promise.resolve({
-        alertsChecked24h: 0,
-        alertsSent24h: 0,
-        alertsSkipped24h: 0
-      })
     ]);
 
+    const alertsSent24h = events24h.filter(e => e.delivered?.length).length;
+    const alertsSkipped24h = events24h.filter(e => e.failed?.length && !e.delivered?.length).length;
+
     const overview = {
-      lastPriceUpdate: priceUpdateStats[0]?.lastPriceUpdate || null,
-      pricesWritten24h: priceUpdateStats[0]?.pricesWritten24h || 0,
-      priceCoverage: priceUpdateStats[0]?.priceCoverage || 0,
-      portfolioSnapshotLastRun: portfolioSnapshotStats?.date || null,
-      alerts24h: alertStats
+      lastPriceUpdate: maxAgg._max.priceUpdatedAt || null,
+      pricesWritten24h: written24h,
+      priceCoverage: total > 0 ? Math.round((written24h / total) * 10000) / 100 : 0,
+      portfolioSnapshotLastRun: snapshot?.date || null,
+      alerts24h: {
+        // alertsChecked24h: active-alert count is a proxy — no per-check log exists.
+        alertsChecked24h: activeAlerts,
+        alertsSent24h,
+        alertsSkipped24h,
+      },
     };
 
     // Log admin view
     await prisma.auditLog.create({
       data: {
-        adminId: req.user.id,
+        userId: req.user.id,
         action: 'view',
         resource: 'admin_overview',
         details: 'Admin overview accessed'
@@ -63,41 +61,32 @@ export const getOverview = async (req, res) => {
 // ADM-2: Jobs Table
 export const getJobs = async (req, res) => {
   try {
-    const { page = 1, limit = 20 } = req.query;
-    const offset = (page - 1) * limit;
-
-    // Get cron job status from health endpoint data
-    const jobs = [
-      {
-        name: 'Price Update Job',
-        lastRun: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        status: 'completed',
-        duration: '15m 32s',
-        resultCounts: { updated: 1250, failed: 3, skipped: 45 }
-      },
-      {
-        name: 'Portfolio History Job',
-        lastRun: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-        status: 'completed',
-        duration: '2m 15s',
-        resultCounts: { processed: 89, failed: 0, skipped: 0 }
-      },
-      {
-        name: 'Price Alert Job',
-        lastRun: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-        status: 'completed',
-        duration: '45s',
-        resultCounts: { checked: 156, sent: 12, skipped: 144 }
-      }
-    ];
-
-    const paginatedJobs = jobs.slice(offset, offset + parseInt(limit));
-    const totalJobs = jobs.length;
+    // Real data: latest JobRun per jobName (cron + manual dry-runs both write JobRun).
+    const runs = await prisma.jobRun.findMany({ orderBy: { startedAt: 'desc' }, take: 100 });
+    const seen = new Set();
+    const jobs = [];
+    for (const r of runs) {
+      if (seen.has(r.jobName)) continue;
+      seen.add(r.jobName);
+      const durationMs = r.completedAt ? new Date(r.completedAt) - new Date(r.startedAt) : null;
+      const resultCounts = {};
+      if (r.updatedCount != null) resultCounts.updated = r.updatedCount;
+      if (r.insertedCount != null) resultCounts.inserted = r.insertedCount;
+      if (r.failedCount != null) resultCounts.failed = r.failedCount;
+      if (r.actualCount != null && r.updatedCount == null) resultCounts.processed = r.actualCount;
+      jobs.push({
+        name: r.jobName,
+        lastRun: r.startedAt,
+        status: toUiStatus(r.status),
+        duration: r.status === 'running' ? 'running…' : formatDuration(durationMs),
+        resultCounts,
+      });
+    }
 
     // Log admin view
     await prisma.auditLog.create({
       data: {
-        adminId: req.user.id,
+        userId: req.user.id,
         action: 'view',
         resource: 'admin_jobs',
         details: 'Admin jobs accessed'
@@ -105,13 +94,8 @@ export const getJobs = async (req, res) => {
     });
 
     res.json({
-      jobs: paginatedJobs,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: totalJobs,
-        totalPages: Math.ceil(totalJobs / parseInt(limit))
-      }
+      jobs,
+      pagination: { page: 1, limit: jobs.length, total: jobs.length, totalPages: 1 }
     });
   } catch (error) {
     console.error('Admin jobs error:', error);
@@ -137,7 +121,7 @@ export const getLogs = async (req, res) => {
       skip: offset,
       take: parseInt(limit),
       include: {
-        admin: {
+        user: {
           select: { email: true }
         }
       }
@@ -149,7 +133,7 @@ export const getLogs = async (req, res) => {
     // Log admin view
     await prisma.auditLog.create({
       data: {
-        adminId: req.user.id,
+        userId: req.user.id,
         action: 'view',
         resource: 'admin_logs',
         details: 'Admin logs accessed'
@@ -168,6 +152,25 @@ export const getLogs = async (req, res) => {
   } catch (error) {
     console.error('Admin logs error:', error);
     res.status(500).json({ error: 'Failed to load admin logs' });
+  }
+};
+
+// ADM: Clear Steam inventory in-memory cache (read-only invalidation, no prod gate)
+export const clearSteamCache = async (req, res) => {
+  try {
+    clearInventoryCache();
+    await prisma.auditLog.create({
+      data: {
+        userId: req.user.id,
+        action: 'cache_clear',
+        resource: 'steam_inventory',
+        details: 'Steam inventory cache cleared'
+      }
+    });
+    res.json({ success: true, message: 'Steam inventory cache cleared' });
+  } catch (error) {
+    console.error('Error clearing steam cache:', error);
+    res.status(500).json({ success: false, error: 'Failed to clear cache' });
   }
 };
 
@@ -197,7 +200,16 @@ export const runSkinPriceUpdate = async (req, res) => {
   try {
     const adminId = req.user.id;
     const { take = 50, category, rarity, ids, dryRun = true } = req.body;
-    
+
+    // Manual real-execute is intentionally NOT wired to the live pipeline. Price/
+    // alert/snapshot work runs via cron + Inngest; a real run here would invoke a
+    // mock that writes placeholder data. Refuse non-dry runs honestly. (Plan 2026-06-01 T2)
+    if (!dryRun) {
+      return res.status(501).json({
+        error: 'Manual execution is not wired to the live pipeline. These jobs run via cron/Inngest. Use dry-run for an impact estimate.',
+      });
+    }
+
     // Check rate limiting
     if (!await JobService.canRunJob('updateSkinPrices', adminId)) {
       return res.status(429).json({ 
@@ -237,11 +249,10 @@ export const runSkinPriceUpdate = async (req, res) => {
       // Log admin action
       await prisma.auditLog.create({
         data: {
-          adminId,
+          userId: adminId,
           action: 'job_dry_run',
           resource: 'skin_prices',
           details: `Dry run: ${result.message}`,
-          parameters: JSON.stringify(parameters)
         }
       });
       
@@ -301,7 +312,16 @@ export const runPortfolioSnapshot = async (req, res) => {
   try {
     const adminId = req.user.id;
     const { userId, batchSize = 100, dryRun = true } = req.body;
-    
+
+    // Manual real-execute is intentionally NOT wired to the live pipeline. Price/
+    // alert/snapshot work runs via cron + Inngest; a real run here would invoke a
+    // mock that writes placeholder data. Refuse non-dry runs honestly. (Plan 2026-06-01 T2)
+    if (!dryRun) {
+      return res.status(501).json({
+        error: 'Manual execution is not wired to the live pipeline. These jobs run via cron/Inngest. Use dry-run for an impact estimate.',
+      });
+    }
+
     // Check rate limiting
     if (!await JobService.canRunJob('rebuildSnapshots', adminId)) {
       return res.status(429).json({ 
@@ -339,11 +359,10 @@ export const runPortfolioSnapshot = async (req, res) => {
       
       await prisma.auditLog.create({
         data: {
-          adminId,
+          userId: adminId,
           action: 'job_dry_run',
           resource: 'portfolio_snapshots',
           details: `Dry run: ${result.message}`,
-          parameters: JSON.stringify(parameters)
         }
       });
       
@@ -400,7 +419,16 @@ export const runAlertCheck = async (req, res) => {
   try {
     const adminId = req.user.id;
     const { limit = 100, optInOnly = true, dryRun = true } = req.body;
-    
+
+    // Manual real-execute is intentionally NOT wired to the live pipeline. Price/
+    // alert/snapshot work runs via cron + Inngest; a real run here would invoke a
+    // mock that writes placeholder data. Refuse non-dry runs honestly. (Plan 2026-06-01 T2)
+    if (!dryRun) {
+      return res.status(501).json({
+        error: 'Manual execution is not wired to the live pipeline. These jobs run via cron/Inngest. Use dry-run for an impact estimate.',
+      });
+    }
+
     // Check rate limiting
     if (!await JobService.canRunJob('alertCheck', adminId)) {
       return res.status(429).json({ 
@@ -438,11 +466,10 @@ export const runAlertCheck = async (req, res) => {
       
       await prisma.auditLog.create({
         data: {
-          adminId,
+          userId: adminId,
           action: 'job_dry_run',
           resource: 'price_alerts',
           details: `Dry run: ${result.message}`,
-          parameters: JSON.stringify(parameters)
         }
       });
       
@@ -735,7 +762,7 @@ export const getUserActivity = async (req, res) => {
 
 export const updateUserStatus = async (req, res) => {
   try {
-    const adminId = req.user.userId;
+    const adminId = req.user.id;
     const { userId } = req.params;
     const { status } = req.body;
     
@@ -756,7 +783,7 @@ export const updateUserStatus = async (req, res) => {
 
 export const updateUserEmailAlerts = async (req, res) => {
   try {
-    const adminId = req.user.userId;
+    const adminId = req.user.id;
     const { userId } = req.params;
     const { emailAlerts } = req.body;
     
@@ -777,7 +804,7 @@ export const updateUserEmailAlerts = async (req, res) => {
 
 export const updateUserPremiumStatus = async (req, res) => {
   try {
-    const adminId = req.user.userId;
+    const adminId = req.user.id;
     const { userId } = req.params;
     const { isPremium } = req.body;
     
@@ -843,7 +870,7 @@ export const getFeatureFlag = async (req, res) => {
 
 export const updateFeatureFlag = async (req, res) => {
   try {
-    const adminId = req.user.userId;
+    const adminId = req.user.id;
     const { flagKey } = req.params;
     const { value } = req.body;
     
@@ -909,7 +936,7 @@ export const getPrioritizedBackfillTasks = async (req, res) => {
 
 export const executeBackfillTask = async (req, res) => {
   try {
-    const adminId = req.user.userId;
+    const adminId = req.user.id;
     const { taskId } = req.params;
     
     // Check production safety
@@ -929,7 +956,7 @@ export const executeBackfillTask = async (req, res) => {
 
 export const getBackfillHistory = async (req, res) => {
   try {
-    const adminId = req.user.userId;
+    const adminId = req.user.id;
     const { page = 1, limit = 20 } = req.query;
     
     const history = await BackfillService.getBackfillHistory(adminId, parseInt(page), parseInt(limit));
