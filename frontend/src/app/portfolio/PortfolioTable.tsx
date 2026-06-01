@@ -9,6 +9,7 @@ import {
 
 type Props = {
   skins: PortfolioEntry[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- WatchlistEntry shape not imported here; only `.skinId`/`.priceAlert` are read.
   watchlist: any[];
   onDataChange: () => void;
 };
@@ -45,7 +46,7 @@ export default function PortfolioTable({ skins, watchlist = [], onDataChange }: 
     });
   }, []);
 
-  const list = Array.isArray(skins) ? skins : [];
+  const list = useMemo(() => (Array.isArray(skins) ? skins : []), [skins]);
 
   // Facets for the toolbar are derived from the FULL list (so chips don't vanish as you filter).
   const weapons = useMemo(() => {
